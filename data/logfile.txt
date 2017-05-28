@@ -1,0 +1,51 @@
+Sat May 27 13:48:56 2017: Necro#6714used add with variables:54
+Sat May 27 13:49:01 2017: Necro#6714used add with variables:96
+Sat May 27 13:49:07 2017: Necro killed bot
+Sat May 27 13:50:55 2017: Necro#6714used calc with message:3
+Sat May 27 13:51:40 2017: Necro#6714used calc with message:2+4+5
+Sat May 27 13:51:46 2017: Necro killed bot
+Sat May 27 15:16:54 2017: Necro#6714 used balance
+Sat May 27 15:17:06 2017: Necro#6714 used add with arguments: + 2300 <@!241942232867799040>
+Sat May 27 15:17:11 2017: Necro killed bot
+Sat May 27 15:23:23 2017: Necro killed bot
+Sat May 27 15:23:52 2017: Necro killed bot
+Sat May 27 15:24:44 2017: Necro killed bot
+Sat May 27 15:25:45 2017: Necro killed bot
+Sat May 27 15:27:57 2017: Necro#6714 used add with arguments: + 2300 <@!241942232867799040>
+Sat May 27 15:28:01 2017: Necro killed bot
+Sat May 27 15:30:10 2017: Necro#6714 used add with arguments: + 2300 <@!241942232867799040>
+Sat May 27 15:30:13 2017: Necro killed bot
+Sat May 27 18:44:56 2017: Necro#6714 used balance
+Sat May 27 18:54:38 2017: Necro killed bot
+Sat May 27 21:07:48 2017: Necro#6714used setStats with args: <@!172002275412279296>
+Sat May 27 21:08:00 2017: Necro killed bot
+Sat May 27 22:56:52 2017: Necro#6714used setStats with args: <@!172002275412279296>
+Sat May 27 22:56:57 2017: Necro killed bot
+Sun May 28 00:37:57 2017: Necro#6714used setStats with args: <@!203015871378096128>
+Sun May 28 00:38:04 2017: Necro#6714used setStats with args: <@!267357476012163073>
+Sun May 28 00:38:13 2017: Necro#6714used setStats with args: <@199640647198703621>
+Sun May 28 00:38:18 2017: Necro#6714used setStats with args: <@253741720464916485>
+Sun May 28 00:39:32 2017: Necro killed bot
+Sun May 28 12:40:36 2017: Necro#6714used claim
+Sun May 28 12:40:38 2017: Necro#6714 used balance
+Sun May 28 12:41:21 2017: Finrod | Knighto#5887used claim
+Sun May 28 12:41:28 2017: Finrod | Knighto#5887 used balance
+Sun May 28 12:41:42 2017: Elf_in_silver_armor#3305used claim
+Sun May 28 12:43:54 2017: Necro#6714 used calc with message:3
+Sun May 28 12:44:21 2017: Necro killed bot
+Sun May 28 12:51:19 2017: Necro#6714used claim
+Sun May 28 12:51:29 2017: Necro#6714used claim
+Sun May 28 12:51:33 2017: Necro killed bot
+Sun May 28 12:57:05 2017: Necro#6714used claim
+Sun May 28 12:57:39 2017: Elf_in_silver_armor#3305used claim
+Sun May 28 12:59:16 2017: Necro killed bot
+Sun May 28 13:27:45 2017: Necro killed bot
+Sun May 28 13:31:16 2017: Necro killed bot
+Sun May 28 13:40:26 2017: Necro#6714used perms with args: <@172002275412279296> and Bot Smith
+Sun May 28 13:40:36 2017: Necro#6714used perms with args: <@172002275412279296> and vez,pvzonzvj
+Sun May 28 13:41:47 2017: Necro#6714used perms with args: <@!203015871378096128> and Ally: Knight of Badassery
+Sun May 28 13:43:26 2017: Necro#6714used perms with args: <@172002275412279296> and Mod
+Sun May 28 13:44:16 2017: Necro#6714used perms with args: <@172002275412279296> and Peasant: Ok piece of JS
+Sun May 28 13:44:59 2017: Necro#6714used perms with args: <@!143040864346832897> and Ally: Best Trap
+Sun May 28 13:45:35 2017: Necro killed bot
+Sun May 28 13:56:42 2017: Necro#6714 used info
