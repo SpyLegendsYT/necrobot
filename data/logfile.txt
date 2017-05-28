@@ -49,3 +49,20 @@ Sun May 28 13:44:16 2017: Necro#6714used perms with args: <@172002275412279296> 
 Sun May 28 13:44:59 2017: Necro#6714used perms with args: <@!143040864346832897> and Ally: Best Trap
 Sun May 28 13:45:35 2017: Necro killed bot
 Sun May 28 13:56:42 2017: Necro#6714 used info
+Sun May 28 16:01:04 2017: Necro#6714 used tarot
+Sun May 28 16:01:54 2017: Necro killed bot
+Sun May 28 16:14:01 2017: Elf_in_silver_armor#3305 tried to kill bot
+Sun May 28 16:14:56 2017: Necro killed bot
+Sun May 28 16:42:37 2017: Necro#6714 used rr
+Sun May 28 16:42:42 2017: Necro#6714 used rr
+Sun May 28 16:42:45 2017: Necro#6714 used rr
+Sun May 28 16:42:54 2017: Necro#6714 used rr
+Sun May 28 17:44:45 2017: Necro killed bot
+Sun May 28 19:36:19 2017: NoDigit#7595 used balance
+Sun May 28 19:36:23 2017: Finrod#5887 used claim
+Sun May 28 19:36:41 2017: NoDigit#7595 used claim
+Sun May 28 19:36:47 2017: NoDigit#7595 used balance
+Sun May 28 19:36:57 2017: Necro#6714 used balance
+Sun May 28 19:37:27 2017: NoDigit#7595 used calc with message:5/3
+Sun May 28 19:37:48 2017: NoDigit#7595 used calc with message:(10/7)**4
+Sun May 28 19:37:53 2017: Necro killed bot

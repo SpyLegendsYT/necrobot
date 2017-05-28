@@ -6,24 +6,13 @@ import random
 import sys
 import time as t
 import datetime as d
+from var import *
 
 bot = commands.Bot(command_prefix='!')
+server = discord.Server
 
 log = open("data/logfile.txt","a+")
 userData = dict()
-
-helpVar=""" :information_source: The `NecroBot` Help Guide :information_source: 
-The NecroBot is a new highly buggy bot which is currently WIP, use this guide to figure out what it can do but be warned: if the bot doesn't respond it's either offline or has crashed. Either way best to wait for Necro to come on in that case.
-
-__Command List (may not always be up to date)__
-`!claim` - claim your daily bonus
-`!balance [@User]` - check your balance or the balance of another user
-`!calc [equation]` - evaluates equation us `+` to add, `-` to minus, `*` to multiply, `/` to divide, `**` for exponents, `%` for modulo
-`!h ` - for this help bar
-
-Attempt to not break the bot please. And good day."""
-
-permsDict = {"peasant": 0, "ally" : 1, "mod": 2, "lord": 3, "admin": 4, "smith": 5}
 
 with open("data/userdata.csv","r") as f:
     reader = csv.reader(f)
@@ -37,18 +26,12 @@ async def on_ready():
     print(bot.user.id)
     print(userData)
     print('------')
-    await bot.change_presence(game=discord.Game(name='shipping Necro x Elfu'))
+    await bot.change_presence(game=discord.Game(name='!h for help'))
 
 
 def time():
     localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
     return localtime
-
-# @bot.command(pass_context = True)
-# async def add(cont, arg0 : int, arg1 : int):
-#     await bot.say(arg0 + arg1)
-#     action = str(time()+str(cont.message.author)+" used add with variables:"+str(arg1)+" "+str(arg0))
-#     log.write(action)
 
 @bot.command(pass_context = True)
 async def calc(cont,*, arg : str):
@@ -71,7 +54,7 @@ async def kill(cont):
                 Awriter.writerow([x,userData[x]["money"],userData[x]["perms"],userData[x]["daily"],userData[x]["title"]])
         await bot.say("Ready to be killed.")
     else:
-        log.write(time()+cont.message.author," tried to kill bot")
+        log.write(time()+ str(cont.message.author) + " tried to kill bot")
         await bot.say(":negative_squared_cross_mark: | You do not have permission to kill the bot. Your attempt has been logged.")
 
 @bot.command(pass_context = True)
@@ -81,7 +64,7 @@ async def balance(cont,*arg0):
         fixed = arg0.replace("<@","").replace(">","").replace("!","")
         await bot.say(":atm: | **"+ arg0 +"** has **"+ str(userData[fixed]["money"]) +"** :euro:")
     else:
-        await bot.say(":atm: | **"+ str(cont.message.author.nick) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
+        await bot.say(":atm: | **"+ str(cont.message.author) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
 
 @bot.command(pass_context = True)
 async def add(cont, arg0 : str, arg1 : int, arg2 : str):
@@ -120,18 +103,6 @@ async def setStats(cont, arg0):
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
 
-# @bot.command(pass_context = True)
-# async def setAll():
-#     print(cont.message.author.)
-
-# @bot.command()
-# async def test(arg0):
-#     server = discord.Server()
-#     fixed = arg0.replace("<@!","").replace(">","")
-#     user = server.get_member(fixed)
-#     print(user)
-#     await bot.say(user)
-
 @bot.command(pass_context = True)
 async def h(cont, *arg0):
     log.write(time()+str(cont.message.author)+"used help")
@@ -167,11 +138,66 @@ async def info(cont, *arg0):
     else:
         userID = str(cont.message.author.id)
 
-    await bot.say(""" :id: User Info :id:
-        **User Title**: """ + userData[userID]["title"] + """
-        **User Perms Level**: """ + str(userData[userID]["perms"]) + """
-        **User Balance**: """ + str(userData[userID]["money"]) + """
-        **User ID**: """ + str(userID))
+    await bot.say(""":id: User Info :id:
+    **User Title**: """ + userData[userID]["title"] + """
+    **User Perms Level**: """ + str(userData[userID]["perms"]) + """
+    **User Balance**: """ + str(userData[userID]["money"]) + """
+    **User ID**: """ + str(userID))
+
+@bot.command(pass_context = True)
+async def tarot(cont, *arg0):
+    log.write(time()+str(cont.message.author)+" used tarot")
+    myList = []
+    count = 0
+    while count != 3:
+        num = random.randint(0,43)
+        if num not in myList:
+            myList.append(num)
+            count += 1
+
+    await bot.say(""":white_flower: | Settle down now and let Tatsumaki see your future my dear """+ cont.message.author.nick + """...
+**Card #1:** """ + tarotList[myList[0]] +"""
+**Card #2:** """ + tarotList[myList[1]] +"""
+**Card #3:** """ + tarotList[myList[2]] +"""
+__*That is your fate, none can change it for better or worst.*__
+(**Not to be taken seriously**) """)
+
+@bot.command(pass_context = True)
+async def rr(cont, *arg0 : int):
+    log.write(time()+str(cont.message.author)+" used rr")
+    num1 = 7
+    try:
+        num1 = int(arg0[0]) 
+    except Exception:
+        pass
+
+    if num1 > 0 and num1 < 6:
+        bullets = num1
+    else:
+        bullets = 5
+
+    await bot.say(""":gun: | You insert """+ str(bullets) + """ bullets give the barrel a good spin and put the gun against your temple...
+:persevere: | You take a deep breath... and pull the trigger!""")
+
+    if random.randint(1,6) <= bullets:
+        await bot.say(":boom: | You weren't so lucky this time. Rest in peace my friend.")
+    else:
+        await bot.say(":ok: | Looks like you'll last the night, hopefully your friends do too.")
+
+@bot.command(pass_context = True)
+async def lotrfact(cont, *agr0):
+    num1 = random.randint(0,59)
+    await bot.say(":trident: | **Fact #"+str(num1)+"**: "+lotrList[num1])
+
+@bot.command(pass_context = True)
+async def setAll(cont, arg0):
+    membersServer = server.members
+    print(membersServer)
+    # for x in server.members:
+    #     if x.id not in userData:
+    #         userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '26'}
+    #         await bot.say("Stats set for user")
+            
 
 bot.run('MzE3NjE5MjgzMzc3MjU4NDk3.DAo8eQ.dmwPhH-zuqm5XzBhPjk_0nmitks')
 
