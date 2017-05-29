@@ -12,9 +12,11 @@ import wikia
 bot = commands.Bot(command_prefix='!')
 log = open("data/logfile.txt","a+")
 userData = dict()
-canAnswer = False
-riddleAnswer = ""
-timer = 0
+
+
+#*****************************************************************************************************************
+# Initialize
+#*****************************************************************************************************************
 
 with open("data/userdata.csv","r") as f:
     reader = csv.reader(f)
@@ -31,19 +33,18 @@ async def on_ready():
     await bot.change_presence(game=discord.Game(name='!h for help'))
 
 
+#*****************************************************************************************************************
+# Internal Function
+#*****************************************************************************************************************
+
 def time():
     localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
     return localtime
 
-@bot.command(pass_context = True)
-async def calc(cont,*, arg : str):
-    action = str(time() + str(cont.message.author.name) + " used calc with message:" + arg)
-    log.write(action)
-    try:
-        final = eval(arg)
-        await bot.say(final)
-    except NameError:
-        await bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
+
+#*****************************************************************************************************************
+# Admin Commands
+#*****************************************************************************************************************
 
 @bot.command(pass_context = True)
 async def kill(cont):
@@ -59,15 +60,6 @@ async def kill(cont):
     else:
         log.write(time()+ str(cont.message.author) + " tried to kill bot")
         await bot.say(":negative_squared_cross_mark: | You do not have permission to kill the bot. Your attempt has been logged.")
-
-@bot.command(pass_context = True)
-async def balance(cont,*arg0):
-    log.write(time()+str(cont.message.author)+" used balance")
-    if arg0:
-        fixed = arg0.replace("<@","").replace(">","").replace("!","")
-        await bot.say(":atm: | **"+ arg0 +"** has **"+ str(userData[fixed]["money"]) +"** :euro:")
-    else:
-        await bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
 
 @bot.command(pass_context = True)
 async def add(cont, arg0 : str, arg1 : int, arg2 : str):
@@ -86,17 +78,6 @@ async def add(cont, arg0 : str, arg1 : int, arg2 : str):
         await bot.say(":negative_squared_cross_mark: | You do not have the permission to use this command.")
 
 @bot.command(pass_context = True)
-async def claim(cont):
-    log.write(time()+str(cont.message.author)+" used claim")
-    aDay = str(d.datetime.today().day)
-    if aDay != userData[cont.message.author.id]["daily"]:
-        await bot.say(":m: | You have received your daily **200** :euro:")
-        userData[cont.message.author.id]["money"] += 200
-        userData[cont.message.author.id]["daily"] = aDay
-    else:
-        await bot.say(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
-
-@bot.command(pass_context = True)
 async def setStats(cont, arg0):
     log.write(time()+str(cont.message.author)+" used setStats with args: "+str(arg0))
     if userData[cont.message.author.id]["perms"] > 3:
@@ -105,14 +86,6 @@ async def setStats(cont, arg0):
         await bot.say("Stats set for user")
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
-
-@bot.command(pass_context = True)
-async def h(cont, *arg0):
-    log.write(time()+str(cont.message.author)+"used help")
-    if arg0:
-        pass
-    else:
-        await bot.say(helpVar)
 
 @bot.command(pass_context = True)
 async def perms(cont, arg0 : str,*, arg1 : str):
@@ -128,6 +101,59 @@ async def perms(cont, arg0 : str,*, arg1 : str):
     return await bot.say(":negative_squared_cross_mark: | This title cannot be granted.")
 
 @bot.command(pass_context = True)
+async def setAll(cont, *arg0):
+    log.write(time()+str(cont.message.author)+" used setAll")
+    if userData[cont.message.author.id]["perms"] > 3:
+        membersServer = bot.get_all_members()
+        for x in membersServer:
+            if x.id not in userData:
+                log.write(time()+" set stats for"+x)
+                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
+                await bot.say("Stats set for user: "+str(x.name))
+
+
+#*****************************************************************************************************************
+# Regular Commands
+#*****************************************************************************************************************
+
+@bot.command(pass_context = True)
+async def calc(cont,*, arg : str):
+    log.write(time() + str(cont.message.author.name) + " used calc with message:" + arg)
+    try:
+        final = eval(arg)
+        await bot.say(final)
+    except NameError:
+        await bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
+
+@bot.command(pass_context = True)
+async def balance(cont,*arg0):
+    log.write(time()+str(cont.message.author)+" used balance")
+    if arg0:
+        fixed = arg0.replace("<@","").replace(">","").replace("!","")
+        await bot.say(":atm: | **"+ arg0 +"** has **"+ str(userData[fixed]["money"]) +"** :euro:")
+    else:
+        await bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
+
+@bot.command(pass_context = True)
+async def claim(cont):
+    log.write(time()+str(cont.message.author)+" used claim")
+    aDay = str(d.datetime.today().day)
+    if aDay != userData[cont.message.author.id]["daily"]:
+        await bot.say(":m: | You have received your daily **200** :euro:")
+        userData[cont.message.author.id]["money"] += 200
+        userData[cont.message.author.id]["daily"] = aDay
+    else:
+        await bot.say(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
+
+@bot.command(pass_context = True)
+async def h(cont, *arg0):
+    log.write(time()+str(cont.message.author)+"used help")
+    if arg0:
+        pass
+    else:
+        await bot.say(helpVar)
+
+@bot.command(pass_context = True)
 async def info(cont, *arg0):
     log.write(time()+str(cont.message.author)+" used info")
     if arg0:
@@ -135,11 +161,7 @@ async def info(cont, *arg0):
     else:
         userID = str(cont.message.author.id)
 
-    await bot.say(""":id: User Info :id:
-    **User Title**: """ + userData[userID]["title"] + """
-    **User Perms Level**: """ + str(userData[userID]["perms"]) + """
-    **User Balance**: """ + str(userData[userID]["money"]) + """
-    **User ID**: """ + str(userID))
+    await bot.say(""":id: User Info :id:\n**User Title**: """ + userData[userID]["title"] + """\n**User Perms Level**: """ + str(userData[userID]["perms"]) + """\n**User Balance**: """ + str(userData[userID]["money"]) + """\n**User ID**: """ + str(userID))
 
 @bot.command(pass_context = True)
 async def tarot(cont, *arg0):
@@ -152,12 +174,7 @@ async def tarot(cont, *arg0):
             myList.append(num)
             count += 1
 
-    await bot.say(""":white_flower: | Settle down now and let Tatsumaki see your future my dear """+ cont.message.author.nick + """...
-**Card #1:** """ + tarotList[myList[0]] +"""
-**Card #2:** """ + tarotList[myList[1]] +"""
-**Card #3:** """ + tarotList[myList[2]] +"""
-__*That is your fate, none can change it for better or worst.*__
-(**Not to be taken seriously**) """)
+    await bot.say(""":white_flower: | Settle down now and let Tatsumaki see your future my dear """+ cont.message.author.nick + """...\n**Card #1:** """ + tarotList[myList[0]] +"""\n**Card #2:** """ + tarotList[myList[1]] +"""\n**Card #3:** """ + tarotList[myList[2]] +"""\n__*That is your fate, none can change it for better or worst.*__\n(**Not to be taken seriously**) """)
 
 @bot.command(pass_context = True)
 async def rr(cont, *arg0 : int):
@@ -187,17 +204,6 @@ async def lotrfact(cont, *agr0):
     await bot.say(":trident: | **Fact #"+str(num1)+"**: "+lotrList[num1])
 
 @bot.command(pass_context = True)
-async def setAll(cont, *arg0):
-    log.write(time()+str(cont.message.author)+" used setAll")
-    if userData[cont.message.author.id]["perms"] > 3:
-        membersServer = bot.get_all_members()
-        for x in membersServer:
-            if x.id not in userData:
-                log.write(time()+" set stats for"+x)
-                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
-                await bot.say("Stats set for user: "+str(x.name))
-
-@bot.command(pass_context = True)
 async def edain(cont,*,arg0 : str):
     log.write(time()+str(cont.message.author)+" used edain with args: "+arg0)
     try:
@@ -224,6 +230,11 @@ async def lotr(cont,*,arg0 : str):
             await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
         except Exception:
             await bot.say("Article not found, and search didn't return any result. Please try again with different terms.")
+
+
+#*****************************************************************************************************************
+# Moderation Features
+#*****************************************************************************************************************
 
 @bot.event
 async def on_message_delete(message):
