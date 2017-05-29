@@ -24,7 +24,7 @@ __Admin Commands__
 __Moderation Features__
 * **Message Deletion Tracking** - tracks deleted messages and prints deleted messages in a separate channel
 * **Message Edition Tracking** - tracks edits made to message and prints the before and after in a separate channel
-* **User Wlecome** - welcome new users
+* **User Welcome** - welcome new users
 
 Join to see in action: https://discord.gg/sce7jmB
 
