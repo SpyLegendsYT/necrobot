@@ -66,3 +66,6 @@ Sun May 28 19:36:57 2017: Necro#6714 used balance
 Sun May 28 19:37:27 2017: NoDigit#7595 used calc with message:5/3
 Sun May 28 19:37:48 2017: NoDigit#7595 used calc with message:(10/7)**4
 Sun May 28 19:37:53 2017: Necro killed bot
+Sun May 28 20:38:28 2017: NoDigit#7595 used balance
+Mon May 29 02:01:06 2017: Necro#6714 used edain with args: Halberdiers
+Mon May 29 02:02:50 2017: Necro killed bot

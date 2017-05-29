@@ -7,6 +7,7 @@ import sys
 import time as t
 import datetime as d
 from var import *
+import wikia
 
 bot = commands.Bot(command_prefix='!')
 server = discord.Server
@@ -176,8 +177,7 @@ async def rr(cont, *arg0 : int):
     else:
         bullets = 5
 
-    await bot.say(""":gun: | You insert """+ str(bullets) + """ bullets give the barrel a good spin and put the gun against your temple...
-:persevere: | You take a deep breath... and pull the trigger!""")
+    await bot.say(":gun: | You insert "+ str(bullets) + " bullets give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!")
 
     if random.randint(1,6) <= bullets:
         await bot.say(":boom: | You weren't so lucky this time. Rest in peace my friend.")
@@ -189,15 +189,27 @@ async def lotrfact(cont, *agr0):
     num1 = random.randint(0,59)
     await bot.say(":trident: | **Fact #"+str(num1)+"**: "+lotrList[num1])
 
+# @bot.command(pass_context = True)
+# async def setAll(cont, arg0):
+#     membersServer = server.members
+#     print(membersServer)
+#     # for x in server.members:
+#     #     if x.id not in userData:
+#     #         userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '26'}
+#     #         await bot.say("Stats set for user")
+
 @bot.command(pass_context = True)
-async def setAll(cont, arg0):
-    membersServer = server.members
-    print(membersServer)
-    # for x in server.members:
-    #     if x.id not in userData:
-    #         userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '26'}
-    #         await bot.say("Stats set for user")
-            
+async def edain(cont,*,arg0 : str):
+    log.write(time()+str(cont.message.author)+" used edain with args: "+arg0)
+
+    try:
+        article = wikia.page("Edain", arg0)
+        url = article.url.replace(" ","_")
+        await bot.say(" **"+article.title+"** on Edain Wiki \n" + article.summary + " \nMore at: "+ url)
+    except Exception:
+        article = wikia.search("Edain", arg0)
+        await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
+    
 
 bot.run('MzE3NjE5MjgzMzc3MjU4NDk3.DAo8eQ.dmwPhH-zuqm5XzBhPjk_0nmitks')
 
