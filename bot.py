@@ -10,10 +10,11 @@ from var import *
 import wikia
 
 bot = commands.Bot(command_prefix='!')
-server = discord.Server
-
 log = open("data/logfile.txt","a+")
 userData = dict()
+canAnswer = False
+riddleAnswer = ""
+timer = 0
 
 with open("data/userdata.csv","r") as f:
     reader = csv.reader(f)
@@ -36,7 +37,7 @@ def time():
 
 @bot.command(pass_context = True)
 async def calc(cont,*, arg : str):
-    action = str(time() + str(cont.message.author) + " used calc with message:" + arg)
+    action = str(time() + str(cont.message.author.name) + " used calc with message:" + arg)
     log.write(action)
     try:
         final = eval(arg)
@@ -53,7 +54,8 @@ async def kill(cont):
             Awriter = csv.writer(csvfile)
             for x in userData:
                 Awriter.writerow([x,userData[x]["money"],userData[x]["perms"],userData[x]["daily"],userData[x]["title"]])
-        await bot.say("Ready to be killed.")
+        await bot.say("Bot Killed.")
+        sys.exit()
     else:
         log.write(time()+ str(cont.message.author) + " tried to kill bot")
         await bot.say(":negative_squared_cross_mark: | You do not have permission to kill the bot. Your attempt has been logged.")
@@ -65,7 +67,7 @@ async def balance(cont,*arg0):
         fixed = arg0.replace("<@","").replace(">","").replace("!","")
         await bot.say(":atm: | **"+ arg0 +"** has **"+ str(userData[fixed]["money"]) +"** :euro:")
     else:
-        await bot.say(":atm: | **"+ str(cont.message.author) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
+        await bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
 
 @bot.command(pass_context = True)
 async def add(cont, arg0 : str, arg1 : int, arg2 : str):
@@ -99,7 +101,7 @@ async def setStats(cont, arg0):
     log.write(time()+str(cont.message.author)+" used setStats with args: "+str(arg0))
     if userData[cont.message.author.id]["perms"] > 3:
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
-        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '26'}
+        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
         await bot.say("Stats set for user")
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
@@ -112,10 +114,6 @@ async def h(cont, *arg0):
     else:
         await bot.say(helpVar)
 
-# @bot.command(pass_context = True)
-# async def transfer(cont, arg0 : int, arg1 : str):
-#     log.write(time()+str(cont.message.author)+"used transfer with args: "+str(arg0)+" and "+arg1)
-
 @bot.command(pass_context = True)
 async def perms(cont, arg0 : str,*, arg1 : str):
     log.write(time()+str(cont.message.author)+"used perms with args: "+arg0+" and "+arg1)
@@ -127,8 +125,6 @@ async def perms(cont, arg0 : str,*, arg1 : str):
             return await bot.say("All good to go, **"+ arg0 + "** is now **"+ arg1 + "** with permission level **"+ str(userData[arg0Fixed]["perms"]) + "**")
         elif x in arg1.lower() and userData[cont.message.author.id]["perms"] <= permsDict[x]:
             return await bot.say(":negative_squared_cross_mark: | You do not have sufficient permissions to grant this title")
-
-
     return await bot.say(":negative_squared_cross_mark: | This title cannot be granted.")
 
 @bot.command(pass_context = True)
@@ -172,7 +168,7 @@ async def rr(cont, *arg0 : int):
     except Exception:
         pass
 
-    if num1 > 0 and num1 < 6:
+    if num1 > 0 and num1 <= 6:
         bullets = num1
     else:
         bullets = 5
@@ -186,30 +182,64 @@ async def rr(cont, *arg0 : int):
 
 @bot.command(pass_context = True)
 async def lotrfact(cont, *agr0):
+    log.write(time()+str(cont.message.author)+" used lotrfact")
     num1 = random.randint(0,59)
     await bot.say(":trident: | **Fact #"+str(num1)+"**: "+lotrList[num1])
 
-# @bot.command(pass_context = True)
-# async def setAll(cont, arg0):
-#     membersServer = server.members
-#     print(membersServer)
-#     # for x in server.members:
-#     #     if x.id not in userData:
-#     #         userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '26'}
-#     #         await bot.say("Stats set for user")
+@bot.command(pass_context = True)
+async def setAll(cont, *arg0):
+    log.write(time()+str(cont.message.author)+" used setAll")
+    if userData[cont.message.author.id]["perms"] > 3:
+        membersServer = bot.get_all_members()
+        for x in membersServer:
+            if x.id not in userData:
+                log.write(time()+" set stats for"+x)
+                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
+                await bot.say("Stats set for user: "+str(x.name))
 
 @bot.command(pass_context = True)
 async def edain(cont,*,arg0 : str):
     log.write(time()+str(cont.message.author)+" used edain with args: "+arg0)
-
     try:
         article = wikia.page("Edain", arg0)
         url = article.url.replace(" ","_")
         await bot.say(" **"+article.title+"** on Edain Wiki \n" + article.summary + " \nMore at: "+ url)
     except Exception:
-        article = wikia.search("Edain", arg0)
-        await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
-    
+        try:
+            article = wikia.search("Edain", arg0)
+            await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
+        except Exception:
+            await bot.say("Article not found, and search didn't return any result. Please try again with different terms.")
+
+@bot.command(pass_context = True)
+async def lotr(cont,*,arg0 : str):
+    log.write(time()+str(cont.message.author)+" used lotr with args: "+arg0)
+    try:
+        article = wikia.page("lotr", arg0)
+        url = article.url.replace(" ","_")
+        await bot.say(" **"+article.title+"** on LOTR Wiki \n" + article.summary + " \nMore at: "+ url)
+    except Exception:
+        try:
+            article = wikia.search("lotr", arg0)
+            await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
+        except Exception:
+            await bot.say("Article not found, and search didn't return any result. Please try again with different terms.")
+
+@bot.event
+async def on_message_delete(message):
+    fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message:\n```\n{0.content}\n```'
+    await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(message))
+
+@bot.event
+async def on_message_edit(before, after):
+    fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message:\n```\n{1.content}\n{0.content}\n```'
+    await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(after, before))
+
+@bot.event
+async def on_member_join(member):
+    server = member.server
+    fmt = 'Welcome {0.mention} to {1.name}!'
+    await bot.send_message(bot.get_channel("318738044515647498"), fmt.format(member, server))
+    userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
 
 bot.run('MzE3NjE5MjgzMzc3MjU4NDk3.DAo8eQ.dmwPhH-zuqm5XzBhPjk_0nmitks')
-
