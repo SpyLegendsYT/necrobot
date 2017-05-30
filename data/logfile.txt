@@ -214,3 +214,19 @@ Tue May 30 01:32:01 2017: Necro killed bot
 Tue May 30 02:05:49 2017: Necro#6714 used info
 Tue May 30 02:07:24 2017: Necro#6714 used help
 Tue May 30 03:01:30 2017: Necro killed bot
+Tue May 30 11:03:38 2017: Necro killed bot
+Tue May 30 11:05:34 2017: Necro#6714 used tarot
+Tue May 30 11:12:25 2017: Necro killed bot
+Tue May 30 11:13:18 2017: Necro killed bot
+Tue May 30 11:14:19 2017: Necro#6714 used tarot
+Tue May 30 11:14:54 2017: Elf_in_silver_armor#6462 used tarot
+Tue May 30 11:17:11 2017: Necro killed bot
+Tue May 30 11:26:56 2017: Necro#6714 used ignore
+Tue May 30 11:28:19 2017: Necro killed bot
+Tue May 30 11:29:41 2017: Necro#6714 used ignore
+Tue May 30 11:32:59 2017: Necro killed bot
+Tue May 30 12:56:42 2017: Finrod#5887 tried to kill bot
+Tue May 30 12:57:32 2017: Necro killed bot
+Tue May 30 12:58:29 2017: Necro killed bot
+Tue May 30 12:59:00 2017: Necro killed bot
+Tue May 30 13:18:18 2017: Necro killed bot
