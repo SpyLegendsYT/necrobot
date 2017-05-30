@@ -10,6 +10,17 @@ __Command List (may not always be up to date)__
 `!edain [article]` - search for an article on the Edain wiki. Content will be displayed if found, else a list of relevant articles will be provided.
 `!lotrfact` - prints one of sixty lotr facts at random.
 `!rr [int]` - a good old game of russian roulette. Provide an int between 1 and 6. If none are provided will default to 5.
+`!lotr [article]` - search for an article on the LOTR wiki. Content will be displayed if found, else a list of relevant articles will be provided.
+`!info [@User]` - check your info (if no argument is provided) or the info of another user
+`!tarot` - reads your fate in the cards using the art of tarology
+
+__Admin Commands__
+`!kill` - saves all the files and sys.exit() the bot
+`!add [operator] [intenger] [@User]` - adds [operator][intenger] to the balance of [@User]
+`!setStats [@User]` - sets default stats for @User
+`!perms [@User] [Title]` - sets title, which is also responsible for permission level
+`!setAll` - sets the default stats for all user not already registered on the server
+
 
 Attempt to not break the bot please. And good day."""
 
@@ -24,3 +35,9 @@ lotrList = ["J.R.R. Tolkien, the author of Lord of the Rings didn’t invent the
 
 #Riddles: 8
 riddlesList = [["What has roots as nobody sees,\nIs taller than trees,\nUp, up it goes,\nAnd yet never grows?", "mountain"], ["Thirty white horses on a red hill,\nFirst they champ,\nThen they stamp,\nThen they stand still.", "teeth"], ["Voiceless it cries,\nWingless flutters,\nToothless bites,\nMouthless mutters.", "wind"],["An eye in a blue face\nSaw an eye in a green face.\n'That eye is like to this eye'\nSaid the first eye,\n'But in low place,\nNot in high place.'","sun"],["It cannot be seen, cannot be felt,\nCannot be heard, cannot be smelt.\nIt lies behind stars and under hills,\nAnd empty holes it fills.\nIt comes first and follows after,\nEnds life, kills laughter.","dark"],["A box without hinges, key, or lid,\nYet golden treasure inside is hid.","egg"],["Alive without breath,\nAs cold as death;\nNever thirsty, ever drinking,\nAll in mail never clinking.","fish"],["This thing all things devours:\nBirds, beasts, trees, flowers;\nGnaws iron, bites steel;\nGrinds hard stones to meal;\nSlays king, ruins town,\nAnd beats high mountain down.","time"]]
+
+#Ignore List
+ignoreList = ["172002275412279296","317619283377258497"]
+
+#Auto-mod channels
+automodChannel = {"311630847969198082":"318828760331845634"}

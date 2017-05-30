@@ -21,7 +21,7 @@ userData = dict()
 with open("data/userdata.csv","r") as f:
     reader = csv.reader(f)
     for row in reader:
-        userData[row[0]] = {"money":int(row[1]),"perms":int(row[2]),"daily":row[3],"title":row[4]}
+        userData[row[0]] = {"money":int(row[1]),"perms":int(row[2]),"daily":row[3],"title":row[4],"exp":int(row[5])}
 
 @bot.event
 async def on_ready():
@@ -31,6 +31,7 @@ async def on_ready():
     print(userData)
     print('------')
     await bot.change_presence(game=discord.Game(name='!h for help'))
+    await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Online**")
 
 
 #*****************************************************************************************************************
@@ -40,6 +41,14 @@ async def on_ready():
 def time():
     localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
     return localtime
+
+def reply(message):
+    if "hello" in message.content.lower():
+        botReply = "Hello to you too, " + str(message.author.name)
+    else:
+        botReply = "I'm sorry, I don't understand."
+
+    return botReply
 
 
 #*****************************************************************************************************************
@@ -54,7 +63,7 @@ async def kill(cont):
         with open("data/userdata.csv","w",newline="") as csvfile:
             Awriter = csv.writer(csvfile)
             for x in userData:
-                Awriter.writerow([x,userData[x]["money"],userData[x]["perms"],userData[x]["daily"],userData[x]["title"]])
+                Awriter.writerow([x,userData[x]["money"],userData[x]["perms"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"]])
         await bot.say("Bot Killed.")
         sys.exit()
     else:
@@ -82,7 +91,7 @@ async def setStats(cont, arg0):
     log.write(time()+str(cont.message.author)+" used setStats with args: "+str(arg0))
     if userData[cont.message.author.id]["perms"] > 3:
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
-        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
+        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0}
         await bot.say("Stats set for user")
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
@@ -107,8 +116,8 @@ async def setAll(cont, *arg0):
         membersServer = bot.get_all_members()
         for x in membersServer:
             if x.id not in userData:
-                log.write(time()+" set stats for"+x)
-                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
+                log.write(time()+" set stats for "+str(x.name))
+                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0}
                 await bot.say("Stats set for user: "+str(x.name))
 
 
@@ -129,6 +138,7 @@ async def calc(cont,*, arg : str):
 async def balance(cont,*arg0):
     log.write(time()+str(cont.message.author)+" used balance")
     if arg0:
+        arg0 = arg0[0]
         fixed = arg0.replace("<@","").replace(">","").replace("!","")
         await bot.say(":atm: | **"+ arg0 +"** has **"+ str(userData[fixed]["money"]) +"** :euro:")
     else:
@@ -147,7 +157,7 @@ async def claim(cont):
 
 @bot.command(pass_context = True)
 async def h(cont, *arg0):
-    log.write(time()+str(cont.message.author)+"used help")
+    log.write(time()+str(cont.message.author)+" used help")
     if arg0:
         pass
     else:
@@ -157,11 +167,12 @@ async def h(cont, *arg0):
 async def info(cont, *arg0):
     log.write(time()+str(cont.message.author)+" used info")
     if arg0:
+        arg0 = arg0[0]
         userID = arg0.replace("<@","").replace(">","").replace("!","")
     else:
         userID = str(cont.message.author.id)
 
-    await bot.say(""":id: User Info :id:\n**User Title**: """ + userData[userID]["title"] + """\n**User Perms Level**: """ + str(userData[userID]["perms"]) + """\n**User Balance**: """ + str(userData[userID]["money"]) + """\n**User ID**: """ + str(userID))
+    await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]))
 
 @bot.command(pass_context = True)
 async def tarot(cont, *arg0):
@@ -174,7 +185,7 @@ async def tarot(cont, *arg0):
             myList.append(num)
             count += 1
 
-    await bot.say(""":white_flower: | Settle down now and let Tatsumaki see your future my dear """+ cont.message.author.nick + """...\n**Card #1:** """ + tarotList[myList[0]] +"""\n**Card #2:** """ + tarotList[myList[1]] +"""\n**Card #3:** """ + tarotList[myList[2]] +"""\n__*That is your fate, none can change it for better or worst.*__\n(**Not to be taken seriously**) """)
+    await bot.say(":white_flower: | Settle down now and let Tatsumaki see your future my dear "+ cont.message.author.nick + "...\n**Card #1:** " + tarotList[myList[0]] +"\n**Card #2:** " + tarotList[myList[1]] +"\n**Card #3:** " + tarotList[myList[2]] +"\n__*That is your fate, none can change it for better or worst.*__\n(**Not to be taken seriously**) ")
 
 @bot.command(pass_context = True)
 async def rr(cont, *arg0 : int):
@@ -238,19 +249,31 @@ async def lotr(cont,*,arg0 : str):
 
 @bot.event
 async def on_message_delete(message):
-    fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message:\n```\n{0.content}\n```'
-    await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(message))
+    if message.author.id in ignoreList:
+        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message:\n```\n{0.content}\n```'
+        await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(message))
 
 @bot.event
 async def on_message_edit(before, after):
-    fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message:\n```\n{1.content}\n{0.content}\n```'
-    await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(after, before))
+    if before.author.id in ignoreList:
+        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message:\n```\n{1.content}\n{0.content}\n```'
+        await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(after, before))
 
 @bot.event
 async def on_member_join(member):
     server = member.server
     fmt = 'Welcome {0.mention} to {1.name}!'
     await bot.send_message(bot.get_channel("318738044515647498"), fmt.format(member, server))
-    userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant'}
+    userData[member.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0}
+
+@bot.event
+async def on_message(message):
+    if message.content[0] != "!":
+        userData[message.author.id]["exp"] += 2
+    
+    if "317619283377258497" in message.raw_mentions:
+        await bot.send_message(message.channel, reply(message))
+
+    await bot.process_commands(message)
 
 bot.run('MzE3NjE5MjgzMzc3MjU4NDk3.DAo8eQ.dmwPhH-zuqm5XzBhPjk_0nmitks')
