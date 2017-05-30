@@ -144,7 +144,7 @@ Tue May 30 00:01:47 2017: Necro killed bot
 Tue May 30 00:02:34 2017: Necro killed bot
 Tue May 30 00:01:58 2017: Necro#6714 used lotr with args: Manwe
 Tue May 30 00:02:34 2017: Necro killed bot
-Tue May 30 00:02:59 2017: Necro#6714 used lotr with args: Manwë
+Tue May 30 00:02:59 2017: Necro#6714 used lotr with args: Manw?
 Tue May 30 00:22:29 2017: Necro killed bot
 Tue May 30 00:24:20 2017: Necro killed bot
 Tue May 30 00:23:53 2017: Necro#6714 used setAll
@@ -211,3 +211,6 @@ Tue May 30 01:29:29 2017: Necro killed bot
 Tue May 30 01:30:23 2017: Necro killed bot
 Tue May 30 01:31:30 2017: Necro killed bot
 Tue May 30 01:32:01 2017: Necro killed bot
+Tue May 30 02:05:49 2017: Necro#6714 used info
+Tue May 30 02:07:24 2017: Necro#6714 used help
+Tue May 30 03:01:30 2017: Necro killed bot
