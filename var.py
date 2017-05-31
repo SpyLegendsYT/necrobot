@@ -18,7 +18,7 @@ __Admin Commands__
 `!kill` - saves all the files and sys.exit() the bot
 `!add [operator] [intenger] [@User]` - adds [operator][intenger] to the balance of [@User]
 `!setStats [@User]` - sets default stats for @User
-`!perms [@User] [Title]` - sets title, which is also responsible for permission level
+`!perms [@User] [permsKeyWord] [Title]` - sets title, which is also responsible for permission level
 `!setAll` - sets the default stats for all user not already registered on the server
 
 

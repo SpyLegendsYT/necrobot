@@ -230,3 +230,24 @@ Tue May 30 12:57:32 2017: Necro killed bot
 Tue May 30 12:58:29 2017: Necro killed bot
 Tue May 30 12:59:00 2017: Necro killed bot
 Tue May 30 13:18:18 2017: Necro killed bot
+Tue May 30 21:21:59 2017: Necro#6714 used claim
+Tue May 30 21:37:00 2017: Elf_in_silver_armor#6462 used claim
+Tue May 30 21:43:57 2017: Necro killed bot
+Tue May 30 22:12:14 2017: Necro killed bot
+Tue May 30 22:24:53 2017: Necro killed bot
+Tue May 30 22:40:17 2017: Necro killed bot
+Tue May 30 22:55:24 2017: Necro#6714 used help
+Tue May 30 22:56:07 2017: Necro#6714 used info
+Tue May 30 23:49:20 2017: Necro killed bot
+Wed May 31 00:06:26 2017: Necro killed bot
+Wed May 31 00:10:12 2017: Necro killed bot
+Wed May 31 00:10:45 2017: Necro killed bot
+Wed May 31 00:11:19 2017: Necro killed bot
+Wed May 31 00:11:19 2017: Necro killed bot
+Wed May 31 00:12:40 2017: Necro killed bot
+Wed May 31 00:14:02 2017: Necro killed bot
+Wed May 31 00:15:20 2017: Elf_in_silver_armor#6462 used info
+Wed May 31 00:15:36 2017: Necro killed bot
+Wed May 31 00:17:18 2017: Necro#6714 used info
+Wed May 31 00:18:02 2017: Necro#6714used perms with args: <@!271259290415792129>, admin and Lord of Rivendell
+Wed May 31 00:19:05 2017: Necro killed bot

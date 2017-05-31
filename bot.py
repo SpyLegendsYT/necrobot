@@ -5,6 +5,7 @@ import csv
 import random
 import sys
 import time as t
+import calendar as c
 import datetime as d
 from var import *
 import wikia
@@ -12,6 +13,7 @@ import wikia
 bot = commands.Bot(command_prefix='!')
 log = open("data/logfile.txt","a+")
 userData = dict()
+chatbot = ChatBot("NecroBot")
 
 
 #*****************************************************************************************************************
@@ -21,7 +23,7 @@ userData = dict()
 with open("data/userdata.csv","r") as f:
     reader = csv.reader(f)
     for row in reader:
-        userData[row[0]] = {"money":int(row[1]),"perms":int(row[2]),"daily":row[3],"title":row[4],"exp":int(row[5]),"lastMessage":""}
+        userData[row[0]] = {"money":int(row[1]),"perms":int(row[2]),"daily":row[3],"title":row[4],"exp":int(row[5]),"lastMessage":"","lastMessageTime":0}
 
 @bot.event
 async def on_ready():
@@ -47,7 +49,6 @@ def reply(message):
         botReply = "Hello to you too, " + str(message.author.name)
     else:
         botReply = "I'm sorry, I don't understand."
-
     return botReply
 
 
@@ -91,7 +92,7 @@ async def setStats(cont, arg0):
     log.write(time()+str(cont.message.author)+" used setStats with args: "+str(arg0))
     if userData[cont.message.author.id]["perms"] > 3:
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
-        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0,'lastMessage':''}
+        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0,'lastMessage':'','lastMessageTime':0}
         await bot.say("Stats set for user")
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
@@ -117,7 +118,7 @@ async def setAll(cont, *arg0):
         for x in membersServer:
             if x.id not in userData:
                 log.write(time()+" set stats for "+str(x.name))
-                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0,'lastMessage':''}
+                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0,'lastMessage':'','lastMessageTime':0}
                 await bot.say("Stats set for user: "+str(x.name))
 
 @bot.command(pass_context = True)
@@ -134,6 +135,17 @@ async def ignored(cont, *arg0):
         myList.append(bot.get_server(cont.message.server.id).get_member(x).name)
 
     await bot.say("Users ignored by NecroBot Automoderation:\n```\n"+str(myList)+"\n```")
+
+@bot.command(pass_context = True)
+async def mute(cont, arg0):
+    log.write(time()+str(cont.message.author)+" used mute")
+    role = discord.utils.get(cont.message.server.roles, name="TimeOut")
+    if userData[cont.message.author.id]["perms"] > 1:
+        for x in cont.message.mentions:
+            await bot.add_roles(x, role)
+            await bot.send_message(bot.get_channel("318828760331845634"),"User: **{0}** has been muted".format(x))
+    else:
+        await bot.say("You don't have the neccessary permissions to mute a user.")
 
 
 
@@ -266,13 +278,13 @@ async def lotr(cont,*,arg0 : str):
 @bot.event
 async def on_message_delete(message):
     if message.author.id not in ignoreUserList:
-        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message:\n```\n{0.content}\n```'
+        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message:```{0.content}```'
         await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(message))
 
 @bot.event
 async def on_message_edit(before, after):
     if before.author.id not in ignoreUserList:
-        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message:\n```\n{1.content}\n{0.content}\n```'
+        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message:```{1.content}\n{0.content}```'
         await bot.send_message(bot.get_channel("318828760331845634"), fmt.format(after, before))
 
 @bot.event
@@ -280,15 +292,17 @@ async def on_member_join(member):
     server = member.server
     fmt = 'Welcome {0.mention} to {1.name}!'
     await bot.send_message(bot.get_channel("318738044515647498"), fmt.format(member, server))
-    userData[member.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0}
+    if member.id not in userData:
+        userData[member.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':'Peasant','exp':0}
 
 @bot.event
 async def on_message(message):
-    if message.content == userData[message.author.id]['lastMessage']:
-        await bot.send_message(bot.get_channel("318828760331845634"), "User: {0.author} spammed message:\n```\n{0.content}\n```".format(message))
+    if message.content == userData[message.author.id]['lastMessage'] or userData[message.author.id]['lastMessageTime'] > c.timegm(t.gmtime()):
+        await bot.send_message(bot.get_channel("318828760331845634"), "User: {0.author} spammed message:```{0.content}```\n".format(message))
         await bot.delete_message(message)
     else:
         userData[message.author.id]['lastMessage'] = message.content
+        userData[message.author.id]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
         if message.content[0] != "!":
             userData[message.author.id]["exp"] += 2
 
@@ -296,7 +310,7 @@ async def on_message(message):
             await bot.send_message(message.channel, reply(message))
 
         if message.channel.id in ignoreChannelList and message.content[0] == "!" and userData[message.author.id]["perms"] < 4:
-            await bot.send_message(bot.get_channel("318828760331845634"), "User: **{0.author}** attempted to summon bot in channel **{0.channel.name}** with arguments:\n```\n{0.content}\n```".format(message))
+            await bot.send_message(bot.get_channel("318828760331845634"), "User: **{0.author}** attempted to summon bot in channel **{0.channel.name}** with arguments:```{0.content}```".format(message))
             await bot.delete_message(message)
         else:
             await bot.process_commands(message)
