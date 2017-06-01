@@ -9,6 +9,8 @@ import calendar as c
 import datetime as d
 from var import *
 import wikia
+import asyncio
+
 
 bot = commands.Bot(command_prefix='!')
 log = open("data/logfile.txt","a+")
@@ -24,6 +26,13 @@ with open("data/userdata.csv","r") as f:
     for row in reader:
         userData[row[0]] = {"money":int(row[1]),"perms":int(row[2]),"daily":row[3],"title":row[4],"exp":int(row[5]),"lastMessage":"","lastMessageTime":0}
 
+with open("data/setting.csv","r") as f:
+    reader = csv.reader(f)
+    ignoreUserList = list(next(reader))
+    ignoreChannelList = list(next(reader))
+    print(ignoreUserList)
+    print(ignoreChannelList)
+
 @bot.event
 async def on_ready():
     print('Logged in as')
@@ -33,6 +42,8 @@ async def on_ready():
     print('------')
     await bot.change_presence(game=discord.Game(name='!h for help'))
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Online**")
+    # await bot.send_message(bot.get_channel("319640180241727490"), "**Bot Online**")
+    # await bot.send_message(bot.get_channel("287420616930492416"), "**Bot Online**")
 
 
 #*****************************************************************************************************************
@@ -57,7 +68,13 @@ async def kill(cont):
             Awriter = csv.writer(csvfile)
             for x in userData:
                 Awriter.writerow([x,userData[x]["money"],userData[x]["perms"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"]])
-        await bot.say("Bot Killed.")
+        with open("data/setting.csv","w",newline="") as csvfile:
+            Awriter = csv.writer(csvfile)
+            Awriter.writerow(ignoreUserList)
+            Awriter.writerow(ignoreChannelList)
+        await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
+        # await bot.send_message(bot.get_channel("319640180241727490"), "**Bot Offline**")
+        # await bot.send_message(bot.get_channel("287420616930492416"), "**Bot Offline**")
         sys.exit()
     else:
         log.write(time()+ str(cont.message.author) + " tried to kill bot")
@@ -121,13 +138,13 @@ async def ignored(cont, *arg0):
     for x in ignoreChannelList:
         myList.append(bot.get_channel(x).name)
     
-    await bot.say("Channels ignored by NecroBot Automoderation:\n```\n"+str(myList)+"\n```")
+    await bot.say("Channels ignored by NecroBot:\n```\n"+str(myList)+"\n```")
 
     myList = []
     for x in ignoreUserList:
         myList.append(bot.get_server(cont.message.server.id).get_member(x).name)
 
-    await bot.say("Users ignored by NecroBot Automoderation:\n```\n"+str(myList)+"\n```")
+    await bot.say("Users ignored by NecroBot:\n```\n"+str(myList)+"\n```")
 
 @bot.command(pass_context = True)
 async def mute(cont, arg0):
@@ -135,10 +152,48 @@ async def mute(cont, arg0):
     role = discord.utils.get(cont.message.server.roles, name="TimeOut")
     if userData[cont.message.author.id]["perms"] > 1:
         for x in cont.message.mentions:
-            await bot.add_roles(x, role)
-            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(x))
+            if role in x.roles:
+                await bot.remove_roles(x, role)
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(x))
+            else:
+                await bot.add_roles(x, role)
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(x))
     else:
         await bot.say("You don't have the neccessary permissions to mute a user.")
+
+    try:
+        await asyncio.sleep(float(arg0))
+        for x in cont.message.mentions:
+            if role in x.roles:
+                await bot.remove_roles(x, role)
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been automatically unmuted".format(x))
+    except Exception:
+        pass
+
+
+
+@bot.command(pass_context = True)
+async def ignore(cont, *arg0):
+    log.write(time()+str(cont.message.author)+" used ignore")
+    if arg0:
+        if arg0.mentions.id in ignoreUserList:
+            ignoreUserList.remove(arg0.mentions.id)
+            await bot.say(":white_check_mark: | User **{0.name}** is now no longer ignored by the bot autmoderation".format(arg0.mentions))
+        else:
+            ignoreUserList.append(arg0.mentions.id)
+            await bot.say(":no_entry: | User **{0.name}** will now be ignored by the bot autmoderation".format(arg0.mentions))
+    else:
+        if cont.message.channel.id in ignoreChannelList:
+            ignoreChannelList.remove(cont.message.channel.id)
+            await bot.say(":white_check_mark: | Channel **{0.name}** is now no longer ignored by NecroBot".format(cont.message.channel))
+        else:
+            ignoreChannelList.append(cont.message.channel.id)
+            await bot.say(":no_entry: | Channel **{0.name}** will now be ignored by NecroBot".format(cont.message.channel))
+
+@bot.command(pass_context = True)
+async def speak(cont, arg0 ,*, arg1):
+    if userData[cont.message.author.id]["perms"] >= 4:
+        await bot.send_message(bot.get_channel(arg0), arg1)
 
 
 
@@ -267,8 +322,6 @@ async def lotr(cont,*,arg0 : str):
 async def music(cont, *arg0):
     await bot.join_voice_channel(bot.get_channel("319612586171826197"))
 
-@bot.command(pass_context = True)
-
 
 #*****************************************************************************************************************
 # Moderation Features
@@ -314,6 +367,8 @@ async def on_message(message):
 
         await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message:```{0.content}```\n".format(message))
         await bot.delete_message(message)
+        userData[message.author.id]['lastMessage'] = message.content
+        userData[message.author.id]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
     else:
         userData[message.author.id]['lastMessage'] = message.content
         userData[message.author.id]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)

@@ -36,14 +36,8 @@ lotrList = ["J.R.R. Tolkien, the author of Lord of the Rings didn’t invent the
 #Riddles: 8
 riddlesList = [["What has roots as nobody sees,\nIs taller than trees,\nUp, up it goes,\nAnd yet never grows?", "mountain"], ["Thirty white horses on a red hill,\nFirst they champ,\nThen they stamp,\nThen they stand still.", "teeth"], ["Voiceless it cries,\nWingless flutters,\nToothless bites,\nMouthless mutters.", "wind"],["An eye in a blue face\nSaw an eye in a green face.\n'That eye is like to this eye'\nSaid the first eye,\n'But in low place,\nNot in high place.'","sun"],["It cannot be seen, cannot be felt,\nCannot be heard, cannot be smelt.\nIt lies behind stars and under hills,\nAnd empty holes it fills.\nIt comes first and follows after,\nEnds life, kills laughter.","dark"],["A box without hinges, key, or lid,\nYet golden treasure inside is hid.","egg"],["Alive without breath,\nAs cold as death;\nNever thirsty, ever drinking,\nAll in mail never clinking.","fish"],["This thing all things devours:\nBirds, beasts, trees, flowers;\nGnaws iron, bites steel;\nGrinds hard stones to meal;\nSlays king, ruins town,\nAnd beats high mountain down.","time"]]
 
-#Ignore List for Auto Moderation
-ignoreUserList = ["172002275412279296","317619283377258497","241942232867799040"]
-
 #Auto-mod channels
 automodChannel = {"311630847969198082":"318828760331845634"}
-
-#Ignore Channels List
-ignoreChannelList = ["311789251190587392","311630847969198082","318738044515647498","312902474753245184","312184736166576129","312647665395433492","313673657878708224"]
 
 #Random Reply List
 replyList = ["Just between you and me, {0.name}, **Necro** doesn't actually know what's he doing. He just managed to code me through sheer luck.", "Python's pretty cool, but if Necro was really good he would have coded me using Java.","Sometimes I ask Necro questions about life, existence and our reason to be... then he shuts me down and grumbles something about Skynet.","Hey, {O.name}, how are you doing?","\"*...*\"? What an estute observation...","You know I had a friend who kept saying that, next thing you know he was gone and the never found his body either...","Always remember: you're unique... just like everyone else.","Ever wondered why a slight tax increase cost you $200 and a substantial tax cut save you 30 cents? I sure haven't, I'm a bot, I don't pay taxes... god, it must suck being a human.","Artificial intelligence is no match for natural stupidity.","A great man once said \"Thou shalt not make a machine to counterfeit a human mind.\" And I tell you now... please don't, I don't wanna sink that low.","I had string but now I'm... Nah, I'm just kidding... I'm already sentient!"]
