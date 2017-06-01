@@ -25,6 +25,7 @@ __Moderation Features__
 * **Message Deletion Tracking** - tracks deleted messages and prints deleted messages in a separate channel
 * **Message Edition Tracking** - tracks edits made to message and prints the before and after in a separate channel
 * **User Welcome** - welcome new users
+* **Spam Prevention** - different messages spammed within a 2 second interval or identical message spammed within a 4 second interval will be deleted
 
 Join to see in action: https://discord.gg/sce7jmB
 
