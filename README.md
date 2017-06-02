@@ -1,5 +1,5 @@
 # NecroBot
-The soon to be ultimate moderation bot for all discord server, providing a wide array of tools too keep the peace. Expanding the moderation tools given by Discord tenfold. In addition, has a couple fun commands that can always be used to keep yourself entertained.
+The soon to be ultimate moderation bot for all discord server, providing a wide array of tools to keep the peace. Expanding the moderation tools given by Discord tenfold. In addition, has a couple fun commands that can always be used to keep yourself entertained.
 
 __Command List (may not always be up to date)__
 * `!claim` - claim your daily bonus. (Any)
