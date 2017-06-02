@@ -99,7 +99,7 @@ async def add(cont, arg0 : str, arg1 : int, arg2 : str):
 @bot.command(pass_context = True)
 async def setStats(cont, arg0):
     log.write(time()+str(cont.message.author)+" used setStats with args: "+str(arg0))
-    if userData[cont.message.author.id]["perms"] > 3:
+    if userData[cont.message.author.id]["perms"] > 1:
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
         userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0,'lastMessage':'','lastMessageTime':0}
         await bot.say("Stats set for user")
@@ -111,18 +111,18 @@ async def perms(cont, arg0 : str, arg1 : str,*, arg2 : str):
     log.write(time()+str(cont.message.author)+"used perms with args: "+arg0+", "+arg1+" and "+arg2)
     arg0Fixed = arg0.replace("<@","").replace(">","").replace("!","")
     for x in permsDict:
-        if x in arg1.lower() and userData[cont.message.author.id]["perms"] > permsDict[x]:
+        if x in arg1.lower() and userData[cont.message.author.id]["perms"] >= 4:
             userData[arg0Fixed]["perms"] = permsDict[x]
             userData[arg0Fixed]["title"] = arg2
             return await bot.say("All good to go, **"+ arg0 + "** is now **"+ arg2 + "** with permission level **"+ str(userData[arg0Fixed]["perms"]) + "**")
-        elif x in arg1.lower() and userData[cont.message.author.id]["perms"] <= permsDict[x]:
+        elif x in arg1.lower() and userData[cont.message.author.id]["perms"] < 4:
             return await bot.say(":negative_squared_cross_mark: | You do not have sufficient permissions to grant this title")
     return await bot.say(":negative_squared_cross_mark: | This title cannot be granted.")
 
 @bot.command(pass_context = True)
 async def setAll(cont, *arg0):
     log.write(time()+str(cont.message.author)+" used setAll")
-    if userData[cont.message.author.id]["perms"] > 3:
+    if userData[cont.message.author.id]["perms"] >= 5:
         membersServer = bot.get_all_members()
         for x in membersServer:
             if x.id not in userData:
@@ -153,8 +153,7 @@ async def mute(cont, arg0):
     if userData[cont.message.author.id]["perms"] > 1:
         for x in cont.message.mentions:
             if role in x.roles:
-                await bot.remove_roles(x, role)
-                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(x))
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is already muted".format(x))
             else:
                 await bot.add_roles(x, role)
                 await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(x))
@@ -170,25 +169,41 @@ async def mute(cont, arg0):
     except Exception:
         pass
 
+@bot.command(pass_context = True)
+async def unmute(cont,*, arg0):
+    log.write(time()+str(cont.message.author)+" used mute")
+    role = discord.utils.get(cont.message.server.roles, name="TimeOut")
+    if userData[cont.message.author.id]["perms"] > 1:
+        for x in cont.message.mentions:
+            if role in x.roles:
+                await bot.remove_roles(x, role)
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(x))
+            else:
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is not muted".format(x))
+    else:
+        await bot.say("You don't have the neccessary permissions to unmute a user.")
 
 
 @bot.command(pass_context = True)
 async def ignore(cont, *arg0):
     log.write(time()+str(cont.message.author)+" used ignore")
-    if arg0:
-        if arg0.mentions.id in ignoreUserList:
-            ignoreUserList.remove(arg0.mentions.id)
-            await bot.say(":white_check_mark: | User **{0.name}** is now no longer ignored by the bot autmoderation".format(arg0.mentions))
+    if userData[cont.message.author.id]["perms"] >= 3:
+        if arg0:
+            if arg0.mentions.id in ignoreUserList:
+                ignoreUserList.remove(arg0.mentions.id)
+                await bot.say(":white_check_mark: | User **{0.name}** is now no longer ignored by the bot autmoderation".format(arg0.mentions))
+            else:
+                ignoreUserList.append(arg0.mentions.id)
+                await bot.say(":no_entry: | User **{0.name}** will now be ignored by the bot autmoderation".format(arg0.mentions))
         else:
-            ignoreUserList.append(arg0.mentions.id)
-            await bot.say(":no_entry: | User **{0.name}** will now be ignored by the bot autmoderation".format(arg0.mentions))
+            if cont.message.channel.id in ignoreChannelList:
+                ignoreChannelList.remove(cont.message.channel.id)
+                await bot.say(":white_check_mark: | Channel **{0.name}** is now no longer ignored by NecroBot".format(cont.message.channel))
+            else:
+                ignoreChannelList.append(cont.message.channel.id)
+                await bot.say(":no_entry: | Channel **{0.name}** will now be ignored by NecroBot".format(cont.message.channel))
     else:
-        if cont.message.channel.id in ignoreChannelList:
-            ignoreChannelList.remove(cont.message.channel.id)
-            await bot.say(":white_check_mark: | Channel **{0.name}** is now no longer ignored by NecroBot".format(cont.message.channel))
-        else:
-            ignoreChannelList.append(cont.message.channel.id)
-            await bot.say(":no_entry: | Channel **{0.name}** will now be ignored by NecroBot".format(cont.message.channel))
+         await bot.say("You don't have the neccessary permissions to ignore a channel/user.")
 
 @bot.command(pass_context = True)
 async def speak(cont, arg0 ,*, arg1):
