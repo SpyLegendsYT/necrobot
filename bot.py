@@ -26,6 +26,11 @@ with open("data/userdata.csv","r") as f:
     for row in reader:
         userData[row[0]] = {"money":int(row[1]),"perms":int(row[2]),"daily":row[3],"title":row[4],"exp":int(row[5]),"lastMessage":"","lastMessageTime":0}
 
+with open("data/warningLog.csv","r") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        userData[row[0]]["warnings"] = row[1:]
+
 with open("data/setting.csv","r") as f:
     reader = csv.reader(f)
     ignoreUserList = list(next(reader))
@@ -54,6 +59,15 @@ def time():
     localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
     return localtime
 
+#*****************************************************************************************************************
+# Purge Functions
+#*****************************************************************************************************************
+def is_bot(m):
+    return m.author == bot.user
+
+def is_user(m):
+    return m.author.id == m.mentions[0].id 
+
 
 #*****************************************************************************************************************
 # Admin Commands
@@ -68,6 +82,16 @@ async def kill(cont):
             Awriter = csv.writer(csvfile)
             for x in userData:
                 Awriter.writerow([x,userData[x]["money"],userData[x]["perms"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"]])
+        with open("data/warningLog.csv","w",newline = "") as csvfile:
+            Awriter = csv.writer(csvfile)
+            for x in userData:
+                if userData[x]["warnings"] != ['']:
+                    warningList = [x]
+                    warningList.extend(userData[x]["warnings"])
+                else:
+                    warningList = [x]
+
+                Awriter.writerow(warningList)
         with open("data/setting.csv","w",newline="") as csvfile:
             Awriter = csv.writer(csvfile)
             Awriter.writerow(ignoreUserList)
@@ -101,7 +125,7 @@ async def setStats(cont, arg0):
     log.write(time()+str(cont.message.author)+" used setStats with args: "+str(arg0))
     if userData[cont.message.author.id]["perms"] > 1:
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
-        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0,'lastMessage':'','lastMessageTime':0}
+        userData[arg0] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0,'lastMessage':'','lastMessageTime':0,"warnings":" "}
         await bot.say("Stats set for user")
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
@@ -122,12 +146,12 @@ async def perms(cont, arg0 : str, arg1 : str,*, arg2 : str):
 @bot.command(pass_context = True)
 async def setAll(cont, *arg0):
     log.write(time()+str(cont.message.author)+" used setAll")
-    if userData[cont.message.author.id]["perms"] >= 5:
+    if userData[cont.message.author.id]["perms"] >= 6:
         membersServer = bot.get_all_members()
         for x in membersServer:
             if x.id not in userData:
                 log.write(time()+" set stats for "+str(x.name))
-                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0,'lastMessage':'','lastMessageTime':0}
+                userData[x.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0,'lastMessage':'','lastMessageTime':0,"warnings":" "}
                 
         await bot.say("Stats sets for users")
 
@@ -149,7 +173,7 @@ async def ignored(cont, *arg0):
 @bot.command(pass_context = True)
 async def mute(cont, arg0):
     log.write(time()+str(cont.message.author)+" used mute")
-    role = discord.utils.get(cont.message.server.roles, name="TimeOut")
+    role = discord.utils.get(cont.message.server.roles, name=timeoutDict[cont.message.server.id])
     if userData[cont.message.author.id]["perms"] > 1:
         for x in cont.message.mentions:
             if role in x.roles:
@@ -172,7 +196,7 @@ async def mute(cont, arg0):
 @bot.command(pass_context = True)
 async def unmute(cont,*, arg0):
     log.write(time()+str(cont.message.author)+" used mute")
-    role = discord.utils.get(cont.message.server.roles, name="TimeOut")
+    role = discord.utils.get(cont.message.server.roles, name=timeoutDict[cont.message.server.id])
     if userData[cont.message.author.id]["perms"] > 1:
         for x in cont.message.mentions:
             if role in x.roles:
@@ -203,14 +227,43 @@ async def ignore(cont, *arg0):
                 ignoreChannelList.append(cont.message.channel.id)
                 await bot.say(":no_entry: | Channel **{0.name}** will now be ignored by NecroBot".format(cont.message.channel))
     else:
-         await bot.say("You don't have the neccessary permissions to ignore a channel/user.")
+        await bot.say("You don't have the neccessary permissions to ignore a channel/user.")
 
 @bot.command(pass_context = True)
-async def speak(cont, arg0 ,*, arg1):
+async def speak(cont, arg0,*, arg1,):
+    log.write(time()+str(cont.message.author)+" used speak with args: "+ str(arg1))
     if userData[cont.message.author.id]["perms"] >= 4:
         await bot.send_message(bot.get_channel(arg0), arg1)
 
+@bot.command(pass_context = True)
+async def warn(cont, arg0, arg1,*, arg2):
+    log.write(time()+str(cont.message.author)+" used warn with arg: " + str(arg0)+ " " + str(arg1) + " " +str(arg2))
+    if userData[cont.message.author.id]["perms"] >= 1:
+        if arg0 == "del":
+            await bot.say("Warning position: **\"" + userData[cont.message.mentions.id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
+            userData[cont.message.mentions[0].id]["warnings"].pop(int(arg2) - 1)
+        elif arg0 == "add":
+            if '' in userData[cont.message.mentions[0].id]["warnings"]:
+                userData[cont.message.mentions[0].id]["warnings"].remove('')
+            await bot.say("Warning: **\"" + str(arg2) + "\"** added from warning list of user " + str(cont.message.mentions[0].name))
+            userData[cont.message.mentions[0].id]["warnings"].append(arg2)
+        else:
+            await bot.say("Argument not recognized, you can either add a warning with `!warn add [@User] [message]` or remove a warning with `!warn del [@User] [warning position]`")
+    else:
+        await bot.say("You don't have the neccessary permissions to warn a user.")
 
+@bot.command(pass_context = True)
+async def purge(cont, arg0 : int):
+    log.write(time()+str(cont.message.author)+" used purge with args: "+ str(arg0))
+
+    if userData[cont.message.author.id]["perms"] >= 4:
+        await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=arg0+1)
+
+        await bot.say("**" + str(arg0) + "** messages purged.")
+        await asyncio.sleep(5)
+        await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=10, check=is_bot)
+    else:
+        await bot.say("You don't have the neccessary permissions to purge messages  .")
 
 #*****************************************************************************************************************
 # Regular Commands
@@ -256,6 +309,7 @@ async def h(cont, *arg0):
 
 @bot.command(pass_context = True)
 async def info(cont, *arg0):
+    warningList = []
     log.write(time()+str(cont.message.author)+" used info")
     if arg0:
         arg0 = arg0[0]
@@ -263,7 +317,7 @@ async def info(cont, *arg0):
     else:
         userID = str(cont.message.author.id)
 
-    await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]))
+    await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]) + "\n**User Warnings**:" + str(userData[userID]["warnings"]))
 
 @bot.command(pass_context = True)
 async def tarot(cont, *arg0):
@@ -370,11 +424,12 @@ async def on_member_join(member):
     fmt = 'Welcome {0.mention} to {1.name}!'
     await bot.send_message(bot.get_channel(bot.server.default_channel.id), fmt.format(member, server))
     if member.id not in userData:
-        userData[member.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0}
+        userData[member.id] = {'money': 2000, 'perms': 0, 'daily': '32','title':' ','exp':0,'lastMessage':'','lastMessageTime':0,"warnings":" "}
 
 @bot.event
 async def on_message(message):
-    if ((message.content == userData[message.author.id]['lastMessage'] and userData[message.author.id]['lastMessageTime'] > c.timegm(t.gmtime()) + 4) or userData[message.author.id]['lastMessageTime'] > c.timegm(t.gmtime())) and message.author.id not in ignoreUserList and message.content[0] != "!":
+    userID = message.author.id
+    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 4) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime())) and userID not in ignoreUserList and message.content[0] != "!":
         try:
             ChannelId = automodChannel[message.server.id]
         except Exception as e:
@@ -382,23 +437,20 @@ async def on_message(message):
 
         await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message:```{0.content}```\n".format(message))
         await bot.delete_message(message)
-        userData[message.author.id]['lastMessage'] = message.content
-        userData[message.author.id]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
+        userData[userID]['lastMessage'] = message.content
+        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
     else:
-        userData[message.author.id]['lastMessage'] = message.content
-        userData[message.author.id]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
+        userData[userID]['lastMessage'] = message.content
+        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
 
         if len(message.content) != 0:
             if message.content[0] != "!":
-                userData[message.author.id]["exp"] += 2
+                userData[userID]["exp"] += 2
 
         if "317619283377258497" in message.raw_mentions:
-            if message.content != True:
-                message.content = "..."
-
             await bot.send_message(message.channel, replyList[random.randint(0,len(replyList)-1)].format(message.author))
 
-        if message.channel.id in ignoreChannelList and message.content[0] == "!" and userData[message.author.id]["perms"] < 4:
+        if message.channel.id in ignoreChannelList and message.content[0] == "!" and userData[userID]["perms"] < 4:
             await bot.send_message(bot.get_channel("318828760331845634"), "User: **{0.author}** attempted to summon bot in channel **{0.channel.name}** with arguments:```{0.content}```".format(message))
             await bot.delete_message(message)
         else:
