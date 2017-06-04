@@ -25,6 +25,8 @@ __Moderations Commands__
 * `!unmute [@User(s)]` - unmutes all muted users mentionned. (Permission level of 2+)
 * `!ignore ([@User] | [#channel])` - ignores/unignores channels/user (Permission level of 3+)
 * `!speak [channelID] [message]` - broadcasts a message to the channel provided by proxy of the bot (Permission level of 4+)
+* `!warn (add | del) [@User] [message | position]` - add or remove a warning from the user's warning list to add simply use add and then specify a user and message to remove simply us del and then specify a user and the position of the warning to be removed (positions start at 0)
+* `!purge [number]` - purge [number] of messages
 
 
 __Moderation Features__
