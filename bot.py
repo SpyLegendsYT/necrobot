@@ -246,7 +246,7 @@ async def automod(cont, arg0):
 
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
         if arg0 == "add":
-            for x in myList
+            for x in myList:
                 if x.id not in ignoreAutomodList:
                     ignoreAutomodList.append(x.id)
                     await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
