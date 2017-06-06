@@ -16,11 +16,13 @@ __User Pofile__ <br>
 **Money** - users can claim dailies and check their money
 
 __Planned Features__
+* [ ] **Overhaul to expand user profile** - server-specific permission, more compact, imporved code
 * [ ] **Server Roles for Bot Roles** - Give server owners the ability to assign server roles to the bot roles and thereby the ability to grant a bot role by simply granting the equivalent server roles
 * [ ] **Swear Word Filter** - exploit the edit_message() function to allow messages to be filters and kept to a certain rating
 * [ ] **EXP System** - longer exp cooldown, level up system, random amount of exp
 * [ ] **Money System** - actual use of money, transfers between users
 * [ ] **Help system** - rewamp into something more compact, allows user to add an argument to look up a detailed description of a command.
+* [ ] **Wikia System** - make a more efficient use of the Wikia API system to allow users to find more out on their favorite wiki
 
 __Command List (may not always be up to date)__
 * `!claim` - claim your daily bonus. (Any)
@@ -48,7 +50,7 @@ __Moderations Commands__
 * `!warn (add | del) [@User] [message | position]` - add or remove a warning from the user's warning list to add simply use add and then specify a user and message to remove simply us del and then specify a user and the position of the warning to be removed (positions start at 0) (Permission level of 1+ (Helper) to add warnings and 3+ (Semi Admin) to remove a warnings)
 * `!purge [number]` - purge [number] of messages from the channel it's summoned in (Permission level of 4+ (Server Admin))
 * `!autmod ( add | del ) [ @Users | #channels ]` - add/removes the channels/users from the necrobot automoderation, this means users/channels will no longer be affected by the spam filter, editition tracking and deletion tracking. (Permission leve of 5+ (Server Owner))
-*`!ignore ( add | del ) [ @Users | #channels ]` - add/removes the channels/users from the necrobot ignore list which affects whether or not users can use commands and necrobot can be summoned in channels. (Permission leve of 4+ (Server Admin))
+* `!ignore ( add | del ) [ @Users | #channels ]` - add/removes the channels/users from the necrobot ignore list which affects whether or not users can use commands and necrobot can be summoned in channels. (Permission leve of 4+ (Server Admin))
 * `!blacklist [@User]` - the latest advancement in banning tech, will ban a user and add them to the list which will ban the user if they try to join any of the servers with necrobot, high permission level due to power. (Permission level of 6+ (NecroBot Admin))
 
 
