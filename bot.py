@@ -278,15 +278,15 @@ async def ignore(cont, arg0):
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
         if arg0 == "add":
             for x in myList:
-                if x.id not in ignoreCommmandList:
-                    ignoreCommmandList.append(x.id)
+                if x.id not in ignoreCommandList:
+                    ignoreCommandList.append(x.id)
                     await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
                 else:
                     await bot.say("**"+x.name+"** is already ignored.")
         elif arg0 == "del":
-            for x in cont.message.mentions:
-                if x.id in ignoreCommmandList:
-                    ignoreCommmandList.remove(x.id)
+            for x in myList:
+                if x.id in ignoreCommandList:
+                    ignoreCommandList.remove(x.id)
                     await bot.say("**"+x.name+"** will no longer be ignored by the bot's automoderation.")
                 else:
                     await bot.say("**"+x.name+"** is not ignored.")
@@ -308,14 +308,14 @@ async def warn(cont, arg0, arg1,*, arg2):
     log.write(time()+str(cont.message.author)+" used warn with arg: " + str(arg0)+ " " + str(arg1) + " " +str(arg2))
     if arg0 == "del":
         if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
-            await bot.say("Warning position: **\"" + userData[cont.message.mentions.id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
+            await bot.say("Warning position: **\"" + userData[cont.message.mentions[0].id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
             userData[cont.message.mentions[0].id]["warnings"].pop(int(arg2))
         else:
             await bot.say("You don't have the necessary permissions to remove warnings.")
     elif arg0 == "add":
         if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 1:
             await bot.say("Warning: **\"" + str(arg2) + "\"** added from warning list of user " + str(cont.message.mentions[0].name))
-                userData[cont.message.mentions[0].id]["warnings"].append(arg2)
+            userData[cont.message.mentions[0].id]["warnings"].append(arg2)
         else:
             await bot.say("You don't have the permission to add warnings.")
     else:
@@ -397,6 +397,7 @@ async def h(cont, *arg0):
     else:
         await bot.say(helpVar)
 
+# evaluates the the argument as a mathematical equation
 @bot.command(pass_context = True)
 async def calc(cont,*, arg : str):
     log.write(time() + str(cont.message.author.name) + " used calc with message:" + arg)
@@ -406,36 +407,30 @@ async def calc(cont,*, arg : str):
     except NameError:
         await bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
 
+# reads the user "fate" in the cards
 @bot.command(pass_context = True)
 async def tarot(cont, *arg0):
     log.write(time()+str(cont.message.author)+" used tarot")
-    myList = []
-    count = 0
-    while count != 3:
-        num = random.randint(0,43)
-        if num not in myList:
-            myList.append(num)
-            count += 1
+    myList = random.sample(range(0,44),3)
 
     await bot.say(":white_flower: | Settle down now and let Necro see your future my dear "+ cont.message.author.name + "...\n**Card #1:** " + tarotList[myList[0]] +"\n**Card #2:** " + tarotList[myList[1]] +"\n**Card #3:** " + tarotList[myList[2]] +"\n__*That is your fate, none can change it for better or worst.*__\n(**Not to be taken seriously**) ")
 
+# good old game of russian roulette
 @bot.command(pass_context = True)
 async def rr(cont, *arg0 : int):
     log.write(time()+str(cont.message.author)+" used rr")
-    num1 = 7
     try:
-        num1 = int(arg0[0]) 
-    except Exception:
-        pass
+        num  = int(arg0[0])
+        if num > 0 and num <= 6:
+            bullets = num
+        else:
+            bullets = 1
+    except Exception as e:
+        bullets = 1
 
-    if num1 > 0 and num1 <= 6:
-        bullets = num1
-    else:
-        bullets = 5
+    await bot.say(":gun: | You insert "+ str(bullets) + " bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!")
 
-    await bot.say(":gun: | You insert "+ str(bullets) + " bullets give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!")
-
-    if random.randint(1,6) <= bullets:
+    if random.randint(1,7) <= bullets:
         await bot.say(":boom: | You weren't so lucky this time. Rest in peace my friend.")
     else:
         await bot.say(":ok: | Looks like you'll last the night, hopefully your friends do too.")
@@ -458,7 +453,7 @@ async def edain(cont,*,arg0 : str):
             article = wikia.search("Edain", arg0)
             await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
         except Exception:
-            await bot.say("Article not found, and search didn't return any result. Please try again with different terms.")
+            await bot.say("Article not found, and search didn't return any results. Please try again with different terms.")
 
 @bot.command(pass_context = True)
 async def lotr(cont,*,arg0 : str):
@@ -487,7 +482,7 @@ async def on_message_delete(message):
         ChannelId = "318828760331845634"
 
     if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
-        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message:```{0.content}```'
+        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message: ``` {0.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
 
 @bot.event
@@ -498,7 +493,7 @@ async def on_message_edit(before, after):
         ChannelId = "318828760331845634"
 
     if before.author.id not in ignoreAutomodList and before.channel.id not in ignoreAutomodList:
-        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message:```{1.content}\n{0.content}```'
+        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {1.content}\n{0.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(after, before))
 
 @bot.event
@@ -518,13 +513,13 @@ async def on_member_join(member):
 async def on_message(message):
     userID = message.author.id
     channelID = message.channel.id
-    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 4) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime())) and (userID not in ignoreAutomodList and channelID not in ignoreAutomodList) and message.content[0] != "!" and userData[userID]["perms"][message.server.id] < 4:
+    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 4) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime())) and (userID not in ignoreAutomodList and channelID not in ignoreAutomodList) and message.content.startswith("!") == False:
         try:
             ChannelId = serverData[message.server.id]["automod"]
         except Exception:
             ChannelId = "318828760331845634"
 
-        await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message:```{0.content}```\n".format(message))
+        await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
         await bot.delete_message(message)
         userData[userID]['lastMessage'] = message.content
         userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 2)
@@ -539,8 +534,8 @@ async def on_message(message):
         # if "317619283377258497" in message.raw_mentions:
         #     await bot.send_message(message.channel, replyList[random.randint(0,len(replyList)-1)].format(message.author))
 
-        if (channelID in ignoreCommandList and userID not in ignoreCommandList) and message.content[0] == "!" and userData[userID]["perms"][message.server.id] <= 4:
-            await bot.send_message(bot.get_channel("318828760331845634"), "User: **{0.author}** attempted to summon bot in channel **{0.channel.name}** with arguments:```{0.content}```".format(message))
+        if (channelID in ignoreCommandList or userID in ignoreCommandList) and message.content.startswith("!"):
+            await bot.send_message(bot.get_channel("318828760331845634"), "User: **{0.author}** attempted to summon bot in channel **{0.channel.name}** with arguments: ``` {0.content} ```".format(message))
             await bot.delete_message(message)
         else:
             await bot.process_commands(message)

@@ -86,3 +86,63 @@ Mon Jun  5 17:14:28 2017: Necro#6714 used mute
 Mon Jun  5 18:14:08 2017: Necro killed bot
 Mon Jun  5 21:47:51 2017: Necro killed bot
 Mon Jun  5 22:15:32 2017: Necro killed bot
+Tue Jun  6 11:59:57 2017: Necro killed bot
+Tue Jun  6 12:12:01 2017: Necro killed bot
+Tue Jun  6 12:03:57 2017: Necro#6714 used ignored
+Tue Jun  6 12:12:01 2017: Necro killed bot
+Tue Jun  6 12:12:27 2017: Necro#6714 used ignored
+Tue Jun  6 12:32:23 2017: Necro killed bot
+Tue Jun  6 12:33:05 2017: Necro#6714 used purge with args: 10
+Tue Jun  6 12:33:12 2017: Necro#6714 used purge with args: 2
+Tue Jun  6 12:37:42 2017: Necro killed bot
+Tue Jun  6 12:48:51 2017: Necro#6714 used automod
+Tue Jun  6 12:49:12 2017: Necro#6714 used automod
+Tue Jun  6 12:50:23 2017: Necro#6714 used ignore
+Tue Jun  6 12:51:14 2017: Necro killed bot
+Tue Jun  6 12:51:46 2017: Necro#6714 used ignore
+Tue Jun  6 12:51:55 2017: Necro#6714used perms with args: <@!271259290415792129>, 3
+Tue Jun  6 12:52:13 2017: Elf_in_silver_armor#6462 used rr
+Tue Jun  6 12:52:17 2017: Elf_in_silver_armor#6462 used rr
+Tue Jun  6 12:52:21 2017: Elf_in_silver_armor#6462 used claim
+Tue Jun  6 12:53:01 2017: Necro killed bot
+Tue Jun  6 12:53:13 2017: Elf_in_silver_armor#6462 used claim
+Tue Jun  6 12:53:20 2017: Elf_in_silver_armor#6462 used lotrfact
+Tue Jun  6 12:53:23 2017: Necro killed bot
+Tue Jun  6 12:55:35 2017: Necro#6714 used ignore
+Tue Jun  6 12:56:36 2017: Necro#6714 used lotrfact
+Tue Jun  6 12:57:13 2017: Necro killed bot
+Tue Jun  6 12:57:35 2017: Necro#6714 used ignore
+Tue Jun  6 12:58:13 2017: Necro killed bot
+Tue Jun  6 12:58:22 2017: Necro#6714 used ignore
+Tue Jun  6 12:58:30 2017: Necro#6714used perms with args: <@!271259290415792129>, 6
+Tue Jun  6 13:01:41 2017: Necro#6714 used speak with args: **Necro commands it, the bot wills it!**
+Tue Jun  6 13:02:03 2017: Necro#6714 used info
+Tue Jun  6 13:02:18 2017: Necro#6714 used warn with arg: add <@!271259290415792129> for being too sexy <:Kappa:312680876054151169>
+Tue Jun  6 13:02:24 2017: Necro#6714 used info
+Tue Jun  6 13:03:03 2017: Necro#6714 used warn with arg: del <@!271259290415792129> 0
+Tue Jun  6 13:03:31 2017: Necro killed bot
+Tue Jun  6 13:03:43 2017: Necro#6714 used warn with arg: del <@!271259290415792129> 0
+Tue Jun  6 13:04:01 2017: Necro#6714 used purge with args: 5
+Tue Jun  6 13:04:16 2017: Necro#6714 used balance
+Tue Jun  6 13:04:20 2017: Necro#6714 used claim
+Tue Jun  6 13:04:23 2017: Necro#6714 used info
+Tue Jun  6 13:04:29 2017: Necro#6714 used help
+Tue Jun  6 13:04:37 2017: Necro used calc with message:4 + 3
+Tue Jun  6 13:04:44 2017: Necro#6714 used tarot
+Tue Jun  6 13:05:06 2017: Necro killed bot
+Tue Jun  6 13:05:20 2017: Necro#6714 used rr
+Tue Jun  6 13:06:51 2017: Necro killed bot
+Tue Jun  6 13:07:11 2017: Necro#6714 used rr
+Tue Jun  6 13:07:12 2017: Necro#6714 used rr
+Tue Jun  6 13:09:06 2017: Necro killed bot
+Tue Jun  6 13:09:29 2017: Necro#6714 used rr
+Tue Jun  6 13:09:41 2017: Necro killed bot
+Tue Jun  6 13:09:57 2017: Necro#6714 used rr
+Tue Jun  6 13:10:28 2017: Necro#6714 used lotrfact
+Tue Jun  6 13:10:59 2017: Necro#6714 used edain with args: bob
+Tue Jun  6 13:11:09 2017: Necro#6714 used edain with args: llalala
+Tue Jun  6 13:11:16 2017: Necro#6714 used edain with args: Glorfindel
+Tue Jun  6 13:11:49 2017: Necro#6714 used lotr with args: bob
+Tue Jun  6 13:12:05 2017: Necro#6714 used lotr with args: lalalalal
+Tue Jun  6 13:12:22 2017: Necro#6714 used lotr with args: lord of the rings
+Tue Jun  6 13:13:07 2017: Necro killed bot
