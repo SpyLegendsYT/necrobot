@@ -275,7 +275,7 @@ async def ignore(cont, arg0):
     for x in cont.message.channel_mentions:
         myList.append(x)
 
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
+    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
         if arg0 == "add":
             for x in myList:
                 if x.id not in ignoreCommmandList:
@@ -302,21 +302,26 @@ async def speak(cont, arg0,*, arg1,):
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
         await bot.send_message(bot.get_channel(arg0), ":loud_sound: | "+arg1)
 
+# Add a warning to the user's warning list
 @bot.command(pass_context = True)
 async def warn(cont, arg0, arg1,*, arg2):
     log.write(time()+str(cont.message.author)+" used warn with arg: " + str(arg0)+ " " + str(arg1) + " " +str(arg2))
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 1:
-        if arg0 == "del":
+    if arg0 == "del":
+        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
             await bot.say("Warning position: **\"" + userData[cont.message.mentions.id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
-            userData[cont.message.mentions[0].id]["warnings"].pop(int(arg2) - 1)
-        elif arg0 == "add":
-            await bot.say("Warning: **\"" + str(arg2) + "\"** added from warning list of user " + str(cont.message.mentions[0].name))
-            userData[cont.message.mentions[0].id]["warnings"].append(arg2)
+            userData[cont.message.mentions[0].id]["warnings"].pop(int(arg2))
         else:
-            await bot.say("Argument not recognized, you can either add a warning with `!warn add [@User] [message]` or remove a warning with `!warn del [@User] [warning position]`")
+            await bot.say("You don't have the necessary permissions to remove warnings.")
+    elif arg0 == "add":
+        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 1:
+            await bot.say("Warning: **\"" + str(arg2) + "\"** added from warning list of user " + str(cont.message.mentions[0].name))
+                userData[cont.message.mentions[0].id]["warnings"].append(arg2)
+        else:
+            await bot.say("You don't have the permission to add warnings.")
     else:
-        await bot.say("You don't have the neccessary permissions to warn a user.")
+        await bot.say("Argument not recognized, you can either add a warning with `!warn add [@User] [message]` or remove a warning with `!warn del [@User] [warning position]`")
 
+#removes a certain number of messages
 @bot.command(pass_context = True)
 async def purge(cont, arg0 : int):
     log.write(time()+str(cont.message.author)+" used purge with args: "+ str(arg0))
@@ -331,25 +336,22 @@ async def purge(cont, arg0 : int):
     else:
         await bot.say("You don't have the neccessary permissions to purge messages  .")
 
+#blacklists a user which means that if they join any server with necrobot they'll be banned
 @bot.command(pass_context = True)
 async def blacklist(cont):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
+    log.write(time()+str(cont.message.author)+" used blacklist with args: "+ str(cont.message.content))
+    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
         blacklistList.append(cont.message.mentions[0].id)
         await bot.ban(bot.get_server(cont.message.server.id).get_member(cont.message.mentions[0].id), delete_message_days=7)
+
+#swear word censorship system
 
 
 #*****************************************************************************************************************
 # Regular Commands
 #*****************************************************************************************************************
 
-@bot.command(pass_context = True)
-async def calc(cont,*, arg : str):
-    log.write(time() + str(cont.message.author.name) + " used calc with message:" + arg)
-    try:
-        final = eval(arg)
-        await bot.say(final)
-    except NameError:
-        await bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
+#****************** USER DEPENDENT COMMANDS ******************#
 
 @bot.command(pass_context = True)
 async def balance(cont,*arg0):
@@ -373,14 +375,6 @@ async def claim(cont):
         await bot.say(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
 
 @bot.command(pass_context = True)
-async def h(cont, *arg0):
-    log.write(time()+str(cont.message.author)+" used help")
-    if arg0:
-        pass
-    else:
-        await bot.say(helpVar)
-
-@bot.command(pass_context = True)
 async def info(cont, *arg0):
     warningList = []
     log.write(time()+str(cont.message.author)+" used info")
@@ -391,6 +385,26 @@ async def info(cont, *arg0):
         userID = str(cont.message.author.id)
 
     await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]) + "\n**User Warnings**:" + str(userData[userID]["warnings"]))
+
+#****************** STANDALONE COMMANDS *******************
+
+#general help command (could be outdated)
+@bot.command(pass_context = True)
+async def h(cont, *arg0):
+    log.write(time()+str(cont.message.author)+" used help")
+    if arg0:
+        pass
+    else:
+        await bot.say(helpVar)
+
+@bot.command(pass_context = True)
+async def calc(cont,*, arg : str):
+    log.write(time() + str(cont.message.author.name) + " used calc with message:" + arg)
+    try:
+        final = eval(arg)
+        await bot.say(final)
+    except NameError:
+        await bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
 
 @bot.command(pass_context = True)
 async def tarot(cont, *arg0):
@@ -459,10 +473,6 @@ async def lotr(cont,*,arg0 : str):
             await bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n" + str(article))
         except Exception:
             await bot.say("Article not found, and search didn't return any result. Please try again with different terms.")
-
-@bot.command(pass_context = True)
-async def music(cont, *arg0):
-    await bot.join_voice_channel(bot.get_channel("319612586171826197"))
 
 
 #*****************************************************************************************************************
