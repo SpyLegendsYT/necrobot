@@ -132,7 +132,7 @@ async def setStats(cont, arg0):
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
         if arg0 not in userData:
             userData[arg0] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0}
-        if cont.message.server.id not in userData[x.id]["perms"]:
+        if cont.message.server.id not in userData[cont.message.author.id]["perms"]:
             userData[arg0]["perms"][cont.message.server.id] = 0
         await bot.say("Stats set for user")
     else:
@@ -265,7 +265,7 @@ async def automod(cont, arg0):
         await bot.say("You do not have permissions to edit the autmoderation list.")
 
 #enable/disable commands for users and channels
-@bot.command(pass_context = True)
+@bot.command(pass_context = True)   
 async def ignore(cont, arg0):
     log.write(time()+str(cont.message.author)+" used ignore")
     myList = []
@@ -280,14 +280,14 @@ async def ignore(cont, arg0):
             for x in myList:
                 if x.id not in ignoreCommandList:
                     ignoreCommandList.append(x.id)
-                    await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
+                    await bot.say("**"+x.name+"** will be ignored by the bot.")
                 else:
                     await bot.say("**"+x.name+"** is already ignored.")
         elif arg0 == "del":
             for x in myList:
                 if x.id in ignoreCommandList:
                     ignoreCommandList.remove(x.id)
-                    await bot.say("**"+x.name+"** will no longer be ignored by the bot's automoderation.")
+                    await bot.say("**"+x.name+"** will no longer be ignored by the bot.")
                 else:
                     await bot.say("**"+x.name+"** is not ignored.")
         else:
@@ -300,7 +300,18 @@ async def ignore(cont, arg0):
 async def speak(cont, arg0,*, arg1,):
     log.write(time()+str(cont.message.author)+" used speak with args: "+ str(arg1))
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
-        await bot.send_message(bot.get_channel(arg0), ":loud_sound: | "+arg1)
+        await bot.send_message(bot.get_channel(arg0), ":loudspeaker: | "+arg1)
+
+#pm a user
+@bot.command(pass_context = True)
+async def pm(cont, arg0,*,arg1):
+    log.write(time()+str(cont.message.author)+" used pm with args: "+ str(arg1))
+    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
+        user = bot.get_server(cont.message.server.id).get_member(arg0)
+        await bot.start_private_message(user)
+        await bot.send_message(user, arg1)
+        msg = await bot.wait_for_message(author=user, channel=bot.get_channel(user.id))
+        await bot.send_message(bot.get_channel("318465643420712962"), ":speech_left: | **User: "+ str(msg.author) + "** said **" +msg.content+"**")
 
 # Add a warning to the user's warning list
 @bot.command(pass_context = True)
@@ -344,8 +355,6 @@ async def blacklist(cont):
         blacklistList.append(cont.message.mentions[0].id)
         await bot.ban(bot.get_server(cont.message.server.id).get_member(cont.message.mentions[0].id), delete_message_days=7)
 
-#swear word censorship system
-
 
 #*****************************************************************************************************************
 # Regular Commands
@@ -384,7 +393,9 @@ async def info(cont, *arg0):
     else:
         userID = str(cont.message.author.id)
 
-    await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]) + "\n**User Warnings**:" + str(userData[userID]["warnings"]))
+    user = bot.get_server(cont.message.server.id).get_member(userID)
+
+    await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]) + "\n**User Warnings**:" + str(userData[userID]["warnings"]) + "\n**User Nick**: "+ str(user.nick))
 
 #****************** STANDALONE COMMANDS *******************
 
@@ -474,16 +485,16 @@ async def lotr(cont,*,arg0 : str):
 # Moderation Features
 #*****************************************************************************************************************
 
-@bot.event
-async def on_message_delete(message):
-    try:
-        ChannelId = serverData[message.server.id]["automod"]
-    except Exception:
-        ChannelId = "318828760331845634"
+# @bot.event
+# async def on_message_delete(message):
+#     try:
+#         ChannelId = serverData[message.server.id]["automod"]
+#     except Exception:
+#         ChannelId = "318828760331845634"
 
-    if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
-        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message: ``` {0.content} ```'
-        await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
+#     if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
+#         fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message: ``` {0.content} ```'
+#         await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
 
 @bot.event
 async def on_message_edit(before, after):
@@ -503,16 +514,17 @@ async def on_member_join(member):
 
     server = member.server
     fmt = 'Welcome {0.mention} to {1.name}!'
-    await bot.change_nickname(member, member.name)
+    await bot.change_nickname(member, str(member.name))
     await bot.send_message(bot.get_channel(server.default_channel.id), fmt.format(member, server))
     if member.id not in userData:
-        userData[member.id] = {'money': 2000, 'daily': '32','title':' ','exp':0,'perms':{},'warning':[],'lastMessage':'','lastMessageTime':0}
-    userData[member.id][permsDict][server.id] = 0
+        userData[member.id] = {'money': 200, 'daily': '32','title':' ','exp':0,'perms':{},'warning':[],'lastMessage':'','lastMessageTime':0}
+    userData[member.id]["perms"][server.id] = 0
 
 @bot.event
 async def on_message(message):
     userID = message.author.id
     channelID = message.channel.id
+
     if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 4) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime())) and (userID not in ignoreAutomodList and channelID not in ignoreAutomodList) and message.content.startswith("!") == False:
         try:
             ChannelId = serverData[message.server.id]["automod"]

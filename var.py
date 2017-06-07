@@ -1,28 +1,5 @@
 #Help Doc
-helpVar=""" :information_source: The `NecroBot` Help Guide :information_source: 
-The NecroBot is a new highly buggy bot which is currently WIP, use this guide to figure out what it can do but be warned: if the bot doesn't respond it's either offline or has crashed. Either way best to wait for Necro to come on in that case.
-
-__Command List (may not always be up to date)__
-`!claim` - claim your daily bonus
-`!balance [@User]` - check your balance or the balance of another user
-`!calc [equation]` - evaluates equation us `+` to add, `-` to minus, `*` to multiply, `/` to divide, `**` for exponents, `%` for modulo
-`!h ` - for this help bar
-`!edain [article]` - search for an article on the Edain wiki. Content will be displayed if found, else a list of relevant articles will be provided.
-`!lotrfact` - prints one of sixty lotr facts at random.
-`!rr [int]` - a good old game of russian roulette. Provide an int between 1 and 6. If none are provided will default to 5.
-`!lotr [article]` - search for an article on the LOTR wiki. Content will be displayed if found, else a list of relevant articles will be provided.
-`!info [@User]` - check your info (if no argument is provided) or the info of another user
-`!tarot` - reads your fate in the cards using the art of tarology
-
-__Admin Commands__
-`!kill` - saves all the files and sys.exit() the bot
-`!add [operator] [intenger] [@User]` - adds [operator][intenger] to the balance of [@User]
-`!setStats [@User]` - sets default stats for @User
-`!perms [@User] [permsKeyWord] [Title]` - sets title, which is also responsible for permission level
-`!setAll` - sets the default stats for all user not already registered on the server
-
-
-Attempt to not break the bot please. And good day."""
+helpVar=""" """
 
 #Permission Dictionnary
 permsDict = {"user": 0, "helper" : 1, "mod": 2, "semi-admin": 3, "admin": 4, "server-owner": 5, "smith":6}

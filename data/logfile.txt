@@ -146,3 +146,85 @@ Tue Jun  6 13:11:49 2017: Necro#6714 used lotr with args: bob
 Tue Jun  6 13:12:05 2017: Necro#6714 used lotr with args: lalalalal
 Tue Jun  6 13:12:22 2017: Necro#6714 used lotr with args: lord of the rings
 Tue Jun  6 13:13:07 2017: Necro killed bot
+Tue Jun  6 17:26:53 2017: Necro#6714 used purge with args: 10
+Tue Jun  6 17:28:33 2017: Necro#6714 used ignore
+Tue Jun  6 17:29:06 2017: Necro#6714 used ignore
+Tue Jun  6 17:29:14 2017: Elf_in_silver_armor#6462 used claim
+Tue Jun  6 17:29:20 2017: Elf_in_silver_armor#6462 used purge with args: 1
+Tue Jun  6 17:29:30 2017: Elf_in_silver_armor#6462 used purge with args: 10
+Tue Jun  6 17:29:36 2017: Elf_in_silver_armor#6462 used purge with args: 1
+Tue Jun  6 17:29:44 2017: Elf_in_silver_armor#6462 used purge with args: 1
+Tue Jun  6 17:52:51 2017: Necro#6714 used ignored
+Tue Jun  6 20:19:25 2017: Necro killed bot
+Tue Jun  6 20:20:17 2017: Necro#6714 used setAll
+Tue Jun  6 20:21:03 2017: Necro killed bot
+Tue Jun  6 20:21:09 2017: Necro killed bot
+Tue Jun  6 20:26:55 2017: Necro killed bot
+Tue Jun  6 20:30:14 2017: Necro#6714 used setStats.
+Tue Jun  6 20:30:37 2017: Necro killed bot
+Tue Jun  6 20:32:52 2017: Necro#6714 used setStats.
+Tue Jun  6 20:33:14 2017: Necro#6714 used setStats.
+Tue Jun  6 20:33:30 2017: Necro#6714 used info
+Tue Jun  6 20:40:34 2017: Necro killed bot
+Tue Jun  6 20:40:46 2017: Necro#6714 used info
+Tue Jun  6 20:41:07 2017: Necro#6714 used info
+Tue Jun  6 20:42:32 2017: Necro killed bot
+Tue Jun  6 20:44:37 2017: Necro#6714 used info
+Tue Jun  6 20:44:43 2017: Necro#6714 used info
+Tue Jun  6 20:55:39 2017: Necro killed bot
+Tue Jun  6 21:00:07 2017: Necro#6714 used info
+Tue Jun  6 21:00:30 2017: Necro#6714 used info
+Tue Jun  6 22:22:12 2017: Necro#6714 used speak with args: **I love you Elfu**
+Tue Jun  6 22:22:52 2017: Necro#6714 used speak with args: **Why do you hate me?**
+Tue Jun  6 22:23:12 2017: Necro#6714 used speak with args: **Elfu, why do you hate me?**
+Tue Jun  6 22:23:44 2017: Elf_in_silver_armor#6462 used purge with args: 100
+Tue Jun  6 22:24:37 2017: Necro killed bot
+Tue Jun  6 22:26:20 2017: Elf_in_silver_armor#6462 used purge with args: 1000
+Tue Jun  6 22:26:47 2017: Necro#6714 used ignore
+Tue Jun  6 22:26:57 2017: Necro#6714 used ignore
+Tue Jun  6 22:27:10 2017: Necro#6714 used ignore
+Tue Jun  6 22:27:34 2017: Necro#6714 used ignore
+Tue Jun  6 22:28:15 2017: Elf_in_silver_armor#6462 used purge with args: 100
+Tue Jun  6 22:28:28 2017: Necro#6714 used ignore
+Tue Jun  6 22:34:58 2017: Necro#6714 used automod
+Tue Jun  6 22:37:16 2017: Necro#6714 used speak with args: *sobs*
+Tue Jun  6 22:44:17 2017: Necro#6714 used mute
+Tue Jun  6 22:45:25 2017: Necro killed bot
+Tue Jun  6 22:45:41 2017: Necro#6714 used purge with args: 50
+Tue Jun  6 22:45:49 2017: Necro#6714 used purge with args: 50
+Tue Jun  6 22:49:20 2017: Necro#6714 used purge with args: 100
+Tue Jun  6 22:49:45 2017: Necro#6714 used mute
+Tue Jun  6 22:49:59 2017: Necro#6714 used mute
+Wed Jun  7 00:35:27 2017: Necro killed bot
+Wed Jun  7 00:46:54 2017: Necro killed bot
+Wed Jun  7 00:48:04 2017: Necro#6714 used pm with args: Wanna hook up? :kappa:
+Wed Jun  7 00:48:54 2017: Necro killed bot
+Wed Jun  7 00:49:10 2017: Necro#6714 used pm with args: Wanna hook up? :kappa:
+Wed Jun  7 00:57:20 2017: Necro#6714 used pm with args: test
+Wed Jun  7 00:57:26 2017: Necro killed bot
+Wed Jun  7 01:07:26 2017: Necro#6714 used pm with args: hey sexy
+Wed Jun  7 01:10:31 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:13:15 2017: Necro#6714 used help
+Wed Jun  7 01:13:17 2017: Necro#6714 used rr
+Wed Jun  7 01:13:38 2017: Cookie (Koko)#8570 used rr
+Wed Jun  7 01:16:37 2017: Necro killed bot
+Wed Jun  7 01:16:47 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:17:04 2017: Necro killed bot
+Wed Jun  7 01:17:12 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:17:28 2017: Necro killed bot
+Wed Jun  7 01:17:52 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:18:09 2017: Necro killed bot
+Wed Jun  7 01:18:15 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:18:45 2017: Necro killed bot
+Wed Jun  7 01:18:59 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:21:46 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:22:22 2017: Necro killed bot
+Wed Jun  7 01:22:47 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:23:03 2017: Necro#6714 used pm with args: say something
+Wed Jun  7 01:23:33 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:23:55 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:26:48 2017: Necro killed bot
+Wed Jun  7 01:27:14 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:27:45 2017: Necro killed bot
+Wed Jun  7 01:27:52 2017: Necro#6714 used pm with args: hey
+Wed Jun  7 01:30:12 2017: Necro killed bot
