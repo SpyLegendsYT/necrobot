@@ -42,7 +42,7 @@ __Moderations Commands__
 * `!setStats [@User]` - sets default stats for @User (Permission level of 2+ (Mod))
 * `!perms [@User] [0-6]` - sets permission level which dictates what commands can be used, can only set a permission level lower then itself. (Permission level of 4+ for basic access (Server Admin))
 * `!setAll` - sets the default stats for all user not already registered on the server (Permission leve of 6+ (NecroBot Admin))
-* `!ignore` - prints the list of Users/Channels ignored by the automoderation system and the list of Users/Channels ignored by the bot (Any)
+* `!ignored` - prints the list of Users/Channels ignored by the automoderation system and the list of Users/Channels ignored by the bot (Any)
 * `!mute [seconds] [@User(s)]` - mutes all the users mentionned for the amount of seconds provided, if no seconds argument is provided, indefinitely. (Permission level of 2+ (Mod))
 * `!unmute [@User(s)]` - unmutes all muted users mentionned. (Permission level of 2+ (Mod))
 * `!speak [channelID] [message]` - broadcasts a message to the channel provided by proxy of the bot (Permission level of 4+ (Server Admin))
