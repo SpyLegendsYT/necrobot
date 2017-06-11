@@ -228,3 +228,127 @@ Wed Jun  7 01:27:14 2017: Necro#6714 used pm with args: hey
 Wed Jun  7 01:27:45 2017: Necro killed bot
 Wed Jun  7 01:27:52 2017: Necro#6714 used pm with args: hey
 Wed Jun  7 01:30:12 2017: Necro killed bot
+Wed Jun  7 23:33:43 2017: Necro killed bot
+Wed Jun  7 23:46:55 2017: Necro#6714 used help
+Thu Jun  8 00:04:40 2017: Necro killed bot
+Thu Jun  8 00:08:35 2017: Necro#6714 used help
+Thu Jun  8 00:08:39 2017: Necro#6714 used help
+Thu Jun  8 00:08:56 2017: Necro killed bot
+Thu Jun  8 00:09:05 2017: Necro#6714 used help
+Thu Jun  8 00:37:58 2017: Necro killed bot
+Thu Jun  8 20:24:10 2017: Necro#6714 used help
+Thu Jun  8 20:24:38 2017: Necro killed bot
+Thu Jun  8 20:25:44 2017: Necro#6714used perms with args: <@271259290415792129>, 3
+Thu Jun  8 20:25:50 2017: Necro#6714 used ignore
+Thu Jun  8 20:26:28 2017: Necro killed bot
+Thu Jun  8 20:41:02 2017: Elf_in_silver_armor#6462 used mute
+Thu Jun  8 20:57:48 2017: Necro killed bot
+Thu Jun  8 20:58:07 2017: Necro#6714used perms with args: <@271259290415792129>, 6
+Thu Jun  8 22:03:26 2017: Necro killed bot
+Fri Jun  9 22:34:12 2017: Necro killed bot
+Fri Jun  9 22:37:53 2017: Necro#6714 used help
+Fri Jun  9 22:38:02 2017: Necro#6714 used help
+Fri Jun  9 22:38:06 2017: Necro#6714 used help
+Fri Jun  9 22:49:12 2017: Necro#6714 used pm with args: **Bad boi, no spamming yaoi**
+Fri Jun  9 23:15:25 2017: Necro killed bot
+Fri Jun  9 23:17:03 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:17:59 2017: Necro killed bot
+Fri Jun  9 23:18:05 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:18:14 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:18:20 2017: Necro#6714 used edain with args: cirdan
+Fri Jun  9 23:18:26 2017: Necro#6714 used edain with args: Arnot
+Fri Jun  9 23:18:29 2017: Necro#6714 used edain with args: Arnor
+Fri Jun  9 23:18:42 2017: Necro#6714 used edain with args: Arnor Archers
+Fri Jun  9 23:19:25 2017: Elf_in_silver_armor#6462 used edain with args: Glorfindel
+Fri Jun  9 23:19:26 2017: Necro#6714 used edain with args: Sauron
+Fri Jun  9 23:21:00 2017: Necro killed bot
+Fri Jun  9 23:21:12 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:23:37 2017: Necro killed bot
+Fri Jun  9 23:24:49 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:25:07 2017: Necro killed bot
+Fri Jun  9 23:25:24 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:27:39 2017: Necro killed bot
+Fri Jun  9 23:27:51 2017: Necro#6714 used edain with args: Cirdan
+Fri Jun  9 23:47:19 2017: Necro killed bot
+Fri Jun  9 23:47:57 2017: Necro killed bot
+Fri Jun  9 23:48:23 2017: Necro killed bot
+Sat Jun 10 00:36:55 2017: Necro killed bot
+Sat Jun 10 15:43:03 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 15:43:34 2017: Necro killed bot
+Sat Jun 10 15:43:41 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 18:13:45 2017: Necro killed bot
+Sat Jun 10 18:13:59 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 18:15:00 2017: Necro killed bot
+Sat Jun 10 18:15:10 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 18:16:41 2017: Necro#6714 used edain with args: Castellans
+Sat Jun 10 18:18:15 2017: Necro killed bot
+Sat Jun 10 18:18:27 2017: Necro#6714 used edain with args: Castellans
+Sat Jun 10 18:26:34 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 18:27:41 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 18:29:24 2017: Necro#6714 used edain with args: Khamul
+Sat Jun 10 18:29:32 2017: Necro#6714 used edain with args: Elrond
+Sat Jun 10 18:30:34 2017: Necro#6714 used edain with args: Black Easterlings
+Sat Jun 10 18:48:37 2017: Necro killed bot
+Sat Jun 10 18:48:52 2017: Necro#6714 used edain with args: Castellans
+Sat Jun 10 18:49:14 2017: Necro#6714 used edain with args: Black Easterlings
+Sat Jun 10 18:55:28 2017: Necro#6714 used edain with args: Theoden
+Sat Jun 10 22:55:24 2017: Necro#6714 used pm with args: **Evil comes!**
+Sat Jun 10 23:08:38 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:08:45 2017: Necro killed bot
+Sat Jun 10 23:08:38 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:08:45 2017: Necro killed bot
+Sat Jun 10 23:09:16 2017: Necro#6714 used edain with args: sauron
+Sat Jun 10 23:09:57 2017: Necro killed bot
+Sat Jun 10 23:10:12 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:11:19 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:15:36 2017: Necro killed bot
+Sat Jun 10 23:15:56 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:19:14 2017: Necro killed bot
+Sat Jun 10 23:20:22 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:22:01 2017: Necro#6714 used pm with args: **Necro says you should come back, he loves you**
+Sat Jun 10 23:22:44 2017: Necro#6714 used pm with args: **Please?**
+Sat Jun 10 23:28:10 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 23:30:36 2017: Necro killed bot
+Sat Jun 10 23:30:41 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 23:33:51 2017: Necro killed bot
+Sat Jun 10 23:34:03 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:36:01 2017: Necro killed bot
+Sat Jun 10 23:36:16 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 23:36:24 2017: Necro#6714 used edain with args: Sauron
+Sat Jun 10 23:38:11 2017: Necro killed bot
+Sat Jun 10 23:38:23 2017: Necro#6714 used edain with args: Cirdan
+Sat Jun 10 23:38:31 2017: Necro#6714 used edain with args: Sauron
+Sun Jun 11 00:24:31 2017: Necro killed bot
+Sun Jun 11 00:24:40 2017: Necro#6714 used edain with args: Cirdan
+Sun Jun 11 00:24:47 2017: Necro#6714 used edain with args: Sauron
+Sun Jun 11 00:31:57 2017: Necro killed bot
+Sun Jun 11 00:32:06 2017: Necro#6714 used edain with args: Cirdan
+Sun Jun 11 00:32:11 2017: Necro#6714 used edain with args: Sauron
+Sun Jun 11 00:33:39 2017: Necro killed bot
+Sun Jun 11 00:34:07 2017: Necro#6714 used edain with args: Sauron
+Sun Jun 11 00:34:23 2017: Necro killed bot
+Sun Jun 11 00:34:31 2017: Necro#6714 used edain with args: Sauron
+Sun Jun 11 00:35:55 2017: Necro#6714 used edain with args: Castellan
+Sun Jun 11 00:43:42 2017: Necro killed bot
+Sun Jun 11 00:46:18 2017: Necro#6714 used pm with args: **Wanna hook up? :kappa:**
+Sun Jun 11 00:46:46 2017: Necro#6714 used pm with args: **Wanna hook up? :kappa:**
+Sun Jun 11 00:48:36 2017: Necro#6714 used edain with args: Castellan
+Sun Jun 11 00:48:57 2017: Necro#6714 used edain with args: Castellans
+Sun Jun 11 00:49:41 2017: Necro killed bot
+Sun Jun 11 00:49:50 2017: Necro#6714 used edain with args: Castellans
+Sun Jun 11 00:50:45 2017: Necro#6714 used edain with args: Castellans
+Sun Jun 11 00:58:34 2017: Necro killed bot
+Sun Jun 11 00:58:45 2017: Necro#6714 used lotr with args: Finrod
+Sun Jun 11 00:59:06 2017: Necro killed bot
+Sun Jun 11 00:59:14 2017: Necro#6714 used lotr with args: Finrod
+Sun Jun 11 00:59:41 2017: Necro killed bot
+Sun Jun 11 00:59:49 2017: Necro#6714 used lotr with args: Finrod
+Sun Jun 11 01:01:46 2017: Necro killed bot
+Sun Jun 11 01:01:53 2017: Necro#6714 used lotr with args: Finrod
+Sun Jun 11 01:04:05 2017: Necro killed bot
+Sun Jun 11 01:04:17 2017: Necro#6714 used lotr with args: Finrod
+Sun Jun 11 01:09:09 2017: Necro#6714 used lotr with args: Sauron
+Sun Jun 11 01:11:55 2017: Necro killed bot
+Sun Jun 11 01:13:41 2017: Necro#6714 used lotr with args: Glorfindel
+Sun Jun 11 01:14:31 2017: Necro#6714 used lotr with args: Glorfindel
+Sun Jun 11 01:29:14 2017: Necro killed bot

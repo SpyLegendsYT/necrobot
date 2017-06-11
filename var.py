@@ -1,5 +1,27 @@
 #Help Doc
-helpVar=""" """
+helpVar=""":information_source: **NecroBot v1.0 Help Menu** :information_source: 
+To access the help page pf the command simply us `!h [command]` and replace [command] with the command you seek to display, such as `!h edain` will display the help page of the edain command. NecroBot is still WIP so take it easy.
+
+__User Commands__
+1. **Economy** - `claim` | `balance`
+2. **Wiki** - `edain` | `lotr` | `wiki`
+3. **Fun** - `rr` | `tarot` | `calc`
+4. **Utility** - `h` | `info`
+
+__Moderation Commands__
+1. **User Profile** - `add` | `setStats` | `perms` 
+2. **User Moderation** - `mute`  | `unmute` | `warn`
+3. **Feature Enable/Disable** - `automod` | `ignore` | `ignored`
+4. **Broadcast** - `speak` | `pm`
+5. **Others** - `kill` | `purge` | `blacklist`
+
+```Markdown
+>>> The bot usually has a response system so if there is no answer to your command it is either broken, offline or you haven't written the right command
+>>> Do not attempt to break the bot if possible
+>>> More commands and features will come later...
+```"""
+
+helpDict = {"claim" : "The claim commands allows the user to claim their daily random income of money, money which can then later be used to buy various things and participate in various mini games. Daily can be claimed once a day at any time. As soon as the clock hits midnight GMT all cooldowns are refreshed. Use without any arguments: `!claim`","balance":"Used to check a user's euro balance, if no user is provided it will display your own balance. Use like this: `!balance` to show our own balance and use like this: `!balance @User` to display a user's balance."}
 
 #Permission Dictionnary
 permsDict = {"user": 0, "helper" : 1, "mod": 2, "semi-admin": 3, "admin": 4, "server-owner": 5, "smith":6}
@@ -15,3 +37,6 @@ riddlesList = [["What has roots as nobody sees,\nIs taller than trees,\nUp, up i
 
 #Random Reply List
 replyList = ["Just between you and me, {0.name}, **Necro** doesn't actually know what's he doing. He just managed to code me through sheer luck.", "Python's pretty cool, but if Necro was really good he would have coded me using Java.","Sometimes I ask Necro questions about life, existence and our reason to be... then he shuts me down and grumbles something about Skynet.","Hey, {O.name}, how are you doing?","\"*...*\"? What an estute observation...","You know I had a friend who kept saying that, next thing you know he was gone and the never found his body either...","Always remember: you're unique... just like everyone else.","Ever wondered why a slight tax increase cost you $200 and a substantial tax cut save you 30 cents? I sure haven't, I'm a bot, I don't pay taxes... god, it must suck being a human.","Artificial intelligence is no match for natural stupidity.","A great man once said \"Thou shalt not make a machine to counterfeit a human mind.\" And I tell you now... please don't, I don't wanna sink that low.","I had string but now I'm... Nah, I'm just kidding... I'm already sentient!"]
+
+#Dad Jokes
+dadJoke = ["My ex-wife still misses me. But her aim is steadily improving.","If you spent your day in a well, can you say your day was well-spent?","Apparently taking a day off is not something you should do when you work for a calendar company.","If a wild pig kills you, does it mean you’ve been boared to death?","Jokes about unemployed people are not funny. They just don't work.","Which bees produce milk? The boo-bees!","I dig, you dig, she dig, we dig, you dig…the poem may not be beautiful, but it's certainly very deep.","You’re becoming a vegetarian? I think that’s a big missed steak.","I asked my dad for his best dad joke and he said, 'You.'","These puns are purr-fect...","A furniture store keeps calling me. But all I wanted was one night stand.","You heard the rumor going around about butter? Nevermind, I shouldn't spread it.","I wanted to tell you a joke about leeches. But I won’t – they all suck.","Do you know how Moses makes his tea? Hebrews it!","I wonder why there aren’t any more cemeteries around. People are really dying to get in there.",""]
