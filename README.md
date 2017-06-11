@@ -21,7 +21,7 @@ __Planned Features__
 * [ ] **EXP System** - longer exp cooldown, level up system, random amount of exp
 * [ ] **Money System** - actual use of money, transfers between users
 * [ ] **Help system** - rewamp into something more compact, allows user to add an argument to look up a detailed description of a command.
-* [ ] **Wikia System** - make a more efficient use of the Wikia API system to allow users to find more out on their favorite wiki
+* [x] **Wikia System** - make a more efficient use of the Wikia API system to allow users to find more out on their favorite wiki
 
 __Command List (may not always be up to date)__
 * `!claim` - claim your daily bonus. (Any)
