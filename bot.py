@@ -617,4 +617,4 @@ async def on_message(message):
         else:
             await bot.process_commands(message)
 
-bot.run('MzE3NjE5MjgzMzc3MjU4NDk3.DAo8eQ.dmwPhH-zuqm5XzBhPjk_0nmitks')
+bot.run('TOKEN')
