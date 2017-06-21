@@ -71,9 +71,18 @@ async def on_ready():
 # Internal Function
 #*****************************************************************************************************************
 
-def time():
+def close_player(filename):
+    os.remove(filename)
+
+def logit(cont, func):
     localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
-    return localtime
+    msg = str(localtime + str(cont.message.author) + " used !" + func)
+
+    if len(cont.message.content[len(func)+2:]) > 0:
+        msg2 = str(" with " + str(cont.message.content[len(func)+2:]))
+        log.write(msg + msg2)
+    else:
+        log.write(msg)
 
 
 #*****************************************************************************************************************
@@ -93,8 +102,8 @@ def is_user(m):
 #Saves all the data and terminates the bot
 @bot.command(pass_context = True)
 async def kill(cont):
+    logit(cont, "kill")
     if cont.message.author.id == "241942232867799040":
-        log.write(time()+"Necro killed bot")
         log.close()
         with open("data/userdata.csv","w",newline="") as csvfile:
             Awriter = csv.writer(csvfile)
@@ -116,22 +125,21 @@ async def kill(cont):
         # await bot.send_message(bot.get_channel("287420616930492416"), "**Bot Offline**")
         sys.exit()
     else:
-        log.write(time()+ str(cont.message.author) + " tried to kill bot")
         await bot.say(":negative_squared_cross_mark: | You do not have permission to kill the bot. Your attempt has been logged.")
 
 #Used to add or subtract money from user accounts
 @bot.command(pass_context = True)
-async def add(cont, arg0 : str, arg1 : int, arg2 : str):
-    log.write(time()+str(cont.message.author)+" used add with arguments: "+arg0+" "+str(arg1)+" "+arg2)
+async def add(cont, arg0 : str, arg1 : int, arg2 : discord.Member):
+    logit(cont,"add")
+    user = arg2.id
 
-    arg2 = arg2.replace("<@","").replace(">","").replace("!","")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
         if arg0 == "+":
-            userData[arg2]["money"] += arg1
-            await bot.say(":atm: | New user balance is **"+str(userData[arg2]["money"])+ "** :euro:")
+            userData[user]["money"] += arg1
+            await bot.say(":atm: | New user balance is **"+str(userData[user]["money"])+ "** :euro:")
         elif arg0 == "-":
-            userData[arg2]["money"] -= arg1
-            await bot.say(":atm: | New user balance is **"+str(userData[arg2]["money"])+ "** :euro:")
+            userData[user]["money"] -= arg1
+            await bot.say(":atm: | New user balance is **"+str(userData[user]["money"])+ "** :euro:")
         else:
             await bot.say(":negative_squared_cross_mark: | Operation no recognized.")
     else:
@@ -139,26 +147,24 @@ async def add(cont, arg0 : str, arg1 : int, arg2 : str):
 
 #Set the stats for individula users that might have slipped through the join system and the setAll command
 @bot.command(pass_context = True)
-async def setStats(cont, arg0):
-    log.write(time()+str(cont.message.author)+" used setStats.")
+async def setStats(cont, arg0 : discord.Member):
+    logit(cont,"setStats")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2:
-        arg0 = arg0.replace("<@","").replace(">","").replace("!","")
-        if arg0 not in userData:
-            userData[arg0] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
+        if arg0.id not in userData:
+            userData[arg0.id] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
         if cont.message.server.id not in userData[cont.message.author.id]["perms"]:
-            userData[arg0]["perms"][cont.message.server.id] = 0
+            userData[arg0.id]["perms"][cont.message.server.id] = 0
         await bot.say("Stats set for user")
     else:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
 
 #set a permission level for a user, permission is only set if user issuing the commands has a higher level than they are issuing and have more than 4
 @bot.command(pass_context = True)
-async def perms(cont, arg0 : str, arg1 : int):
-    log.write(time()+str(cont.message.author)+"used perms with args: "+arg0+", "+str(arg1))
-    arg0Fixed = arg0.replace("<@","").replace(">","").replace("!","")
+async def perms(cont, arg0 : discord.Member, arg1 : int):
+    logit(cont,"perms")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4 and userData[cont.message.author.id]["perms"][cont.message.server.id] > arg1:
-        userData[arg0Fixed]["perms"][cont.message.server.id] = arg1
-        await bot.say("All good to go, **"+ arg0 + "** now has permission level **"+ str(userData[arg0Fixed]["perms"][cont.message.server.id]) + "**")
+        userData[arg0]["perms"][cont.message.server.id] = arg1
+        await bot.say("All good to go, **"+ arg0 + "** now has permission level **"+ str(userData[arg0]["perms"][cont.message.server.id]) + "**")
     elif userData[cont.message.author.id]["perms"][cont.message.server.id] <= arg1:
         await bot.say(":negative_squared_cross_mark: | You do not have sufficient permissions to grant this permission level")
     else:
@@ -166,8 +172,8 @@ async def perms(cont, arg0 : str, arg1 : int):
 
 #set the stats for all the users on the server the message was issued from
 @bot.command(pass_context = True)
-async def setAll(cont, *arg0):
-    log.write(time()+str(cont.message.author)+" used setAll")
+async def setAll(cont):
+    logit(cont,"setAll")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
         membersServer = cont.message.server.members
         for x in membersServer:
@@ -185,8 +191,8 @@ async def setAll(cont, *arg0):
 
 #list of users/channels ignored by the bot and by the autmoderation
 @bot.command(pass_context = True)
-async def ignored(cont, *arg0):
-    log.write(time()+str(cont.message.author)+" used ignored")
+async def ignored(cont):
+    logit(cont,"ignored")
     myList = []
     for x in ignoreAutomodList:
         try:
@@ -209,8 +215,7 @@ async def ignored(cont, *arg0):
 #mutes a user indefinitely or with a timer
 @bot.command(pass_context = True)
 async def mute(cont, arg0):
-    log.write(time()+str(cont.message.author)+" used mute")
-
+    logit(cont,"mute")
     role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2:
         for x in cont.message.mentions:
@@ -234,7 +239,7 @@ async def mute(cont, arg0):
 #unmutes user
 @bot.command(pass_context = True)
 async def unmute(cont, arg0):
-    log.write(time()+str(cont.message.author)+" used mute")
+    logit(cont,"unmute")
     role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2:
         for x in cont.message.mentions:
@@ -249,7 +254,7 @@ async def unmute(cont, arg0):
 #disable/enable autmoderation for users and channels
 @bot.command(pass_context = True)
 async def automod(cont, arg0):
-    log.write(time()+str(cont.message.author)+" used automod")
+    logit(cont,"automod")
     myList = []
 
     for x in cont.message.mentions:
@@ -280,7 +285,7 @@ async def automod(cont, arg0):
 #enable/disable commands for users and channels
 @bot.command(pass_context = True)   
 async def ignore(cont, arg0):
-    log.write(time()+str(cont.message.author)+" used ignore")
+    logit(cont,"ignore")
     myList = []
 
     for x in cont.message.mentions:
@@ -311,14 +316,14 @@ async def ignore(cont, arg0):
 #sends arg1 to the channel with id arg0
 @bot.command(pass_context = True)
 async def speak(cont, arg0,*, arg1,):
-    log.write(time()+str(cont.message.author)+" used speak with args: "+ str(arg1))
+    logit(cont,"speak")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
         await bot.send_message(bot.get_channel(arg0), ":loudspeaker: | "+arg1)
 
 #pm a user
 @bot.command(pass_context = True)
 async def pm(cont, arg0,*,arg1):
-    log.write(time()+str(cont.message.author)+" used pm with args: "+ str(arg1))
+    logit(cont,"pm")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
         user = bot.get_server(cont.message.server.id).get_member(arg0)
         await bot.start_private_message(user)
@@ -330,7 +335,7 @@ async def pm(cont, arg0,*,arg1):
 # Add a warning to the user's warning list
 @bot.command(pass_context = True)
 async def warn(cont, arg0, arg1,*, arg2):
-    log.write(time()+str(cont.message.author)+" used warn with arg: " + str(arg0)+ " " + str(arg1) + " " +str(arg2))
+    logit(cont,"warn")
     if arg0 == "del":
         if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
             await bot.say("Warning position: **\"" + userData[cont.message.mentions[0].id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
@@ -349,8 +354,7 @@ async def warn(cont, arg0, arg1,*, arg2):
 #removes a certain number of messages
 @bot.command(pass_context = True)
 async def purge(cont, arg0 : int):
-    log.write(time()+str(cont.message.author)+" used purge with args: "+ str(arg0))
-
+    logit(cont,"purge")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
         await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=arg0+1)
 
@@ -363,13 +367,14 @@ async def purge(cont, arg0 : int):
 #blacklists a user which means that if they join any server with necrobot they'll be banned
 @bot.command(pass_context = True)
 async def blacklist(cont):
-    log.write(time()+str(cont.message.author)+" used blacklist with args: "+ str(cont.message.content))
+    logit(cont,"blacklist")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
         blacklistList.append(cont.message.mentions[0].id)
         await bot.ban(bot.get_server(cont.message.server.id).get_member(cont.message.mentions[0].id), delete_message_days=7)
 #set roles
 @bot.command(pass_context = True)
 async def setRoles(cont):
+    logit(cont,"setRoles")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
         log.write(time()+str(cont.message.author)+" used setRoles")
         for x in roleList:
@@ -387,18 +392,29 @@ async def setRoles(cont):
 
 #locks someone in a voice chat, everytime they leave that voice chat they will be moved to it
 @bot.command(pass_context = True)
-async def lock(cont, arg0, *arg1):
+async def lock(cont, arg0 : discord.Member, *arg1):
+    logit(cont,"lock")
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
-        if cont.message.mentions[0].id in lockedList:
-            lockedList.remove(cont.message.mentions[0].id)
+        if arg0.id in lockedList:
+            lockedList.remove(arg0.id)
         else:
-            v_channel = cont.message.mentions[0].voice_channel.id
-
-            print(v_channel)
-            userData[cont.message.mentions[0].id]["locked"] = v_channel
-            lockedList.append(cont.message.mentions[0].id)
+            v_channel = arg0.voice_channel.id
+            userData[arg0.id]["locked"] = v_channel
+            lockedList.append(arg0.id)
     else:
         await bot.say("You do not have the necessary permissions to lock someone in a voice chat.")
+
+#changes user nickname
+@bot.command(pass_context = True)
+async def nick(cont, arg0 : discord.Member,*, arg1):
+    logit(cont,"nick")
+    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
+        try:
+            await bot.change_nickname(arg0, arg1)
+        except discord.errors.Forbidden:
+            await bot.say("You cannot change the nickname of that user.")
+    else:
+        await bot.say("You do not have sufficient permissions to change a nickname.")
 
 
 #*****************************************************************************************************************
@@ -408,18 +424,17 @@ async def lock(cont, arg0, *arg1):
 #****************** USER DEPENDENT COMMANDS ******************#
 
 @bot.command(pass_context = True)
-async def balance(cont,*arg0):
-    log.write(time()+str(cont.message.author)+" used balance")
+async def balance(cont, *arg0 : discord.Member):
+    logit(cont,"balance")
     if arg0:
-        arg0 = arg0[0]
-        fixed = arg0.replace("<@","").replace(">","").replace("!","")
-        await bot.say(":atm: | **"+ arg0 +"** has **"+ str(userData[fixed]["money"]) +"** :euro:")
+        user = arg0[0]
+        await bot.say(":atm: | **"+ str(user.name) +"** has **"+ str(userData[user.id]["money"]) +"** :euro:")
     else:
         await bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
 
 @bot.command(pass_context = True)
 async def claim(cont):
-    log.write(time()+str(cont.message.author)+" used claim")
+    logit(cont,"claim")
     aDay = str(d.datetime.today().day)
     if aDay != userData[cont.message.author.id]["daily"]:
         await bot.say(":m: | You have received your daily **200** :euro:")
@@ -429,16 +444,15 @@ async def claim(cont):
         await bot.say(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
 
 @bot.command(pass_context = True)
-async def info(cont, *arg0):
+async def info(cont, *arg0 : discord.Member):
+    logit(cont,"info")
     warningList = []
-    log.write(time()+str(cont.message.author)+" used info")
     if arg0:
-        arg0 = arg0[0]
-        userID = arg0.replace("<@","").replace(">","").replace("!","")
+        userID = arg0[0].id
+        user = arg0[0]
     else:
         userID = str(cont.message.author.id)
-
-    user = bot.get_server(cont.message.server.id).get_member(userID)
+        user = cont.message.author
 
     await bot.say(":id: User Info :id:\n**User Title**: " + userData[userID]["title"] + "\n**User Perms Level**: " + str(userData[userID]["perms"]) + "\n**User Balance**: " + str(userData[userID]["money"]) + "\n**User ID**: " + str(userID) + "\n**User XP**: " + str(userData[userID]["exp"]) + "\n**User Warnings**:" + str(userData[userID]["warnings"]) + "\n**User Nick**: "+ str(user.nick))
 
@@ -447,7 +461,7 @@ async def info(cont, *arg0):
 #general help command (could be outdated)
 @bot.command(pass_context = True)
 async def h(cont, *arg0 : str):
-    log.write(time()+str(cont.message.author)+" used help")
+    logit(cont,"h")
     if arg0:
         helpRequest = arg0[0]
         await bot.say(":information_source: **The `" + helpRequest + "` command** :information_source:\n \n" + helpDict[helpRequest] + "\n ```Markdown \n>>> The bot usually has a response system so if there is no answer to your command it is either broken, offline or you haven't written the right command \n>>> Do not attempt to break the bot if possible \n>>> More commands and features will come later... \n```")
@@ -457,7 +471,7 @@ async def h(cont, *arg0 : str):
 # evaluates the the argument as a mathematical equation
 @bot.command(pass_context = True)
 async def calc(cont,*, arg : str):
-    log.write(time() + str(cont.message.author.name) + " used calc with message:" + arg)
+    logit(cont,"calc")
     try:
         final = eval(arg)
         await bot.say(final)
@@ -466,8 +480,8 @@ async def calc(cont,*, arg : str):
 
 # reads the user "fate" in the cards
 @bot.command(pass_context = True)
-async def tarot(cont, *arg0):
-    log.write(time()+str(cont.message.author)+" used tarot")
+async def tarot(cont):
+    logit(cont,"tarot")
     myList = random.sample(range(0,44),3)
 
     await bot.say(":white_flower: | Settle down now and let Necro see your future my dear "+ cont.message.author.name + "...\n**Card #1:** " + tarotList[myList[0]] +"\n**Card #2:** " + tarotList[myList[1]] +"\n**Card #3:** " + tarotList[myList[2]] +"\n__*That is your fate, none can change it for better or worst.*__\n(**Not to be taken seriously**) ")
@@ -475,7 +489,7 @@ async def tarot(cont, *arg0):
 # good old game of russian roulette
 @bot.command(pass_context = True)
 async def rr(cont, *arg0 : int):
-    log.write(time()+str(cont.message.author)+" used rr")
+    logit(cont,"rr")
     try:
         num  = int(arg0[0])
         if num > 0 and num <= 6:
@@ -493,14 +507,14 @@ async def rr(cont, *arg0 : int):
         await bot.say(":ok: | Looks like you'll last the night, hopefully your friends do too.")
 
 @bot.command(pass_context = True)
-async def lotrfact(cont, *arg0):
-    log.write(time()+str(cont.message.author)+" used lotrfact")
+async def lotrfact(cont):
+    logit(cont,"lotrfact")
     num1 = random.randint(0,len(lotrList)-1)
     await bot.say(":trident: | **Fact #"+str(num1)+"**: "+lotrList[num1])
 
 @bot.command(pass_context = True)
 async def edain(cont,*,arg0 : str):
-    log.write(time()+str(cont.message.author)+" used edain with args: "+arg0)
+    logit(cont,"edain")
     try:
         article = wikia.page("Edain", arg0)
         url = article.url.replace(" ","_")
@@ -534,7 +548,7 @@ async def edain(cont,*,arg0 : str):
 
 @bot.command(pass_context = True)
 async def lotr(cont,*,arg0 : str):
-    log.write(time()+str(cont.message.author)+" used lotr with args: "+arg0)
+    logit(cont,"lotr")
     try:
         article = wikia.page("lotr", arg0)
         url = article.url.replace(" ","_")
@@ -558,8 +572,7 @@ async def lotr(cont,*,arg0 : str):
 
 @bot.command(pass_context = True)
 async def wiki(cont, arg0,*,arg1):
-    log.write(time()+str(cont.message.author)+" used wiki with args: "+arg0 + " and " + arg1)
-    related = ""
+    logit(cont,"wiki")
     try:
         article = wikia.page(arg0, arg1)
         url = article.url.replace(" ","_")
@@ -583,13 +596,12 @@ async def wiki(cont, arg0,*,arg1):
 
 @bot.command(pass_context = True)
 async def dadjoke(cont):
+    logit(cont,"dadjoke")
     await bot.say(":speaking_head: | **" + dadJoke[random.randint(0,len(dadJoke)-1)] + "**")
-
-def close_player(filename):
-    os.remove(filename)
 
 @bot.command(pass_context = True)
 async def play(cont, arg0):
+    logit(cont,"play")
     vc = cont.message.author.voice_channel
     voice_client = await bot.join_voice_channel(vc)
 
@@ -616,13 +628,8 @@ async def play(cont, arg0):
     player.start()
 
 @bot.command(pass_context = True)
-async def disc():
-    for x in bot.voice_clients:
-        await x.disconnect()
-
-
-@bot.command(pass_context = True)
 async def cat(cont):
+    logit(cont,"cat")
     async with aiohttp.ClientSession() as cs:
         async with cs.get('http://random.cat/meow') as r:
             res = await r.json()
@@ -630,6 +637,7 @@ async def cat(cont):
 
 @bot.command(pass_context = True)
 async def dog(cont):
+    logit(cont,"dog")
     async with aiohttp.ClientSession() as cs:
         async with cs.get('http://random.dog/woof.json') as r:
             res = await r.json()
@@ -651,8 +659,8 @@ async def on_message_delete(message):
         if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
             fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message: ``` {0.content} ```'
             await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
-
-    selfDel = True
+    else:
+        selfDel = True
 
 @bot.event
 async def on_message_edit(before, after):
@@ -681,6 +689,11 @@ async def on_member_join(member):
 @bot.event
 async def on_member_remove(member):
     await bot.send_message(bot.get_channel(server.default_channel.id),"Leaving us so soon, {0.mention}? We'll miss you...".format(member))
+
+# @bot.event
+# async def on_error(event, *args, **kwargs):
+#     message = args[0]
+#     await bot.send_message(message.channel, ":x: | **Missing some parameters check !h [command] to check all required parameters.**")
 
 @bot.event
 async def on_voice_state_update(before, after):
