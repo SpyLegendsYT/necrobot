@@ -4,6 +4,7 @@ from discord.ext import commands
 import csv
 import random
 import sys
+import os
 import time as t
 import calendar as c
 import datetime as d
@@ -12,11 +13,22 @@ import wikia
 import asyncio
 import json
 import html
+import pyglet
+import urllib.request
+import aiohttp
+import async_timeout
+import aiofiles
+
 
 bot = commands.Bot(command_prefix='!')
 log = open("data/logfile.txt","a+")
 userData = dict()
 serverData = dict()
+lockedList = list()
+selfDel = True
+
+#Role List
+roleList = [["User",discord.Colour.default()],["Helper",discord.Colour.teal()],["Moderator",discord.Colour.orange()],["Semi-Admin",discord.Colour.darker_grey()],["Admin",discord.Colour.blue()],["Server Owner",discord.Colour.magenta()],["NecroBot Admin",discord.Colour.dark_green()],["The Bot Smith",discord.Colour.dark_red()]]
 
 
 #*****************************************************************************************************************
@@ -27,7 +39,7 @@ with open("data/userdata.csv","r") as f:
     reader = csv.reader(f)
     for row in reader:
         permsDict = json.loads(row[5].replace("'", "\""))
-        userData[row[0]] = {"money":int(row[1]),"daily":row[2],"title":row[3],"exp":int(row[4]),"perms":permsDict,"warnings":row[6].split(","),"lastMessage":"","lastMessageTime":0}
+        userData[row[0]] = {"money":int(row[1]),"daily":row[2],"title":row[3],"exp":int(row[4]),"perms":permsDict,"warnings":row[6].split(","),"lastMessage":"","lastMessageTime":0, "locked":""}
 
 with open("data/setting.csv","r") as f:
     reader = csv.reader(f)
@@ -62,6 +74,7 @@ async def on_ready():
 def time():
     localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
     return localtime
+
 
 #*****************************************************************************************************************
 # Purge Functions
@@ -131,7 +144,7 @@ async def setStats(cont, arg0):
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2:
         arg0 = arg0.replace("<@","").replace(">","").replace("!","")
         if arg0 not in userData:
-            userData[arg0] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0}
+            userData[arg0] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
         if cont.message.server.id not in userData[cont.message.author.id]["perms"]:
             userData[arg0]["perms"][cont.message.server.id] = 0
         await bot.say("Stats set for user")
@@ -164,7 +177,7 @@ async def setAll(cont, *arg0):
                 except Exception:
                     log.write(time()+" set stats for user id:"+str(x.id))
 
-                userData[x.id] = {'money': 2000, 'daily': '32','title':' ','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0}
+                userData[x.id] = {'money': 2000, 'daily': '32','title':' ','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
             if cont.message.server.id not in userData[x.id]["perms"]:
                 userData[x.id]["perms"][cont.message.server.id] = 0
                 
@@ -344,7 +357,6 @@ async def purge(cont, arg0 : int):
         message = await bot.say(":wastebasket: | **" + str(arg0) + "** messages purged.")
         await asyncio.sleep(5)
         await bot.delete_message(message)
-        # await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=10, check=is_bot)
     else:
         await bot.say("You don't have the neccessary permissions to purge messages  .")
 
@@ -355,6 +367,38 @@ async def blacklist(cont):
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
         blacklistList.append(cont.message.mentions[0].id)
         await bot.ban(bot.get_server(cont.message.server.id).get_member(cont.message.mentions[0].id), delete_message_days=7)
+#set roles
+@bot.command(pass_context = True)
+async def setRoles(cont):
+    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
+        log.write(time()+str(cont.message.author)+" used setRoles")
+        for x in roleList:
+            new_role = await bot.create_role(cont.message.server, name=x[0], colour=x[1], mentionable=True)
+
+        await bot.say("**Roles created**")
+
+        for x in cont.message.server.members:
+            role = userData[x.id]["perms"][cont.message.server.id]
+            await bot.add_roles(x, discord.utils.get(cont.message.server.roles, name=roleList[role][0]))
+
+        await bot.say("**Roles assigned**")
+    else:
+        await boy.say("You do not have the necessary permission level to set the NecroBot roles for this server")
+
+#locks someone in a voice chat, everytime they leave that voice chat they will be moved to it
+@bot.command(pass_context = True)
+async def lock(cont, arg0, *arg1):
+    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
+        if cont.message.mentions[0].id in lockedList:
+            lockedList.remove(cont.message.mentions[0].id)
+        else:
+            v_channel = cont.message.mentions[0].voice_channel.id
+
+            print(v_channel)
+            userData[cont.message.mentions[0].id]["locked"] = v_channel
+            lockedList.append(cont.message.mentions[0].id)
+    else:
+        await bot.say("You do not have the necessary permissions to lock someone in a voice chat.")
 
 
 #*****************************************************************************************************************
@@ -541,6 +585,56 @@ async def wiki(cont, arg0,*,arg1):
 async def dadjoke(cont):
     await bot.say(":speaking_head: | **" + dadJoke[random.randint(0,len(dadJoke)-1)] + "**")
 
+def close_player(filename):
+    os.remove(filename)
+
+@bot.command(pass_context = True)
+async def play(cont, arg0):
+    vc = cont.message.author.voice_channel
+    voice_client = await bot.join_voice_channel(vc)
+
+    try:
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get(arg0) as r:
+                filename = os.path.basename(arg0)
+                with open(filename, 'wb') as f_handle:
+                    while True:
+                        chunk = await r.content.read(1024)
+                        if not chunk:
+                            break
+                        f_handle.write(chunk)
+                await r.release()
+
+        print("File downloaded")
+
+        player = voice_client.create_ffmpeg_player(filename, after=lambda:close_player(filename))
+        
+    except:
+        player = await voice_client.create_ytdl_player(arg0, after=lambda:close_player(filename))
+        await bot.say(":musical_note: | Playing `" + player.title)
+
+    player.start()
+
+@bot.command(pass_context = True)
+async def disc():
+    for x in bot.voice_clients:
+        await x.disconnect()
+
+
+@bot.command(pass_context = True)
+async def cat(cont):
+    async with aiohttp.ClientSession() as cs:
+        async with cs.get('http://random.cat/meow') as r:
+            res = await r.json()
+            await bot.send_message(cont.message.channel, res['file'])
+
+@bot.command(pass_context = True)
+async def dog(cont):
+    async with aiohttp.ClientSession() as cs:
+        async with cs.get('http://random.dog/woof.json') as r:
+            res = await r.json()
+            await bot.send_message(cont.message.channel, res['url'])
+
 
 #*****************************************************************************************************************
 # Moderation Features
@@ -548,14 +642,17 @@ async def dadjoke(cont):
 
 @bot.event
 async def on_message_delete(message):
-    try:
-        ChannelId = serverData[message.server.id]["automod"]
-    except Exception:
-        ChannelId = "318828760331845634"
+    if selfDel:
+        try:
+            ChannelId = serverData[message.server.id]["automod"]
+        except Exception:
+            ChannelId = "318828760331845634"
 
-    if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
-        fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message: ``` {0.content} ```'
-        await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
+        if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
+            fmt = '**Auto Moderation: Deletion Detected!**\n{0.author} has deleted the message: ``` {0.content} ```'
+            await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
+
+    selfDel = True
 
 @bot.event
 async def on_message_edit(before, after):
@@ -578,12 +675,17 @@ async def on_member_join(member):
     await bot.change_nickname(member, str(member.name))
     await bot.send_message(bot.get_channel(server.default_channel.id), fmt.format(member, server))
     if member.id not in userData:
-        userData[member.id] = {'money': 200, 'daily': '32','title':' ','exp':0,'perms':{},'warning':[],'lastMessage':'','lastMessageTime':0}
+        userData[member.id] = {'money': 200, 'daily': '32','title':' ','exp':0,'perms':{},'warning':[],'lastMessage':'','lastMessageTime':0, 'locked':''}
     userData[member.id]["perms"][server.id] = 0
 
 @bot.event
 async def on_member_remove(member):
     await bot.send_message(bot.get_channel(server.default_channel.id),"Leaving us so soon, {0.mention}? We'll miss you...".format(member))
+
+@bot.event
+async def on_voice_state_update(before, after):
+    if before.id in lockedList:
+        await bot.move_member(before, bot.get_channel(userData[before.id]["locked"]))
 
 @bot.event
 async def on_message(message):
@@ -596,6 +698,7 @@ async def on_message(message):
         except Exception:
             ChannelId = "318828760331845634"
 
+        selfDel = False
         await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
         await bot.delete_message(message)
         userData[userID]['lastMessage'] = message.content
@@ -617,4 +720,5 @@ async def on_message(message):
         else:
             await bot.process_commands(message)
 
-bot.run('MzE3NjE5MjgzMzc3MjU4NDk3.DAo8eQ.dmwPhH-zuqm5XzBhPjk_0nmitks')
+token = open("data/token.txt","r").read()
+bot.run(token)
