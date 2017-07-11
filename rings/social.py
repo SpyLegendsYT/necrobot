@@ -56,13 +56,9 @@ class Social():
     # good old game of russian roulette
     @commands.command()
     async def rr(self, *arg0 : int):
-        try:
-            num  = int(arg0[0])
-            if num > 0 and num <= 6:
-                bullets = num
-            else:
-                bullets = 1
-        except Exception as e:
+        if arg0 > 0 and arg0 <= 6:
+            bullets = arg0
+        else:
             bullets = 1
 
         await self.bot.say(":gun: | You insert "+ str(bullets) + " bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!")

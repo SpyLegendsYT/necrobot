@@ -33,12 +33,11 @@ class Wiki():
             embed.add_field(name="Quotes", value="Get all the sound quotes for units/heroes [here](http://edain.wikia.com/wiki/Edain_Mod_Soundsets)")
 
             await self.bot.say(embed=embed)
-
-        except Exception:
+        except wikia.wikia.WikiaError:
             try:
                 article = wikia.search("Edain", arg0)
                 await self.bot.say("Article: **"+ arg0 +"** not found, performing search instead, please search again using one of the possible relevant articles below:\n - " + "\n - ".join(article))
-            except Exception:
+            except ValueError:
                 await self.bot.say("Article not found, and search didn't return any results. Please try again with different terms.")
 
     #create a rich embed for an article or searches for articles on the LOTR Wiki
@@ -58,11 +57,11 @@ class Wiki():
             embed.add_field(name="More Pages:", value=related)
 
             await self.bot.say(embed=embed)
-        except Exception:
+        except wikia.wikia.WikiaError:
             try:
                 article = wikia.search("lotr", arg0)
                 await self.bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n - " + "\n - ".join(article))
-            except Exception:
+            except ValueError:
                 await self.bot.say("Article not found, and search didn't return any result. Please try again with different terms.")
 
     #create a rich embed for an article or searches for articles on a given wiki
@@ -82,11 +81,11 @@ class Wiki():
             embed.add_field(name="More Pages:", value=related)
 
             await self.bot.say(embed=embed)
-        except Exception as e:
+        except wikia.wikia.WikiaError:
             try:
                 article = wikia.search(arg0, arg1)
                 await self.bot.say("Article not found, performing search instead, please search again using one of the possible relevant articles below:\n - " + "\n - ".join(article))
-            except Exception:
+            except ValueError:
                 await self.bot.say("Article not found or wiki not recognized, and search didn't return any result. Please try again with different terms.")
 
 def setup(bot):
