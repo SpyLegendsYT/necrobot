@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
 class Music():
     def __init__(self, bot):
@@ -8,7 +9,8 @@ class Music():
     def close_player(filename):
         os.remove(filename)
 
-    @commands.command(pass_context = True)
+    @commands.command(pass_context = True, enabled=False)
+    @commands.cooldown(1, 10, BucketType.channel)
     async def play(self,cont, arg0):
         vc = cont.message.author.voice_channel
         voice_client = await self.bot.join_voice_channel(vc)

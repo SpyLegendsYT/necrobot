@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
 import wikia
 
@@ -9,6 +10,7 @@ class Wiki():
 
     #create a rich embed for an article or searches for articles on the Edain Mod Wiki
     @commands.command()
+    @commands.cooldown(2, 5, BucketType.user)
     async def edain(self,*,arg0 : str):
         try:
             article = wikia.page("Edain", arg0)
@@ -42,6 +44,7 @@ class Wiki():
 
     #create a rich embed for an article or searches for articles on the LOTR Wiki
     @commands.command()
+    @commands.cooldown(2, 5, BucketType.user)
     async def lotr(self,*,arg0 : str):
         try:
             article = wikia.page("lotr", arg0)
@@ -66,6 +69,7 @@ class Wiki():
 
     #create a rich embed for an article or searches for articles on a given wiki
     @commands.command()
+    @commands.cooldown(2, 5, BucketType.user)
     async def wiki(self, arg0,*,arg1):
         try:
             article = wikia.page(arg0, arg1)

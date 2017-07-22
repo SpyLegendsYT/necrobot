@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
 from bs4 import BeautifulSoup
 import aiohttp
@@ -8,9 +9,11 @@ class ModDB():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
-    async def moddb(self, url):
-        if cont.message.content[7:].startswith("http://www.moddb.com/mods/"):
+    @commands.command(pass_context=True)
+    @commands.cooldown(1, 5, BucketType.channel)
+    async def moddb(self, cont, url):
+        print(cont.message.content)
+        if cont.message.content[8:].startswith("http://www.moddb.com/mods/"):
             #obtain xml and html pages
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
@@ -19,7 +22,7 @@ class ModDB():
                 async with session.get(url.replace("www","rss")+ "/articles/feed/rss.xml") as resp:
                     rss = BeautifulSoup(await resp.text(), "xml")
 
-            modName = str(soup.title.string[:len(soup.title.string)-9])
+            modName = str(soup.title.string[:-9])
 
             try:
                 modDesc = str(soup.find(itemprop="description")["content"])
@@ -44,7 +47,7 @@ class ModDB():
                 title = str(article.title.string)
                 desc = str(article.find_all(type="plain")[1].string)
                 link = str(article.link.string)
-                date = str(article.pubDate.string[:len(article.pubDate.string)-14])
+                date = str(article.pubDate.string[:-14])
                 embed.add_field(name=title, value=desc + "... [Link](" + link + ")\n" + "Published "+ date)
 
             #tags
@@ -55,7 +58,7 @@ class ModDB():
                     if len(x) > 0 and x != "\n" and x != " ":
                         tagList.append(str(x))
 
-            embed.add_field(name="Tags", value="#" + " #".join(tagList[:len(tagList)-1]))
+            embed.add_field(name="\u200b", value="#" + " #".join(tagList[:-1]))
 
             #misc stuff
             misc = soup.find_all("h5")
@@ -83,48 +86,33 @@ class ModDB():
             embed.add_field(name="Misc: ", value=score + " \n" + publishers + "  -  " + release_date + "\n**" + comment + "**  -  **" + follow + "**")
 
             #style
-            try:
-                genre = "**Genre**: " + [x.parent.a.string for x in misc if x.string == "Genre"][0]
-            except IndexError:
-                genre = "**Genre**: None"
-            try:
-                theme = "**Theme**: " + [x.parent.a.string for x in misc if x.string == "Theme"][0]
-            except IndexError:
-                theme = "**Theme**: None"
-            try:
-                players = "**Players**: " + [x.parent.a.string for x in misc if x.string == "Players"][0]
-            except IndexError:
-                players = "**Players**: None"
+            finrodList = list()
+            styleList = ["Genre","Theme","Players"]
+            for y in styleList:
+                try:
+                    style = "**" + y + "**: " + [x.parent.a.string for x in misc if x.string == y][0]
+                except IndexError:
+                    style = "**" + y +"**: None"
+                finrodList.append(style)
 
-            embed.add_field(name="Style", value= genre + "\n" + theme + "\n" + players, inline=True)
+            embed.add_field(name="Style", value= "\n".join(finrodList), inline=True)
 
             #stats
-            try:
-                rank = "__Rank__: " + [x.parent.a.string for x in misc if x.string == "Rank"][0]
-            except IndexError:
-                rank = "__Rank__: Unclassed"
-            try:
-                visits = "__Visits__: " + [x.parent.a.string for x in misc if x.string == "Visits"][0]
-            except IndexError:
-                visits = "__Visits__: Not tracked"
+            finrodList = list()
+            statsList = [["Rank","Unclassed"],["Visits","Not Tracked"],["Files","0"],["Articles","0"],["Reviews","0"]]
+            for y in statsList:
+                try:
+                    stat = "__" + y[0] + "__: " + [x.parent.a.string for x in misc if x.string == y[0]][0]
+                except IndexError:
+                    stat = "__" + y[0] + "__: " + y[1]
+                finrodList.append(stat)
+
             try:
                 last_update = "__Last Update__: " + [x.parent.time.string for x in misc if x.string == "Last Update"][0]
             except IndexError:
                 last_update = "__Last Update__: None"
-            try:
-                files = "__Files__: " + [x.parent.a.string for x in misc if x.string == "Files"][0]
-            except IndexError:
-                files = "__Files__: 0"
-            try:
-                articles_posted = "__Articles__: " + [x.parent.a.string for x in misc if x.string == "Articles"][0]
-            except IndexError:
-                articles_posted = "__Articles__: 0"
-            try:
-                reviews = "__Reviews__: " + [x.parent.a.string for x in misc if x.string == "Reviews"][0]
-            except IndexError:
-                reviews = "__Reviews__: 0"
 
-            embed.add_field(name="Stats", value=rank + "\n" + visits + "\n" + last_update + "\n" + files + "\n" + articles_posted + "\n" + reviews)
+            embed.add_field(name="Stats", value= "\n".join(finrodList) + "\n" + last_update)
 
             #you may also like
             suggestionList = list()
@@ -134,7 +122,6 @@ class ModDB():
                 suggestionList.append("[" + link.string + "](" + link["href"] + ")")
 
             embed.add_field(name="You may also like",value=" - ".join(suggestionList))
-
             await self.bot.say(embed=embed)
             await self.bot.delete_message(cont.message)
 

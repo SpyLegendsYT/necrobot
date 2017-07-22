@@ -209,3 +209,145 @@ Tue Jul 11 00:09:44 2017: Necro#6714 used n!ignore add <#311789251190587392>
 Tue Jul 11 00:10:25 2017: Necro#6714 used n!kill
 Tue Jul 11 00:10:53 2017: Necro#6714 used n!ignore add <#311789251190587392>
 Tue Jul 11 00:11:38 2017: Necro#6714 used n!kill
+Tue Jul 18 12:16:57 2017: NecroBot#8387 used **Bot Online**
+Tue Jul 18 12:16:59 2017: Necro#6714 used n!invite
+Tue Jul 18 12:17:00 2017: NecroBot#8387 used Invite the bot to your server using this link: https://discordapp.com/oauth2/authorize?client_id=317619283377258497&scope=bot&permission=8
+Tue Jul 18 12:17:08 2017: Necro#6714 used n!kill
+Fri Jul 21 14:41:15 2017: NecroBot#8387 used **Bot Online**
+Fri Jul 21 14:41:21 2017: Necro#6714 used n!check 241942232867799040
+Fri Jul 21 14:42:53 2017: NecroBot#8387 used **Bot Online**
+Fri Jul 21 14:42:53 2017: NecroBot#8387 used **Bot Online**
+Fri Jul 21 14:42:59 2017: Necro#6714 used n!check 241942232867799040
+Fri Jul 21 14:42:59 2017: Necro#6714 used n!check 241942232867799040
+Fri Jul 21 14:43:00 2017: NecroBot#8387 used <discord.permissions.Permissions object at 0x0000020708DB85E8>
+Fri Jul 21 14:43:00 2017: NecroBot#8387 used <discord.permissions.Permissions object at 0x0000020708DB85E8>
+Fri Jul 21 14:44:04 2017: Necro#6714 used n!kill
+Fri Jul 21 19:06:28 2017: Necro#6714 used n!kill
+Fri Jul 21 19:06:51 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:00 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:00 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:00 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:01 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:02 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:02 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:02 2017: Necro#6714 used n!serverinfo
+Fri Jul 21 19:07:28 2017: Necro#6714 used n!kill
+Sat Jul 22 20:55:31 2017: Necro#6714 used n!kill
+Sat Jul 22 20:56:34 2017: Necro#6714 used N!rr
+Sat Jul 22 20:56:34 2017: Necro#6714 used n!rr
+Sat Jul 22 20:58:22 2017: Necro#6714 used n!kill
+Sat Jul 22 21:05:44 2017: Necro#6714 used n!rr
+Sat Jul 22 21:06:44 2017: Necro#6714 used n!kill
+Sat Jul 22 21:07:09 2017: Necro#6714 used n!rr
+Sat Jul 22 21:08:06 2017: Necro#6714 used n!kill
+Sat Jul 22 21:08:28 2017: Necro#6714 used n!rr
+Sat Jul 22 21:08:47 2017: Necro#6714 used N!rr
+Sat Jul 22 21:10:09 2017: Necro#6714 used n!kill
+Sat Jul 22 21:10:25 2017: Necro#6714 used n!rr
+Sat Jul 22 21:10:41 2017: Necro#6714 used n!rr 2
+Sat Jul 22 21:11:21 2017: Necro#6714 used n!calc 2 + 2
+Sat Jul 22 21:13:53 2017: Necro#6714 used n!kill
+Sat Jul 22 21:14:23 2017: Necro#6714 used n!kill
+Sat Jul 22 21:14:49 2017: Necro#6714 used <@317619283377258497> rr
+Sat Jul 22 21:15:24 2017: Necro#6714 used n!kill
+Sat Jul 22 21:16:01 2017: Necro#6714 used n!kill
+Sat Jul 22 21:16:46 2017: Necro#6714 used n!kill
+Sat Jul 22 21:17:20 2017: Necro#6714 used <@317619283377258497> rr
+Sat Jul 22 21:21:06 2017: Necro#6714 used <@317619283377258497> rr
+Sat Jul 22 21:21:46 2017: Necro#6714 used n!kill
+Sat Jul 22 21:22:04 2017: Necro#6714 used <@317619283377258497> rr
+Sat Jul 22 21:22:33 2017: Necro#6714 used <@317619283377258497> rr 2
+Sat Jul 22 21:23:06 2017: Necro#6714 used <@317619283377258497> tarot
+Sat Jul 22 21:23:41 2017: Necro#6714 used n!help
+Sat Jul 22 21:24:28 2017: Necro#6714 used n!help calc
+Sat Jul 22 21:25:22 2017: Necro#6714 used n!reload support
+Sat Jul 22 21:25:49 2017: Necro#6714 used n!reload rings.support
+Sat Jul 22 21:25:59 2017: Necro#6714 used n!help
+Sat Jul 22 21:26:18 2017: Necro#6714 used n!help claim
+Sat Jul 22 21:27:51 2017: Necro#6714 used n!invite
+Sat Jul 22 21:27:53 2017: Necro#6714 used n!support
+Sat Jul 22 21:28:34 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:29:10 2017: Necro#6714 used n!reload moddb
+Sat Jul 22 21:29:31 2017: Necro#6714 used n!reload rings.moddb
+Sat Jul 22 21:29:37 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:29:57 2017: Necro#6714 used n!reload rings.moddb
+Sat Jul 22 21:29:59 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:30:59 2017: Necro#6714 used n!reload rings.moddb
+Sat Jul 22 21:31:03 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:31:34 2017: Necro#6714 used n!reload rings.moddb
+Sat Jul 22 21:31:41 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:32:35 2017: Necro#6714 used n!reload rings.moddb
+Sat Jul 22 21:32:38 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:33:02 2017: Necro#6714 used n!reload rings.moddb
+Sat Jul 22 21:33:04 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Sat Jul 22 21:34:00 2017: Necro#6714 used <@317619283377258497> cat
+Sat Jul 22 21:34:08 2017: Necro#6714 used <@317619283377258497> dog
+Sat Jul 22 21:34:37 2017: Necro#6714 used <@317619283377258497> edain castellans
+Sat Jul 22 21:34:56 2017: Necro#6714 used <@317619283377258497> lotr glorfindel
+Sat Jul 22 21:36:18 2017: Necro#6714 used <@317619283377258497> wiki disney donal
+Sat Jul 22 21:36:32 2017: Necro#6714 used <@317619283377258497> wiki disney Donal Duck
+Sat Jul 22 21:36:41 2017: Necro#6714 used <@317619283377258497> wiki disney Donald Duck
+Sat Jul 22 21:37:58 2017: Necro#6714 used <@317619283377258497> dadjoke
+Sat Jul 22 21:38:35 2017: Necro#6714 used <@317619283377258497> riddle
+Sat Jul 22 21:39:21 2017: Necro#6714 used <@317619283377258497> calc
+Sat Jul 22 21:39:39 2017: Necro#6714 used <@317619283377258497> lotrfact
+Sat Jul 22 21:41:15 2017: Necro#6714 used <@317619283377258497> kil
+Sat Jul 22 21:41:24 2017: Necro#6714 used <@317619283377258497> kill
+Sat Jul 22 21:42:51 2017: Necro#6714 used n!perms <@271259290415792129> 2
+Sat Jul 22 21:43:26 2017: Necro#6714 used <@317619283377258497> help nick
+Sat Jul 22 21:43:59 2017: Elf_in_silver_armor#6462 used n!nick <@199640647198703621> Jeremiah
+Sat Jul 22 21:44:15 2017: Necro#6714 used <@317619283377258497> perms <@271259290415792129> 6
+Sat Jul 22 21:55:13 2017: Necro#6714 used <@317619283377258497> info
+Sat Jul 22 21:56:14 2017: Necro#6714 used n!off
+Sat Jul 22 21:56:28 2017: Necro#6714 used <@317619283377258497> info
+Sat Jul 22 21:56:42 2017: Necro#6714 used <@317619283377258497> serverinfo
+Sat Jul 22 21:57:35 2017: Necro#6714 used n!giveme_roles add Good
+Sat Jul 22 21:57:42 2017: Necro#6714 used n!giveme info
+Sat Jul 22 21:57:47 2017: Necro#6714 used n!giveme_roles add Evil
+Sat Jul 22 21:57:54 2017: Necro#6714 used n!giveme_roles add Chaotic
+Sat Jul 22 21:57:57 2017: Necro#6714 used n!giveme_roles add Neutral
+Sat Jul 22 21:58:00 2017: Necro#6714 used n!giveme_roles add nozonqvnio
+Sat Jul 22 21:58:10 2017: Necro#6714 used n!giveme info
+Sat Jul 22 21:58:51 2017: Necro#6714 used n!giveme_roles del nozonqvnio
+Sat Jul 22 22:03:40 2017: Necro#6714 used n!giveme Good
+Sat Jul 22 22:04:29 2017: Necro#6714 used n!kill
+Sat Jul 22 22:04:43 2017: Necro#6714 used n!giveme Good
+Sat Jul 22 22:05:10 2017: Necro#6714 used n!kill
+Sat Jul 22 22:05:21 2017: Necro#6714 used n!giveme Good
+Sat Jul 22 22:05:43 2017: Necro#6714 used n!giveme_roles add zjnzvjnjninzji
+Sat Jul 22 22:05:53 2017: Necro#6714 used n!giveme nozonqvnio
+Sat Jul 22 22:06:30 2017: Necro#6714 used n!giveme zjnzvjnjninzji
+Sat Jul 22 22:09:42 2017: Necro#6714 used n!kill
+Sat Jul 22 22:09:54 2017: Necro#6714 used n!giveme info
+Sat Jul 22 22:10:35 2017: Necro#6714 used n!kill
+Sat Jul 22 22:10:55 2017: Necro#6714 used n!giveme info
+Sat Jul 22 22:11:10 2017: Necro#6714 used n!giveme_roles del zjnzvjnjninzji
+Sat Jul 22 22:11:27 2017: Necro#6714 used n!giveme_roles add ibbqhiqbifbifbi
+Sat Jul 22 22:12:13 2017: Necro#6714 used n!kill
+Sat Jul 22 22:12:25 2017: Necro#6714 used n!giveme_roles add ibbqhiqbifbifbi
+Sat Jul 22 22:12:56 2017: Necro#6714 used n!giveme_roles add Lawful
+Sat Jul 22 22:13:10 2017: Necro#6714 used n!giveme info
+Sat Jul 22 22:15:19 2017: Necro#6714 used n!invite
+Sat Jul 22 22:20:04 2017: Necro#6714 used n!kill
+Sat Jul 22 22:20:32 2017: Necro#6714 used n!setStats
+Sat Jul 22 22:20:51 2017: Necro#6714 used n!setStats <@317619283377258497>
+Sat Jul 22 22:21:51 2017: Necro#6714 used <@317619283377258497> mute <@172002275412279296>
+Sat Jul 22 22:23:24 2017: Necro#6714 used <@317619283377258497> automod
+Sat Jul 22 22:23:44 2017: Necro#6714 used n!off
+Sat Jul 22 22:24:04 2017: Necro#6714 used <@317619283377258497> automod info
+Sat Jul 22 22:24:54 2017: Necro#6714 used n!h automod info
+Sat Jul 22 22:25:00 2017: Necro#6714 used n!automod info
+Sat Jul 22 22:25:22 2017: Necro#6714 used n!automod add
+Sat Jul 22 22:26:25 2017: Necro#6714 used n!off
+Sat Jul 22 22:26:39 2017: Necro#6714 used n!ignore info
+Sat Jul 22 22:27:23 2017: Necro#6714 used <@317619283377258497> speak 311789251190587392 test1
+Sat Jul 22 22:28:00 2017: Necro#6714 used <@317619283377258497> pm 271259290415792129 Hey there sexy
+Sat Jul 22 22:29:14 2017: Necro#6714 used <@317619283377258497> warn add <@271259290415792129> too sexy (warning #2)
+Sat Jul 22 22:29:32 2017: Necro#6714 used <@317619283377258497> info <@271259290415792129>
+Sat Jul 22 22:30:23 2017: Necro#6714 used n!off
+Sat Jul 22 22:30:45 2017: Necro#6714 used <@317619283377258497> warn add <@271259290415792129> too sexy (warning #2)
+Sat Jul 22 22:31:02 2017: Necro#6714 used <@317619283377258497> info <@271259290415792129>
+Sat Jul 22 22:31:35 2017: Necro#6714 used <@317619283377258497> warn del <@271259290415792129> 0
+Sat Jul 22 22:31:56 2017: Necro#6714 used <@317619283377258497> purge 10
+Sat Jul 22 22:33:17 2017: Necro#6714 used <@317619283377258497> nick <@172002275412279296> Tatsu
+Sat Jul 22 22:33:48 2017: Necro#6714 used n!kill

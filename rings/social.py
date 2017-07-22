@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
 import random
 #Tarot Cards: 44
@@ -21,11 +22,13 @@ class Social():
 
     #sends a random dad joke
     @commands.command()
+    @commands.cooldown(2, 5, BucketType.user)
     async def dadjoke(self):
         await self.bot.say(":speaking_head: | **" + dadJoke[random.randint(0,len(dadJoke)-1)] + "**")
 
     #asks a riddle then gives the user 30 seconds to answer it
     @commands.command(pass_context = True)
+    @commands.cooldown(3, 5, BucketType.channel)
     async def riddle(self, cont):
         riddle = riddlesList[random.randint(0, len(riddlesList)-1)]
         await self.bot.say("Riddle me this " + cont.message.author.name + ": \n" + riddle[0])
@@ -38,8 +41,9 @@ class Social():
             await self.bot.say("Wrong answer! Now you go to feed the fishies!")
 
     # evaluates the the argument as a mathematical equation
-    @commands.command()
-    async def calc(self ,*, arg : str):
+    @commands.command(enabled=False)
+    @commands.cooldown(3, 5, BucketType.user)
+    async def calc(self, *, arg : str):
         try:
             final = eval(arg)
             await self.bot.say(final)
@@ -48,6 +52,7 @@ class Social():
 
     # reads the user "fate" in the cards
     @commands.command(pass_context = True)
+    @commands.cooldown(2, 3, BucketType.user)
     async def tarot(self, cont):
         myList = random.sample(range(0,44),3)
 
@@ -55,20 +60,27 @@ class Social():
 
     # good old game of russian roulette
     @commands.command()
+    @commands.cooldown(3, 5, BucketType.user)
     async def rr(self, *arg0 : int):
-        if arg0 > 0 and arg0 <= 6:
-            bullets = arg0
+        if arg0:
+            if arg0[0] > 0 and arg0[0] <= 6:
+                bullets = arg0[0]
+            else:
+                bullets = 1
         else:
             bullets = 1
 
-        await self.bot.say(":gun: | You insert "+ str(bullets) + " bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!")
+        msg = ":gun: | You insert "+ str(bullets) + " bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!"
 
         if random.randint(1,7) <= bullets:
-            await self.bot.say(":boom: | You weren't so lucky this time. Rest in peace my friend.")
+            msg += "\n:boom: | You weren't so lucky this time. Rest in peace my friend."
         else:
-            await self.bot.say(":ok: | Looks like you'll last the night, hopefully your friends do too.")
+            msg += "\n:ok: | Looks like you'll last the night, hopefully your friends do too."
+
+        await self.bot.say(msg)
 
     @commands.command()
+    @commands.cooldown(2, 5, BucketType.user)
     async def lotrfact(self):
         num1 = random.randint(0,len(lotrList)-1)
         await self.bot.say(":trident: | **Fact #" + str(num1) + "**: " + lotrList[num1])

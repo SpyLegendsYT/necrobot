@@ -3,6 +3,7 @@
 # import statements for basic discord bot functionalities
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
 # import statements for commands
 import csv
@@ -14,19 +15,26 @@ import datetime as d
 import asyncio
 import json
 import async_timeout
+from var import *
+import traceback
 
-bot = commands.Bot(command_prefix='n!')
+#prefix command
+prefixes = ["n!","N!", "<@317619283377258497> "]
+async def get_pre(bot, message):
+    return prefixes
+
+bot = commands.Bot(command_prefix=get_pre)
 userData = dict()
 serverData = dict()
 lockedList = list()
 extensions = ["animals","social","wiki","moddb","support"]
+bot.remove_command("help")
 
 #Permissions Names
 permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","NecroBot Admin","The Bot Smith"]
 
 # Role List
 roleList = [["Helper",discord.Colour.teal()],["Moderator",discord.Colour.orange()],["Semi-Admin",discord.Colour.darker_grey()],["Admin",discord.Colour.blue()],["Server Owner",discord.Colour.magenta()],["NecroBot Admin",discord.Colour.dark_green()],["The Bot Smith",discord.Colour.dark_red()]]
-
 
 # *****************************************************************************************************************
 #  Initialize
@@ -45,7 +53,7 @@ with open("data/setting.csv","r") as f:
     blacklistList = list(next(reader))
     line = next(reader)
     for row in reader:
-        serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome":row[4]}
+        serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome":row[4], "selfRoles":row[5].split(",")}
 
 @bot.event
 async def on_ready():
@@ -66,15 +74,38 @@ async def on_ready():
 # *****************************************************************************************************************
 
 def logit(message):
-    log = open("data/logfile.txt","a+")
-    localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
-    msg = str(localtime + str(message.author) + " used " + message.content)
-    log.write(msg)
-    log.close()
+    with open("data/logfile.txt","a+") as log:
+        localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
+        msg = str(localtime + str(message.author) + " used " + message.content)
+        log.write(msg)
 
-def default_stats(ID):
-    userData[ID] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
+async def default_stats(member, server):
+    if member.id not in userData:
+        userData[member.id] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
 
+    if server.id not in userData[member.id]["perms"]:
+        if member.id == server.owner.id:
+            userData[member.id]["perms"][server.id] = 5
+            await bot.send_message(server.default_channel, member.name + " perms level set to 5 (Server Owner)")
+        elif member.server_permissions.administrator:
+            userData[member.id]["perms"][server.id] = 4
+            await bot.send_message(server.default_channel, member.name + " perms level set to 4 (Admin)")
+        else:
+            userData[member.id]["perms"][server.id] = 0
+
+# *****************************************************************************************************************
+#  Check Functions
+# *****************************************************************************************************************
+def has_perms(perms_level):
+    def predicate(cont):
+        return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
+    return commands.check(predicate)
+
+def is_necro():
+    def predicate(cont):
+        return cont.message.author.id == "241942232867799040"
+    return commands.check(predicate)
+    
 # *****************************************************************************************************************
 #  Purge Functions
 # *****************************************************************************************************************
@@ -86,78 +117,91 @@ def is_user(m):
 
 
 # *****************************************************************************************************************
+#  Cogs Commands
+# *****************************************************************************************************************
+@bot.command()
+@is_necro()
+async def load(extension_name : str):
+    try:
+        bot.load_extension("rings" + extension_name)
+    except (AttributeError,ImportError) as e:
+        await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+        return
+    await bot.say("{} loaded.".format(extension_name))
+
+@bot.command()
+@is_necro()
+async def unload(extension_name : str):
+    bot.unload_extension("rings" + extension_name)
+    await bot.say("{} unloaded.".format(extension_name))
+
+@bot.command()
+@is_necro()
+async def reload(extension_name : str):
+    bot.unload_extension("rings" + extension_name)
+    try:
+        bot.load_extension("rings" + extension_name)
+    except (AttributeError,ImportError) as e:
+        await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+        return
+    await bot.say("{} reloaded.".format(extension_name))
+
+# *****************************************************************************************************************
 #  Admin Commands
 # *****************************************************************************************************************
 
 # Saves all the data and terminates the bot
-@bot.command(pass_context = True)
+@bot.command(pass_context = True, aliases=["off"])
+@is_necro()
 async def kill(cont):
-    if cont.message.author.id == "241942232867799040":
-        with open("data/userdata.csv","w",newline="") as csvfile:
-            Awriter = csv.writer(csvfile)
-            for x in userData:
-                warningList = ",".join(userData[x]["warnings"])
-                Awriter.writerow([x,userData[x]["money"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"],userData[x]["perms"],warningList])
+    with open("data/userdata.csv","w",newline="") as csvfile:
+        Awriter = csv.writer(csvfile)
+        for x in userData:
+            warningList = ",".join(userData[x]["warnings"])
+            Awriter.writerow([x,userData[x]["money"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"],userData[x]["perms"],warningList])
 
-        with open("data/setting.csv","w",newline="") as csvfile:
-            Awriter = csv.writer(csvfile)
-            Awriter.writerow(ignoreCommandList)
-            Awriter.writerow(ignoreAutomodList)
-            Awriter.writerow(blacklistList)
-            Awriter.writerow(['Server Name','Server','Mute Role','Autmod Channel','Welcome Channel'])
-            for x in serverData:
-                Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome"]])
+    with open("data/setting.csv","w",newline="") as csvfile:
+        Awriter = csv.writer(csvfile)
+        Awriter.writerow(ignoreCommandList)
+        Awriter.writerow(ignoreAutomodList)
+        Awriter.writerow(blacklistList)
+        Awriter.writerow(['Server Name','Server','Mute Role','Autmod Channel','Welcome Channel',"Self Roles"])
+        for x in serverData:
+            selfRolesList = ",".join(serverData[x]["selfRoles"])
+            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome"],selfRolesList])
 
-        await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
-        sys.exit()
-    else:
-        await bot.say(":negative_squared_cross_mark: | You do not have permission to kill the bot. Your attempt has been logged.")
+    await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
+    sys.exit()
 
 # Used to add or subtract money from user accounts
-@bot.command(pass_context = True)
+@bot.command(pass_context = True, enabled=False)
+@has_perms(6)
 async def add(cont, arg0 : discord.Member,*, arg1 : str):
     user = arg0.id
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
-        s = str(userData[user]["money"]) + arg1
-        try:
-            operation = eval(s)
-            userData[user]["money"] = abs(int(operation))
-            await bot.say(":atm: | **"+ arg0.name + "'s** balance is now **"+str(userData[user]["money"])+ "** :euro:")
-        except (NameError,SyntaxError):
-            await bot.say(":negative_squared_cross_mark: | Operation no recognized.")
-    else:
-        await bot.say(":negative_squared_cross_mark: | You do not have the permission to use this command.")
+    s = str(userData[user]["money"]) + arg1
+    try:
+        operation = eval(s)
+        userData[user]["money"] = abs(int(operation))
+        await bot.say(":atm: | **"+ arg0.name + "'s** balance is now **"+str(userData[user]["money"])+ "** :euro:")
+    except (NameError,SyntaxError):
+        await bot.say(":negative_squared_cross_mark: | Operation no recognized.")
 
 # Set the stats for individula users that might have slipped through the join system and the setAll command
 @bot.command(pass_context = True)
-async def setstats(cont,* arg0 : discord.Member):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2 and len(arg0) > 0:
-        for x in arg0:
-            if x.id not in userData:
-                default_stats(x.id)
-
-            if cont.message.server.id not in userData[x.id]["perms"]:
-                userData[x.id]["perms"][cont.message.server.id] = 0
-
-            await bot.say("Stats set for user")
-    elif len(arg0) < 1:
-        await bot.say(":negative_squared_cross_mark: | Please provide at least one user")
-    else:
-        await bot.say(":negative_squared_cross_mark: | You do not have sufficent permission to access this command.")
+@has_perms(2)
+async def setstats(cont, arg0 : discord.Member):
+        default_stats(arg0, cont.message.server)
+        await bot.say("Stats set for user")
 
 # set the stats for all the users on the server the message was issued from
 @bot.command(pass_context = True)
+@has_perms(6)
 async def setall(cont):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
-        membList = cont.message.server.members
-        for x in membList:
-            if x.id not in userData:
-                default_stats(x.id)
-
-            if cont.message.server.id not in userData[x.id]["perms"]:
-                userData[x.id]["perms"][cont.message.server.id] = 0
-                
-        await bot.say("Stats sets for users")
+    membList = cont.message.server.members
+    for x in membList:
+        default_stats(x, cont.message.server)
+            
+    await bot.say("Stats sets for users")
 
 # set a permission level for a user, permission is only set if user issuing the commands has a higher level than they are issuing and have more than 4
 @bot.command(pass_context = True)
@@ -166,123 +210,114 @@ async def perms(cont, arg0 : discord.Member, arg1 : int):
         userData[arg0.id]["perms"][cont.message.server.id] = arg1
         await bot.say("All good to go, **"+ arg0.name + "** now has permission level **"+ str(arg1) + "**")
     elif userData[cont.message.author.id]["perms"][cont.message.server.id] <= arg1:
-        await bot.say(":negative_squared_cross_mark: | You do not have sufficient permissions to grant this permission level")
+        await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permission to grant this permission level")
     else:
-        await bot.say(":negative_squared_cross_mark: | You do not have sufficient permissions to grant permission levels")
+        await bot.say("::negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
 
 # mutes a user indefinitely or with a timer
 @bot.command(pass_context = True)
+@has_perms(2)
 async def mute(cont, arg0):
     role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
+    for x in cont.message.mentions:
+        if role not in x.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[x.id]["perms"][cont.message.server.id]:
+            await bot.add_roles(x, role)
+            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(x))
+        else:
+            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is already muted or cannot be muted".format(x))
 
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2:
+    try:
+        await asyncio.sleep(float(arg0))
         for x in cont.message.mentions:
-            if role not in x.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[x.id]["perms"][cont.message.server.id]:
-                await bot.add_roles(x, role)
-                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(x))
-            else:
-                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is already muted or cannot be muted".format(x))
-
-        try:
-            await asyncio.sleep(float(arg0))
-            for x in cont.message.mentions:
-                if role in x.roles:
-                    await bot.remove_roles(x, role)
-                    await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been automatically unmuted".format(x))
-        except ValueError:
-            pass
-    else:
-        await bot.say("You don't have the neccessary permissions to mute this user.")
+            if role in x.roles:
+                await bot.remove_roles(x, role)
+                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been automatically unmuted".format(x))
+    except ValueError:
+        pass
 
 # unmutes user
 @bot.command(pass_context = True)
+@has_perms(2)
 async def unmute(cont, arg0):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 2:
-        role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
-        for x in cont.message.mentions:
-            if role in x.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[x.id]["perms"][cont.message.server.id]:
-                await bot.remove_roles(x, role)
-                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(x))
-            else:
-                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is not muted or cannot be unmuted".format(x))
-    else:
-        await bot.say("You don't have the neccessary permissions to unmute a user.")
+    role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
+    for x in cont.message.mentions:
+        if role in x.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[x.id]["perms"][cont.message.server.id]:
+            await bot.remove_roles(x, role)
+            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(x))
+        else:
+            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is not muted or cannot be unmuted".format(x))
 
 # disable/enable autmoderation for users and channels
 @bot.command(pass_context = True)
+@has_perms(4)
 async def automod(cont, arg0):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
-        myList = []
-        for x in cont.message.mentions:
-            myList.append(x)
-        for x in cont.message.channel_mentions:
-            myList.append(x)
+    myList = []
+    for x in cont.message.mentions:
+        myList.append(x)
+    for x in cont.message.channel_mentions:
+        myList.append(x)
 
-        if arg0 == "add":
-            for x in myList:
-                if x.id not in ignoreAutomodList:
-                    ignoreAutomodList.append(x.id)
-                    await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
-                else:
-                    await bot.say("**"+x.name+"** is already ignored.")
-        elif arg0 == "del":
-            for x in myList:
-                if x.id in ignoreAutomodList:
-                    ignoreAutomodList.remove(x.id)
-                    await bot.say("**"+x.name+"** will no longer be ignored by the bot's automoderation.")
-                else:
-                    await bot.say("**"+x.name+"** is not ignored.")
-        elif arg0 is None:
-            myList1 = []
-            for x in ignoreAutomodList:
-                try:
-                    myList1.append("C: "+bot.get_channel(x).name)
-                except AttributeError:
-                    myList1.append("U: "+bot.get_server(cont.message.server.id).get_member(x).name)
+    if arg0 == "add":
+        for x in myList:
+            if x.id not in ignoreAutomodList:
+                ignoreAutomodList.append(x.id)
+                await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
+            else:
+                await bot.say("**"+x.name+"** is already ignored.")
+    elif arg0 == "del":
+        for x in myList:
+            if x.id in ignoreAutomodList:
+                ignoreAutomodList.remove(x.id)
+                await bot.say("**"+x.name+"** will no longer be ignored by the bot's automoderation.")
+            else:
+                await bot.say("**"+x.name+"** is not ignored.")
+    elif arg0 == "info":
+        myList1 = []
+        for x in ignoreAutomodList:
+            try:
+                myList1.append("C: "+bot.get_channel(x).name)
+            except AttributeError:
+                myList1.append("U: "+bot.get_server(cont.message.server.id).get_member(x).name)
 
-            await bot.say("Channels(**C**) and Users(**U**) ignored by auto moderation: ``` "+str(myList1)+" ```")
-        else:
-            await bot.say("Sub-command not recognized, use either `del` or `add`")
+        await bot.say("Channels(**C**) and Users(**U**) ignored by auto moderation: ``` "+str(myList1)+" ```")
     else:
-        await bot.say("You do not have permissions to edit the autmoderation list.")
+        await bot.say("Sub-command not recognized, use either `del` or `add`")
 
 # enable/disable commands for users and channels
-@bot.command(pass_context = True)   
+@bot.command(pass_context = True)
+@has_perms(4)   
 async def ignore(cont, arg0):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
-        myList = []
-        for x in cont.message.mentions:
-            myList.append(x)
-        for x in cont.message.channel_mentions:
-            myList.append(x)
+    myList = []
+    for x in cont.message.mentions:
+        myList.append(x)
+    for x in cont.message.channel_mentions:
+        myList.append(x)
 
-        if arg0 == "add":
-            for x in myList:
-                if x.id not in ignoreCommandList:
-                    ignoreCommandList.append(x.id)
-                    await bot.say("**"+x.name+"** will be ignored by the bot.")
-                else:
-                    await bot.say("**"+x.name+"** is already ignored.")
-        elif arg0 == "del":
-            for x in myList:
-                if x.id in ignoreCommandList:
-                    ignoreCommandList.remove(x.id)
-                    await bot.say("**"+x.name+"** will no longer be ignored by the bot.")
-                else:
-                    await bot.say("**"+x.name+"** is not ignored.")
-        elif arg0 is None:
-            myList2 = []
-            for x in ignoreCommandList:
-                try:
-                    myList2.append("C: "+bot.get_channel(x).name)
-                except AttributeError:
-                    myList2.append("U: "+bot.get_server(cont.message.server.id).get_member(x).name)
+    if arg0 == "add":
+        for x in myList:
+            if x.id not in ignoreCommandList:
+                ignoreCommandList.append(x.id)
+                await bot.say("**"+x.name+"** will be ignored by the bot.")
+            else:
+                await bot.say("**"+x.name+"** is already ignored.")
+    elif arg0 == "del":
+        for x in myList:
+            if x.id in ignoreCommandList:
+                ignoreCommandList.remove(x.id)
+                await bot.say("**"+x.name+"** will no longer be ignored by the bot.")
+            else:
+                await bot.say("**"+x.name+"** is not ignored.")
+    elif arg0 == "info":
+        myList2 = []
+        for x in ignoreCommandList:
+            try:
+                myList2.append("C: "+bot.get_channel(x).name)
+            except AttributeError:
+                myList2.append("U: "+bot.get_server(cont.message.server.id).get_member(x).name)
 
-            await bot.say("Channels(**C**) and Users(**U**) ignored by NecroBot: ``` "+str(myList2)+" ```")
-        else:
-            await bot.say("Sub-command not recognized, use either `del`, `add` or leave it blank to show the list of ignored users/channels")
+        await bot.say("Channels(**C**) and Users(**U**) ignored by NecroBot: ``` "+str(myList2)+" ```")
     else:
-        await bot.say("You do not have permissions to edit the commands ignore list.")
+        await bot.say("Sub-command not recognized, use either `del`, `add` or leave it blank to show the list of ignored users/channels")
 
 # sends arg1 to the channel with id arg0
 @bot.command(pass_context = True)
@@ -290,21 +325,21 @@ async def speak(cont, arg0,*, arg1,):
     if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4 and userData[cont.message.author.id]["perms"][bot.get_channel(arg0).server.id] >= 4:
         await bot.send_message(bot.get_channel(arg0), ":loudspeaker: | "+arg1)
     elif userData[cont.message.author.id]["perms"][bot.get_channel(arg0).server.id] < 4:
-        await bot.say("You do not have the required permission on the server you're trying to send the message to.")
+        await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions on the server you're trying to send the message to.")
     else:
-        await bot.say("You do not have the required permission to use this command.")
+        await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
 
 # pm a user and awaits for a user reply
 @bot.command(pass_context = True)
+@has_perms(6)
 async def pm(cont, arg0,*,arg1):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
-        user = bot.get_server(cont.message.server.id).get_member(arg0)
-        await bot.start_private_message(user)
-        await bot.send_message(user, arg1)
-        await bot.say("Message sent")
+    user = bot.get_server(cont.message.server.id).get_member(arg0)
+    await bot.start_private_message(user)
+    await bot.send_message(user, arg1)
+    await bot.say("Message sent")
 
-        msg = await bot.wait_for_message(author=user, channel=bot.get_channel(user.id))
-        await bot.send_message(bot.get_channel("318465643420712962"), ":speech_left: | **User: "+ str(msg.author) + "** said :**" +msg.content+"**")
+    msg = await bot.wait_for_message(author=user, channel=bot.get_channel(user.id))
+    await bot.send_message(bot.get_channel("318465643420712962"), ":speech_left: | **User: "+ str(msg.author) + "** said :**" +msg.content+"**")
 
 # Add a warning to the user's warning list
 @bot.command(pass_context = True)
@@ -314,82 +349,94 @@ async def warn(cont, arg0, arg1,*, arg2):
             await bot.say("Warning position: **\"" + userData[cont.message.mentions[0].id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
             userData[cont.message.mentions[0].id]["warnings"].pop(int(arg2))
         else:
-            await bot.say("You don't have the necessary permissions to remove warnings.")
+            await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to remove warnings")
     elif arg0 == "add":
         if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 1:
             await bot.say("Warning: **\"" + str(arg2) + "\"** added from warning list of user " + str(cont.message.mentions[0].name))
-            userData[cont.message.mentions[0].id]["warnings"].append(arg2 + " by " + cont.message.author + " on server " + cont.message.server.name)
+            userData[cont.message.mentions[0].id]["warnings"].append(arg2 + " by " + str(cont.message.author) + " on server " + cont.message.server.name)
         else:
-            await bot.say("You don't have the permission to add warnings.")
+            await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to add warnings.")
     else:
         await bot.say("Argument not recognized, you can either add a warning with `n!warn add [@User] [message]` or remove a warning with `n!warn del [@User] [warning position]`")
 
 # removes a certain number of messages
 @bot.command(pass_context = True)
+@commands.cooldown(1, 10, BucketType.channel)
+@has_perms(5)
 async def purge(cont, arg0 : int):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
-        await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=arg0+1)
-        message = await bot.say(":wastebasket: | **" + str(arg0) + "** messages purged.")
-        await asyncio.sleep(5)
-        await bot.delete_message(message)
-    else:
-        await bot.say("You don't have the neccessary permissions to purge messages  .")
+    await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=arg0+1)
+    message = await bot.say(":wastebasket: | **" + str(arg0) + "** messages purged.")
+    await asyncio.sleep(5)
+    await bot.delete_message(message)
 
 # blacklists a user which means that if they join any server with necrobot they'll be banned
 @bot.command(pass_context = True)
+@has_perms(6)
 async def blacklist(cont, arg0 : discord.Member):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 6:
-        blacklistList.append(arg0.id)
-        await bot.ban(arg0, delete_message_days=7)
-        await bot.say("User " + arg0.name + " has been blacklisted")
+    blacklistList.append(arg0.id)
+    await bot.ban(arg0, delete_message_days=7)
+    await bot.say("User " + arg0.name + " has been blacklisted")
 
 # set roles
 @bot.command(pass_context = True)
+@has_perms(5)
 async def setroles(cont):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 5:
-        for x in roleList:
-            new_role = await bot.create_role(cont.message.server, name=x[0], colour=x[1], mentionable=True)
+    for x in roleList:
+        new_role = await bot.create_role(cont.message.server, name=x[0], colour=x[1], mentionable=True)
 
-        await bot.say("**Roles created**")
+    await bot.say("**Roles created**")
 
-        for x in cont.message.server.members:
-            role = userData[x.id]["perms"][cont.message.server.id]-1
-            await bot.add_roles(x, discord.utils.get(cont.message.server.roles, name=roleList[role][0]))
+    for x in cont.message.server.members:
+        role = userData[x.id]["perms"][cont.message.server.id]-1
+        await bot.add_roles(x, discord.utils.get(cont.message.server.roles, name=roleList[role][0]))
 
-        await bot.say("**Roles assigned**")
-    else:
-        await boy.say("You do not have the necessary permission level to set the NecroBot roles for this server")
+    await bot.say("**Roles assigned**")
 
 # locks someone in a voice chat, everytime they leave that voice chat they will be moved to it
 @bot.command(pass_context = True)
+@has_perms(3)
 async def lock(cont, arg0 : discord.Member, *arg1):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
-        if arg1:
-            v_channel  = cont.message.channel_mentions[0].id
-        else:
-            v_channel = arg0.voice_channel.id
-
-        if arg0.id in lockedList:
-            lockedList.remove(arg0.id)
-            await bot.say("User no longer locked in channel **"+ bot.get_channel(userData[arg0.id]['locked'].name) + "**")
-            userData[arg0.id]['locked'] = ''
-        else:
-            userData[arg0.id]["locked"] = v_channel
-            lockedList.append(arg0.id)
-            await bot.say("User locked in channel **"+bot.get_channel(userData[arg0.id]['locked'].name) + "**")
+    if arg1:
+        v_channel  = cont.message.channel_mentions[0].id
     else:
-        await bot.say("You do not have the necessary permissions to lock someone in a voice chat.")
+        v_channel = arg0.voice_channel.id
+
+    if arg0.id in lockedList:
+        lockedList.remove(arg0.id)
+        await bot.say("User no longer locked in channel **"+ bot.get_channel(userData[arg0.id]['locked'].name) + "**")
+        userData[arg0.id]['locked'] = ''
+    else:
+        userData[arg0.id]["locked"] = v_channel
+        lockedList.append(arg0.id)
+        await bot.say("User locked in channel **"+bot.get_channel(userData[arg0.id]['locked'].name) + "**")
 
 # changes user nickname
 @bot.command(pass_context = True)
+@has_perms(3)
 async def nick(cont, arg0 : discord.Member,*, arg1):
-    if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
-        try:
-            await bot.change_nickname(arg0, arg1)
-        except discord.errors.Forbidden:
-            await bot.say("You cannot change the nickname of that user.")
+    try:
+        await bot.change_nickname(arg0, arg1)
+        await bot.say("User renamed to " + arg1)
+    except discord.errors.Forbidden:
+        await bot.say("You cannot change the nickname of that user.")
+
+@bot.command(pass_context = True)
+@has_perms(4)
+async def giveme_roles(cont, arg0 : str,*, arg1 :str):
+    if arg0 == "add":
+        if not discord.utils.get(cont.message.server.roles, name=arg1) is None:
+            serverData[cont.message.server.id]["selfRoles"].append(arg1)
+            await bot.say("Added role " + arg1 + " to list of self assignable roles.")
+        else:
+            await bot.say("No such role exists")
+    elif arg0 == "del":
+        if arg1 in serverData[cont.message.server.id]["selfRoles"]:
+            serverData[cont.message.server.id]["selfRoles"].remove(arg1)
+            await bot.say("Role removed from self assignable roles")
+        else:
+            await bot.say("Role not in self assignable list")
     else:
-        await bot.say("You do not have sufficient permissions to change a nickname.")
+        await bot.say("Sub-command not recognized.")
 
 
 # *****************************************************************************************************************
@@ -397,8 +444,9 @@ async def nick(cont, arg0 : discord.Member,*, arg1):
 # *****************************************************************************************************************
 
 # ****************** USER DEPENDENT COMMANDS ****************** # 
-
+#prints user's necrobot balance
 @bot.command(pass_context = True)
+@commands.cooldown(3, 10, BucketType.user)
 async def balance(cont, *arg0 : discord.Member):
     if arg0:
         user = arg0[0]
@@ -406,7 +454,9 @@ async def balance(cont, *arg0 : discord.Member):
     else:
         await bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
 
+#allow user to claim daily necrobot bonus
 @bot.command(pass_context = True)
+@commands.cooldown(1, 5, BucketType.user)
 async def claim(cont):
     aDay = str(d.datetime.today().day)
     if aDay != userData[cont.message.author.id]["daily"]:
@@ -416,7 +466,9 @@ async def claim(cont):
     else:
         await bot.say(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
 
+#prints a rich embed of the user's server and necrobot info
 @bot.command(pass_context = True)
+@commands.cooldown(3, 5, BucketType.user)
 async def info(cont, *arg0 : discord.Member):
     if arg0:
         user = arg0[0]
@@ -424,7 +476,7 @@ async def info(cont, *arg0 : discord.Member):
         user = cont.message.author
 
     serverID = cont.message.server.id
-    embed = discord.Embed(title="__**" + user.display_name + "**__", colour=discord.Colour(0x277b0), description="**Title**: " + userData[userID]["title"])
+    embed = discord.Embed(title="__**" + user.display_name + "**__", colour=discord.Colour(0x277b0), description="**Title**: " + userData[user.id]["title"])
     embed.set_thumbnail(url=user.avatar_url.replace("webp","jpg"))
     embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
 
@@ -434,13 +486,32 @@ async def info(cont, *arg0 : discord.Member):
     embed.add_field(name="**User Name**", value=user.name + "#" + user.discriminator)
     embed.add_field(name="**Top Role**", value=user.top_role.name, inline=True)
 
-    embed.add_field(name="**NecroBot Data**", value="__Permission Level__ - " + permsName[userData[user.id]["perms"][serverID]] + "   \n__Balance__ - " + str(userData[userID]["money"]) + " :euro:   \n__Experience__  - " + str(userData[user.id]["exp"]))
+    embed.add_field(name="**NecroBot Data**", value="__Permission Level__ - " + permsName[userData[user.id]["perms"][serverID]] + "   \n__Balance__ - " + str(userData[user.id]["money"]) + " :euro:   \n__Experience__  - " + str(userData[user.id]["exp"]))
     embed.add_field(name="Warning List", value=userData[user.id]["warnings"])
 
     await bot.say(embed=embed)
 
-#WIP
+
+# ****************** STANDALONE COMMANDS ******************* #
+
+#allows user to assign themselves certain roles (not tested)
 @bot.command(pass_context = True)
+@commands.cooldown(4, 3, BucketType.user)
+async def giveme(cont,*, arg0 : str):
+    if arg0 == "info":
+        await bot.say("List of Self Assignable Roles:" + "\n- ".join(serverData[cont.message.server.id]["selfRoles"]))
+    else:
+        if arg0 in serverData[cont.message.server.id]["selfRoles"]:
+            role = discord.utils.get(cont.message.server.roles, name=arg0)
+            await bot.add_roles(cont.message.author, role)
+            await bot.say("Role " + role.name + " added.")
+
+        else:
+            await bot.say("You cannot assign yourself that role.")
+
+#prints a rich embed of the server info it was called in
+@bot.command(pass_context = True)
+@commands.cooldown(1, 5, BucketType.user)
 async def serverinfo(cont):
     server = cont.message.server
     embed = discord.Embed(title="__**" + server.name + "**__", colour=discord.Colour(0x277b0), description="Info on this server")
@@ -464,8 +535,6 @@ async def serverinfo(cont):
     await bot.say(embed=embed)
 
 
-# ****************** STANDALONE COMMANDS ******************* #
-
     ##STANDALONE COMMANDS HAVE ALL BEEN SHIFTED TO RINGS##
         #moddb
         #cat           #dog
@@ -477,11 +546,35 @@ async def serverinfo(cont):
 # *****************************************************************************************************************
 #  Moderation Features
 # *****************************************************************************************************************
+@bot.event
+async def on_command_error(error, cont):
+    channel = cont.message.channel
+    if isinstance(error, commands.MissingRequiredArgument):
+        await bot.send_message(channel, "Missing required argument, check the help guide with `n!h [command]`")
+    elif isinstance(error, commands.CheckFailure):
+        await bot.send_message(channel, ":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
+    elif isinstance(error, commands.CommandOnCooldown):
+        await bot.send_message(channel, "This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
+    elif isinstance(error, commands.NoPrivateMessage):
+        await bot.send_message(channel, "This command cannot be used in private messages.")
+    elif isinstance(error, commands.DisabledCommand):
+        await bot.send_message(channel, "This command is disabled and cannot be used for now.")
+    elif isinstance(error, commands.CommandInvokeError):
+        print('In {0.command.qualified_name}:'.format(cont), file=sys.stderr)
+        traceback.print_tb(error.original.__traceback__)
+        print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
 
+#sends help text to default channel and sets default for all users present
 @bot.event
 async def on_server_join(server):
     await bot.send_message(server.default_channel, helpVar)
+    membList = server.members
+    for x in membList:
+        default_stats(x, server)
+            
+    await bot.say("Stats sets for users")
 
+#confirms role duplicate
 @bot.event
 async def on_role_create(role):
     if any([x.name for x in role.server.roles]) == role.name:
@@ -493,6 +586,7 @@ async def on_role_create(role):
         else:
             await bot.send_message(msg.channel, "Role created.")
 
+#automod
 @bot.event
 async def on_message_delete(message):
     try:
@@ -504,6 +598,7 @@ async def on_message_delete(message):
         fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted, it contained: ``` {0.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
 
+#automod
 @bot.event
 async def on_message_edit(before, after):
     try:
@@ -515,6 +610,7 @@ async def on_message_edit(before, after):
         fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {1.content}\n{0.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(after, before))
 
+#welcomes and set stats
 @bot.event
 async def on_member_join(member):
     if member.id in blacklistList:
@@ -529,11 +625,9 @@ async def on_member_join(member):
     await bot.send_message(channel, 'Welcome {0.mention} to {1.name}!'.format(member, server))
     await bot.change_nickname(member, str(member.name))
 
-    if member.id not in userData:
-        default_stats(member.id)
-    if server.id not in userData[member.id]["perms"]:
-        userData[member.id]["perms"][server.id] = 0
+    default_stats(member, server)
 
+#says goodbye and resets perms level if less than NecroBot Admin
 @bot.event
 async def on_member_remove(member):
     try:
@@ -542,44 +636,54 @@ async def on_member_remove(member):
         channel = member.server.default_channel
 
     await bot.send_message(channel,"Leaving us so soon, {0.mention}? We'll miss you...".format(member))
+    if userData[member.id]["perms"][member.server.id] < 6:
+        userData[member.id]["perms"][member.server.id] = 0
 
+#used for lock command
 @bot.event
 async def on_voice_state_update(before, after):
     if before.id in lockedList:
         await bot.move_member(before, bot.get_channel(userData[before.id]["locked"]))
 
+#spam control and ignore
 @bot.event
 async def on_message(message):
     userID = message.author.id
     channelID = message.channel.id
 
-    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime())) and (userID not in ignoreAutomodList and channelID not in ignoreAutomodList) and message.content.startswith("n!") == False:
+    if message.author.bot:
+        return
+
+    #check if spam
+    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in ignoreAutomodList and channelID not in ignoreAutomodList) and not message.content.startswith(tuple(prefixes)):
+        await bot.delete_message(message)
         try:
             ChannelId = serverData[message.server.id]["automod"]
         except KeyError:
             ChannelId = "318828760331845634"
 
         await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
-        await bot.delete_message(message)
         userData[userID]['lastMessage'] = message.content
-        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 1)
+        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()))
     else:
         userData[userID]['lastMessage'] = message.content
-        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()) + 1)
+        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()))
 
-        if len(message.content) > 0:
-            if message.content[0] != "n!":
-                userData[userID]["exp"] += random.randint(1,5)
+        userData[userID]["exp"] += random.randint(2,5)
 
-        if message.content.startswith("<!@317619283377258497>"):
-            await bot.send_message(message.channel, replyList[random.randint(0,len(replyList)-1)].format(message.author))
+        #check if allowed bot summon
+        if (channelID not in ignoreCommandList or userID not in ignoreCommandList) and message.content.startswith(tuple(prefixes)):
+            if message.content.startswith("<@317619283377258497>"):
+                command = message.content.split()[1]
+                try:
+                    reply = replyDict[command]
+                except KeyError:
+                    reply = "Wait... That's not one of my commands."
+                await bot.send_message(message.channel, random.choice(starterList) + " Ah yes, the **" + command +"** command. " + reply)
 
-        if (channelID in ignoreCommandList or userID in ignoreCommandList) and message.content.startswith("n!"):
-            await bot.send_message(bot.get_channel("318828760331845634"), "User: **{0.author}** attempted to summon bot in channel **{0.channel.name}** with arguments: ``` {0.content} ```".format(message))
-            await bot.delete_message(message)
-        elif message.content.startswith("n!"):
             logit(message)
             await bot.process_commands(message)
+
 
 if __name__ == "__main__":
     for extension in extensions:
