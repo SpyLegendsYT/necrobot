@@ -1,5 +1,9 @@
 #Starter List
-starterList = ["*yawn* What can I do fo... *yawn*... for you?", "NecroBot do that, NecroBot do this, never NecroBot how are y... Oh, hey how can I help?"]
+starterList = [
+    "*yawn* What can I do fo... *yawn*... for you?", 
+    "NecroBot do that, NecroBot do this, never NecroBot how are y... Oh, hey how can I help?",
+    "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?"
+    ]
 
 #Reply Dict
 replyDict = {
@@ -70,7 +74,7 @@ replyDict = {
 "I don't wanna talk about that one. It makes me uncomfortable.",
 
 "purge":
-"It's funny cause the message I just posted means whatever number of messages you had planned to remove... you're gonna be one short.",
+"It's funny cause the message I just posted means whatever number of messages you had planned to remove... you're gonna be one short. Also, good luck reading that one.",
 
 "blacklist":
 "If you thought the ban hammer was bad... think again.",
@@ -82,7 +86,7 @@ replyDict = {
 "It's a ~~smelly~~ dog...",
 
 "riddle":
-"Riddle me this: What is badly coded? Me. I'm badly coded.",
+"Riddle me this: What is badly coded? Me. I'm badly coded. Please help.",
 
 "dadjoke":
 "I swear if you use that command one more time, someone is gonna die",

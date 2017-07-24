@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-bot = commands.Bot(command_prefix='n!')
+bot = commands.Bot(command_prefix='$', self_bot=True)
 
 @bot.event
 async def on_ready():
@@ -10,12 +10,12 @@ async def on_ready():
     print(bot.user.id)
     print('------')
 
-@bot.event
-async def on_message(message):
-    if message.author.id == "241942232867799040":
-        if message.content.startswith("§"):
-            image = open("images/"+message.content[1:])
-            await bot.edit_message(message, image)
+@bot.command(pass_context = True)
+@checks.is_owner()
+async def e(cont, arg0 : str):
+    image = open("images/"+arg0+".png")
+    await bot.send_file(cont.message.channel, image)
+    await bot.delete_message(cont.message)
 
 
 token = open("data/token.txt", "r").read()

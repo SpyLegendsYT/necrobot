@@ -351,3 +351,100 @@ Sat Jul 22 22:31:35 2017: Necro#6714 used <@317619283377258497> warn del <@27125
 Sat Jul 22 22:31:56 2017: Necro#6714 used <@317619283377258497> purge 10
 Sat Jul 22 22:33:17 2017: Necro#6714 used <@317619283377258497> nick <@172002275412279296> Tatsu
 Sat Jul 22 22:33:48 2017: Necro#6714 used n!kill
+Sat Jul 22 22:48:30 2017: Necro#6714 used n!wiki animeuproar Lord Chancellor
+Sat Jul 22 23:11:42 2017: Necro#6714 used <@317619283377258497> wiki animeuproar Finrod
+Sat Jul 22 23:12:54 2017: Necro#6714 used <@317619283377258497> wiki animeuproar Emilia
+Sat Jul 22 23:13:37 2017: Necro#6714 used n!wiki animeuproar cookie
+Sat Jul 22 23:13:56 2017: Necro#6714 used n!wiki animeuproar shatos
+Sat Jul 22 23:20:17 2017: Necro#6714 used n!off
+Sat Jul 22 23:20:46 2017: Necro#6714 used n!setRoles
+Sat Jul 22 23:22:15 2017: Necro#6714 used n!off
+Sat Jul 22 23:23:07 2017: Necro#6714 used n!setRoles
+Sat Jul 22 23:47:18 2017: Necro#6714 used n!kill
+Sun Jul 23 09:25:54 2017: Necro#6714 used n!setroles
+Sun Jul 23 09:30:49 2017: Necro#6714 used n!off
+Sun Jul 23 09:31:08 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 09:31:29 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 09:31:57 2017: Necro#6714 used n!lock <@!241942232867799040> 319612586171826197
+Sun Jul 23 09:33:19 2017: Necro#6714 used n!off
+Sun Jul 23 09:33:56 2017: Necro#6714 used n!lock <@!241942232867799040>  319612586171826197
+Sun Jul 23 09:35:21 2017: Necro#6714 used n!off
+Sun Jul 23 09:35:32 2017: Necro#6714 used n!lock <@!241942232867799040>  319612586171826197
+Sun Jul 23 09:59:35 2017: Necro#6714 used n!off
+Sun Jul 23 09:59:57 2017: Necro#6714 used n!lock <@!241942232867799040>  319612586171826197
+Sun Jul 23 10:02:50 2017: Necro#6714 used n!off
+Sun Jul 23 10:02:59 2017: Necro#6714 used n!lock <@!241942232867799040>  319612586171826197
+Sun Jul 23 10:03:15 2017: Necro#6714 used n!lock <@!241942232867799040> Bot
+Sun Jul 23 10:03:25 2017: Necro#6714 used n!lock <@!241942232867799040> bot
+Sun Jul 23 14:29:31 2017: Necro#6714 used n!off
+Sun Jul 23 14:29:58 2017: Necro#6714 used n!lock <@!241942232867799040> bot
+Sun Jul 23 14:30:56 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 14:31:07 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 14:31:16 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 14:31:22 2017: Necro#6714 used n!lock
+Sun Jul 23 14:31:30 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 14:31:41 2017: Necro#6714 used n!lock <@!241942232867799040>
+Sun Jul 23 14:39:32 2017: Necro#6714 used n!off
+Sun Jul 23 14:39:53 2017: Necro#6714 used n!off
+Sun Jul 23 19:28:30 2017: Necro#6714 used <@317619283377258497> mute <@!172002275412279296>
+Sun Jul 23 19:28:40 2017: Necro#6714 used <@317619283377258497> unmute <@!172002275412279296>
+Sun Jul 23 19:29:03 2017: Necro#6714 used n!mute <@!172002275412279296> 10
+Sun Jul 23 19:31:17 2017: Necro#6714 used n!off
+Sun Jul 23 19:31:28 2017: Necro#6714 used n!mute <@!172002275412279296> 10
+Sun Jul 23 19:35:07 2017: Necro#6714 used n!automod
+Sun Jul 23 19:35:19 2017: Necro#6714 used n!automod info
+Sun Jul 23 19:35:54 2017: Necro#6714 used n!automod del #triggerd_elfu
+Sun Jul 23 19:58:59 2017: Necro#6714 used n!off
+Sun Jul 23 19:59:43 2017: Necro#6714 used n!automod add <#321305756999745547>
+Sun Jul 23 20:01:20 2017: Necro#6714 used n!off
+Sun Jul 23 20:01:38 2017: Necro#6714 used n!automod add <#321305756999745547>
+Sun Jul 23 20:02:28 2017: Necro#6714 used n!automod
+Sun Jul 23 23:34:12 2017: Necro#6714 used n!kill
+Mon Jul 24 00:12:15 2017: Necro#6714 used n!test <@317619283377258497> <#318465643420712962>
+Mon Jul 24 00:13:29 2017: Necro#6714 used n!off
+Mon Jul 24 00:13:54 2017: Necro#6714 used n!test_stuff <@317619283377258497> <#318465643420712962>
+Mon Jul 24 00:14:04 2017: Necro#6714 used n!rr
+Mon Jul 24 00:14:22 2017: Necro#6714 used n!off
+Mon Jul 24 00:14:36 2017: Necro#6714 used n!test_stuff <@317619283377258497> <#318465643420712962>
+Mon Jul 24 00:26:49 2017: Necro#6714 used n!off
+Mon Jul 24 00:27:13 2017: Necro#6714 used n!test_stuff <@317619283377258497> <#318465643420712962>
+Mon Jul 24 00:32:25 2017: Necro#6714 used n!off
+Mon Jul 24 00:33:44 2017: Necro#6714 used n!test_stuff <@317619283377258497> <#318465643420712962>
+Mon Jul 24 00:34:06 2017: Necro#6714 used n!test_stuff <@317619283377258497> <#318465643420712962> zibuizegbuzegibuze
+Mon Jul 24 00:37:15 2017: Necro#6714 used n!off
+Mon Jul 24 00:37:32 2017: Necro#6714 used n!autmod
+Mon Jul 24 00:37:39 2017: Necro#6714 used n!automod
+Mon Jul 24 00:38:12 2017: Necro#6714 used n!automod <@317619283377258497> <@!241942232867799040> <#321305756999745547> <#312902474753245184> <#312243558671450113>
+Mon Jul 24 00:38:23 2017: Necro#6714 used n!automod add <@317619283377258497> <@!241942232867799040> <#321305756999745547> <#312902474753245184> <#312243558671450113>
+Mon Jul 24 00:39:39 2017: Necro#6714 used n!off
+Mon Jul 24 00:40:00 2017: Necro#6714 used n!automod add <@317619283377258497> <@!241942232867799040> <#321305756999745547> <#312902474753245184> <#312243558671450113>
+Mon Jul 24 00:40:15 2017: Necro#6714 used n!automod
+Mon Jul 24 00:42:34 2017: Necro#6714 used n!off
+Mon Jul 24 00:43:24 2017: Necro#6714 used n!automod
+Mon Jul 24 10:15:17 2017: Necro#6714 used n!automod add <#320689998087323649>
+Mon Jul 24 10:17:22 2017: Necro#6714 used n!automod add <#320477096319254529>
+Mon Jul 24 10:17:33 2017: Necro#6714 used n!automod del <#320477096319254529>
+Mon Jul 24 10:17:52 2017: Necro#6714 used n!off
+Mon Jul 24 10:28:58 2017: Necro#6714 used n!off
+Mon Jul 24 10:29:36 2017: Necro#6714 used n!ignore
+Mon Jul 24 10:30:01 2017: Necro#6714 used n!ignore add <#311789251190587392> <#312647665395433492> <#312184736166576129>
+Mon Jul 24 10:30:16 2017: Necro#6714 used n!ignore add <@!172002275412279296>
+Mon Jul 24 10:31:21 2017: Necro#6714 used n!off
+Mon Jul 24 10:31:33 2017: Necro#6714 used n!ignore add <@!172002275412279296>
+Mon Jul 24 10:45:43 2017: Necro#6714 used n!speak 31846564420712962 Hello, this is a message
+Mon Jul 24 10:46:29 2017: Necro#6714 used n!speak 318465643420712962 test
+Mon Jul 24 11:06:13 2017: Necro#6714 used n!off
+Mon Jul 24 11:06:46 2017: Necro#6714 used n!warn
+Mon Jul 24 11:07:05 2017: Necro#6714 used n!warn add <@317619283377258497> test warning 1
+Mon Jul 24 11:07:35 2017: Necro#6714 used n!info <@317619283377258497>
+Mon Jul 24 11:08:27 2017: Necro#6714 used n!off
+Mon Jul 24 11:08:37 2017: Necro#6714 used n!warn add <@317619283377258497> test warning 1
+Mon Jul 24 11:08:44 2017: Necro#6714 used n!info <@317619283377258497>
+Mon Jul 24 11:09:38 2017: Necro#6714 used n!warn del <@317619283377258497> 1
+Mon Jul 24 11:14:22 2017: Necro#6714 used n!off
+Mon Jul 24 11:14:59 2017: Necro#6714 used n!giveme info
+Mon Jul 24 11:15:07 2017: Necro#6714 used n!giveme_roles del Good
+Mon Jul 24 11:15:16 2017: Necro#6714 used n!giveme_roles add Good
+Mon Jul 24 11:17:03 2017: Necro#6714 used n!off
+Mon Jul 24 11:17:42 2017: Necro#6714 used n!off
+Mon Jul 24 11:21:55 2017: Necro#6714 used n!off

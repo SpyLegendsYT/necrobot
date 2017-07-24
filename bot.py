@@ -17,6 +17,7 @@ import json
 import async_timeout
 from var import *
 import traceback
+import re
 
 #prefix command
 prefixes = ["n!","N!", "<@317619283377258497> "]
@@ -48,12 +49,10 @@ with open("data/userdata.csv","r") as f:
 
 with open("data/setting.csv","r") as f:
     reader = csv.reader(f)
-    ignoreCommandList = list(next(reader))
-    ignoreAutomodList = list(next(reader))
     blacklistList = list(next(reader))
     line = next(reader)
     for row in reader:
-        serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome":row[4], "selfRoles":row[5].split(",")}
+        serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome":row[4], "selfRoles":row[5].split(","),"ignoreCommand":row[6].split(","),"ignoreAutomod":row[7].split(",")}
 
 @bot.event
 async def on_ready():
@@ -61,8 +60,6 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
-    print("Ignore commands from: "+ str(ignoreCommandList))
-    print("Ignore automod violations from: "+ str(ignoreAutomodList))
     print("Blacklist: " + str(blacklistList))
     print(serverData)
     print('------')
@@ -92,6 +89,19 @@ async def default_stats(member, server):
             await bot.send_message(server.default_channel, member.name + " perms level set to 4 (Admin)")
         else:
             userData[member.id]["perms"][server.id] = 0
+
+def allmentions(cont, arg0):
+    myList = []
+    mentions = arg0.split(" ")
+    for x in mentions:
+        ID = re.sub('[<>!#@]', '', x)
+        if not bot.get_channel(ID) is None:
+            channel = bot.get_channel(ID)
+            myList.append(channel)
+        elif not cont.message.server.get_member(ID) is None:
+            member = cont.message.server.get_member(ID)
+            myList.append(member)
+    return myList
 
 # *****************************************************************************************************************
 #  Check Functions
@@ -162,16 +172,16 @@ async def kill(cont):
 
     with open("data/setting.csv","w",newline="") as csvfile:
         Awriter = csv.writer(csvfile)
-        Awriter.writerow(ignoreCommandList)
-        Awriter.writerow(ignoreAutomodList)
         Awriter.writerow(blacklistList)
-        Awriter.writerow(['Server Name','Server','Mute Role','Autmod Channel','Welcome Channel',"Self Roles"])
+        Awriter.writerow(['Server Name','Server','Mute Role','Autmod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore"])
         for x in serverData:
             selfRolesList = ",".join(serverData[x]["selfRoles"])
-            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome"],selfRolesList])
+            automodList = ",".join(serverData[x]["ignoreAutomod"])
+            commandList = ",".join(serverData[x]["ignoreCommand"])
+            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome"],selfRolesList,commandList,automodList])
 
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
-    sys.exit()
+    await bot.logout()
 
 # Used to add or subtract money from user accounts
 @bot.command(pass_context = True, enabled=False)
@@ -190,7 +200,7 @@ async def add(cont, arg0 : discord.Member,*, arg1 : str):
 @bot.command(pass_context = True)
 @has_perms(2)
 async def setstats(cont, arg0 : discord.Member):
-        default_stats(arg0, cont.message.server)
+        await default_stats(arg0, cont.message.server)
         await bot.say("Stats set for user")
 
 # set the stats for all the users on the server the message was issued from
@@ -199,7 +209,7 @@ async def setstats(cont, arg0 : discord.Member):
 async def setall(cont):
     membList = cont.message.server.members
     for x in membList:
-        default_stats(x, cont.message.server)
+        await default_stats(x, cont.message.server)
             
     await bot.say("Stats sets for users")
 
@@ -217,107 +227,107 @@ async def perms(cont, arg0 : discord.Member, arg1 : int):
 # mutes a user indefinitely or with a timer
 @bot.command(pass_context = True)
 @has_perms(2)
-async def mute(cont, arg0):
+async def mute(cont, arg0 : discord.Member, *arg1 : int):
     role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
-    for x in cont.message.mentions:
-        if role not in x.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[x.id]["perms"][cont.message.server.id]:
-            await bot.add_roles(x, role)
-            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(x))
-        else:
-            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is already muted or cannot be muted".format(x))
+    if role not in arg0.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[arg0.id]["perms"][cont.message.server.id]:
+        await bot.add_roles(arg0, role)
+        await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been muted".format(arg0.display_name))
+    else:
+        await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is already muted or cannot be muted".format(arg0.display_name))
+        return
 
-    try:
-        await asyncio.sleep(float(arg0))
-        for x in cont.message.mentions:
-            if role in x.roles:
-                await bot.remove_roles(x, role)
-                await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been automatically unmuted".format(x))
-    except ValueError:
-        pass
+    if arg1:
+        await asyncio.sleep(arg1[0])
+        if role in arg0.roles:
+            await bot.remove_roles(arg0, role)
+            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been automatically unmuted".format(arg0.display_name))
 
 # unmutes user
 @bot.command(pass_context = True)
 @has_perms(2)
-async def unmute(cont, arg0):
+async def unmute(cont, arg0 : discord.Member):
     role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
-    for x in cont.message.mentions:
-        if role in x.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[x.id]["perms"][cont.message.server.id]:
-            await bot.remove_roles(x, role)
-            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(x))
-        else:
-            await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is not muted or cannot be unmuted".format(x))
+    if role in arg0.roles and userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[arg0.id]["perms"][cont.message.server.id]:
+        await bot.remove_roles(arg0, role)
+        await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** has been unmuted".format(arg0.display_name))
+    else:
+        await bot.send_message(bot.get_channel(cont.message.channel.id),"User: **{0}** is not muted or cannot be unmuted".format(arg0.display_name))
 
 # disable/enable autmoderation for users and channels
-@bot.command(pass_context = True)
+@bot.group(pass_context = True)
 @has_perms(4)
-async def automod(cont, arg0):
-    myList = []
-    for x in cont.message.mentions:
-        myList.append(x)
-    for x in cont.message.channel_mentions:
-        myList.append(x)
-
-    if arg0 == "add":
-        for x in myList:
-            if x.id not in ignoreAutomodList:
-                ignoreAutomodList.append(x.id)
-                await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
-            else:
-                await bot.say("**"+x.name+"** is already ignored.")
-    elif arg0 == "del":
-        for x in myList:
-            if x.id in ignoreAutomodList:
-                ignoreAutomodList.remove(x.id)
-                await bot.say("**"+x.name+"** will no longer be ignored by the bot's automoderation.")
-            else:
-                await bot.say("**"+x.name+"** is not ignored.")
-    elif arg0 == "info":
-        myList1 = []
-        for x in ignoreAutomodList:
+async def automod(cont):
+    if cont.invoked_subcommand is None:
+        myList = []
+        for x in serverData[cont.message.server.id]["ignoreAutomod"]:
             try:
-                myList1.append("C: "+bot.get_channel(x).name)
+                myList.append("C: "+bot.get_channel(x).name)
             except AttributeError:
-                myList1.append("U: "+bot.get_server(cont.message.server.id).get_member(x).name)
+                try:
+                    myList.append("U: "+cont.message.server.get_member(x).name)
+                except AttributeError:
+                    pass
 
-        await bot.say("Channels(**C**) and Users(**U**) ignored by auto moderation: ``` "+str(myList1)+" ```")
-    else:
-        await bot.say("Sub-command not recognized, use either `del` or `add`")
+        await bot.say("Channels(**C**) and Users(**U**) ignored by auto moderation: ``` "+str(myList)+" ```")
+
+@automod.command(pass_context = True, name="add")
+async def automod_add(cont, *, arg0):
+    myList = allmentions(cont, arg0)
+    for x in myList:
+        if x.id not in serverData[cont.message.server.id]["ignoreAutomod"]:
+            serverData[cont.message.server.id]["ignoreAutomod"].append(x.id)
+            await bot.say("**"+x.name+"** will be ignored by the bot's automoderation.")
+        else:
+            await bot.say("**"+x.name+"** is already ignored.")
+
+@automod.command(pass_context = True, name="del")
+async def automod_del(cont, *, arg0):
+    myList = allmentions(cont, arg0)
+    for x in myList:
+        if x.id in serverData[cont.message.server.id]["ignoreAutomod"]:
+            serverData[cont.message.server.id]["ignoreAutomod"].remove(x.id)
+            await bot.say("**"+x.name+"** will no longer be ignored by the bot's automoderation.")
+        else:
+            await bot.say("**"+x.name+"** is not ignored.")
+
+
 
 # enable/disable commands for users and channels
-@bot.command(pass_context = True)
-@has_perms(4)   
-async def ignore(cont, arg0):
-    myList = []
-    for x in cont.message.mentions:
-        myList.append(x)
-    for x in cont.message.channel_mentions:
-        myList.append(x)
-
-    if arg0 == "add":
-        for x in myList:
-            if x.id not in ignoreCommandList:
-                ignoreCommandList.append(x.id)
-                await bot.say("**"+x.name+"** will be ignored by the bot.")
-            else:
-                await bot.say("**"+x.name+"** is already ignored.")
-    elif arg0 == "del":
-        for x in myList:
-            if x.id in ignoreCommandList:
-                ignoreCommandList.remove(x.id)
-                await bot.say("**"+x.name+"** will no longer be ignored by the bot.")
-            else:
-                await bot.say("**"+x.name+"** is not ignored.")
-    elif arg0 == "info":
-        myList2 = []
-        for x in ignoreCommandList:
+@bot.group(pass_context=True)
+@has_perms(4)
+async def ignore(cont):
+    if cont.invoked_subcommand is None:
+        myList = []
+        for x in serverData[cont.message.server.id]["ignoreCommand"]:
             try:
-                myList2.append("C: "+bot.get_channel(x).name)
+                myList.append("C: "+bot.get_channel(x).name)
             except AttributeError:
-                myList2.append("U: "+bot.get_server(cont.message.server.id).get_member(x).name)
+                try:
+                    myList.append("U: "+cont.message.server.get_member(x).name)
+                except AttributeError:
+                    pass
 
-        await bot.say("Channels(**C**) and Users(**U**) ignored by NecroBot: ``` "+str(myList2)+" ```")
-    else:
-        await bot.say("Sub-command not recognized, use either `del`, `add` or leave it blank to show the list of ignored users/channels")
+        await bot.say("Channels(**C**) and Users(**U**) ignored by NecroBot: ``` "+str(myList)+" ```")
+
+@ignore.command(pass_context = True, name="add")
+async def ignore_add(cont, *, arg0):
+    myList = allmentions(cont, arg0)
+    for x in myList:
+        if x.id not in serverData[cont.message.server.id]["ignoreCommand"]:
+            serverData[cont.message.server.id]["ignoreCommand"].append(x.id)
+            await bot.say("**"+x.name+"** will be ignored by the bot.")
+        else:
+            await bot.say("**"+x.name+"** is already ignored.")
+
+@ignore.command(pass_context = True, name="del")
+async def ignore_del(cont, *, arg0):
+    myList = allmentions(cont, arg0)
+    for x in myList:
+        if x.id in serverData[cont.message.server.id]["ignoreCommand"]:
+            serverData[cont.message.server.id]["ignoreCommand"].remove(x.id)
+            await bot.say("**"+x.name+"** will no longer be ignored by the bot.")
+        else:
+            await bot.say("**"+x.name+"** is not ignored.")
 
 # sends arg1 to the channel with id arg0
 @bot.command(pass_context = True)
@@ -333,7 +343,7 @@ async def speak(cont, arg0,*, arg1,):
 @bot.command(pass_context = True)
 @has_perms(6)
 async def pm(cont, arg0,*,arg1):
-    user = bot.get_server(cont.message.server.id).get_member(arg0)
+    user = cont.message.server.get_member(arg0)
     await bot.start_private_message(user)
     await bot.send_message(user, arg1)
     await bot.say("Message sent")
@@ -342,22 +352,22 @@ async def pm(cont, arg0,*,arg1):
     await bot.send_message(bot.get_channel("318465643420712962"), ":speech_left: | **User: "+ str(msg.author) + "** said :**" +msg.content+"**")
 
 # Add a warning to the user's warning list
-@bot.command(pass_context = True)
-async def warn(cont, arg0, arg1,*, arg2):
-    if arg0 == "del":
-        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3:
-            await bot.say("Warning position: **\"" + userData[cont.message.mentions[0].id]["warnings"][int(arg2)] + "\"** removed from warning list of user " + str(cont.message.mentions[0].name))
-            userData[cont.message.mentions[0].id]["warnings"].pop(int(arg2))
-        else:
-            await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to remove warnings")
-    elif arg0 == "add":
-        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 1:
-            await bot.say("Warning: **\"" + str(arg2) + "\"** added from warning list of user " + str(cont.message.mentions[0].name))
-            userData[cont.message.mentions[0].id]["warnings"].append(arg2 + " by " + str(cont.message.author) + " on server " + cont.message.server.name)
-        else:
-            await bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to add warnings.")
-    else:
-        await bot.say("Argument not recognized, you can either add a warning with `n!warn add [@User] [message]` or remove a warning with `n!warn del [@User] [warning position]`")
+@bot.group(pass_context=True)
+async def warn(cont):
+    if cont.invoked_subcommand is None:
+        await bot.say("Please pass a valid subcommand")
+
+@warn.command(pass_context=True, name="add")
+@has_perms(1)
+async def warn_add(cont, arg0 : discord.Member, *, arg1):
+    await bot.say("Warning: **\"" + arg1 + "\"** added to warning list of user " + arg0.display_name)
+    userData[arg0.id]["warnings"].append(arg1 + " by " + str(cont.message.author) + " on server " + cont.message.server.name)
+
+@warn.command(pass_context=True, name="del")
+@has_perms(3)
+async def warn_del(cont, arg0 : discord.Member, arg1 : int):
+    await bot.say("Warning position: **\"" + userData[arg0.id]["warnings"][arg1 - 1] + "\"** removed from warning list of user " + arg0.display_name)
+    userData[arg0.id]["warnings"].pop(arg1 - 1)
 
 # removes a certain number of messages
 @bot.command(pass_context = True)
@@ -382,33 +392,34 @@ async def blacklist(cont, arg0 : discord.Member):
 @has_perms(5)
 async def setroles(cont):
     for x in roleList:
-        new_role = await bot.create_role(cont.message.server, name=x[0], colour=x[1], mentionable=True)
-
+        if discord.utils.get(cont.message.server.roles, name=x[0]) is None:
+            new_role = await bot.create_role(cont.message.server, name=x[0], colour=x[1], mentionable=True)
+            await bot.say("Role " + x[0] + " created")
+        else:
+            await bot.say("A role with the name " + x[0] + " already exists.")
+    await asyncio.sleep(5)
+    await bot.purge_from(bot.get_channel(cont.message.channel.id), limit=8)
     await bot.say("**Roles created**")
 
     for x in cont.message.server.members:
         role = userData[x.id]["perms"][cont.message.server.id]-1
         await bot.add_roles(x, discord.utils.get(cont.message.server.roles, name=roleList[role][0]))
-
     await bot.say("**Roles assigned**")
 
 # locks someone in a voice chat, everytime they leave that voice chat they will be moved to it
 @bot.command(pass_context = True)
 @has_perms(3)
 async def lock(cont, arg0 : discord.Member, *arg1):
-    if arg1:
-        v_channel  = cont.message.channel_mentions[0].id
-    else:
-        v_channel = arg0.voice_channel.id
+    v_channel = arg0.voice_channel
 
     if arg0.id in lockedList:
         lockedList.remove(arg0.id)
-        await bot.say("User no longer locked in channel **"+ bot.get_channel(userData[arg0.id]['locked'].name) + "**")
-        userData[arg0.id]['locked'] = ''
+        await bot.say("User no longer locked in channel **"+ bot.get_channel(userData[arg0.id]['locked']).name + "**")
+        userData[arg0.id]["locked"] = ""
     else:
-        userData[arg0.id]["locked"] = v_channel
+        userData[arg0.id]["locked"] = v_channel.id
         lockedList.append(arg0.id)
-        await bot.say("User locked in channel **"+bot.get_channel(userData[arg0.id]['locked'].name) + "**")
+        await bot.say("User locked in channel **"+ v_channel.name + "**")
 
 # changes user nickname
 @bot.command(pass_context = True)
@@ -420,24 +431,28 @@ async def nick(cont, arg0 : discord.Member,*, arg1):
     except discord.errors.Forbidden:
         await bot.say("You cannot change the nickname of that user.")
 
-@bot.command(pass_context = True)
+#edit list of self assignable roles
+@bot.group(pass_context=True)
 @has_perms(4)
-async def giveme_roles(cont, arg0 : str,*, arg1 :str):
-    if arg0 == "add":
-        if not discord.utils.get(cont.message.server.roles, name=arg1) is None:
-            serverData[cont.message.server.id]["selfRoles"].append(arg1)
-            await bot.say("Added role " + arg1 + " to list of self assignable roles.")
-        else:
-            await bot.say("No such role exists")
-    elif arg0 == "del":
-        if arg1 in serverData[cont.message.server.id]["selfRoles"]:
-            serverData[cont.message.server.id]["selfRoles"].remove(arg1)
-            await bot.say("Role removed from self assignable roles")
-        else:
-            await bot.say("Role not in self assignable list")
-    else:
-        await bot.say("Sub-command not recognized.")
+async def giveme_roles(cont):
+    if cont.invoked_subcommand is None:
+        await bot.say("Please pass a valid subcommand")
 
+@giveme_roles.command(pass_context=True, name="add")
+async def giveme_roles_add(cont, *, arg0):
+    if not discord.utils.get(cont.message.server.roles, name=arg0) is None:
+        serverData[cont.message.server.id]["selfRoles"].append(arg0)
+        await bot.say("Added role " + arg0 + " to list of self assignable roles.")
+    else:
+        await bot.say("No such role exists")
+
+@giveme_roles.command(pass_context = True, name="del")
+async def giveme_roles_del(cont, *, arg0):
+    if arg0 in serverData[cont.message.server.id]["selfRoles"]:
+        serverData[cont.message.server.id]["selfRoles"].remove(arg0)
+        await bot.say("Role " + arg0 + " removed from self assignable roles")
+    else:
+        await bot.say("Role not in self assignable list")
 
 # *****************************************************************************************************************
 #  Regular Commands
@@ -570,21 +585,9 @@ async def on_server_join(server):
     await bot.send_message(server.default_channel, helpVar)
     membList = server.members
     for x in membList:
-        default_stats(x, server)
+        await default_stats(x, server)
             
     await bot.say("Stats sets for users")
-
-#confirms role duplicate
-@bot.event
-async def on_role_create(role):
-    if any([x.name for x in role.server.roles]) == role.name:
-        await bot.send_message(role.server.default_channel, "A role with the same name is alread present, are you sure you wish to create another one? Y/N")
-        msg = await bot.wait_for_message(channel=role.server.default_channel, timeout=15)
-        if msg.content == "N":
-            await bot.delete_role(role.server, role)
-            await bot.send_message(msg.channel, "Role deleted.")
-        else:
-            await bot.send_message(msg.channel, "Role created.")
 
 #automod
 @bot.event
@@ -594,7 +597,7 @@ async def on_message_delete(message):
     except KeyError:
         ChannelId = "318828760331845634"
 
-    if message.author.id not in ignoreAutomodList and message.channel.id not in ignoreAutomodList:
+    if message.author.id not in serverData[message.server.id]["ignoreAutomod"] and message.channel.id not in serverData[message.server.id]["ignoreAutomod"]:
         fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted, it contained: ``` {0.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
 
@@ -606,9 +609,9 @@ async def on_message_edit(before, after):
     except KeyError:
         ChannelId = "318828760331845634"
 
-    if before.author.id not in ignoreAutomodList and before.channel.id not in ignoreAutomodList:
-        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {1.content}\n{0.content} ```'
-        await bot.send_message(bot.get_channel(ChannelId), fmt.format(after, before))
+    if before.author.id not in serverData[before.server.id]["ignoreAutomod"] and before.channel.id not in serverData[before.server.id]["ignoreAutomod"]:
+        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {0.content}\n{1.content} ```'
+        await bot.send_message(bot.get_channel(ChannelId), fmt.format(before, after))
 
 #welcomes and set stats
 @bot.event
@@ -625,7 +628,7 @@ async def on_member_join(member):
     await bot.send_message(channel, 'Welcome {0.mention} to {1.name}!'.format(member, server))
     await bot.change_nickname(member, str(member.name))
 
-    default_stats(member, server)
+    await default_stats(member, server)
 
 #says goodbye and resets perms level if less than NecroBot Admin
 @bot.event
@@ -655,7 +658,7 @@ async def on_message(message):
         return
 
     #check if spam
-    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in ignoreAutomodList and channelID not in ignoreAutomodList) and not message.content.startswith(tuple(prefixes)):
+    if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not message.content.startswith(tuple(prefixes)):
         await bot.delete_message(message)
         try:
             ChannelId = serverData[message.server.id]["automod"]
@@ -672,7 +675,7 @@ async def on_message(message):
         userData[userID]["exp"] += random.randint(2,5)
 
         #check if allowed bot summon
-        if (channelID not in ignoreCommandList or userID not in ignoreCommandList) and message.content.startswith(tuple(prefixes)):
+        if (channelID not in serverData[message.server.id]["ignoreCommand"] or userID not in serverData[message.server.id]["ignoreCommand"]) and message.content.startswith(tuple(prefixes)):
             if message.content.startswith("<@317619283377258497>"):
                 command = message.content.split()[1]
                 try:
