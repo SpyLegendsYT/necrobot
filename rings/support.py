@@ -4,7 +4,7 @@ from discord.ext.commands.cooldowns import BucketType
 
 #Help Doc
 helpVar=""":information_source: **NecroBot v1.0 Help Menu** :information_source: 
-To access the help page pf the command simply us `n!help [command]` and replace [command] with the command you seek to display, such as `n!help edain` will display the help page of the edain command. NecroBot is still WIP so take it easy.
+To access the help page of a command simply us `n!help [command]` and replace [command] with the command you seek to display, such as `n!help edain` will display the help page of the edain command. NecroBot is still WIP so take it easy.
 
 __User Commands__
 1. **Economy** - `claim` | `balance`
@@ -13,7 +13,7 @@ __User Commands__
 4. **Utility** - `info` | `play` | `serverinfo` | `giveme`
 5. **Animal** - `cat`| `dog`
 6  **Modding** - `moddb`
-7. **Support** - `h` | `support` | `invite`
+7. **Support** - `help` | `support` | `invite`
 
 __Moderation Commands__
 1. **User Profile** - `add` | `setstats` | `perms` | `setall` | `setroles`
@@ -54,7 +54,7 @@ helpDict = {
 "calc":
 "The calc command will evaluate a simple mathematical equation according to its pythonic mathematical symbols and return the result.\n- `+` for additions\n- `-` for subtractions\n- `*` for multiplications \n- `/` for divisions\n- `**` for exponents\n\n__Usage__\n`n!calc [equation]`\n\n__Example__\n`n!calc 4 + 2 / 4` - calculates 2 divided by 4 plus 4\n`n!calc (4+2)*2` - calculates 4 plus 2 times 2\n`n!calc 4**2` - calculates 4 squared",
 
-"h":
+"help":
 "The help tag will either display the help menu for the supplied command name  or will display the default help menu\n\n__Usage__\n`n!help`\n`n!help [command]`\n\n__Example__\n`n!help` - get the default help menu\n`n!help wiki` - get the help info for the wiki command",
 
 "support":
@@ -64,10 +64,10 @@ helpDict = {
 "Provides a link to invite NecroBot to one of your servers.\n\n__Usage__\n`n!invite`",
 
 "giveme":
-"Assigns the desired role from the list of self assignable roles to the user. Can also be used to check self assignable roles and remove or add self assignable roles. (Permission level 4+ to remove/add roles (Server Admin))\n\n__Usage__\n`n!giveme info`\n`n!giveme [role]\n\n__Examples__\n`n!giveme Token Role` - assigns user role 'Token Role'\n`n!giveme info` - displays the list of self assignable roles",
+"Assigns the desired role from the list of self assignable roles to the user. Can also be used to check self assignable roles and remove or add self assignable roles. (Permission level 4+ to remove/add roles (Server Admin))\n\n__Usage__\n`n!giveme info`\n`n!giveme [role]`\n\n__Examples__\n`n!giveme Token Role` - assigns user role 'Token Role'\n`n!giveme info` - displays the list of self assignable roles",
 
 "giveme_roles":
-"Adds or removes roles from the list of self assignable roles.\n\n__Usage__\n`n!giveme_roles add [role]`\n`n!giveme_roles del [role]`\n\n__Examples__\n`n!giveme add Another Token Role` - adds 'Token Role' to the list of self assignable roles\n`n!giveme del A Third Token Role` - removes 'A Third Token Role' from the list of self assignable roles",
+"Adds or removes roles from the list of self assignable roles.\n\n__Usage__\n`n!giveme_roles add [role]`\n`n!giveme_roles del [role]`\n\n__Examples__\n`n!giveme add Another Token Role` - adds 'Another Token Role' to the list of self assignable roles\n`n!giveme del A Third Token Role` - removes 'A Third Token Role' from the list of self assignable roles",
 
 "info":
 "The info command will display a user's NecroBot profile allowing users to see their warning history along with other misc data such as id, balance and permission level.\n\n__Usage__\n`n!info`\n`n!info [@User]`\n\n__Example__\n`n!info` - get your own info\n`n!info @NecroBot` - get NecroBot's info",
@@ -100,10 +100,10 @@ helpDict = {
 "Sends a user a message through the bot and awaits for a reply.(Permission level of 6+ (NecroBot Admin))\n\n__Usage__\n`n!pm [user ID] [message]`\n\n__Example__\n`n!pm 97846534420712962 This is another message` - sends 'This is another message' to the user",
 
 "automod":
-"Add/removes the channels/users from the necrobot automoderation, this means users/channels will no longer be affected by the spam filter, edition tracking and deletion tracking. (Permission level of 5+ (Server Owner))\n\n__Usage__\n`n!automod` `n!automod add [@Users/#channels]`\n`n!automod del [@Users/#channels]\n\n__Example__\n`n!automod add #necrobot-channel` - adds #necrobot-channel to the automod ignore list\n`n!automod add @NecroBot` - adds @NecroBot to the automod ignore list\n`n!automod del #necrobot-channel` - removes #necrobot-channel from the automod ignore list\n`n!automod del @Necrobot` - removes @NecroBot from the automod ignore list\n`n!automod` - prints the list of ignored channels and users",
+"Add/removes the channels/users from the necrobot automoderation, this means users/channels will no longer be affected by the spam filter, edition tracking and deletion tracking. (Permission level of 5+ (Server Owner))\n\n__Usage__\n`n!automod`\n `n!automod add [@Users/#channels]`\n`n!automod del [@Users/#channels]`\n\n__Example__\n`n!automod add #necrobot-channel` - adds #necrobot-channel to the automod ignore list\n`n!automod add @NecroBot` - adds @NecroBot to the automod ignore list\n`n!automod del #necrobot-channel` - removes #necrobot-channel from the automod ignore list\n`n!automod del @Necrobot` - removes @NecroBot from the automod ignore list\n`n!automod` - prints the list of ignored channels and users",
 
 "ignore":
-"Add/removes the channels/users from the necrobot, this means users/channels will no longer be able to use commands. (Permission level of 5+ (Server Owner))\n\n__Usage__\n`n!ignore` `n!ignore add [@Users/#channels]`\n`n!ignore del [@Users/#channels]\n\n__Example__\n`n!ignore add #necrobot-channel` - adds #necrobot-channel to the command ignore list\n`n!ignore add @NecroBot` - adds @NecroBot to the command ignore list\n`n!ignore del #necrobot-channel` - removes #necrobot-channel from the command ignore list\n`n!ignore del @Necrobot` - removes @NecroBot from the command ignore list\n`n!ignore` - prints the list of ignored channels and users",
+"Add/removes the channels/users from the necrobot, this means users/channels will no longer be able to use commands. (Permission level of 5+ (Server Owner))\n\n__Usage__\n`n!ignore`\n`n!ignore add [@Users/#channels]`\n`n!ignore del [@Users/#channels]`\n\n__Example__\n`n!ignore add #necrobot-channel` - adds #necrobot-channel to the command ignore list\n`n!ignore add @NecroBot` - adds @NecroBot to the command ignore list\n`n!ignore del #necrobot-channel` - removes #necrobot-channel from the command ignore list\n`n!ignore del @Necrobot` - removes @NecroBot from the command ignore list\n`n!ignore` - prints the list of ignored channels and users",
 
 "kill":
 "Kills the bot and saves all the data.(Permission level of 7+ (Bot Smith))\n\n__Usage__\n`n!kill`",
@@ -166,7 +166,7 @@ class Support():
         if arg0:
             try:
                 helpRequest = arg0[0]
-                await self.bot.say(":information_source: **The `" + helpRequest + "` command** :information_source:\n\n" + helpDict[helpRequest] + "\n```Markdown \n>>> The bot usually has a response system so if there is no answer to your command it is either broken, offline or you haven't written the right command \n>>> Do not attempt to break the bot if possible \n>>> More commands and features will come later... \n```")
+                await self.bot.say(":information_source: **The `" + helpRequest + "` command** :information_source:\n\n" + helpDict[helpRequest])
             except KeyError:
                 await self.bot.say("This command doesn't exist or Necro forgot to add it.")
         else:

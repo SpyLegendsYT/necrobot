@@ -87,6 +87,12 @@ async def default_stats(member, server):
         elif member.server_permissions.administrator:
             userData[member.id]["perms"][server.id] = 4
             await bot.send_message(server.default_channel, member.name + " perms level set to 4 (Admin)")
+        elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
+            userData[member.id]["perms"][server.id] = 6
+            await bot.send_message(server.default_channel, member.name + " perms level set to 6 (NecroBot Admin)")
+        elif any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
+            userData[member.id]["perms"][server.id] = 7
+            await bot.send_message(server.default_channel, member.name + " perms level set to 7 (The Bot Smith)")
         else:
             userData[member.id]["perms"][server.id] = 0
 
