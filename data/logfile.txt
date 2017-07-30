@@ -465,3 +465,81 @@ Mon Jul 24 11:42:44 2017: Necro#6714 used n!ignore
 Mon Jul 24 11:42:58 2017: Necro#6714 used n!help
 Mon Jul 24 12:02:01 2017: Necro#6714 used n!off
 Mon Jul 24 12:04:30 2017: Necro#6714 used n!nick <@!172002275412279296> Tatsumaki
+Mon Jul 24 13:44:04 2017: Necro#6714 used n!off
+Mon Jul 24 13:52:02 2017: Necro#6714 used n!kill
+Tue Jul 25 12:03:02 2017: Necro#6714 used n!edain Dorwinion
+Tue Jul 25 12:03:45 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 12:04:21 2017: Necro#6714 used n!off
+Tue Jul 25 12:05:06 2017: Necro#6714 used n!ignore <#318465643420712962>
+Tue Jul 25 12:05:18 2017: Necro#6714 used n!ignore add <#318465643420712962>
+Tue Jul 25 12:05:33 2017: Necro#6714 used n!off
+Tue Jul 25 12:36:50 2017: Necro#6714 used n!edain Dorwinion
+Tue Jul 25 12:39:59 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 12:40:05 2017: Necro#6714 used n!edain Dorwinion
+Tue Jul 25 12:40:32 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Jul 25 12:41:03 2017: Necro#6714 used n!automod add <@317619283377258497>
+Tue Jul 25 12:41:10 2017: Necro#6714 used n!ignore add <@317619283377258497>
+Tue Jul 25 12:41:19 2017: Necro#6714 used n!ignore add <@339330190742126595>
+Tue Jul 25 12:41:46 2017: Necro#6714 used n!ignore del <@317619283377258497>
+Tue Jul 25 12:41:51 2017: Necro#6714 used n!ignore del <@339330190742126595>
+Tue Jul 25 12:41:58 2017: Necro#6714 used n!automod add <@317619283377258497>
+Tue Jul 25 12:45:12 2017: Necro#6714 used n!ignore add <#318465643420712962>
+Tue Jul 25 12:47:20 2017: Necro#6714 used n!edain War of the Ring
+Tue Jul 25 12:47:30 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 12:49:05 2017: Necro#6714 used n!edain War of the Ring Missions Map Series
+Tue Jul 25 12:49:22 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 12:50:01 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 12:50:03 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 12:51:15 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 12:51:20 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 12:52:14 2017: Necro#6714 used n!edain cirdan
+Tue Jul 25 12:52:39 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Jul 25 13:29:07 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 13:29:21 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 13:31:21 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 13:31:29 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 13:33:51 2017: Necro#6714 used n!reload wiki
+Tue Jul 25 13:33:58 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Tue Jul 25 18:51:51 2017: Necro#6714 used n!edain Grond
+Tue Jul 25 18:52:11 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Jul 25 18:53:24 2017: Necro#6714 used n!reload wiki
+Wed Jul 26 00:10:56 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 14:42:22 2017: Necro#6714 used n!help
+Sun Jul 30 14:50:45 2017: Necro#6714 used n!off
+Sun Jul 30 14:52:26 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 14:55:25 2017: Necro#6714 used n!off
+Sun Jul 30 14:56:19 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:01:59 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:02:46 2017: Necro#6714 used n!off
+Sun Jul 30 15:04:12 2017: Necro#6714 used n!off
+Sun Jul 30 15:05:39 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:07:59 2017: Necro#6714 used n!off
+Sun Jul 30 15:08:38 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:11:59 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:18:01 2017: Necro#6714 used n!off
+Sun Jul 30 15:18:17 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:18:49 2017: Necro#6714 used n!pm 241942232867799040 test
+Sun Jul 30 15:24:38 2017: Necro#6714 used n!off
+Sun Jul 30 15:25:03 2017: Necro#6714 used n!warn add <@271259290415792129> too sexy <:Kappa:312680876054151169>
+Sun Jul 30 15:25:15 2017: Necro#6714 used n!off
+Sun Jul 30 15:25:33 2017: Necro#6714 used n!warn add <@271259290415792129> too sexy <:Kappa:312680876054151169>
+Sun Jul 30 15:40:48 2017: Necro#6714 used n!off
+Sun Jul 30 15:41:38 2017: Necro#6714 used n!test 271259290415792129
+Sun Jul 30 15:53:38 2017: Necro#6714 used n!off
+Sun Jul 30 15:54:00 2017: Necro#6714 used n!off
+Sun Jul 30 18:08:26 2017: Necro#6714 used n!edain Castellan
+Sun Jul 30 18:08:56 2017: Necro#6714 used n!edain Castellans
+Sun Jul 30 18:09:13 2017: Necro#6714 used n!automod add <@339330190742126595>
+Sun Jul 30 18:09:32 2017: Necro#6714 used n!edain War of the Ring Mission Maps
+Sun Jul 30 18:09:43 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Sun Jul 30 18:13:06 2017: Necro#6714 used n!reload wiki
+Sun Jul 30 18:17:14 2017: Necro#6714 used n!reload wiki
+Sun Jul 30 18:17:23 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Sun Jul 30 18:22:18 2017: Necro#6714 used n!reload wiki
+Sun Jul 30 18:22:23 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Sun Jul 30 18:22:57 2017: Necro#6714 used n!reload wiki
+Sun Jul 30 18:23:02 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Sun Jul 30 18:29:03 2017: Necro#6714 used n!reload wiki
+Sun Jul 30 18:29:08 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Sun Jul 30 18:29:55 2017: Necro#6714 used n!reload wiki
+Sun Jul 30 18:30:02 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
