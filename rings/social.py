@@ -40,16 +40,6 @@ class Social():
         else:
             await self.bot.say("Wrong answer! Now you go to feed the fishies!")
 
-    # evaluates the the argument as a mathematical equation
-    @commands.command(enabled=False)
-    @commands.cooldown(3, 5, BucketType.user)
-    async def calc(self, *, arg : str):
-        try:
-            final = eval(arg)
-            await self.bot.say(final)
-        except NameError:
-            await self.bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
-
     # reads the user "fate" in the cards
     @commands.command(pass_context = True)
     @commands.cooldown(2, 3, BucketType.user)

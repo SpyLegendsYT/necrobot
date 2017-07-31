@@ -543,3 +543,20 @@ Sun Jul 30 18:29:03 2017: Necro#6714 used n!reload wiki
 Sun Jul 30 18:29:08 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
 Sun Jul 30 18:29:55 2017: Necro#6714 used n!reload wiki
 Sun Jul 30 18:30:02 2017: Necro#6714 used n!edain War of the Ring Mission Map Series
+Sun Jul 30 18:51:20 2017: Necro#6714 used n!edain
+Sun Jul 30 18:51:34 2017: Necro#6714 used n!add
+Sun Jul 30 18:51:38 2017: Necro#6714 used n!play
+Sun Jul 30 18:51:44 2017: Necro#6714 used n!warn
+Sun Jul 30 18:53:26 2017: Necro#6714 used n!off
+Mon Jul 31 09:30:46 2017: Necro#6714 used n!ping
+Mon Jul 31 09:31:17 2017: Necro#6714 used n!reload utilities
+Mon Jul 31 09:31:29 2017: Necro#6714 used n!ping
+Mon Jul 31 09:31:58 2017: Necro#6714 used n!reload utilities
+Mon Jul 31 09:32:02 2017: Necro#6714 used n!ping
+Mon Jul 31 09:32:31 2017: Necro#6714 used n!reload utilties
+Mon Jul 31 09:32:40 2017: Necro#6714 used n!reload utilities
+Mon Jul 31 09:32:44 2017: Necro#6714 used n!ping
+Mon Jul 31 09:33:11 2017: Necro#6714 used n!serverinfo
+Mon Jul 31 09:33:22 2017: Necro#6714 used n!avatar <@!241942232867799040>
+Mon Jul 31 09:34:00 2017: Necro#6714 used n!automod add <@339330190742126595>
+Mon Jul 31 09:58:37 2017: Necro#6714 used n!invites
