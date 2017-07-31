@@ -19,6 +19,7 @@ from var import *
 import traceback
 import re
 from simpleeval import simple_eval
+import inspect
 
 
 #prefix command
@@ -514,8 +515,40 @@ async def test(cont, arg0):
 @is_necro()
 async def invites(cont):
     for server in bot.servers:
-        invite = await bot.create_invite(server)
-        await bot.say("Server: " + server.name + " - " + invite.url)
+        try:
+            invite = await bot.create_invite(server)
+            await bot.say("Server: " + server.name + " - " + invite.url)
+        except:
+            await bot.say("I don't have the necessary permissions on " + server.name)
+
+@bot.command(pass_context=True)
+@is_necro()
+async def debug(cont, *, arg0 : str):
+    """Evaluates code."""
+    code = arg0.strip('` ')
+    python = '```py\n{}\n```'
+    result = None
+
+    env = {
+        'bot': bot,
+        'cont': cont,
+        'message': cont.message,
+        'server': cont.message.server,
+        'channel': cont.message.channel,
+        'author': cont.message.author
+    }
+
+    env.update(globals())
+
+    try:
+        result = eval(code, env)
+        if inspect.isawaitable(result):
+            result = await result
+    except Exception as e:
+        await bot.say(python.format(type(e).__name__ + ': ' + str(e)))
+        return
+
+    await bot.say(python.format(result))
 
 # *****************************************************************************************************************
 #  Regular Commands
@@ -728,6 +761,8 @@ async def on_message(message):
 
                 logit(message)
                 await bot.process_commands(message)
+    elif message.content.startswith(tuple(prefixes)) and message.channel.is_private:
+        await bot.send_message(message.channel, "Sorry, due to the way the bot works you cannot use commands in DMs")
 
 bot.loop.create_task(hourly_save())
 token = open("data/token.txt", "r").read()

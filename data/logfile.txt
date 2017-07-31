@@ -560,3 +560,9 @@ Mon Jul 31 09:33:11 2017: Necro#6714 used n!serverinfo
 Mon Jul 31 09:33:22 2017: Necro#6714 used n!avatar <@!241942232867799040>
 Mon Jul 31 09:34:00 2017: Necro#6714 used n!automod add <@339330190742126595>
 Mon Jul 31 09:58:37 2017: Necro#6714 used n!invites
+Mon Jul 31 10:13:19 2017: Necro#6714 used n!debug print("hello world")
+Mon Jul 31 10:14:04 2017: Necro#6714 used n!off
+Mon Jul 31 10:14:13 2017: Necro#6714 used n!debug print("hello world")
+Mon Jul 31 10:14:37 2017: Necro#6714 used n!debug bot.send_message(cont.message.channel, "hello world")
+Mon Jul 31 10:15:12 2017: Necro#6714 used n!debug bot.send_message(channel, "hello world")
+Mon Jul 31 10:15:39 2017: Necro#6714 used n!off
