@@ -566,3 +566,32 @@ Mon Jul 31 10:14:13 2017: Necro#6714 used n!debug print("hello world")
 Mon Jul 31 10:14:37 2017: Necro#6714 used n!debug bot.send_message(cont.message.channel, "hello world")
 Mon Jul 31 10:15:12 2017: Necro#6714 used n!debug bot.send_message(channel, "hello world")
 Mon Jul 31 10:15:39 2017: Necro#6714 used n!off
+Mon Jul 31 22:41:02 2017: Necro#6714 used n!settings
+Mon Jul 31 22:41:53 2017: Necro#6714 used n!settings mute Good
+Mon Jul 31 22:41:59 2017: Necro#6714 used n!mute <@317619283377258497>
+Mon Jul 31 22:42:28 2017: Necro#6714 used n!mute TimeOut
+Mon Jul 31 22:42:37 2017: Necro#6714 used n!settings mute TimeOut
+Mon Jul 31 22:42:45 2017: Necro#6714 used n!settings mute bob
+Mon Jul 31 22:43:44 2017: Necro#6714 used n!settings welcome-channel <#312243840046202881>
+Mon Jul 31 22:43:52 2017: Necro#6714 used n!invite
+Mon Jul 31 22:49:21 2017: Necro#6714 used n!settings welcome-channel <#312243840046202881>
+Mon Jul 31 22:49:26 2017: Necro#6714 used n!off
+Mon Jul 31 22:55:04 2017: Necro#6714 used n!settings welcome-channel <#312243840046202881>
+Mon Jul 31 22:55:26 2017: Necro#6714 used n!off
+Mon Jul 31 23:04:14 2017: Necro#6714 used n!debug bot.send_message(serverData[server.id]["welcome-channel"], "hello")
+Mon Jul 31 23:04:42 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel(serverData[server.id]["welcome-channel"]), "hello")
+Mon Jul 31 23:05:08 2017: Necro#6714 used n!settings welcome-channel <#318738044515647498>
+Mon Jul 31 23:05:58 2017: Necro#6714 used n!settings welcome Hello, {member} and welcome to {server}, don't forget to check out <#311630847969198082>
+Mon Jul 31 23:07:19 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel(serverData[server.id]["welcome-channel"]), serverData[server.id]["welcome"].format(author.mention, server.name))
+Mon Jul 31 23:11:32 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel(serverData[server.id]["welcome-channel"]), serverData[server.id]["welcome"].format(member=author.mention, server.name))
+Mon Jul 31 23:13:39 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel(serverData[server.id]["welcome-channel"]), serverData[server.id]["welcome"].format(member=author.mention, server=server.name))
+Mon Jul 31 23:16:00 2017: Necro#6714 used n!settings goodbye Bye, we'll miss you {member} \:kissing_heart\:
+Mon Jul 31 23:16:24 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel(serverData[server.id]["welcome-channel"]), serverData[server.id]["goodbye"].format(member=author.mention))
+Mon Jul 31 23:17:27 2017: Necro#6714 used n!off
+Mon Jul 31 23:17:51 2017: Necro#6714 used n!settings goodbye Bye, we'll miss you {member} \:kissing_heart\:
+Mon Jul 31 23:17:58 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel(serverData[server.id]["welcome-channel"]), serverData[server.id]["goodbye"].format(member=author.mention))
+Mon Jul 31 23:18:27 2017: Necro#6714 used n!ignore del <@!241942232867799040>
+Mon Jul 31 23:18:34 2017: Necro#6714 used n!automod del <@!241942232867799040>
+Mon Jul 31 23:19:21 2017: Necro#6714 used n!settings automod-channel <#318465643420712962>
+Mon Jul 31 23:19:52 2017: Necro#6714 used n!settings automod-channel <#318828760331845634>
+Mon Jul 31 23:19:56 2017: Necro#6714 used n!off

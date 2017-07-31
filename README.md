@@ -16,7 +16,7 @@ __User Pofile__ <br>
 **Money** - users can claim dailies and check their money
 
 __Planned Features__
-* [ ] **Modularity Overhaul** - allow server owners to set their own auto moderation channels, welcome message and others server-specific settings.
+* [x] **Modularity Overhaul** - allow server owners to set their own auto moderation channels, welcome message and others server-specific settings.
 * [x] **Overhaul to expand user profile** - server-specific permission, more compact, improved code
 * [ ] **Server Roles for Bot Roles** - Give server owners the ability to assign server roles to the bot roles and thereby the ability to grant a bot role by simply granting the equivalent server roles
 * [ ] **EXP System** - longer exp cooldown, level up system, random amount of exp

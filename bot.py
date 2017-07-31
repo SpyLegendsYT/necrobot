@@ -55,7 +55,7 @@ with open("data/setting.csv","r") as f:
     blacklistList = list(next(reader))
     line = next(reader)
     for row in reader:
-        serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome":row[4], "selfRoles":row[5].split(","),"ignoreCommand":row[6].split(","),"ignoreAutomod":row[7].split(",")}
+        serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome-channel":row[4], "selfRoles":row[5].split(","),"ignoreCommand":row[6].split(","),"ignoreAutomod":row[7].split(","),"welcome":row[8],"goodbye":row[9]}
 
 # *****************************************************************************************************************
 #  Internal Function
@@ -168,12 +168,12 @@ async def hourly_save():
         with open("data/setting.csv","w",newline="") as csvfile:
             Awriter = csv.writer(csvfile)
             Awriter.writerow(blacklistList)
-            Awriter.writerow(['Server Name','Server','Mute Role','Autmod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore"])
+            Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore"])
             for x in serverData:
                 selfRolesList = ",".join(serverData[x]["selfRoles"])
                 automodList = ",".join(serverData[x]["ignoreAutomod"])
                 commandList = ",".join(serverData[x]["ignoreCommand"])
-                Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome"],selfRolesList,commandList,automodList])
+                Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"]])
 
         print("Saved at " + str(t.asctime(t.localtime(t.time()))))
         await asyncio.sleep(3600) # task runs every hour
@@ -223,12 +223,12 @@ async def kill(cont):
     with open("data/setting.csv","w",newline="") as csvfile:
         Awriter = csv.writer(csvfile)
         Awriter.writerow(blacklistList)
-        Awriter.writerow(['Server Name','Server','Mute Role','Autmod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore"])
+        Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message"])
         for x in serverData:
             selfRolesList = ",".join(serverData[x]["selfRoles"])
             automodList = ",".join(serverData[x]["ignoreAutomod"])
             commandList = ",".join(serverData[x]["ignoreCommand"])
-            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome"],selfRolesList,commandList,automodList])
+            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"]])
 
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
     await bot.logout()
@@ -486,7 +486,7 @@ async def nick(cont, arg0 : discord.Member,*, arg1):
 @has_perms(4)
 async def giveme_roles(cont):
     if cont.invoked_subcommand is None:
-        await bot.say("Please pass a valid subcommand")
+        await bot.say("Please pass a valid subcommand (add or del)")
 
 @giveme_roles.command(pass_context=True, name="add")
 async def giveme_roles_add(cont, *, arg0):
@@ -549,6 +549,42 @@ async def debug(cont, *, arg0 : str):
         return
 
     await bot.say(python.format(result))
+
+@bot.group(pass_context = True)
+@has_perms(4)
+async def settings(cont):
+    if cont.invoked_subcommand is None:
+        await bot.say("Please pass in a valid subcommand. (welcome, welcome-channel, goodbye, mute, automod)")
+
+@settings.command(pass_context = True, name="mute")
+async def settings_mute(cont, *, arg0):
+    if not discord.utils.get(cont.message.server.roles, name=arg0) is None:
+        await bot.say("Okay, the mute role for your server will be " + arg0)
+        serverData[cont.message.server.id]["mute"] = arg0
+    else:
+        await bot.say("No such role")
+
+@settings.command(pass_context = True, name="welcome-channel")
+async def settings_welcome_channel(cont, arg0 : discord.Channel):
+    await bot.say("Okay, users will get their welcome message in " + arg0.name + " from now on.")
+    serverData[cont.message.server.id]["welcome-channel"] = arg0.id
+
+@settings.command(pass_context = True, name="automod-channel")
+async def settings_automod_channel(cont, arg0 : discord.Channel):
+    await bot.say("Okay, all automoderation messages will be posted in " + arg0.name + " from now on.")
+    serverData[cont.message.server.id]["automod"] = arg0.id
+
+@settings.command(pass_context = True, name="welcome")
+async def settings_welcome(cont, *, arg0):
+    arg0 = arg0.replace("\\","")
+    await bot.say("Your server's welcome message will be: \n" + arg0)
+    serverData[cont.message.server.id]["welcome"] = arg0
+
+@settings.command(pass_context = True, name="goodbye")
+async def settings_goodbye(cont, *, arg0):
+    arg0 = arg0.replace("\\","")
+    await bot.say("Your server's goodbye message will be: \n" + arg0)
+    serverData[cont.message.server.id]["goodbye"] = arg0
 
 # *****************************************************************************************************************
 #  Regular Commands
@@ -659,7 +695,7 @@ async def on_server_join(server):
         await default_stats(x, server)
 
     await bot.send_message(server.default_channel, "Stats sets for users")
-    serverData[server.id] = {"mute":"","automod":"","welcome":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[]}
+    serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"","goodbye":""}
     invite = await bot.create_invite(server)
     await bot.send_message(bot.get_channel("241942232867799040"),"I was just invited in the server: " + server.name + ". Join me: " + invite.url)
 
@@ -693,26 +729,35 @@ async def on_member_join(member):
     if member.id in blacklistList:
         await bot.ban(member, delete_message_days=0)
 
-    try:
-        channel = bot.get_channel(serverData[member.server.id]["welcome"])
-    except AttributeError:
+    server = member.server
+    if serverData[member.server.id]["welcome-channel"] != "":
+        channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
+    else:
         channel = member.server.default_channel
 
-    server = member.server
-    await bot.send_message(channel, 'Welcome {0.mention} to {1.name}!'.format(member, server))
-    await bot.change_nickname(member, str(member.name))
+    if serverData[member.server.id]["welcome"] != "":
+        message = serverData[member.server.id]["welcome"]
+    else:
+        message = 'Welcome {member} to {server}!'
 
+    server = member.server
+    await bot.send_message(channel, message.format(member=member.mention, server=server.name))
     await default_stats(member, server)
 
 #says goodbye and resets perms level if less than NecroBot Admin
 @bot.event
 async def on_member_remove(member):
-    try:
-        channel = bot.get_channel(serverData[member.server.id]["welcome"])
-    except AttributeError:
+    if serverData[member.server.id]["welcome-channel"] != "":
+        channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
+    else:
         channel = member.server.default_channel
 
-    await bot.send_message(channel,"Leaving us so soon, {0.mention}? We'll miss you...".format(member))
+    if serverData[member.server.id]["goodbye"] != "":
+        message = serverData[member.server.id]["goodbye"]
+    else:
+        message = 'Leaving so soon? We\'ll miss you, {member}!'
+
+    await bot.send_message(channel, message.format(member=member.mention))
     if userData[member.id]["perms"][member.server.id] < 6:
         userData[member.id]["perms"][member.server.id] = 0
 
