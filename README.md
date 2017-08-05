@@ -18,7 +18,7 @@ __User Pofile__ <br>
 __Planned Features__
 * [x] **Modularity Overhaul** - allow server owners to set their own auto moderation channels, welcome message and others server-specific settings.
 * [x] **Overhaul to expand user profile** - server-specific permission, more compact, improved code
-* [ ] **Server Roles for Bot Roles** - Give server owners the ability to assign server roles to the bot roles and thereby the ability to grant a bot role by simply granting the equivalent server roles
+* [X] **Server Roles for Bot Roles** - Give server owners the ability to assign server roles to the bot roles
 * [ ] **EXP System** - longer exp cooldown, level up system, random amount of exp
 * [ ] **Money System** - actual use of money, transfers between users
 * [x] **Help system** - rewamp into something more compact, allows user to add an argument to look up a detailed description of a command.

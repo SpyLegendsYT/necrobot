@@ -1,24 +1,27 @@
+#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 class Music():
+    """Everything related to the bot's voice chat capabilities. """
     def __init__(self, bot):
         self.bot = bot
 
     def close_player(filename):
         os.remove(filename)
 
-    @commands.command(pass_context = True, enabled=False)
+    @commands.command(pass_context = True, enabled=False, hidden=True)
     @commands.cooldown(1, 10, BucketType.channel)
-    async def play(self,cont, arg0):
+    async def play(self, cont, url):
+        """Plays either a youtube link or a link ending with a valid audio file format extension: .mp4, .mkv, .ogg, ect... """
         vc = cont.message.author.voice_channel
         voice_client = await self.bot.join_voice_channel(vc)
 
         try:
             async with aiohttp.ClientSession() as cs:
-                async with cs.get(arg0) as r:
-                    filename = os.path.basename(arg0)
+                async with cs.get(url) as r:
+                    filename = os.path.basename(url)
                     with open(filename, 'wb') as f_handle:
                         while True:
                             chunk = await r.content.read(1024)
@@ -26,14 +29,9 @@ class Music():
                                 break
                             f_handle.write(chunk)
                     await r.release()
-
-            print("File downloaded")
-
             player = voice_client.create_ffmpeg_player(filename, after=lambda:close_player(filename))
-
-            
         except:
-            player = await voice_client.create_ytdl_player(arg0, after=lambda:close_player(filename))
+            player = await voice_client.create_ytdl_player(url, after=lambda:close_player(filename))
 
         await self.bot.say(":musical_note: | Playing `" + player.title)
         player.start()

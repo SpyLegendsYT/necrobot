@@ -1,8 +1,5 @@
-
-data/token.txt
-
 soup
 *.pyc
 adventure
 selfbot
-__pycache__/var.cpython-36.pyc
+token.txt

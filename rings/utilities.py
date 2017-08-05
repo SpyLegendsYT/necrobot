@@ -1,36 +1,53 @@
+#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from simpleeval import simple_eval
 import time
+import dice
+import random
+
+ball8List = ["It is certain"," It is decidedly so"," Without a doubt","Yes definitely","You may rely on it","As I see it, yes"," Most likely","Outlook good","Yes","Signs point to yes","Reply hazy try again","Ask again later","Better not tell you now"," Cannot predict now","Concentrate and ask again","Don't count on it"," My reply is no","My sources say no","Outlook not so good","Very doubtful"]
+
 
 class Utilities():
+    """A bunch of useful commands to do various tasks."""
     def __init__(self, bot):
         self.bot = bot
 
-    # evaluates the the argument as a mathematical equation
     @commands.command()
     @commands.cooldown(3, 5, BucketType.user)
-    async def calc(self, *, arg0 : str):
+    async def calc(self, *, equation : str):
+        """Evaluates a pythonics mathematical equation, use the following to build your mathematical equations:
+        `*` - for multiplication
+        `+` - for additions
+        `-` - for substractions
+        `/` - for divisons
+        `**` - for exponents
+        `%` - for modulo
+        More symbols can be used, simply research 'python math symbols'        
+        """
         try:
-            final = simple_eval(arg0)
-            await self.bot.say(final)
+            final = simple_eval(equation)
+            await self.bot.say(":1234: | **" + str(final) + "**")
         except NameError:
             await self.bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
 
     @commands.command(pass_context=True)
     @commands.cooldown(3, 5, BucketType.user)
     async def ping(self, cont):
+        """Pings the user and returns the time it took. """
         pingtime = time.time()
-        pingms = await self.bot.say("Pinging... {}'s location".format(cont.message.author.display_name))
+        pingms = await self.bot.say(" :clock1: | Pinging... {}'s location".format(cont.message.author.display_name))
         ping = time.time() - pingtime
-        await self.bot.edit_message(pingms, "The ping time is `%.01f seconds`" % ping)
+        await self.bot.edit_message(pingms, ":white_check_mark: | The ping time is `%.01f seconds`" % ping)
 
     #prints a rich embed of the server info it was called in
     @commands.command(pass_context = True)
     @commands.cooldown(1, 5, BucketType.user)
     async def serverinfo(self, cont):
+        """Returns a rich embed of the server's information. """
         server = cont.message.server
         embed = discord.Embed(title="__**" + server.name + "**__", colour=discord.Colour(0x277b0), description="Info on this server")
         embed.set_thumbnail(url=server.icon_url.replace("webp","jpg"))
@@ -54,8 +71,34 @@ class Utilities():
 
     @commands.command(pass_context = True)
     @commands.cooldown(5, 10, BucketType.channel)
-    async def avatar(self, cont, arg0 : discord.Member):
-        await self.bot.say(arg0.avatar_url.replace("webp","jpg"))
+    async def avatar(self, cont, user : discord.Member):
+        """Returns a link to the given user's profile pic """
+        await self.bot.say(user.avatar_url.replace("webp","jpg"))
+
+    @commands.command(pass_context = True)
+    @commands.cooldown(5, 5, BucketType.user)
+    async def choose(self, cont, *, choices):
+        """Returns a single choice from the list of choices given. Use `|` to seperate each of the choices."""
+        choiceList = [x.strip() for x in choices.split("|")]
+        await self.bot.say("I choose **" + random.choice(choiceList) + "**")
+
+    @commands.command(pass_context = True)
+    @commands.cooldown(5, 5, BucketType.user)
+    async def coin(self, cont):
+        """Flips a coin and returns the result"""
+        await self.bot.say(random.choice(["Head","Tail"]))
+
+    @commands.command(pass_context = True)
+    @commands.cooldown(5, 5, BucketType.user)
+    async def roll(self, cont, dices="1d6"):
+        """Rolls one or multiple x sided dices and returns the result. Structure of the argument: `[number of die]d[number of faces]` """
+        await self.bot.say(":game_die: | " + cont.message.author.display_name + " rolled " + str(dice.roll(dices)))
+
+    @commands.command(pass_context = True, name="8ball")
+    @commands.cooldown(3, 5, BucketType.user)
+    async def ball8(self, cont, *, question):
+        """Uses an 8ball system to reply to the user's question. """
+        await self.bot.say(":8ball: | " + random.choice(ball8List))
 
 def setup(bot):
     bot.add_cog(Utilities(bot))

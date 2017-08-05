@@ -1,0 +1,7 @@
+
+Sat Aug  5 22:08:57 2017: Necro#6714 used n!off
+Sat Aug  5 22:22:20 2017: Necro#6714 used n!off
+Sat Aug  5 22:23:16 2017: Necro#6714 used n!nick <@!172002275412279296> TatsuBot
+Sat Aug  5 22:23:33 2017: Necro#6714 used n!reload admin
+Sat Aug  5 22:23:39 2017: Necro#6714 used n!nick <@!172002275412279296> TatsuBot
+Sat Aug  5 22:24:07 2017: Necro#6714 used n!off

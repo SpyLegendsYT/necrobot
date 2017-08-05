@@ -112,3 +112,6 @@ replyDict = {
 "setall":
 "It's sort of automated but still a pain"
 }
+
+#Permissions Names
+permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","NecroBot Admin","The Bot Smith"]
