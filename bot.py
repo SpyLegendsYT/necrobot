@@ -10,11 +10,10 @@ from discord.ext.commands.cooldowns import BucketType
 import csv
 import random
 import sys
-import time
+import time as t
 import calendar as c
 import datetime as d
 import asyncio
-from var import *
 import traceback
 import re
 from simpleeval import simple_eval
@@ -31,10 +30,12 @@ async def get_pre(bot, message):
 
 description = "The ultimate moderation bot which is also the first bot for video game modders and provides a simple economy simple, some utility commands and some fun commands."
 bot = commands.Bot(command_prefix=get_pre, description=description, formatter=NecroBotHelpFormatter())
+
 userData = Data.userData
 serverData = Data.serverData
 superDuperIgnoreList = Data.superDuperIgnoreList
 lockedList = list()
+
 extensions = [
     "animals",
     "social",
@@ -48,13 +49,19 @@ extensions = [
     "server",
     "music"
 ]
+
+replyList = [
+    "*yawn* What can I do fo... *yawn*... for you?", 
+    "NecroBot do that, NecroBot do this, never NecroBot how are y... Oh, hey how can I help?",
+    "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?"
+    ]
 # *****************************************************************************************************************
 #  Internal Function
 # *****************************************************************************************************************
 
 def logit(message):
     with open("logfile.txt","a+") as log:
-        localtime = str("\n" + time.asctime(time.localtime(time.time())) + ": ")
+        localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
         msg = str(localtime + str(message.author) + " used " + message.content)
         log.write(msg)
 
@@ -126,7 +133,7 @@ async def hourly_save():
                 commandList = ",".join(serverData[x]["ignoreCommand"])
                 Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"]])
 
-        print("Saved at " + str(time.asctime(time.localtime(time.time()))))
+        print("Saved at " + str(t.asctime(t.localtime(t.time()))))
         await asyncio.sleep(3600) # task runs every hour
 
 
@@ -245,9 +252,9 @@ async def pm(cont, ID, *, message):
             user = x
 
     send = await bot.send_message(user, message + "\n*You have 5 minutes to reply to the message*")
-    await bot.say("Message sent")
+    to_edit = await bot.say(":white_check_mark: | **Message sent**")
     msg = await bot.wait_for_message(author=user, channel=send.channel, timeout=300)
-    await bot.send_message(cont.message.channel, ":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
+    await bot.edit_message(to_edit, ":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
 
 @bot.command(pass_context = True, hidden = True)
 @is_necro()
@@ -306,7 +313,7 @@ async def on_command_error(error, cont):
     """Catches error and sends a message to the user that caused the error with a helpful message."""
     channel = cont.message.channel
     if isinstance(error, commands.MissingRequiredArgument):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument, check the help guide with `n!h [command]`")
+        await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument, check the help guide with `n!h {0}`".format(cont.command.name))
     elif isinstance(error, commands.CheckFailure):
         await bot.send_message(channel, ":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
     elif isinstance(error, commands.CommandOnCooldown):
@@ -315,6 +322,8 @@ async def on_command_error(error, cont):
         await bot.send_message(channel, ":negative_squared_cross_mark: | This command cannot be used in private messages.")
     elif isinstance(error, commands.DisabledCommand):
         await bot.send_message(channel, ":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
+    elif isinstance(error, commands.BadArgument):
+        await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
     elif isinstance(error, commands.CommandInvokeError):
         print('In {0.command.qualified_name}:'.format(cont), file=sys.stderr)
         traceback.print_tb(error.original.__traceback__)
@@ -329,7 +338,7 @@ async def on_server_join(server):
 
     msg = " do `n!help settings` to find out what you need to do to get NecroBot up and running to its full potential on your server"
     await bot.send_message(server.default_channel, "Stats sets for users \n " + server.owner.mention + msg)
-    serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"","goodbye":"","tags":{}}
+    serverData[server.id] = {"mute":"","automod":"","welcome-channel":server.default_channel.id, "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}}
     await bot.send_message(bot.get_channel("241942232867799040"),"I was just invited in the server: " + server.name)
 
 #automod
@@ -341,7 +350,7 @@ async def on_message_delete(message):
         ChannelId = "318828760331845634"
 
     if message.author.id not in serverData[message.server.id]["ignoreAutomod"] and message.channel.id not in serverData[message.server.id]["ignoreAutomod"]:
-        fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ```{0.content} ```'
+        fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ``` {0.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(message))
 
 #automod
@@ -353,39 +362,25 @@ async def on_message_edit(before, after):
         ChannelId = "318828760331845634"
 
     if before.author.id not in serverData[before.server.id]["ignoreAutomod"] and before.channel.id not in serverData[before.server.id]["ignoreAutomod"]:
-        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ```{0.content}\n{1.content} ```'
+        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {0.content} \n {1.content} ```'
         await bot.send_message(bot.get_channel(ChannelId), fmt.format(before, after))
 
 #welcomes and set stats
 @bot.event
 async def on_member_join(member):
     server = member.server
-    if serverData[member.server.id]["welcome-channel"] != "":
-        channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
-    else:
-        channel = member.server.default_channel
-
-    if serverData[member.server.id]["welcome"] != "":
-        message = serverData[member.server.id]["welcome"]
-    else:
-        message = 'Welcome {member} to {server}!'
-
+    channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
+    message = serverData[member.server.id]["welcome"]
     server = member.server
+
     await bot.send_message(channel, message.format(member=member.mention, server=server.name))
     await default_stats(member, server)
 
 #says goodbye and resets perms level if less than NecroBot Admin
 @bot.event
 async def on_member_remove(member):
-    if serverData[member.server.id]["welcome-channel"] != "":
-        channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
-    else:
-        channel = member.server.default_channel
-
-    if serverData[member.server.id]["goodbye"] != "":
-        message = serverData[member.server.id]["goodbye"]
-    else:
-        message = 'Leaving so soon? We\'ll miss you, {member}!'
+    channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
+    message = serverData[member.server.id]["goodbye"]
 
     await bot.send_message(channel, message.format(member=member.mention))
     if userData[member.id]["perms"][member.server.id] < 6:
@@ -396,6 +391,7 @@ async def on_member_remove(member):
 async def on_voice_state_update(before, after):
     if before.id in lockedList:
         await bot.move_member(before, bot.get_channel(userData[before.id]["locked"]))
+
 
 #spam control and ignore
 @bot.event
@@ -408,7 +404,7 @@ async def on_message(message):
 
     if not message.channel.is_private:
         #check if spam
-        if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(time.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(time.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not message.content.startswith(tuple(prefixes)):
+        if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not message.content.startswith(tuple(prefixes)):
             await bot.delete_message(message)
             try:
                 ChannelId = serverData[message.server.id]["automod"]
@@ -417,28 +413,26 @@ async def on_message(message):
 
             await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
             userData[userID]['lastMessage'] = message.content
-            userData[userID]['lastMessageTime'] = int(c.timegm(time.gmtime()))
+            userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()))
         else:
             userData[userID]['lastMessage'] = message.content
-            userData[userID]['lastMessageTime'] = int(c.timegm(time.gmtime()))
-
+            userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()))
             userData[userID]["exp"] += random.randint(2,5)
 
             #check if allowed bot summon
             if ((channelID not in serverData[message.server.id]["ignoreCommand"] and userID not in serverData[message.server.id]["ignoreCommand"]) or userData[message.author.id]["perms"][message.server.id] >= 4) and message.content.startswith(tuple(prefixes)):
                 if message.content.startswith("<@317619283377258497>"):
-                    command = message.content.split()[1]
-                    try:
-                        reply = random.choice(starterList) + " Ah yes, the **" + command +"** command. " + replyDict[command]
-                    except KeyError:
-                        reply = "Wait... That's not one of my commands."
-                    await bot.send_message(message.channel, reply)
+                    await bot.send_message(message.channel, random.choice(replyList))
 
-                logit(message)
+                logit(cont.message)
                 await bot.process_commands(message)
+
     elif message.content.startswith(tuple(prefixes)) and message.channel.is_private:
         await bot.send_message(message.channel, "Sorry, due to the way the bot works you cannot use commands in DMs")
 
-bot.loop.create_task(hourly_save())
-token = open("token.txt", "r").read()
-bot.run(token)
+def bot_run():
+    bot.loop.create_task(hourly_save())
+    token = open("token.txt", "r").read()
+    bot.run(token)
+
+bot_run()
