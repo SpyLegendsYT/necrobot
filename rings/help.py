@@ -13,7 +13,7 @@ class NecroBotHelpFormatter(HelpFormatter):
         command_name = self.context.invoked_with
         return "Type {0}{1} [command] for more info on a command.\n" \
                "Example: `n!help edain` - display help on the edain command \n" \
-               "You can also type {0}{1} [category] for more info on a category. \n"\
+               "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. \n"\
                "Example: `n!help Animals` - display help on the Animals category".format(self.clean_prefix, command_name)
 
     def get_ending_note_command(self):
@@ -87,14 +87,12 @@ class NecroBotHelpFormatter(HelpFormatter):
             self._paginator.add_line(description, empty=True)
 
         if isinstance(self.command, Command):
+            # <signature portion>
+            signature = "__Usage__\n" + self.get_command_signature()
 
             # <long doc> section
             if self.command.help:
-                self._paginator.add_line(self.command.help, empty=True)
-
-            # <signature portion>
-            signature = "__Usage__\n" + self.get_command_signature()
-            self._paginator.add_line(signature, empty=True)
+                self._paginator.add_line(self.command.help.format(signature), empty=True)            
 
             # end it here if it's just a regular command
             if not self.has_subcommands():
@@ -123,12 +121,12 @@ class NecroBotHelpFormatter(HelpFormatter):
             ending_note = self.get_ending_note()
 
         else:
-            self._paginator.add_line('Sub-commands:')
+            self._paginator.add_line('__Sub-Commands__')
             self._add_subcommands_to_page(max_width, self.filter_command_list())
 
             # add the ending note for command pages
             ending_note = self.get_ending_note_command()
            
-        self._paginator.add_line()
+        self._paginator.add_line(empty=True)
         self._paginator.add_line(ending_note)
         return self._paginator.pages

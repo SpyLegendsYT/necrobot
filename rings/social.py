@@ -23,16 +23,20 @@ class Social():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["sean"])
+    @commands.command(aliases=["sean","joke"])
     @commands.cooldown(2, 5, BucketType.user)
     async def dadjoke(self):
-        """Send a random dadjoke from a long list. Whoever PM's Necro with the reason for one of the aliases being "sean" gets a free 1,000 NecroBot currency."""
+        """Send a random dadjoke from a long list. Whoever PM's Necro with the reason for one of the aliases being "sean" gets a free 1,000 NecroBot currency.
+        \n
+        {}"""
         await self.bot.say(":speaking_head: | **" + random.choice(dadJoke) + "**")
 
     @commands.command(pass_context = True)
     @commands.cooldown(3, 5, BucketType.channel)
     async def riddle(self, cont):
-        """Ask a riddle to the user from a long list and waits 30 seconds for the answer. If the user fails to answer they go feed Gollum's fishies. To answer the riddle simply type out the answer, no need to prefix it with anything. """
+        """Ask a riddle to the user from a long list and waits 30 seconds for the answer. If the user fails to answer they go feed Gollum's fishies. To answer the riddle simply type out the answer, no need to prefix it with anything. 
+        \n
+        {}"""
         riddle = random.choice(riddlesList)
         await self.bot.say("Riddle me this " + cont.message.author.name + ": \n" + riddle[0])
         msg = await self.bot.wait_for_message(author=cont.message.author, channel=cont.message.channel, timeout=30)
@@ -45,15 +49,22 @@ class Social():
     @commands.command(pass_context = True)
     @commands.cooldown(2, 3, BucketType.user)
     async def tarot(self, cont):
-        """Using the mystical art of tarology, NecroBot reads the user's fate in the card and returns the explanation for each card. Not to be taken seriously. """
+        """Using the mystical art of tarology, NecroBot reads the user's fate in the card and returns the explanation for each card. Not to be taken seriously. 
+        \n
+        {}"""
         myList = random.sample(range(0,44),3)
         await self.bot.say(":white_flower: | Settle down now and let Necro see your future my dear "+ cont.message.author.name + "...\n**Card #1:** " + tarotList[myList[0]] +"\n**Card #2:** " + tarotList[myList[1]] +"\n**Card #3:** " + tarotList[myList[2]] +"\n__*That is your fate, none can change it for better or worst.*__")
 
     @commands.command()
     @commands.cooldown(3, 5, BucketType.user)
     async def rr(self, bullets :int =1):
-        """Plays a game of russian roulette with the user. If no number of bullets is entered it will 
-        default to one. """
+        """Plays a game of russian roulette with the user. If no number of bullets is entered it will default to one. 
+        \n
+        {}
+        \n
+        __Example__
+        `n!rr 3` - game of russian roulette with 3 bullets
+        `n!rr` - game of russian roulette with 1 bullet"""
         msg = ":gun: | You insert "+ str(bullets) + " bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!"
         if random.randint(1,7) <= bullets:
             msg += "\n:boom: | You weren't so lucky this time. Rest in peace my friend."
@@ -65,7 +76,9 @@ class Social():
     @commands.command()
     @commands.cooldown(2, 5, BucketType.user)
     async def lotrfact(self):
-        """Prints a random Lord of the Rings fact. """
+        """Prints a random Lord of the Rings fact. 
+        \n
+        {}"""
         num1 = random.randint(0,len(lotrList)-1)
         await self.bot.say(":trident: | **Fact #" + str(num1) + "**: " + lotrList[num1])
 

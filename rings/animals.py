@@ -14,7 +14,9 @@ class Animals():
     @commands.command()
     @commands.cooldown(3, 3, BucketType.user)
     async def cat(self):
-        """Posts a random cat picture from random.cat """
+        """Posts a random cat picture from random.cat
+        \n 
+        {}"""
         async with aiohttp.ClientSession() as cs:
             async with cs.get('http://random.cat/meow') as r:
                 res = await r.json()
@@ -23,7 +25,9 @@ class Animals():
     @commands.command()
     @commands.cooldown(3, 3, BucketType.user)
     async def dog(self):
-        """Posts a random dog picture from random.dog """
+        """Posts a random dog picture from random.dog 
+        \n
+        {}"""
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
             async with cs.get('https://random.dog/woof.json') as r:
                 res = await r.json()

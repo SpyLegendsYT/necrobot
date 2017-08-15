@@ -14,7 +14,12 @@ class Music():
     @commands.command(pass_context = True, enabled=False, hidden=True)
     @commands.cooldown(1, 10, BucketType.channel)
     async def play(self, cont, url):
-        """Plays either a youtube link or a link ending with a valid audio file format extension: .mp4, .mkv, .ogg, ect... """
+        """Plays either a youtube link or a link ending with a valid audio file format extension: .mp4, .mkv, .ogg, ect... 
+        \n
+        {}
+        \n
+        __Example__
+        `n!play Ring Verse Black Speech` - plays the first video from youtube that matches this name"""
         vc = cont.message.author.voice_channel
         voice_client = await self.bot.join_voice_channel(vc)
 

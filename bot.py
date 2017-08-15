@@ -7,20 +7,23 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 # import statements for commands
+import re
 import csv
-import random
 import sys
+import ast
+import socket
+import random
+import logging
+import inspect
+import asyncio
+import traceback
 import time as t
 import calendar as c
 import datetime as d
-import asyncio
-import traceback
-import re
 from simpleeval import simple_eval
-import inspect
-import ast
-from rings.help import NecroBotHelpFormatter
 from rings.botdata.data import Data
+from rings.help import NecroBotHelpFormatter
+
 
 
 #prefix command
@@ -35,6 +38,7 @@ userData = Data.userData
 serverData = Data.serverData
 superDuperIgnoreList = Data.superDuperIgnoreList
 lockedList = list()
+default_path = ""
 
 extensions = [
     "animals",
@@ -47,41 +51,59 @@ extensions = [
     "profile",
     "tags",
     "server",
-    "music"
+    "music",
+    "casino",
+    "admin"
 ]
 
 replyList = [
     "*yawn* What can I do fo... *yawn*... for you?", 
     "NecroBot do that, NecroBot do this, never NecroBot how are y... Oh, hey how can I help?",
-    "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?"
+    "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?",
+    "Second sight ordains it! I mean sure..."
     ]
 # *****************************************************************************************************************
 #  Internal Function
 # *****************************************************************************************************************
 
-def logit(message):
-    with open("logfile.txt","a+") as log:
-        localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
-        msg = str(localtime + str(message.author) + " used " + message.content)
-        log.write(msg)
+lock_socket = None  # we want to keep the socket open until the very end of
+                    # our script so we use a global variable to avoid going
+                    # out of scope and being garbage-collected
 
-async def default_stats(member, server):
+def is_lock_free():
+    global lock_socket
+    lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    try:
+        lock_id = "necro.necrobot"   # this should be unique. using your username as a prefix is a convention
+        lock_socket.bind('\0' + lock_id)
+        logging.debug("Acquired lock %r" % (lock_id,))
+        return True
+    except socket.error:
+        # socket already locked, task must already be running
+        logging.info("Failed to acquire lock %r" % (lock_id,))
+        return False
+
+def logit(message):
+    with open(default_path + "logfile.txt","a+") as log:
+        localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
+        try: 
+            log.write(str(localtime + str(message.author) + " used " + message.content))
+        except:
+            log.write(str(localtime + str(message.author.id) + " used " + message.content))
+
+def default_stats(member, server):
     if member.id not in userData:
-        userData[member.id] = {'money': 200, 'daily': '32','title':'','exp':0,'perms':{},'warnings':[],'lastMessage':'','lastMessageTime':0,'locked':''}
+        userData[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], 'lastMessage': '', 'lastMessageTime': 0, 'locked': ''}
 
     if server.id not in userData[member.id]["perms"]:
         if member.id == server.owner.id:
             userData[member.id]["perms"][server.id] = 5
-            await bot.send_message(server.default_channel, member.name + " perms level set to 5 (Server Owner)")
         elif member.server_permissions.administrator:
             userData[member.id]["perms"][server.id] = 4
-            await bot.send_message(server.default_channel, member.name + " perms level set to 4 (Admin)")
         elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
             userData[member.id]["perms"][server.id] = 6
-            await bot.send_message(server.default_channel, member.name + " perms level set to 6 (NecroBot Admin)")
         elif any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
             userData[member.id]["perms"][server.id] = 7
-            await bot.send_message(server.default_channel, member.name + " perms level set to 7 (The Bot Smith)")
         else:
             userData[member.id]["perms"][server.id] = 0
 
@@ -98,18 +120,24 @@ def allmentions(cont, msg):
             myList.append(member)
     return myList
 
-# *****************************************************************************************************************
-#  Check Functions
-# *****************************************************************************************************************
-def has_perms(perms_level):
-    def predicate(cont):
-        return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
-    return commands.check(predicate)
+def save():
+    with open(default_path + "rings/botdata/userdata.csv","w",newline="") as csvfile:
+        Awriter = csv.writer(csvfile)
+        for x in userData:
+            warningList = ",".join(userData[x]["warnings"])
+            Awriter.writerow([x,userData[x]["money"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"],userData[x]["perms"],warningList])
 
-def is_necro():
-    def predicate(cont):
-        return cont.message.author.id == "241942232867799040"
-    return commands.check(predicate)
+    with open(default_path + "rings/botdata/setting.csv","w",newline="") as csvfile:
+        Awriter = csv.writer(csvfile)
+        Awriter.writerow(superDuperIgnoreList)
+        Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags"])
+        for x in serverData:
+            selfRolesList = ",".join(serverData[x]["selfRoles"])
+            automodList = ",".join(serverData[x]["ignoreAutomod"])
+            commandList = ",".join(serverData[x]["ignoreCommand"])
+            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"]])
+
+    print("Saved at " + str(t.asctime(t.localtime(t.time()))))
 
 # *****************************************************************************************************************
 #  Background Task
@@ -117,25 +145,22 @@ def is_necro():
 async def hourly_save():
     await bot.wait_until_ready()
     while not bot.is_closed:
-        with open("rings/botdata/userdata.csv","w",newline="") as csvfile:
-            Awriter = csv.writer(csvfile)
-            for x in userData:
-                warningList = ",".join(userData[x]["warnings"])
-                Awriter.writerow([x,userData[x]["money"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"],userData[x]["perms"],warningList])
-
-        with open("rings/botdata/setting.csv","w",newline="") as csvfile:
-            Awriter = csv.writer(csvfile)
-            Awriter.writerow(superDuperIgnoreList)
-            Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags"])
-            for x in serverData:
-                selfRolesList = ",".join(serverData[x]["selfRoles"])
-                automodList = ",".join(serverData[x]["ignoreAutomod"])
-                commandList = ",".join(serverData[x]["ignoreCommand"])
-                Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"]])
-
-        print("Saved at " + str(t.asctime(t.localtime(t.time()))))
+        save()
         await asyncio.sleep(3600) # task runs every hour
 
+# *****************************************************************************************************************
+#  Custom Checks
+# *****************************************************************************************************************
+def has_perms(perms_level):
+    def predicate(cont):
+        return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level and not cont.message.channel.is_private 
+    return commands.check(predicate)
+
+def is_necro():
+    def predicate(cont):
+        return cont.message.author.id == "241942232867799040"
+    return commands.check(predicate)
+        
 
 # *****************************************************************************************************************
 #  Cogs Commands
@@ -143,7 +168,9 @@ async def hourly_save():
 @bot.command(hidden=True)
 @is_necro()
 async def load(extension_name : str):
-    """Loads the extension name if in NecroBot's list of rings."""
+    """Loads the extension name if in NecroBot's list of rings.
+    \n 
+    {}"""
     try:
         bot.load_extension("rings." + extension_name)
     except (AttributeError,ImportError) as e:
@@ -154,14 +181,18 @@ async def load(extension_name : str):
 @bot.command(hidden=True)
 @is_necro()
 async def unload(extension_name : str):
-    """Unloads the extension name if in NecroBot's list of rings."""
+    """Unloads the extension name if in NecroBot's list of rings.
+    \n 
+    {}"""
     bot.unload_extension("rings." + extension_name)
     await bot.say("{} unloaded.".format(extension_name))
 
 @bot.command(hidden=True)
 @is_necro()
 async def reload(extension_name : str):
-    """Unload and loads the extension name if in NecroBot's list of rings."""
+    """Unload and loads the extension name if in NecroBot's list of rings.
+    \n 
+    {}"""
     bot.unload_extension("rings." + extension_name)
     try:
         bot.load_extension("rings." + extension_name)
@@ -177,16 +208,6 @@ async def reload(extension_name : str):
 
 @bot.event
 async def on_ready():
-    for x in bot.get_all_members():
-        await default_stats(x, x.server)
-
-    for extension in extensions:
-        try:
-            bot.load_extension("rings."+extension)
-        except Exception as e:
-            exc = '{} : {}'.format(type(e).__name__, e)
-            print("Failed to load extension {}\n{}".format(extension.exc))
-
     print('Logged in as')
     print(bot.user.name)
     print(bot.user.id)
@@ -197,113 +218,31 @@ async def on_ready():
     await bot.change_presence(game=discord.Game(name='n!help'))
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Online**")
 
+    for x in bot.get_all_members():
+        default_stats(x, x.server)
+
+    for extension in extensions:
+        try:
+            bot.load_extension("rings."+extension)
+        except Exception as e:
+            exc = '{} : {}'.format(type(e).__name__, e)
+            print("Failed to load extension {}\n{}".format(extension.exc))
+
+    await bot.send_message(bot.get_channel("318465643420712962"), "All extensions loaded")
+
 
 # *****************************************************************************************************************
 #  Admin Commands
 # *****************************************************************************************************************
-@bot.command(pass_context = True, aliases=["off"], hidden=True)
+@bot.command(aliases=["off"], hidden=True)
 @is_necro()
-async def kill(cont):
-    """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))"""
-    with open("rings/botdata/userdata.csv","w",newline="") as csvfile:
-        Awriter = csv.writer(csvfile)
-        for x in userData:
-            warningList = ",".join(userData[x]["warnings"])
-            Awriter.writerow([x,userData[x]["money"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"],userData[x]["perms"],warningList])
-
-    with open("rings/botdata/setting.csv","w",newline="") as csvfile:
-        Awriter = csv.writer(csvfile)
-        Awriter.writerow(superDuperIgnoreList)
-        Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags"])
-        for x in serverData:
-            selfRolesList = ",".join(serverData[x]["selfRoles"])
-            automodList = ",".join(serverData[x]["ignoreAutomod"])
-            commandList = ",".join(serverData[x]["ignoreCommand"])
-            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"]])
-
+async def kill():
+    """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
+    \n 
+    {}"""
+    save()
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
     await bot.logout()
-
-@bot.command(pass_context = True)
-@has_perms(2)
-async def setstats(self, cont, user : discord.Member):
-    """Allows server specific authorities to set the default stats for a user that might have slipped past the on_ready and on_member_join events (Permission level required: 2+ (Moderator))"""
-    await default_stats(user, cont.message.server)
-    await bot.say("Stats set for user")
-
-@bot.command(pass_context = True, hidden=True)
-@has_perms(6)
-async def add(cont, user : discord.Member, *, equation : str):
-    """Does the given pythonic equations on the given user's NecroBot balance. (Permission level required: 6+ (NecroBot Admin))"""
-    s = str(userData[user.id]["money"]) + equation
-    try:
-        operation = simple_eval(s)
-        userData[user]["money"] = abs(int(operation))
-        await bot.say(":atm: | **"+ user.name + "'s** balance is now **"+str(userData[user.id]["money"])+ "** :euro:")
-    except (NameError,SyntaxError):
-        await bot.say(":negative_squared_cross_mark: | Operation no recognized.")
-
-@bot.command(pass_context = True, hidden=True)
-@has_perms(6)
-async def pm(cont, ID, *, message):
-    """Sends the given message to the user of the given id. It will then wait 5 minutes for an answer and print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))"""
-    for x in bot.get_all_members():
-        if x.id == ID:
-            user = x
-
-    send = await bot.send_message(user, message + "\n*You have 5 minutes to reply to the message*")
-    to_edit = await bot.say(":white_check_mark: | **Message sent**")
-    msg = await bot.wait_for_message(author=user, channel=send.channel, timeout=300)
-    await bot.edit_message(to_edit, ":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
-
-@bot.command(pass_context = True, hidden = True)
-@is_necro()
-async def test(cont, ID):
-    """Returns the name of the user based on the given id. Used to debug the auto-moderation feature"""
-    for x in bot.get_all_members():
-        if x.id == ID:
-            await bot.say(x.name + "#" + str(x.discriminator))
-
-@bot.command(pass_context = True, hidden=True)
-@is_necro()
-async def invites(cont):
-    """Returns invites (if the bot has valid permissions) for each server the bot is on."""
-    for server in bot.servers:
-        try:
-            invite = await bot.create_invite(server)
-            await bot.send_message(cont.message.author, "Server: " + server.name + " - " + invite.url)
-        except:
-            await bot.send_message(cont.message.author, "I don't have the necessary permissions on " + server.name)
-
-@bot.command(pass_context=True, hidden=True)
-@is_necro()
-async def debug(cont, *, code : str):
-    """Evaluates code."""
-    code = code.strip('` ')
-    python = '```py\n{}\n```'
-    result = None
-
-    env = {
-        'bot': bot,
-        'cont': cont,
-        'message': cont.message,
-        'server': cont.message.server,
-        'channel': cont.message.channel,
-        'author': cont.message.author
-    }
-
-    env.update(globals())
-
-    try:
-        result = eval(code, env)
-        if inspect.isawaitable(result):
-            result = await result
-    except Exception as e:
-        await bot.say(python.format(type(e).__name__ + ': ' + str(e)))
-        return
-
-    await bot.say(python.format(result))
-
 
 # *****************************************************************************************************************
 #  Moderation Features
@@ -313,7 +252,7 @@ async def on_command_error(error, cont):
     """Catches error and sends a message to the user that caused the error with a helpful message."""
     channel = cont.message.channel
     if isinstance(error, commands.MissingRequiredArgument):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument, check the help guide with `n!h {0}`".format(cont.command.name))
+        await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(cont.command.name))
     elif isinstance(error, commands.CheckFailure):
         await bot.send_message(channel, ":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
     elif isinstance(error, commands.CommandOnCooldown):
@@ -324,6 +263,8 @@ async def on_command_error(error, cont):
         await bot.send_message(channel, ":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
     elif isinstance(error, commands.BadArgument):
         await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
+    elif isinstance(error, discord.errors.Forbidden):
+        await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your server.")
     elif isinstance(error, commands.CommandInvokeError):
         print('In {0.command.qualified_name}:'.format(cont), file=sys.stderr)
         traceback.print_tb(error.original.__traceback__)
@@ -332,18 +273,22 @@ async def on_command_error(error, cont):
 #sends help text to default channel and sets default for all users present
 @bot.event
 async def on_server_join(server):
+    serverData[server.id] = {"mute":"","automod":"","welcome-channel":server.default_channel.id, "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}}
+
     membList = server.members
     for x in membList:
-        await default_stats(x, server)
+        default_stats(x, server)
 
     msg = " do `n!help settings` to find out what you need to do to get NecroBot up and running to its full potential on your server"
     await bot.send_message(server.default_channel, "Stats sets for users \n " + server.owner.mention + msg)
-    serverData[server.id] = {"mute":"","automod":"","welcome-channel":server.default_channel.id, "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}}
-    await bot.send_message(bot.get_channel("241942232867799040"),"I was just invited in the server: " + server.name)
+    await bot.send_message(bot.get_channel("241942232867799040"),"I was just invited to the server: " + server.name)
 
 #automod
 @bot.event
 async def on_message_delete(message):
+    if message.channel.is_private:
+        return
+
     if serverData[message.server.id]["automod"] != "":
         ChannelId = serverData[message.server.id]["automod"]
     else:
@@ -356,6 +301,9 @@ async def on_message_delete(message):
 #automod
 @bot.event
 async def on_message_edit(before, after):
+    if before.channel.is_private:
+        return
+
     if serverData[before.server.id]["automod"] != "":
         ChannelId = serverData[before.server.id]["automod"]
     else:
@@ -368,13 +316,11 @@ async def on_message_edit(before, after):
 #welcomes and set stats
 @bot.event
 async def on_member_join(member):
-    server = member.server
     channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
     message = serverData[member.server.id]["welcome"]
-    server = member.server
 
-    await bot.send_message(channel, message.format(member=member.mention, server=server.name))
-    await default_stats(member, server)
+    await bot.send_message(channel, message.format(member=member.mention, server=member.server.name))
+    default_stats(member, member.server)
 
 #says goodbye and resets perms level if less than NecroBot Admin
 @bot.event
@@ -406,9 +352,9 @@ async def on_message(message):
         #check if spam
         if ((message.content == userData[userID]['lastMessage'] and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not message.content.startswith(tuple(prefixes)):
             await bot.delete_message(message)
-            try:
+            if serverData[before.server.id]["automod"] != "":
                 ChannelId = serverData[message.server.id]["automod"]
-            except KeyError:
+            else:
                 ChannelId = "318828760331845634"
 
             await bot.send_message(bot.get_channel(ChannelId), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
@@ -424,15 +370,19 @@ async def on_message(message):
                 if message.content.startswith("<@317619283377258497>"):
                     await bot.send_message(message.channel, random.choice(replyList))
 
-                logit(cont.message)
+                logit(message)
                 await bot.process_commands(message)
 
     elif message.content.startswith(tuple(prefixes)) and message.channel.is_private:
-        await bot.send_message(message.channel, "Sorry, due to the way the bot works you cannot use commands in DMs")
+        logit(message)
+        await bot.process_commands(message)
 
-def bot_run():
+def run_bot():
     bot.loop.create_task(hourly_save())
-    token = open("token.txt", "r").read()
+    token = open(default_path + "token.txt", "r").read()
     bot.run(token)
 
-bot_run()
+# if not is_lock_free():
+#     sys.exit()
+
+run_bot()

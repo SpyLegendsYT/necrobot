@@ -14,9 +14,13 @@ class Modding():
     @commands.command(pass_context=True)
     @commands.cooldown(1, 5, BucketType.channel)
     async def moddb(self, cont, url):
-        """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`"""
-        print(cont.message.content)
-        if cont.message.content[8:].startswith("http://www.moddb.com/mods/"):
+        """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`
+        \n
+        {}
+        \n
+        __Example__
+        `n!moddb http://www.moddb.com/mods/edain-mod` - creates a rich embed of the Edain Mod ModDB page"""
+        if cont.args[0].startswith("http://www.moddb.com/mods/"):
             #obtain xml and html pages
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:
@@ -38,10 +42,7 @@ class Modding():
             
             #navbar
             sections = ["Articles","Reviews","Downloads","Videos","Images"]
-            navBar = list()
-            for x in sections:
-                navBar.append("[{0}]({1}/{0})".format(x, url))
-
+            navBar = ["[{0}]({1}/{0})".format(x, url) for x in sections]
             embed.add_field(name="Navigation", value=" - ".join(navBar))
 
             #recent articles

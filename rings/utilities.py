@@ -8,7 +8,7 @@ import time
 import dice
 import random
 
-ball8List = ["It is certain"," It is decidedly so"," Without a doubt","Yes definitely","You may rely on it","As I see it, yes"," Most likely","Outlook good","Yes","Signs point to yes","Reply hazy try again","Ask again later","Better not tell you now"," Cannot predict now","Concentrate and ask again","Don't count on it"," My reply is no","My sources say no","Outlook not so good","Very doubtful"]
+ball8List = ["It is certain"," It is decidedly so"," Without a doubt","Yes, definitely","You may rely on it","As I see it, yes"," Most likely","Outlook good","Yes","Signs point to yes","Reply hazy try again","Ask again later","Better not tell you now"," Cannot predict now","Concentrate and ask again","Don't count on it"," My reply is no","My sources say no","Outlook not so good","Very doubtful"]
 
 
 class Utilities():
@@ -26,7 +26,13 @@ class Utilities():
         `/` - for divisons
         `**` - for exponents
         `%` - for modulo
-        More symbols can be used, simply research 'python math symbols'        
+        More symbols can be used, simply research 'python math symbols'
+        \n
+        {}
+        \n
+        __Example__
+        `n!calc 2 + 2` - 4
+        `n!calc (4 + 5) * 3 / (2 - 1)` - 27
         """
         try:
             final = simple_eval(equation)
@@ -34,10 +40,12 @@ class Utilities():
         except NameError:
             await self.bot.say(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, aliases=["pong"])
     @commands.cooldown(3, 5, BucketType.user)
     async def ping(self, cont):
-        """Pings the user and returns the time it took. """
+        """Pings the user and returns the time it took. 
+        \n
+        {}"""
         pingtime = time.time()
         pingms = await self.bot.say(" :clock1: | Pinging... {}'s location".format(cont.message.author.display_name))
         ping = time.time() - pingtime
@@ -47,7 +55,9 @@ class Utilities():
     @commands.command(pass_context = True)
     @commands.cooldown(1, 5, BucketType.user)
     async def serverinfo(self, cont):
-        """Returns a rich embed of the server's information. """
+        """Returns a rich embed of the server's information. 
+        \n
+        {}"""
         server = cont.message.server
         embed = discord.Embed(title="__**" + server.name + "**__", colour=discord.Colour(0x277b0), description="Info on this server")
         embed.set_thumbnail(url=server.icon_url.replace("webp","jpg"))
@@ -69,35 +79,56 @@ class Utilities():
 
         await self.bot.say(embed=embed)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(5, 10, BucketType.channel)
-    async def avatar(self, cont, user : discord.Member):
-        """Returns a link to the given user's profile pic """
+    async def avatar(self, user : discord.Member):
+        """Returns a link to the given user's profile pic 
+        \n
+        {}
+        \n
+        __Example__
+        `n!avatar @NecroBot` - return the link to NecroBot's avatar"""
         await self.bot.say(user.avatar_url.replace("webp","jpg"))
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(5, 5, BucketType.user)
-    async def choose(self, cont, *, choices):
-        """Returns a single choice from the list of choices given. Use `|` to seperate each of the choices."""
+    async def choose(self, *, choices):
+        """Returns a single choice from the list of choices given. Use `|` to seperate each of the choices.
+        \n
+        {}
+        \n
+        __Example__
+        `n!choose Bob | John | Mary` - choose between the names of Bob, John, and Mary
+        `n!choose 1 | 2` - choose between 1 and 2 """
         choiceList = [x.strip() for x in choices.split("|")]
         await self.bot.say("I choose **" + random.choice(choiceList) + "**")
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(5, 5, BucketType.user)
-    async def coin(self, cont):
-        """Flips a coin and returns the result"""
+    async def coin(self):
+        """Flips a coin and returns the result
+        \n
+        {}"""
         await self.bot.say(random.choice(["Head","Tail"]))
 
     @commands.command(pass_context = True)
     @commands.cooldown(5, 5, BucketType.user)
     async def roll(self, cont, dices="1d6"):
-        """Rolls one or multiple x sided dices and returns the result. Structure of the argument: `[number of die]d[number of faces]` """
+        """Rolls one or multiple x sided dices and returns the result. Structure of the argument: `[number of die]d[number of faces]` 
+        \n
+        {}
+        \n
+        __Example__
+        `n!roll 3d8` - roll three 8-sided die
+        `n!roll` - roll one 6-sided die"""
         await self.bot.say(":game_die: | " + cont.message.author.display_name + " rolled " + str(dice.roll(dices)))
 
-    @commands.command(pass_context = True, name="8ball")
+    @commands.command(name="8ball")
     @commands.cooldown(3, 5, BucketType.user)
-    async def ball8(self, cont, *, question):
-        """Uses an 8ball system to reply to the user's question. """
+    async def ball8(self, *, question):
+        """Uses an 8ball system to reply to the user's question. 
+        \n
+        {}"""
         await self.bot.say(":8ball: | " + random.choice(ball8List))
 
 def setup(bot):
