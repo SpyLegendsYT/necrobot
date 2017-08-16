@@ -12,17 +12,17 @@ class Support():
     @commands.cooldown(1, 10, BucketType.server)
     async def support(self, cont):
         """Invite to the official NecroBot support server. 
-        \n
-        {}"""
-        await self.bot.send_message(cont.message.author, "**Join our server for support**: https://discord.gg/sce7jmB")
+        
+        {usage}"""
+        await self.bot.whisper("**Join our server for support**: <https://discord.gg/sce7jmB>")
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 10, BucketType.server)
     async def invite(self, cont):
         """Link to invite NecroBot to the server you want, given you have the right permission level on that server 
-        \n
-        {}"""
-        await self.bot.send_message(cont.message.author,"**Invite the bot to your server using this link:** https://discordapp.com/oauth2/authorize?client_id=317619283377258497&scope=bot&permissions=8")
+        
+        {usage}"""
+        await self.bot.whisper("**Invite the bot to your server using this link:** <https://discordapp.com/oauth2/authorize?client_id=317619283377258497&scope=bot&permissions=8>")
 
 def setup(bot):
     bot.add_cog(Support(bot))

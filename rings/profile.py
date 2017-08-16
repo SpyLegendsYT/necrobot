@@ -20,24 +20,24 @@ class Profile():
     @commands.cooldown(3, 10, BucketType.user)
     async def balance(self, cont, *user : discord.Member):
         """Prints the given user's NecroBot balance, if no user is supplied then it will print your own NecroBot balance.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!balance @NecroBot` - prints NecroBot's balance
         `n!balance` - prints your own balance"""
         if user:
             user = user[0]
-            await self.bot.say(":atm: | **"+ str(user.name) +"** has **"+ str(userData[user.id]["money"]) +"** :euro:")
+            await self.bot.say(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(userData[user.id]["money"]))
         else:
-            await self.bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **"+ str(userData[cont.message.author.id]["money"])+"** :euro:")
+            await self.bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **{:,}** :euro:".format(userData[cont.message.author.id]["money"]))
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 5, BucketType.user)
     async def claim(self, cont):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day.
-        \n
-        {}"""
+        
+        {usage}"""
         aDay = str(d.datetime.today().date())
         if aDay != userData[cont.message.author.id]["daily"]:
             await self.bot.say(":m: | You have received your daily **200** :euro:")
@@ -50,9 +50,9 @@ class Profile():
     @commands.cooldown(3, 5, BucketType.user)
     async def info(self, cont, *user : discord.Member):
         """Returns a rich embed of the given user's info. If no user is provided it will return your own info.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!info @NecroBot` - returns the NecroBot info for NecroBot
         `n!info` - returns your own NecroBot info"""
@@ -72,7 +72,7 @@ class Profile():
         embed.add_field(name="**User Name**", value=user.name + "#" + user.discriminator)
         embed.add_field(name="**Top Role**", value=user.top_role.name, inline=True)
 
-        embed.add_field(name="**NecroBot Data**", value="__Permission Level__ - " + permsName[userData[user.id]["perms"][serverID]] + "   \n__Balance__ - " + str(userData[user.id]["money"]) + " :euro:   \n__Experience__  - " + str(userData[user.id]["exp"]))
+        embed.add_field(name="**NecroBot Data**", value="__Permission Level__ - " + permsName[userData[user.id]["perms"][serverID]] + "\n__Balance__ - {:,} :euro: \n__Experience__  - ".format(userData[user.id]["money"]) + str(userData[user.id]["exp"]))
         embed.add_field(name="Warning List", value=userData[user.id]["warnings"])
 
         await self.bot.say(embed=embed)
@@ -81,9 +81,9 @@ class Profile():
     @commands.cooldown(3, 5, BucketType.user)
     async def settitle(self, cont, *, text : str = ""):
         """Sets your NecroBot title to [text]. If no text is provided it will reset it. Limited to max 20 characters.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!settitle Cool Dood` - set your title to 'Cool Dood'
         `n!settitle` - resets your title"""

@@ -3,6 +3,29 @@ import discord
 from discord.ext.commands import *
 import itertools, inspect, re
 
+class MissingAttrHandler(str):
+    def __init__(self, format):
+        self.format = format
+
+    def __getattr__(self, attr):
+        return type(self)('{}.{}'.format(self.format, attr))
+
+    def __repr__(self):
+        return MissingAttrHandler(self.format + '!r}')
+
+    def __str__(self):
+        return MissingAttrHandler(self.format + '!s}')
+
+    def __format__(self, format):
+        if self.format.endswith('}'):
+            self.format = self.format[:-1]
+        return '{}{}}}'.format(self.format, format)
+
+
+class SafeDict(dict):
+    def __missing__(self, key):
+        return MissingAttrHandler('{{{}'.format(key))
+
 class NecroBotHelpFormatter(HelpFormatter):
     def __init__(self, show_hidden=False, show_check_failure=True, width=80):
         self.width = width
@@ -92,7 +115,8 @@ class NecroBotHelpFormatter(HelpFormatter):
 
             # <long doc> section
             if self.command.help:
-                self._paginator.add_line(self.command.help.format(signature), empty=True)            
+                line = self.command.help.format_map(SafeDict(usage=signature))
+                self._paginator.add_line(line, empty=True)            
 
             # end it here if it's just a regular command
             if not self.has_subcommands():

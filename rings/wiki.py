@@ -15,9 +15,9 @@ class Wiki():
     @commands.cooldown(2, 5, BucketType.user)
     async def edain(self, *, article : str):
         """Performs a search on the Edain Mod Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!edain Castellans` - print a rich embed of the Castellans page
         `n!edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
@@ -68,7 +68,13 @@ class Wiki():
     @commands.command()
     @commands.cooldown(2, 5, BucketType.user)
     async def lotr(self, *, article : str):
-        """Performs a search on the Lord of the Rings Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. """
+        """Performs a search on the Lord of the Rings Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
+
+        {usage}
+
+        __Example__
+        `n!lotr Finrod` - creates an embed of Finrod Felagund
+        `n!lotr Fellowship` - searches for 'Fellowship' and returns the first result"""
         try:
             article = wikia.page("lotr", article)
         except wikia.wikia.WikiaError:
@@ -101,7 +107,13 @@ class Wiki():
     @commands.command()
     @commands.cooldown(2, 5, BucketType.user)
     async def wiki(self, wiki, *, article):
-        """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. """
+        """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
+
+        {usage}
+
+        __Example__
+        `n!wiki disney Donald Duck` - creates a rich embed of the Donald Duck page
+        `n!wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a rich embed of the first one."""
         try:
             article = wikia.page(wiki, article)
         except wikia.wikia.WikiaError:

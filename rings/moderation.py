@@ -43,9 +43,9 @@ class Moderation():
     @has_perms(1)
     async def nick(self, user : discord.Member, *, nickname=""):
         """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return an error message if the user cannot be renamed due to permission issues. (Permission level required: 1+ (Helper))
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!nick @NecroBot Lord of All Bots` - renames NecroBot to 'Lord of All Bots'
         `n!nick @NecroBot` - will reset NecroBot's nickname"""
@@ -59,11 +59,16 @@ class Moderation():
     @has_perms(2)
     async def mute(self, cont, user : discord.Member, *seconds : int):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a mute role using `n!settings mute`. The user can either be muted for the given amount of seconds or indefinitely if no amount is given. (Permission level required: 2+ (Moderator))
-        \n
-        {}
+        
+        {usage}
+
         __Example__
         `n!mute @NecroBot` - mute NecroBot until a user with the proper permission level does `n!unmute @NecroBot`
         `n!mute @NecroBot 30` - mutes NecroBot for 30 seconds or until a user with the proper permission level does `n!unmute @NecroBot`"""
+        if serverData[cont.message.server.id]["mute"] == "":
+            await self.bot.say(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
+            return
+
         role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
         if role not in user.roles:
             await self.bot.add_roles(user, role)
@@ -82,10 +87,15 @@ class Moderation():
     @has_perms(2)
     async def unmute(self, cont, user : discord.Member):
         """Unmutes a user by removing the mute role, allowing them once again to write in text channels. (Permission level required: 2+ (Moderator))
-        \n
-        {}
+        
+        {usage}
+
         __Example__
         `n!unmute @NecroBot` - unmutes NecroBot if he is muted"""
+        if serverData[cont.message.server.id]["mute"] == "":
+            await self.bot.say(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
+            return
+            
         role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
         if role in user.roles:
             await self.bot.remove_roles(user, role)
@@ -97,9 +107,9 @@ class Moderation():
     @has_perms(1)
     async def warn(self, cont, user : discord.Member, *, message):
         """Adds the given message as a warning to the user's NecroBot profile (Permission level required: 1+ (Server Helper))
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to Necrobot's warning list and pm the warning message to him"""
         await self.bot.say(":white_check_mark: | Warning: **\"" + message + "\"** added to warning list of user " + user.display_name)
@@ -110,9 +120,9 @@ class Moderation():
     @has_perms(3)
     async def warn_del(self, user : discord.Member, position : int):
         """Removes the warning from the user's NecroBot system based on the given warning position. (Permission level required: 3+ (Server Semi-Admin)) 
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!warn del @NecroBot 1` - delete the warning in first position of NecroBot's warning list"""
         await self.bot.say(":white_check_mark: | Warning: **\"" + userData[user.id]["warnings"][position - 1] + "\"** removed from warning list of user " + user.display_name)
@@ -122,9 +132,9 @@ class Moderation():
     @has_perms(3)
     async def lock(self, user : discord.Member):
         """Moves a user back to the voice channel they were locked in every time they try to move to another one (Permission level required: 3+ (Semi-Admin))
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!lock @NecroBot` - lock NecroBot in the voice channel it currently is in
         """
@@ -141,24 +151,25 @@ class Moderation():
     @commands.command(pass_context = True)
     @commands.cooldown(1, 10, BucketType.channel)
     @has_perms(4)
-    async def purge(self, cont, number : int):
+    async def purge(self, cont, number : int = 50):
         """Removes number of messages from the channel it is called in. That's all it does at the moment but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ (Server Admin))
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!purge 50` - purges the last 50 messages"""
+        channel = serverData[cont.message.server.id]["automod"]
+        serverData[cont.message.server.id]["automod"] = ""
         await self.bot.purge_from(cont.message.channel, limit=number+1)
-        message = await self.bot.say(":wastebasket: | **" + str(number) + "** messages purged.")
-        await asyncio.sleep(5)
-        await self.bot.delete_message(message)
+        await self.bot.say(":wastebasket: | **" + str(number) + "** messages purged.", delete_after=5)
+        serverData[cont.message.server.id]["automod"] = channel
 
     @commands.command(pass_context = True)
     async def speak(self, cont, channel, *, message):
         """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 4+ (Server Admin))
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!speak #general Hello` - sends hello to the mentionned #general channel
         `n!speak 235426357468543 Hello` - sends hello to the channel with the given ID (if any)"""

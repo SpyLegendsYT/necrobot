@@ -44,9 +44,9 @@ class Admin():
     @has_perms(2)
     async def setstats(self, cont, user : discord.Member):
         """Allows server specific authorities to set the default stats for a user that might have slipped past the on_ready and on_member_join events (Permission level required: 2+ (Moderator))
-        \n 
-        {}
-        \n
+         
+        {usage}
+        
         __Example__
         `n!setstats @NecroBot` - sets the default stats for NecroBot"""
         self.default_stats(user, cont.message.server)
@@ -63,16 +63,16 @@ class Admin():
         `**` - for exponents
         `%` - for modulo
         More symbols can be used, simply research 'python math symbols'
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!add @NecroBot +400` - adds 400 to NecroBot's balance"""
         s = str(userData[user.id]["money"]) + equation
         try:
             operation = simple_eval(s)
             userData[user.id]["money"] = abs(int(operation))
-            await self.bot.say(":atm: | **"+ user.display_name + "'s** balance is now **"+str(userData[user.id]["money"])+ "** :euro:")
+            await self.bot.say(":atm: | **"+ user.display_name + "'s** balance is now **{:,}** :euro:".format(userData[user.id]["money"]))
         except (NameError,SyntaxError):
             await self.bot.say(":negative_squared_cross_mark: | Operation no recognized.")
 
@@ -80,9 +80,9 @@ class Admin():
     @has_perms(6)
     async def pm(self, ID, *, message):
         """Sends the given message to the user of the given id. It will then wait 5 minutes for an answer and print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!pm 34536534253Z6 Hello, user` - sends 'Hello, user' to the given user id and waits for a reply"""
         for x in self.bot.get_all_members():
@@ -99,9 +99,9 @@ class Admin():
     @is_necro()
     async def test(self, ID):
         """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!test 345345334235345` - returns the user or server name with that id"""
         for x in self.bot.get_all_members():
@@ -122,22 +122,22 @@ class Admin():
     @is_necro()
     async def invites(self, cont):
         """Returns invites (if the bot has valid permissions) for each server the bot is on.
-        \n
-        {}"""
+        
+        {usage}"""
         for server in self.bot.servers:
             try:
                 invite = await self.bot.create_invite(server)
-                await self.bot.send_message(cont.message.author, "Server: " + server.name + " - " + invite.url)
+                await self.bot.whisper("Server: " + server.name + " - " + invite.url)
             except:
-                await self.bot.send_message(cont.message.author, "I don't have the necessary permissions on " + server.name + ". That server is owned by " + server.owner.name + "#" + str(server.owner.discriminator))
+                await self.bot.whisper("I don't have the necessary permissions on " + server.name + ". That server is owned by " + server.owner.name + "#" + str(server.owner.discriminator))
 
     @commands.command(pass_context=True, hidden=True)
     @is_necro()
     async def debug(self, cont, *, code : str):
         """Evaluates code.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `It's python code, either you know it or you shouldn't be using this command`"""
         code = code.strip('` ')

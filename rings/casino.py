@@ -146,9 +146,9 @@ class Casino():
     @commands.command(pass_context = True, aliases=["bj"])
     async def blackjack(self, cont, bet : int = 10):
         """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
-        \n 
-        {}
-        \n
+         
+        {usage}
+        
         __Example__
         `n!blackjack 200` - bet 200 :euro: in the game of blackjack
         `n!blackjack` - bet the default 10 :euro:"""
@@ -179,7 +179,7 @@ class Casino():
                 if res is not None:
                     await self.bot.delete_message(msg)
                     if res.reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
-                        await self.bot.say("**" + name + "** " + game.play(player))
+                        await self.bot.say("**" + name + "** " + game.play(player), delete_after=5)
                         if player.hand.busted:
                             await self.bot.say(self.loose(player, bank, bet, cont, "**You** go bust."))
                             return
@@ -188,16 +188,16 @@ class Casino():
                             return
                         else:
                             if bank.hand.is_passing():
-                                await self.bot.say("**The Dealer** passes his turn")
+                                await self.bot.say("**The Dealer** passes his turn", delete_after=5)
                             else:
-                                await self.bot.say("**The Dealer** " + game.play(bank))
+                                await self.bot.say("**The Dealer** " + game.play(bank), delete_after=5)
                                 if bank.hand.busted:
                                     await self.bot.say(self.win(player, bank, bet, cont, "**The Dealer** goes bust."))
                                     return
                     elif res.reaction.emoji == '\N{BLACK SQUARE FOR STOP}':
-                        await self.bot.say("**You** pass your turn")
+                        await self.bot.say("**You** pass your turn", delete_after=5)
                         if bank.hand.is_passing():
-                            await self.bot.say("**The Dealer** passes his turn too")
+                            await self.bot.say("**The Dealer** passes his turn too", delete_after=5)
                             if bank.hand.beats(player.hand):
                                 await self.bot.say(self.loose(player, bank, bet, cont, "**The Dealer's** hand beats **your** hand."))
                                 return

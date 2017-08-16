@@ -27,9 +27,9 @@ class Utilities():
         `**` - for exponents
         `%` - for modulo
         More symbols can be used, simply research 'python math symbols'
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!calc 2 + 2` - 4
         `n!calc (4 + 5) * 3 / (2 - 1)` - 27
@@ -44,8 +44,8 @@ class Utilities():
     @commands.cooldown(3, 5, BucketType.user)
     async def ping(self, cont):
         """Pings the user and returns the time it took. 
-        \n
-        {}"""
+        
+        {usage}"""
         pingtime = time.time()
         pingms = await self.bot.say(" :clock1: | Pinging... {}'s location".format(cont.message.author.display_name))
         ping = time.time() - pingtime
@@ -56,8 +56,8 @@ class Utilities():
     @commands.cooldown(1, 5, BucketType.user)
     async def serverinfo(self, cont):
         """Returns a rich embed of the server's information. 
-        \n
-        {}"""
+        
+        {usage}"""
         server = cont.message.server
         embed = discord.Embed(title="__**" + server.name + "**__", colour=discord.Colour(0x277b0), description="Info on this server")
         embed.set_thumbnail(url=server.icon_url.replace("webp","jpg"))
@@ -83,9 +83,9 @@ class Utilities():
     @commands.cooldown(5, 10, BucketType.channel)
     async def avatar(self, user : discord.Member):
         """Returns a link to the given user's profile pic 
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!avatar @NecroBot` - return the link to NecroBot's avatar"""
         await self.bot.say(user.avatar_url.replace("webp","jpg"))
@@ -94,9 +94,9 @@ class Utilities():
     @commands.cooldown(5, 5, BucketType.user)
     async def choose(self, *, choices):
         """Returns a single choice from the list of choices given. Use `|` to seperate each of the choices.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!choose Bob | John | Mary` - choose between the names of Bob, John, and Mary
         `n!choose 1 | 2` - choose between 1 and 2 """
@@ -107,17 +107,17 @@ class Utilities():
     @commands.cooldown(5, 5, BucketType.user)
     async def coin(self):
         """Flips a coin and returns the result
-        \n
-        {}"""
+        
+        {usage}"""
         await self.bot.say(random.choice(["Head","Tail"]))
 
     @commands.command(pass_context = True)
     @commands.cooldown(5, 5, BucketType.user)
     async def roll(self, cont, dices="1d6"):
         """Rolls one or multiple x sided dices and returns the result. Structure of the argument: `[number of die]d[number of faces]` 
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!roll 3d8` - roll three 8-sided die
         `n!roll` - roll one 6-sided die"""
@@ -127,8 +127,8 @@ class Utilities():
     @commands.cooldown(3, 5, BucketType.user)
     async def ball8(self, *, question):
         """Uses an 8ball system to reply to the user's question. 
-        \n
-        {}"""
+        
+        {usage}"""
         await self.bot.say(":8ball: | " + random.choice(ball8List))
 
 def setup(bot):

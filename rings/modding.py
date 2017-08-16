@@ -15,9 +15,9 @@ class Modding():
     @commands.cooldown(1, 5, BucketType.channel)
     async def moddb(self, cont, url):
         """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!moddb http://www.moddb.com/mods/edain-mod` - creates a rich embed of the Edain Mod ModDB page"""
         if cont.args[0].startswith("http://www.moddb.com/mods/"):

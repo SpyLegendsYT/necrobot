@@ -17,9 +17,9 @@ class Tags():
     @commands.cooldown(5, 10, BucketType.channel)
     async def tag(self, cont, tag : str, *, tag_args : str = ""):
         """The base of the tag system. Also used to summoned tags through the [tag] argument.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!tag necro` - prints the content of the tag 'necro' given that it exists on this server"""
         argDict = dict()
@@ -38,43 +38,43 @@ class Tags():
     @tag.command(pass_context = True, name="create",aliases=["add"])
     async def tag_create(self, cont, tag, *, content):
         """Assigns the [text] passed through to the tag named [name]. A few reserved keywords can be used to render the tag dynamic.
-        \n
-        `{server.[keyword]}`
+        
+        `{server.keyword}`
         Represents the server
         __Keywords__
         `name` - name of the server
         `id` - id of the server
         `created_at` - UTC tag of the creation time of the server
         `member_count` - returns the number of member
-        \n
-        `{member.[keyword]}`
+        
+        `{member.keyword}`
         Represents the user that called the command
         __Keywords__
         `display_name` - the user nick if they have one, else the user's username
         `name` - the user's username
         `discriminator` - the user's discriminator (the 4 digits at the end)
         `joined_at` - specifies at what time the user joined the server
-        `id` ` user's id
+        `id` - user's id
         `mention` - mentions the user
         `created_at` - returns the creation time of the account
-        \n
-        `{channel.[keyword]}`
+        
+        `{channel.keyword}`
         Represents the channel the tag was summoned in
         __Keywords__
         `name` - channel name
         `id` - channel id
         `topic` - the channel's topic
         `mention` - returns a mention of the channel
-        \n
+        
         `{content}`
         Represents the content of the message
-        \n
+        
         `{argx}`
         Represents an argument you pass into the tag, replace x by the argument number starting from 0.
         E.g: `n!tag test [arg0] [arg1] [arg2]` 
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!tag add test1 {server.name} is cool` - creates a tag that will replace `{server.name}` by the name of the server it is summoned in
         `n!tag add test2 {arg0} {arg1}` - creates a tag that will replace arg0 and arg1 by the arguments passed
@@ -89,9 +89,9 @@ class Tags():
     @tag.command(pass_context = True, name="del", aliases=["remove", "delete"])
     async def tag_del(self, cont, tag):
         """Deletes the tag [tag] if the users calling the command is its owner or a Server Admin (4+)
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!tag delete necro` - removes the tag 'necro' if you are the owner of if you have a permission level of 4+"""
         tag = tag.lower()
@@ -107,9 +107,9 @@ class Tags():
     @tag.command(pass_context = True, name="edit", aliases=["modify"])
     async def tag_edit(self, cont, tag, *, text):
         """Replaces the content of [tag] with the [text] given. Basically works as a delete + create function but without the risk of losing the tag name ownership.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
         tag = tag.lower()
@@ -125,9 +125,9 @@ class Tags():
     @tag.command(pass_context = True, name="raw", aliases=["source"])
     async def tag_raw(self, cont, tag):
         """Returns the unformatted content of the tag [tag] so other users can see how it works.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!raw necro` - prints the raw data of the 'necro' tag"""
         tag = tag.lower()
@@ -137,16 +137,16 @@ class Tags():
     @tag.command(pass_context = True, name="list")
     async def tag_list(self, cont):
         """Returns the list of tags present on the server.
-        \n
-        {}"""
+        
+        {usage}"""
         await self.bot.say("Tags in " + cont.message.server.name + ": ```" + ", ".join(serverData[cont.message.server.id]["tags"].keys()) + "```")
 
     @tag.command(pass_context = True, name="info")
     async def tag_info(self, cont, tag):
         """Returns information on the tag given.
-        \n
-        {}
-        \n
+        
+        {usage}
+        
         __Example__
         `n!tag info necro` - prints info for the tag 'necro'"""
         tag = tag.lower()
