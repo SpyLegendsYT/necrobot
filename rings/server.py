@@ -84,9 +84,9 @@ class Server():
         for x in myList:
             if x.id not in serverData[cont.message.server.id]["ignoreAutomod"]:
                 serverData[cont.message.server.id]["ignoreAutomod"].append(x.id)
-                await self.bot.say(":white_check_mark: | **"+x.name+"** will be ignored by the bot's automoderation.")
+                await self.bot.say(":white_check_mark: | **"+ x.name +"** will be ignored by the bot's automoderation.")
             else:
-                await self.bot.say(":negative_squared_cross_mark: | **"+x.name+"** is already ignored.")
+                await self.bot.say(":negative_squared_cross_mark: | **"+ x.name +"** is already ignored.")
 
     @automod.command(pass_context = True, name="del")
     async def automod_del(self, cont, *, mentions : str):
@@ -100,9 +100,9 @@ class Server():
         for x in myList:
             if x.id in serverData[cont.message.server.id]["ignoreAutomod"]:
                 serverData[cont.message.server.id]["ignoreAutomod"].remove(x.id)
-                await self.bot.say(":white_check_mark: | **"+x.name+"** will no longer be ignored by the bot's automoderation.")
+                await self.bot.say(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot's automoderation.")
             else:
-                await self.bot.say(":negative_squared_cross_mark: | **"+x.name+"** is not ignored.")
+                await self.bot.say(":negative_squared_cross_mark: | **"+ x.name +"** is not ignored.")
 
     @commands.group(pass_context=True, invoke_without_command = True)
     @has_perms(4)
@@ -134,9 +134,9 @@ class Server():
         for x in myList:
             if x.id not in serverData[cont.message.server.id]["ignoreCommand"]:
                 serverData[cont.message.server.id]["ignoreCommand"].append(x.id)
-                await self.bot.say(":white_check_mark: | **"+x.name+"** will be ignored by the bot.")
+                await self.bot.say(":white_check_mark: | **"+ x.name +"** will be ignored by the bot.")
             else:
-                await self.bot.say(":negative_squared_cross_mark: | **"+x.name+"** is already ignored.")
+                await self.bot.say(":negative_squared_cross_mark: | **"+ x.name +"** is already ignored.")
 
     @ignore.command(pass_context = True, name="del")
     async def ignore_del(self, cont, *, mentions : str):
@@ -150,11 +150,11 @@ class Server():
         for x in myList:
             if x.id in serverData[cont.message.server.id]["ignoreCommand"]:
                 serverData[cont.message.server.id]["ignoreCommand"].remove(x.id)
-                await self.bot.say(":white_check_mark: | **"+x.name+"** will no longer be ignored by the bot.")
+                await self.bot.say(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot.")
             else:
-                await self.bot.say(":negative_squared_cross_mark: | **"+x.name+"** is not ignored.")
+                await self.bot.say(":negative_squared_cross_mark: | **"+ x.name +"** is not ignored.")
 
-    @commands.group(invoke_without_command = True)
+    @commands.group(invoke_without_command = True, aliases=["setting"])
     @has_perms(5)
     async def settings(self):
         """Used to decide of the NecroBot settings for the server. Useless without a subcommand. (Permission level required: 5+ (Server Owner))
@@ -195,7 +195,7 @@ class Server():
             serverData[cont.message.server.id]["welcome-channel"] = ""
             await self.bot.say(":white_check_mark: | Welcome messages **disabled**")
         else:
-            await self.bot.say(":white_check_mark: | Okay, users will get their welcome message in " + channel.name + " from now on.")
+            await self.bot.say(":white_check_mark: | Okay, users will get their welcome message in " + channel.mention + " from now on.")
             serverData[cont.message.server.id]["welcome-channel"] = channel.id
 
     @settings.command(pass_context = True, name="automod-channel")
@@ -211,7 +211,7 @@ class Server():
             serverData[cont.message.server.id]["automod"] = ""
             await self.bot.say(":white_check_mark: | Auto-moderation disabled **disabled**")
         else:
-            await self.bot.say(":white_check_mark: | Okay, all automoderation messages will be posted in " + channel.name + " from now on.")
+            await self.bot.say(":white_check_mark: | Okay, all automoderation messages will be posted in " + channel.mention + " from now on.")
             serverData[cont.message.server.id]["automod"] = channel.id
 
     @settings.command(pass_context = True, name="welcome")

@@ -148,10 +148,22 @@ class Moderation():
             lockedList.append(user.id)
             await self.bot.say(":white_check_mark: | User locked in channel **"+ v_channel.name + "**")
 
+    # *****************************************************************************************************************
+    #  Purge Checks
+    # *****************************************************************************************************************
+    def is_bot(self, m):
+        return m.author == bot.user
+
+    def has_link(self, m):
+        return "http" in m.content
+
+    def has_image(self, m):
+        return len(m.attachments) > 0
+
     @commands.command(pass_context = True)
     @commands.cooldown(1, 10, BucketType.channel)
     @has_perms(4)
-    async def purge(self, cont, number : int = 50):
+    async def purge(self, cont, number : int = 1):
         """Removes number of messages from the channel it is called in. That's all it does at the moment but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ (Server Admin))
         
         {usage}

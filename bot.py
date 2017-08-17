@@ -222,7 +222,7 @@ async def on_ready():
     print("SuperDuperIgnore List: " +  str(superDuperIgnoreList))
     print(serverData)
     print('------')
-    await bot.change_presence(game=discord.Game(name='n!help'))
+    await bot.change_presence(game=discord.Game(name='n!help', type=0))
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Online**")
 
     for x in bot.get_all_members():
@@ -286,6 +286,8 @@ async def on_server_join(server):
     for x in membList:
         default_stats(x, server)
 
+    await bot.send_message(server.owner, ":information_source: I've just been invited to a server you own. Everything is good to go, your server has been set up on my side. However, most my automatic functionalities are disabled by default (automoderation, welcome-messages and mute). You just need to set those up using `n!settings`. Check out the help with `n!help settings`")
+
 #automod
 @bot.event
 async def on_message_delete(message):
@@ -309,7 +311,7 @@ async def on_message_edit(before, after):
 #welcomes and set stats
 @bot.event
 async def on_member_join(member):
-    if serverData[member.server.id]["welcome-channel"] == "":
+    if serverData[member.server.id]["welcome-channel"] == "" or member.bot:
         return
 
     channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
@@ -321,7 +323,7 @@ async def on_member_join(member):
 #says goodbye and resets perms level if less than NecroBot Admin
 @bot.event
 async def on_member_remove(member):
-    if serverData[member.server.id]["welcome-channel"] == "":
+    if serverData[member.server.id]["welcome-channel"] == "" or member.bot:
         return
 
     channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
@@ -358,7 +360,7 @@ async def on_message(message):
         #check if allowed bot summon
         if not is_allowed_summon(message):
             return
-            
+
         if message.content.startswith("<@317619283377258497>"):
             await bot.send_message(message.channel, random.choice(replyList))
 
