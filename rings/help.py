@@ -145,7 +145,7 @@ class NecroBotHelpFormatter(HelpFormatter):
             ending_note = self.get_ending_note()
 
         else:
-            self._paginator.add_line('__Sub-Commands__')
+            self._paginator.add_line('__Commands__')
             self._add_subcommands_to_page(max_width, self.filter_command_list())
 
             # add the ending note for command pages
