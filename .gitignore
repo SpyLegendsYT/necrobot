@@ -3,6 +3,7 @@ soup
 adventure
 selfbot
 token.txt
+logfile.txt
 rings/botdata/userdata.csv
 rings/botdata/settings.csv
-logfile.txt
+
