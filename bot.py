@@ -13,28 +13,34 @@ import sys
 import socket
 import random
 import logging
+import aiohttp
 import asyncio
 import traceback
 import time as t
 import calendar as c
+import datetime as d
 from rings.botdata.data import Data
 from rings.help import NecroBotHelpFormatter
-
-
-
-#prefix command
-prefixes = ["n!","N!", "<@317619283377258497> "]
-async def get_pre(bot, message):
-    return prefixes
-
-description = "The ultimate moderation bot which is also the first bot for video game modders and provides a simple economy simple, some utility commands and some fun commands."
-bot = commands.Bot(command_prefix=get_pre, description=description, formatter=NecroBotHelpFormatter())
 
 userData = Data.userData
 serverData = Data.serverData
 superDuperIgnoreList = Data.superDuperIgnoreList
 lockedList = list()
 default_path = ""
+starttime = d.datetime.now()
+version = "0.4"
+
+#prefix command
+prefixes = ["n!","N!", "<@317619283377258497> "]
+async def get_pre(bot, message):
+    if not message.channel.is_private:
+        if serverData[message.server.id]["prefix"] != "":
+            return serverData[message.server.id]["prefix"]
+
+    return prefixes
+
+description = "The ultimate moderation bot which is also the first bot for video game modders and provides a simple economy simple, some utility commands and some fun commands."
+bot = commands.Bot(command_prefix=get_pre, description=description, formatter=NecroBotHelpFormatter())
 
 extensions = [
     "animals",
@@ -79,13 +85,28 @@ def is_lock_free():
         logging.info("Failed to acquire lock %r" % (lock_id,))
         return False
 
+#forgive me gods of Python
+def startswith_prefix(message):
+    return message.content.startswith(tuple(prefixes)) or (serverData[message.server.id]["prefix"] != "" and message.content.startswith(serverData[message.server.id]["prefix"]))
+
+def is_spam(message):
+    userID = message.author.id
+    channelID = message.channel.id
+    return ((message.content.lower() == userData[userID]['lastMessage'].lower() and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not startswith_prefix(message)
+
+def is_allowed_summon(message):
+    userID = message.author.id
+    channelID = message.channel.id
+    return ((channelID not in serverData[message.server.id]["ignoreCommand"] and userID not in serverData[message.server.id]["ignoreCommand"]) or userData[userID]["perms"][message.server.id] >= 4) and startswith_prefix(message)
+
 def logit(message):
-    with open(default_path + "logfile.txt","a+") as log:
-        localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
-        try: 
-            log.write(str(localtime + str(message.author) + " used " + message.content))
-        except:
-            log.write(str(localtime + str(message.author.id) + " used " + message.content))
+    if startswith_prefix(message):
+        with open(default_path + "logfile.txt","a+") as log:
+            localtime = str("\n" + t.asctime(t.localtime(t.time())) + ": ")
+            try: 
+                log.write(str(localtime + str(message.author) + " used " + message.content))
+            except:
+                log.write(str(localtime + str(message.author.id) + " used " + message.content))
 
 def default_stats(member, server):
     if member.id not in userData:
@@ -126,25 +147,14 @@ def save():
     with open(default_path + "rings/botdata/setting.csv","w",newline="") as csvfile:
         Awriter = csv.writer(csvfile)
         Awriter.writerow(superDuperIgnoreList)
-        Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags"])
+        Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags","Prefix"])
         for x in serverData:
             selfRolesList = ",".join(serverData[x]["selfRoles"])
             automodList = ",".join(serverData[x]["ignoreAutomod"])
             commandList = ",".join(serverData[x]["ignoreCommand"])
-            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"]])
+            Awriter.writerow([bot.get_server(x).name,x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"], serverData[x]["prefix"]])
 
     print("Saved at " + str(t.asctime(t.localtime(t.time()))))
-
-#forgive me gods of Python
-def is_spam(message):
-    userID = message.author.id
-    channelID = message.channel.id
-    return ((message.content.lower() == userData[userID]['lastMessage'].lower() and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not message.content.startswith(tuple(prefixes))
-
-def is_allowed_summon(message):
-    userID = message.author.id
-    channelID = message.channel.id
-    return ((channelID not in serverData[message.server.id]["ignoreCommand"] and userID not in serverData[message.server.id]["ignoreCommand"]) or userData[userID]["perms"][message.server.id] >= 4) and message.content.startswith(tuple(prefixes))
 
 # *****************************************************************************************************************
 #  Background Task
@@ -239,7 +249,7 @@ async def on_ready():
 
 
 # *****************************************************************************************************************
-#  Admin Commands
+# Commands
 # *****************************************************************************************************************
 @bot.command(aliases=["off"], hidden=True)
 @is_necro()
@@ -250,6 +260,16 @@ async def kill():
     save()
     await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
     await bot.logout()
+
+@bot.command(name="save")
+@is_necro()
+async def command_save():
+    """Saves all the data. (Permission level required: 7+ (The Bot Smith))
+     
+    {usage}"""
+    save()
+    await bot.say("**Data saved**")
+
 
 # *****************************************************************************************************************
 #  Moderation Features
@@ -364,7 +384,7 @@ async def on_message(message):
         if message.content.startswith("<@317619283377258497>"):
             await bot.send_message(message.channel, random.choice(replyList))
 
-    if message.content.startswith(tuple(prefixes)):
+    if message.content.startswith(tuple(prefixes)) or message.content.startswith(serverData[message.server.id]["prefix"]):
         logit(message)
         await bot.process_commands(message)
 

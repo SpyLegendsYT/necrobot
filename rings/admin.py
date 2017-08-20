@@ -48,7 +48,7 @@ class Admin():
         {usage}
         
         __Example__
-        `n!setstats @NecroBot` - sets the default stats for NecroBot"""
+        `{pre}setstats @NecroBot` - sets the default stats for NecroBot"""
         self.default_stats(user, cont.message.server)
         await self.bot.say("Stats set for user")
 
@@ -67,7 +67,7 @@ class Admin():
         {usage}
         
         __Example__
-        `n!add @NecroBot +400` - adds 400 to NecroBot's balance"""
+        `{pre}add @NecroBot +400` - adds 400 to NecroBot's balance"""
         s = str(userData[user.id]["money"]) + equation
         try:
             operation = simple_eval(s)
@@ -84,7 +84,7 @@ class Admin():
         {usage}
         
         __Example__
-        `n!pm 34536534253Z6 Hello, user` - sends 'Hello, user' to the given user id and waits for a reply"""
+        `{pre}pm 34536534253Z6 Hello, user` - sends 'Hello, user' to the given user id and waits for a reply"""
         for x in self.bot.get_all_members():
             if x.id == ID:
                 user = x
@@ -103,7 +103,7 @@ class Admin():
         {usage}
         
         __Example__
-        `n!test 345345334235345` - returns the user or server name with that id"""
+        `{pre}test 345345334235345` - returns the user or server name with that id"""
         for x in self.bot.get_all_members():
             if x.id == ID:
                 await self.bot.say(x.name + "#" + str(x.discriminator))
@@ -111,12 +111,20 @@ class Admin():
 
         await self.bot.say("User with that ID not found.")
 
-        for x in bot.servers:
+        for x in self.bot.servers:
             if x.id == ID:
                 await self.bot.say(x.name)
                 return
 
         await self.bot.say("Server with that ID not found")
+
+        for x in self.bot.servers:
+            for y in x.channels:
+                if y.id == ID:
+                    await self.bot.say(y.name + " on " + x.name)
+                    return
+
+        await self.bot.say("Channel with that ID not found")
 
     @commands.command(pass_context = True, hidden=True)
     @is_necro()
@@ -129,7 +137,7 @@ class Admin():
                 invite = await self.bot.create_invite(server)
                 await self.bot.whisper("Server: " + server.name + " - " + invite.url)
             except:
-                await self.bot.whisper("I don't have the necessary permissions on " + server.name + ". That server is owned by " + server.owner.name + "#" + str(server.owner.discriminator))
+                await self.bot.whisper("I don't have the necessary permissions on " + server.name + ". That server is owned by " + server.owner.name + "#" + str(server.owner.discriminator) + " (" + str(server.id) + ")")
 
     @commands.command(pass_context=True, hidden=True)
     @is_necro()

@@ -35,14 +35,14 @@ class NecroBotHelpFormatter(HelpFormatter):
     def get_ending_note(self):
         command_name = self.context.invoked_with
         return "Type {0}{1} [command] for more info on a command.\n" \
-               "Example: `n!help edain` - display help on the edain command \n" \
+               "Example: `{0}help edain` - display help on the edain command \n" \
                "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. \n"\
-               "Example: `n!help Animals` - display help on the Animals category".format(self.clean_prefix, command_name)
+               "Example: `{0}help Animals` - display help on the Animals category".format(self.clean_prefix, command_name)
 
     def get_ending_note_command(self):
         command_name = self.context.invoked_with
         return "Type {0}{1} [command] [subcommand] for more info on a command's subcommand.\n" \
-               "Example: `n!help settings welcome-channel` - display help on the welcome-channel subcommand of the settings command \n".format(self.clean_prefix, command_name)
+               "Example: `{0}help settings welcome-channel` - display help on the welcome-channel subcommand of the settings command \n".format(self.clean_prefix, command_name)
 
     def get_command_signature(self):
         """Retrieves the signature portion of the help page."""
@@ -115,7 +115,7 @@ class NecroBotHelpFormatter(HelpFormatter):
 
             # <long doc> section
             if self.command.help:
-                line = self.command.help.format_map(SafeDict(usage=signature))
+                line = self.command.help.format_map(SafeDict(usage=signature, pre=self.clean_prefix))
                 self._paginator.add_line(line, empty=True)            
 
             # end it here if it's just a regular command

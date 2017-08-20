@@ -150,8 +150,8 @@ class Casino():
         {usage}
         
         __Example__
-        `n!blackjack 200` - bet 200 :euro: in the game of blackjack
-        `n!blackjack` - bet the default 10 :euro:"""
+        `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
+        `{pre}blackjack` - bet the default 10 :euro:"""
         if userData[cont.message.author.id]["money"] >= bet and bet >= 10:
             await self.bot.say("Starting a game of Blackjack with **{0.display_name}** for {1} :euro:".format(cont.message.author, bet))
             name = cont.message.author.display_name

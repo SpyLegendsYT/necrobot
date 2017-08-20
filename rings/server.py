@@ -45,7 +45,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!perms @NecroBot 5` - set the NecroBot permission level to 5"""
+        `{pre}perms @NecroBot 5` - set the NecroBot permission level to 5"""
         if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4 and userData[cont.message.author.id]["perms"][cont.message.server.id] > level:
             userData[user.id]["perms"][cont.message.server.id] = level
             await self.bot.say(":white_check_mark: | All good to go, **"+ user.name + "** now has permission level **"+ str(level) + "**")
@@ -57,7 +57,7 @@ class Server():
     @commands.group(pass_context = True, invoke_without_command = True)
     @has_perms(4)
     async def automod(self, cont):
-        """Used to manage the list of channels and user ignored by the bot's automoderation system. If no subcommand is called it will print out the list of ignored Users (**U**) and the list of ignored Channels (**C**). The automoderation feature tracks the edits made by users to their own messages and the deleted messages, printing them in the server's automod channel. Set the automod channel using `n!settings automod` (Permission level required: 4+ (Server Admin))
+        """Used to manage the list of channels and user ignored by the bot's automoderation system. If no subcommand is called it will print out the list of ignored Users (**U**) and the list of ignored Channels (**C**). The automoderation feature tracks the edits made by users to their own messages and the deleted messages, printing them in the server's automod channel. Set the automod channel using `{pre}settings automod` (Permission level required: 4+ (Server Admin))
          
         {usage}"""
         myList = []
@@ -79,7 +79,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!automod add #channel #channel2 @NecroBot` - have NecroBot ignore moderation from user 'NecroBot' and channels 'channel' and 'channel2'"""
+        `{pre}automod add #channel #channel2 @NecroBot` - have NecroBot ignore moderation from user 'NecroBot' and channels 'channel' and 'channel2'"""
         myList = self.allmentions(cont, mentions)
         for x in myList:
             if x.id not in serverData[cont.message.server.id]["ignoreAutomod"]:
@@ -95,7 +95,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!automod del #channel #channel2 @NecroBot` - have NecroBot no longer ignore moderation from user 'NecroBot' and channels 'channel' and 'channel2'"""
+        `{pre}automod del #channel #channel2 @NecroBot` - have NecroBot no longer ignore moderation from user 'NecroBot' and channels 'channel' and 'channel2'"""
         myList = self.allmentions(cont, mentions)
         for x in myList:
             if x.id in serverData[cont.message.server.id]["ignoreAutomod"]:
@@ -129,7 +129,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!ignore add #channel #channel2 @NecroBot` - have NecroBot ignore commands from user 'NecroBot' and channels 'channel' and 'channel2'"""
+        `{pre}ignore add #channel #channel2 @NecroBot` - have NecroBot ignore commands from user 'NecroBot' and channels 'channel' and 'channel2'"""
         myList = self.allmentions(cont, mentions)
         for x in myList:
             if x.id not in serverData[cont.message.server.id]["ignoreCommand"]:
@@ -145,7 +145,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!ignore add #channel #channel2 @NecroBot` - have NecroBot ignore commands from user 'NecroBot' and channels 'channel' and 'channel2'"""
+        `{pre}ignore add #channel #channel2 @NecroBot` - have NecroBot ignore commands from user 'NecroBot' and channels 'channel' and 'channel2'"""
         myList = self.allmentions(cont, mentions)
         for x in myList:
             if x.id in serverData[cont.message.server.id]["ignoreCommand"]:
@@ -169,8 +169,8 @@ class Server():
         {usage}
         
         __Example__
-        `n!settings mute Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
-        `n!settings mute` - resets the mute role and disables the `mute` command."""
+        `{pre}settings mute Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
+        `{pre}settings mute` - resets the mute role and disables the `mute` command."""
         if role == "":
             serverData[cont.message.server.id]["mute"] = ""
             await self.bot.say(":white_check_mark: | Reset mute role")
@@ -189,8 +189,8 @@ class Server():
         {usage}
         
         __Example__
-        `n!settings welcome-channel #channel` - set the welcome messages to be sent to 'channel'
-        `n!settings welcome-channel` - disables welcome messages"""
+        `{pre}settings welcome-channel #channel` - set the welcome messages to be sent to 'channel'
+        `{pre}settings welcome-channel` - disables welcome messages"""
         if channel == "":
             serverData[cont.message.server.id]["welcome-channel"] = ""
             await self.bot.say(":white_check_mark: | Welcome messages **disabled**")
@@ -205,8 +205,8 @@ class Server():
         {usage}
         
         __Example__
-        `n!settings automod-channel #channel` - set the automoderation messages to be sent to channel 'channel'
-        `n!settings automod-channel` - disables automoderation for the entire server"""
+        `{pre}settings automod-channel #channel` - set the automoderation messages to be sent to channel 'channel'
+        `{pre}settings automod-channel` - disables automoderation for the entire server"""
         if channel == "":
             serverData[cont.message.server.id]["automod"] = ""
             await self.bot.say(":white_check_mark: | Auto-moderation disabled **disabled**")
@@ -221,7 +221,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!settings welcome Hello {member} \\:wave\\:` - sets the welcome message to be 'Hello {member} :wave:' with `{member}` being replaced by the new member's name"""
+        `{pre}settings welcome Hello {member} \\:wave\\:` - sets the welcome message to be 'Hello {member} :wave:' with `{member}` being replaced by the new member's name"""
         message = message.replace("\\","")
         await self.bot.say(":white_check_mark: | Your server's welcome message will be: " + message)
         serverData[cont.message.server.id]["welcome"] = message
@@ -233,10 +233,26 @@ class Server():
         {usage}
         
         __Example__
-        `n!settings goodbye Goodbye {member} \\:wave\\:` - sets the goodbye message to be 'Goodbye {member} :wave:' with `{member}` being replaced by the new member's name"""
+        `{pre}settings goodbye Goodbye {member} \\:wave\\:` - sets the goodbye message to be 'Goodbye {member} :wave:' with `{member}` being replaced by the new member's name"""
         message = message.replace("\\","")
         await self.bot.say(":white_check_mark: | Your server's goodbye message will be: \n" + message)
         serverData[cont.message.server.id]["goodbye"] = message
+
+    @settings.command(pass_context = True, name="prefix")
+    async def settings_prefix(self, cont, *, prefix=""):
+        """Sets the bot to only respond to the given prefix. If no prefix is given it will reset it to NecroBot's deafult list of prefixes: `{pre}`, `N!` or `@NecroBot `
+
+        {usage}
+
+        __Example__
+        `{pre}settings prefix bob! potato` - sets the prefix to be `bob! potato ` so a command like `{pre}cat` will now be summoned like this `bob! potato cat`
+        `{pre}settings prefix` - resets the prefix to NecroBot's default list"""
+        if prefix == "":
+            serverData[cont.message.server.id]["prefix"] = ""
+            await self.bot.say(":white_check_mark: | Custom prefix reset")
+        else:
+            serverData[cont.message.server.id]["prefix"] = prefix
+            await self.bot.say(":white_check_mark: | Server prefix is now **{}**".format(prefix))
 
     @commands.group(pass_context=True, invoke_without_command = True)
     async def giveme(self, cont, *, role):
@@ -245,7 +261,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!giveme Good` - gives or remove the role 'Good' to the user if it is in the list of self assignable roles"""
+        `{pre}giveme Good` - gives or remove the role 'Good' to the user if it is in the list of self assignable roles"""
         if role in serverData[cont.message.server.id]["selfRoles"]:
             role_obj = discord.utils.get(cont.message.server.roles, name=role)
             if discord.utils.get(cont.message.author.roles, name=role) is None:
@@ -266,7 +282,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!giveme add Good` - adds the role 'Good' to the list of self assignable roles"""
+        `{pre}giveme add Good` - adds the role 'Good' to the list of self assignable roles"""
         if not discord.utils.get(cont.message.server.roles, name=role) is None:
             serverData[cont.message.server.id]["selfRoles"].append(role)
             await self.bot.say(":white_check_mark: | Added role " + role + " to list of self assignable roles.")
@@ -281,7 +297,7 @@ class Server():
         {usage}
         
         __Example__
-        `n!giveme del Good` - removes the role 'Good' from the list of self assignable roles"""
+        `{pre}giveme del Good` - removes the role 'Good' from the list of self assignable roles"""
         if role in serverData[cont.message.server.id]["selfRoles"]:
             serverData[cont.message.server.id]["selfRoles"].remove(role)
             await self.bot.say(":white_check_mark: | Role " + role + " removed from self assignable roles")

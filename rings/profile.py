@@ -24,8 +24,8 @@ class Profile():
         {usage}
         
         __Example__
-        `n!balance @NecroBot` - prints NecroBot's balance
-        `n!balance` - prints your own balance"""
+        `{pre}balance @NecroBot` - prints NecroBot's balance
+        `{pre}balance` - prints your own balance"""
         if user:
             user = user[0]
             await self.bot.say(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(userData[user.id]["money"]))
@@ -54,8 +54,8 @@ class Profile():
         {usage}
         
         __Example__
-        `n!info @NecroBot` - returns the NecroBot info for NecroBot
-        `n!info` - returns your own NecroBot info"""
+        `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
+        `{pre}info` - returns your own NecroBot info"""
         if user:
             user = user[0]
         else:
@@ -85,8 +85,8 @@ class Profile():
         {usage}
         
         __Example__
-        `n!settitle Cool Dood` - set your title to 'Cool Dood'
-        `n!settitle` - resets your title"""
+        `{pre}settitle Cool Dood` - set your title to 'Cool Dood'
+        `{pre}settitle` - resets your title"""
         if text == "":
             await self.bot.say(":white_check_mark: | Your title has been reset")
         elif len(text) <= 20:

@@ -65,8 +65,8 @@ class Social():
         {usage}
         
         __Example__
-        `n!rr 3` - game of russian roulette with 3 bullets
-        `n!rr` - game of russian roulette with 1 bullet"""
+        `{pre}rr 3` - game of russian roulette with 3 bullets
+        `{pre}rr` - game of russian roulette with 1 bullet"""
         msg = ":gun: | You insert "+ str(bullets) + " bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!"
         if random.randint(1,7) <= bullets:
             msg += "\n:boom: | You weren't so lucky this time. Rest in peace my friend."

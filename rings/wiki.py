@@ -19,8 +19,8 @@ class Wiki():
         {usage}
         
         __Example__
-        `n!edain Castellans` - print a rich embed of the Castellans page
-        `n!edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
+        `{pre}edain Castellans` - print a rich embed of the Castellans page
+        `{pre}edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
         try:
             article = wikia.page("Edain", article)
         except wikia.wikia.WikiaError:
@@ -73,8 +73,8 @@ class Wiki():
         {usage}
 
         __Example__
-        `n!lotr Finrod` - creates an embed of Finrod Felagund
-        `n!lotr Fellowship` - searches for 'Fellowship' and returns the first result"""
+        `{pre}lotr Finrod` - creates an embed of Finrod Felagund
+        `{pre}lotr Fellowship` - searches for 'Fellowship' and returns the first result"""
         try:
             article = wikia.page("lotr", article)
         except wikia.wikia.WikiaError:
@@ -112,8 +112,8 @@ class Wiki():
         {usage}
 
         __Example__
-        `n!wiki disney Donald Duck` - creates a rich embed of the Donald Duck page
-        `n!wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a rich embed of the first one."""
+        `{pre}wiki disney Donald Duck` - creates a rich embed of the Donald Duck page
+        `{pre}wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a rich embed of the first one."""
         try:
             article = wikia.page(wiki, article)
         except wikia.wikia.WikiaError:

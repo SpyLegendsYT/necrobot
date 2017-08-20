@@ -1,7 +1,6 @@
 #!/usr/bin/python3.6
 import ast
 import csv
-import json
 
 class Data():
     def __init__(self, serverData, userData, superDuperIgnoreList):
@@ -24,5 +23,5 @@ class Data():
         next(reader)
         for row in reader:
             tagsDict = ast.literal_eval(row[10])
-            serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome-channel":row[4], "selfRoles":row[5].split(","),"ignoreCommand":row[6].split(","),"ignoreAutomod":row[7].split(","),"welcome":row[8],"goodbye":row[9],"tags":tagsDict}
+            serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome-channel":row[4], "selfRoles":row[5].split(","),"ignoreCommand":row[6].split(","),"ignoreAutomod":row[7].split(","),"welcome":row[8],"goodbye":row[9],"tags":tagsDict, "prefix":row[11]}
 

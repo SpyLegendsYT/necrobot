@@ -21,7 +21,7 @@ class Tags():
         {usage}
         
         __Example__
-        `n!tag necro` - prints the content of the tag 'necro' given that it exists on this server"""
+        `{pre}tag necro` - prints the content of the tag 'necro' given that it exists on this server"""
         argDict = dict()
         argList = tag_args.split(" ")
         tag = tag.lower()
@@ -71,13 +71,13 @@ class Tags():
         
         `{argx}`
         Represents an argument you pass into the tag, replace x by the argument number starting from 0.
-        E.g: `n!tag test [arg0] [arg1] [arg2]` 
+        E.g: `{pre}tag test [arg0] [arg1] [arg2]` 
         
         {usage}
         
         __Example__
-        `n!tag add test1 {server.name} is cool` - creates a tag that will replace `{server.name}` by the name of the server it is summoned in
-        `n!tag add test2 {arg0} {arg1}` - creates a tag that will replace arg0 and arg1 by the arguments passed
+        `{pre}tag add test1 {server.name} is cool` - creates a tag that will replace `{server.name}` by the name of the server it is summoned in
+        `{pre}tag add test2 {arg0} {arg1}` - creates a tag that will replace arg0 and arg1 by the arguments passed
         """
         tag = tag.lower()
         if tag not in serverData[cont.message.server.id]["tags"]:
@@ -93,7 +93,7 @@ class Tags():
         {usage}
         
         __Example__
-        `n!tag delete necro` - removes the tag 'necro' if you are the owner of if you have a permission level of 4+"""
+        `{pre}tag delete necro` - removes the tag 'necro' if you are the owner of if you have a permission level of 4+"""
         tag = tag.lower()
         if tag in serverData[cont.message.server.id]["tags"]:
             if cont.message.author.id == serverData[cont.message.server.id]["tags"][tag]["owner"] or userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
@@ -111,7 +111,7 @@ class Tags():
         {usage}
         
         __Example__
-        `n!tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
+        `{pre}tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
         tag = tag.lower()
         if tag in serverData[cont.message.server.id]["tags"]:
             if cont.message.author.id == serverData[cont.message.server.id]["tags"][tag]["owner"] or userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4:
@@ -129,7 +129,7 @@ class Tags():
         {usage}
         
         __Example__
-        `n!raw necro` - prints the raw data of the 'necro' tag"""
+        `{pre}raw necro` - prints the raw data of the 'necro' tag"""
         tag = tag.lower()
         if tag in serverData[cont.message.server.id]["tags"]:
             await self.bot.say(":notebook: | Source code for " + tag + ": ```" + serverData[cont.message.server.id]["tags"][tag]["content"] + "```")
@@ -148,7 +148,7 @@ class Tags():
         {usage}
         
         __Example__
-        `n!tag info necro` - prints info for the tag 'necro'"""
+        `{pre}tag info necro` - prints info for the tag 'necro'"""
         tag = tag.lower()
         tag_dict = serverData[cont.message.server.id]["tags"][tag]
         embed = discord.Embed(title="__**" + tag + "**__", colour=discord.Colour(0x277b0), description="Created on " + tag_dict["created"])

@@ -19,7 +19,7 @@ class Music():
         {usage}
         
         __Example__
-        `n!play Ring Verse Black Speech` - plays the first video from youtube that matches this name"""
+        `{pre}play Ring Verse Black Speech` - plays the first video from youtube that matches this name"""
         vc = cont.message.author.voice_channel
         voice_client = await self.bot.join_voice_channel(vc)
 
