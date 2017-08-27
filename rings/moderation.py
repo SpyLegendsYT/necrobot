@@ -2,11 +2,9 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
-
 from rings.botdata.data import Data
 import asyncio
 import re
-
 
 userData = Data.userData
 serverData = Data.serverData
@@ -39,9 +37,9 @@ class Moderation():
                 myList.append(member)
         return myList
 
-    @commands.command(aliases=["rename","name"])
+    @commands.command(aliases=["rename","name"], pass_context = True)
     @has_perms(1)
-    async def nick(self, user : discord.Member, *, nickname=""):
+    async def nick(self, cont, user : discord.Member, *, nickname=""):
         """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return an error message if the user cannot be renamed due to permission issues. (Permission level required: 1+ (Helper))
         
         {usage}
@@ -49,11 +47,19 @@ class Moderation():
         __Example__
         `{pre}nick @NecroBot Lord of All Bots` - renames NecroBot to 'Lord of All Bots'
         `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
-        try:
-            await self.bot.say(":white_check_mark: | User **{0.display_name}** renamed to **{1}**".format(user, nickname))
-            await self.bot.change_nickname(user, nickname)
-        except discord.errors.Forbidden:
-            await self.bot.say(":negative_squared_cross_mark: | You cannot change the nickname of that user.")
+        if userData[cont.message.author.id]["perms"][cont.message.server.id] > userData[user.id]["perms"][cont.message.server.id]:
+            if nickname == "":
+                msg = ":white_check_mark: | User **{0.display_name}**'s nickname reset".format(user)
+            else:
+                msg = ":white_check_mark: | User **{0.display_name}** renamed to **{1}**".format(user, nickname)
+
+            try:
+                await self.bot.say(msg)
+                await self.bot.change_nickname(user, nickname)
+            except discord.errors.Forbidden:
+                await self.bot.say(":negative_squared_cross_mark: | You cannot change the nickname of that user.")
+        else:
+            await self.bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
 
     @commands.command(pass_context = True)
     @has_perms(2)
@@ -66,7 +72,7 @@ class Moderation():
         `{pre}mute @NecroBot` - mute NecroBot until a user with the proper permission level does `{pre}unmute @NecroBot`
         `{pre}mute @NecroBot 30` - mutes NecroBot for 30 seconds or until a user with the proper permission level does `{pre}unmute @NecroBot`"""
         if serverData[cont.message.server.id]["mute"] == "":
-            await self.bot.say(":negative_squared_cross_mark: | Please set up the mute role with `{pre}settings mute [rolename]` first.")
+            await self.bot.say(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
 
         role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])
@@ -105,7 +111,7 @@ class Moderation():
 
     @commands.group(invoke_without_command = True, pass_context=True)
     @has_perms(1)
-    async def warn(self, cont, user : discord.Member, *, message):
+    async def warn(self, cont, user : discord.Member, *, message : str):
         """Adds the given message as a warning to the user's NecroBot profile (Permission level required: 1+ (Server Helper))
         
         {usage}
@@ -177,7 +183,7 @@ class Moderation():
         serverData[cont.message.server.id]["automod"] = channel
 
     @commands.command(pass_context = True)
-    async def speak(self, cont, channel, *, message):
+    async def speak(self, cont, channel : str, *, message : str):
         """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 4+ (Server Admin))
         
         {usage}
@@ -186,14 +192,14 @@ class Moderation():
         `{pre}speak #general Hello` - sends hello to the mentionned #general channel
         `{pre}speak 235426357468543 Hello` - sends hello to the channel with the given ID (if any)"""
         try: 
-            ID = self.allmentions(cont, channel)[0].id
+            channel = self.allmentions(cont, channel)[0]
         except IndexError:
             await self.bot.say("No channel with that name")
             return
         
-        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4 and userData[cont.message.author.id]["perms"][self.bot.get_channel(ID).server.id] >= 4:
-            await self.bot.send_message(self.bot.get_channel(ID), ":loudspeaker: | " + message)
-        elif userData[cont.message.author.id]["perms"][self.bot.get_channel(ID).server.id] < 4:
+        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4 and userData[cont.message.author.id]["perms"][channel.server.id] >= 4:
+            await self.bot.send_message(channel, ":loudspeaker: | " + message)
+        elif userData[cont.message.author.id]["perms"][channel.server.id] < 4:
             await self.bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions on the server you're trying to send the message to.")
         else:
             await self.bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")

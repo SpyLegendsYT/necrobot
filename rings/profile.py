@@ -18,7 +18,7 @@ class Profile():
 
     @commands.command(pass_context = True)
     @commands.cooldown(3, 10, BucketType.user)
-    async def balance(self, cont, *user : discord.Member):
+    async def balance(self, cont, *user : discord.Member ):
         """Prints the given user's NecroBot balance, if no user is supplied then it will print your own NecroBot balance.
         
         {usage}
@@ -27,12 +27,11 @@ class Profile():
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
         if user:
-            user = user[0]
             await self.bot.say(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(userData[user.id]["money"]))
         else:
             await self.bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **{:,}** :euro:".format(userData[cont.message.author.id]["money"]))
 
-    @commands.command(pass_context = True)
+    @commands.command(pass_context = True, aliases=["daily"])
     @commands.cooldown(1, 5, BucketType.user)
     async def claim(self, cont):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day.
@@ -45,6 +44,39 @@ class Profile():
             userData[cont.message.author.id]["daily"] = aDay
         else:
             await self.bot.say(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
+
+    @commands.command(pass_context = True)
+    async def pay(self, cont, user : discord.User, amount : int):
+        """Transfers the given amount of money to the given user's NecroBot bank account.
+
+        {usage}
+
+        __Example__
+        `{pre}pay @NecroBot 200` - pays NecroBot 200 :euro:"""
+        payer = cont.message.author
+        payee = user
+        if userData[payer.id]["money"] < amount:
+            await self.bot.say(":negative_squared_cross_mark: | You don't have enough money")
+            return
+
+        msg = await self.bot.say("Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(amount, payee.display_name))
+        await self.bot.add_reaction(msg, "\N{WHITE HEAVY CHECK MARK}")
+        await self.bot.add_reaction(msg, "\N{NEGATIVE SQUARED CROSS MARK}")
+        res = await self.bot.wait_for_reaction(["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"], user=payer, message=msg)
+
+        if res.reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await self.bot.say(":white_check_mark: | **{}** cancelled the transaction.".format(payer.display_name))
+        elif res.reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            if userData[payer.id]["money"] < amount:
+                await self.bot.say(":negative_squared_cross_mark: | You don't have enough money")
+                await self.bot.delete_message(msg)
+                return
+            await self.bot.say(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
+            userData[payer.id]["money"] -= amount
+            userData[payee.id]["money"] += amount
+            
+        await self.bot.delete_message(msg)
+
 
     @commands.command(pass_context = True, aliases=["profile"])
     @commands.cooldown(3, 5, BucketType.user)

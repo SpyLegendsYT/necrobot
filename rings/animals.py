@@ -2,9 +2,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
-
 import aiohttp
-
 
 class Animals():
     """Show pictures of cute animals us the power of the internet."""

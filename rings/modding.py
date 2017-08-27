@@ -2,7 +2,6 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
-
 from bs4 import BeautifulSoup
 import aiohttp
 
@@ -30,7 +29,6 @@ class Modding():
                     rss = BeautifulSoup(await resp.text(), "xml")
 
             modName = str(soup.title.string[:-9])
-
             try:
                 modDesc = str(soup.find(itemprop="description")["content"])
             except KeyError:

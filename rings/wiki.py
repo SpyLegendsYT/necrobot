@@ -22,18 +22,18 @@ class Wiki():
         `{pre}edain Castellans` - print a rich embed of the Castellans page
         `{pre}edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
         try:
-            article = wikia.page("Edain", article)
+            article = wikia.page("edain", article)
         except wikia.wikia.WikiaError:
             try:
-                search_list = wikia.search("Edain", article)
-                await self.bot.say("Article: **"+ article +"** not found, returning first search result and the following search list: " + str(search_list[1:]))
-                article = wikia.page("Edain", search_list[0])
+                search_list = wikia.search("edain", article)
+                await self.bot.say("Article: **{}** not found, returning first search result and the following search list: {}"format(article, search_list[1:]))
+                article = wikia.page("edain", search_list[0])
             except ValueError:
                 await self.bot.say(":negative_squared_cross_mark: | Article not found, and search didn't return any results. Please try again with different terms.")
                 return
 
         url = article.url.replace(" ","_")
-        embed = discord.Embed(title="__**" + article.title + "**__", colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title="__**{}**__".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")
@@ -80,7 +80,7 @@ class Wiki():
         except wikia.wikia.WikiaError:
             try:
                 search_list = wikia.search("lotr", article)
-                await self.bot.say("Article: **"+ article +"** not found, returning first search result and the following search list: " + str(search_list))
+                await self.bot.say("Article: **{}** not found, returning first search result and the following search list: {}"format(article, search_list[1:]))
                 article = wikia.page("lotr", search_list[0])
             except ValueError:
                 await self.bot.say(":negative_squared_cross_mark: | Article not found, and search didn't return any result. Please try again with different terms.")
@@ -88,7 +88,7 @@ class Wiki():
 
         url = article.url.replace(" ","_")
 
-        embed = discord.Embed(title="__**" + article.title + "**__", colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title="__**{}**__".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")
@@ -119,7 +119,7 @@ class Wiki():
         except wikia.wikia.WikiaError:
             try:
                 search_list = wikia.search(wiki, article)
-                await self.bot.say("Article: **"+ article +"** not found, returning first search result and the following search list: " + str(search_list))
+                await self.bot.say("Article: **{}** not found, returning first search result and the following search list: {}"format(article, search_list[1:]))
                 article = wikia.page(wiki, search_list[0])
             except ValueError:
                 await self.bot.say(":negative_squared_cross_mark: | Article not found or wiki not recognized, and search didn't return any result. Please try again with different terms.")
@@ -127,7 +127,7 @@ class Wiki():
 
         url = article.url.replace(" ","_")
 
-        embed = discord.Embed(title="__**" + article.title + "**__", colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title="__**{}**__".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")

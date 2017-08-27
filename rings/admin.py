@@ -6,7 +6,6 @@ from rings.botdata.data import Data
 from simpleeval import simple_eval
 import inspect
 
-
 userData = Data.userData
 serverData = Data.serverData
 
@@ -29,14 +28,14 @@ class Admin():
             userData[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], 'lastMessage': '', 'lastMessageTime': 0, 'locked': ''}
 
         if server.id not in userData[member.id]["perms"]:
-            if member.id == server.owner.id:
+            if any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
+                userData[member.id]["perms"][server.id] = 7
+            elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
+                userData[member.id]["perms"][server.id] = 6
+            elif member.id == server.owner.id:
                 userData[member.id]["perms"][server.id] = 5
             elif member.server_permissions.administrator:
                 userData[member.id]["perms"][server.id] = 4
-            elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
-                userData[member.id]["perms"][server.id] = 6
-            elif any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
-                userData[member.id]["perms"][server.id] = 7
             else:
                 userData[member.id]["perms"][server.id] = 0
 
@@ -72,57 +71,55 @@ class Admin():
         try:
             operation = simple_eval(s)
             userData[user.id]["money"] = abs(int(operation))
-            await self.bot.say(":atm: | **"+ user.display_name + "'s** balance is now **{:,}** :euro:".format(userData[user.id]["money"]))
+            await self.bot.say(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, userData[user.id]["money"]))
         except (NameError,SyntaxError):
             await self.bot.say(":negative_squared_cross_mark: | Operation no recognized.")
 
     @commands.command(hidden=True)
     @has_perms(6)
-    async def pm(self, ID, *, message):
+    async def pm(self, ID : str, *, message : str):
         """Sends the given message to the user of the given id. It will then wait 5 minutes for an answer and print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))
         
         {usage}
         
         __Example__
         `{pre}pm 34536534253Z6 Hello, user` - sends 'Hello, user' to the given user id and waits for a reply"""
-        for x in self.bot.get_all_members():
-            if x.id == ID:
-                user = x
-                break
-
-        send = await self.bot.send_message(user, message + "\n*You have 5 minutes to reply to the message*")
-        to_edit = await self.bot.say(":white_check_mark: | **Message sent**")
-        msg = await self.bot.wait_for_message(author=user, channel=send.channel, timeout=300)
-        await self.bot.edit_message(to_edit, ":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
+        user = discord.utils.get(self.bot.get_all_members(), id=ID)
+        if not user is None:
+            send = await self.bot.send_message(user, message + "\n*You have 5 minutes to reply to the message*")
+            to_edit = await self.bot.say(":white_check_mark: | **Message sent**")
+            msg = await self.bot.wait_for_message(author=user, channel=send.channel, timeout=300)
+            await self.bot.edit_message(to_edit, ":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
+        else:
+            await self.bot.say(":negative_squared_cross_mark: | No such user.")
 
     @commands.command(hidden = True)
     @is_necro()
-    async def test(self, ID):
+    async def test(self, ID : str):
         """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature
         
         {usage}
         
         __Example__
         `{pre}test 345345334235345` - returns the user or server name with that id"""
-        for x in self.bot.get_all_members():
-            if x.id == ID:
-                await self.bot.say(x.name + "#" + str(x.discriminator))
-                return
+        user = discord.utils.get(self.bot.get_all_members(), id=ID)
+        if not user is None:
+            await self.bot.say("User: **{}#{}**".format(user.name, user.discriminator))
+            return
 
         await self.bot.say("User with that ID not found.")
 
-        for x in self.bot.servers:
-            if x.id == ID:
-                await self.bot.say(x.name)
-                return
+        server = discord.utils.get(self.bot.servers, id=ID)
+        if not server is None:
+            await self.bot.say("Server: **{}**".format(server.name))
+            return
 
         await self.bot.say("Server with that ID not found")
 
-        for x in self.bot.servers:
-            for y in x.channels:
-                if y.id == ID:
-                    await self.bot.say(y.name + " on " + x.name)
-                    return
+        channel = discord.utils.get(self.bot.get_all_channels(), id=ID)
+        if not channel is None:
+            await self.bot.say("Channel: **{}** on **{}**".format(channel.name, channel.server.name))
+            return
 
         await self.bot.say("Channel with that ID not found")
 

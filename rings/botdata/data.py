@@ -22,6 +22,6 @@ class Data():
         superDuperIgnoreList = list(next(reader))
         next(reader)
         for row in reader:
-            tagsDict = ast.literal_eval(row[10])
-            serverData[row[1]] = {"mute":row[2],"automod":row[3],"welcome-channel":row[4], "selfRoles":row[5].split(","),"ignoreCommand":row[6].split(","),"ignoreAutomod":row[7].split(","),"welcome":row[8],"goodbye":row[9],"tags":tagsDict, "prefix":row[11]}
+            tagsDict = ast.literal_eval(row[9])
+            serverData[row[0]] = {"mute":row[1],"automod":row[2],"welcome-channel":row[3], "selfRoles":row[4].split(","),"ignoreCommand":row[5].split(","),"ignoreAutomod":row[6].split(","),"welcome":row[7],"goodbye":row[8],"tags":tagsDict, "prefix":row[10]}
 
