@@ -139,7 +139,7 @@ async def save():
     with open(default_path + "rings/botdata/setting.csv","w",newline="") as csvfile:
         Awriter = csv.writer(csvfile)
         Awriter.writerow(superDuperIgnoreList)
-        Awriter.writerow(['Server Name','Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags","Prefix"])
+        Awriter.writerow(['Server','Mute Role','Automod Channel','Welcome Channel',"Self Roles","Automod Ignore","Commands Ignore","Welcome Message","Goodbye Message","Tags","Prefix"])
         for x in serverData:
             selfRolesList = ",".join(serverData[x]["selfRoles"])
             automodList = ",".join(serverData[x]["ignoreAutomod"])
@@ -283,7 +283,7 @@ async def on_ready():
 
     for server in bot.servers:
         if server.id not in serverData:
-                serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}}
+                serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : ""}
     await bot.edit_message(msg, "All servers checked")
 
     for extension in extensions:
@@ -303,28 +303,34 @@ async def on_ready():
 async def on_command_error(error, cont):
     """Catches error and sends a message to the user that caused the error with a helpful message."""
     channel = cont.message.channel
+    msg = None
+
     if isinstance(error, commands.MissingRequiredArgument):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(cont.command.name))
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(cont.command.name))
     elif isinstance(error, commands.CheckFailure):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
     elif isinstance(error, commands.CommandOnCooldown):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
     elif isinstance(error, commands.NoPrivateMessage):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | This command cannot be used in private messages.")
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | This command cannot be used in private messages.")
     elif isinstance(error, commands.DisabledCommand):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
     elif isinstance(error, commands.BadArgument):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
     elif isinstance(error, discord.errors.Forbidden):
-        await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your server.")
+        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your server.")
     elif isinstance(error, commands.CommandInvokeError):
-        print('In {0.command.qualified_name}:'.format(cont), file=sys.stderr)
-        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-        print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
+        await bot.send_message(bot.get_channel(ERROR_LOG), 'In {0.command.qualified_name}:'.format(cont))
+        await bot.send_message(bot.get_channel(ERROR_LOG),"```" + " ".join(traceback.format_exception(type(error), error, error.__traceback__)) + " ```")
+        await bot.send_message(bot.get_channel(ERROR_LOG), '{0.__class__.__name__}: {0}'.format(error.original))
+
+    if not msg is None:
+        await asyncio.sleep(10)
+        await bot.delete_message(msg)
 
 @bot.event
 async def on_server_join(server):
-    serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}}
+    serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix": ""}
 
     membList = server.members
     for x in membList:
