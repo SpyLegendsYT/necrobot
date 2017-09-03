@@ -32,12 +32,45 @@ class NecroBotHelpFormatter(HelpFormatter):
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
 
+    def filter_command_list(self):
+        """Returns a filtered list of commands based on the two attributes
+        provided, :attr:`show_check_failure` and :attr:`show_hidden`. Also
+        filters based on if :meth:`is_cog` is valid.
+
+        Returns
+        --------
+        iterable
+            An iterable with the filter being applied. The resulting value is
+            a (key, value) tuple of the command name and the command itself.
+        """
+        def predicate(tuple):
+            cmd = tuple[1]
+            if self.is_cog():
+                # filter commands that don't exist to this cog.
+                if cmd.instance is not self.command:
+                    return False
+
+            if cmd.hidden and not self.show_hidden:
+                return False
+
+            if self.show_check_failure:
+                # we don't wanna bother doing the checks if the user does not
+                # care about them, so just return true.
+                return True
+
+            try:
+                return cmd.can_run(self.context) and self.context.bot.can_run(self.context)
+            except CommandError:
+                return False
+
+        iterator = self.command.commands.items() if not self.is_cog() else self.context.bot.commands.items()
+        return filter(predicate, iterator)
+
     def get_ending_note(self):
         command_name = self.context.invoked_with
-        return "Type {0}{1} [command] for more info on a command.\n" \
-               "Example: `{0}help edain` - display help on the edain command \n" \
-               "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. \n"\
-               "Example: `{0}help Animals` - display help on the Animals category".format(self.clean_prefix, command_name)
+        return "Commands in `codeblocks` are commands you can use, commands with ~~strikethrough~~ you cannot use but you can still check the help. \n" \
+               "Type {0}{1} [command] for more info on a command.(Example: `{0}help edain`\n" \
+               "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. (Example: `{0}help Animals`) \n".format(self.clean_prefix, command_name)
 
     def get_ending_note_command(self):
         command_name = self.context.invoked_with
@@ -77,7 +110,10 @@ class NecroBotHelpFormatter(HelpFormatter):
                 # skip aliases
                 continue
 
-            commandList.append("`{}`".format(name))
+            if command.can_run(self.context) and self.context.bot.can_run(self.context):
+                commandList.append("`{}`".format(name))
+            else:
+                commandList.append("~~{}~~".format(name))
 
         return " | ".join(commandList)
 
@@ -86,8 +122,11 @@ class NecroBotHelpFormatter(HelpFormatter):
             if name in command.aliases:
                 # skip aliases
                 continue
+            if command.can_run(self.context) and self.context.bot.can_run(self.context):
+                entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
+            else:
+                entry = '  ~~{0:<{width}}~~ - {1}'.format(name, command.short_doc, width=max_width)
 
-            entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 

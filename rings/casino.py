@@ -155,6 +155,7 @@ class Casino():
         else:
             await self.bot.say("Tie, everything is reset.")
             IS_GAME.remove(cont.message.channel.id)
+            userData[cont.message.author.id]["money"] += bet
         await self.bot.delete_message(status)
 
     @commands.command(pass_context = True, aliases=["bj"])
@@ -180,7 +181,8 @@ class Casino():
             name = cont.message.author.display_name
             player = Player(name, 0)
             bank = Player("Bank", 0)
-            game = Game((player,bank))
+            players = (player,bank)
+            game = Game(players)
             game.start()
             for x in players:
                 game.play(x)

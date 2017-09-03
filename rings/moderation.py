@@ -8,6 +8,8 @@ import re
 
 userData = Data.userData
 serverData = Data.serverData
+lockedList = list()
+
 
 class Moderation():
     """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. All you need to keep your server clean and tidy"""
@@ -203,6 +205,10 @@ class Moderation():
             await self.bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions on the server you're trying to send the message to.")
         else:
             await self.bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
+
+    async def on_voice_state_update(self, before, after):
+        if before.id in lockedList:
+            await self.bot.move_member(before, self.bot.get_channel(userData[before.id]["locked"]))
 
 
 def setup(bot):

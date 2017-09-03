@@ -19,7 +19,7 @@ class Modding():
         
         __Example__
         `{pre}moddb http://www.moddb.com/mods/edain-mod` - creates a rich embed of the Edain Mod ModDB page"""
-        if cont.args[0].startswith("http://www.moddb.com/mods/"):
+        if url.startswith("http://www.moddb.com/mods/"):
             #obtain xml and html pages
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as resp:

@@ -289,7 +289,7 @@ class Server():
                 await self.bot.say(":white_check_mark: | Role " + role_obj.name + " removed.")
 
         else:
-            await self.bot.say(":negative_squared_cross_mark: | You cannot assign yourself that role.")
+            await self.bot.say(":negative_squared_cross_mark: | Role not self assignable")
 
     @giveme.command(pass_context=True, name="add")
     @has_perms(4)

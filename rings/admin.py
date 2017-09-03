@@ -51,7 +51,7 @@ class Admin():
         self.default_stats(user, cont.message.server)
         await self.bot.say("Stats set for user")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @has_perms(6)
     async def add(self, user : discord.Member, *, equation : str):
         """Does the given pythonic equations on the given user's NecroBot balance. (Permission level required: 6+ (NecroBot Admin))
@@ -75,7 +75,7 @@ class Admin():
         except (NameError,SyntaxError):
             await self.bot.say(":negative_squared_cross_mark: | Operation no recognized.")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @has_perms(6)
     async def pm(self, ID : str, *, message : str):
         """Sends the given message to the user of the given id. It will then wait 5 minutes for an answer and print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))
@@ -93,10 +93,10 @@ class Admin():
         else:
             await self.bot.say(":negative_squared_cross_mark: | No such user.")
 
-    @commands.command(hidden = True)
+    @commands.command()
     @is_necro()
     async def test(self, ID : str):
-        """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature
+        """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature. (Permission level required: 7+ (The Bot Smith))
         
         {usage}
         
@@ -126,20 +126,20 @@ class Admin():
     @commands.command(pass_context = True, hidden=True)
     @is_necro()
     async def invites(self, cont):
-        """Returns invites (if the bot has valid permissions) for each server the bot is on.
+        """Returns invites (if the bot has valid permissions) for each server the bot is on. (Permission level required: 7+ (The Bot Smith))
         
         {usage}"""
         for server in self.bot.servers:
             try:
-                invite = await self.bot.create_invite(server)
+                invite = await self.bot.create_invite(server, max_age=86400)
                 await self.bot.whisper("Server: " + server.name + " - " + invite.url)
             except:
                 await self.bot.whisper("I don't have the necessary permissions on " + server.name + ". That server is owned by " + server.owner.name + "#" + str(server.owner.discriminator) + " (" + str(server.id) + ")")
 
-    @commands.command(pass_context=True, hidden=True)
+    @commands.command(pass_context=True)
     @is_necro()
     async def debug(self, cont, *, code : str):
-        """Evaluates code.
+        """Evaluates code. (Permission level required: 7+ (The Bot Smith)) 
         
         {usage}
         

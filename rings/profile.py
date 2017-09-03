@@ -27,6 +27,7 @@ class Profile():
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
         if user:
+            user = user[0]
             await self.bot.say(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(userData[user.id]["money"]))
         else:
             await self.bot.say(":atm: | **"+ str(cont.message.author.name) +"** you have **{:,}** :euro:".format(userData[cont.message.author.id]["money"]))
@@ -53,6 +54,7 @@ class Profile():
 
         __Example__
         `{pre}pay @NecroBot 200` - pays NecroBot 200 :euro:"""
+        amount = abs(amount)
         payer = cont.message.author
         payee = user
         if userData[payer.id]["money"] < amount:
