@@ -1,2 +1,1 @@
-web: bin/web
-worker: bin/worker
+worker: python bot.py
