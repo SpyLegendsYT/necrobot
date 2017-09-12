@@ -11,13 +11,13 @@ class Data():
     serverData = dict()
     userData = dict()
 
-    with open("C:\\Users\\Clement\\Desktop\\necrobot\\rings\\botdata\\userdata.csv","r") as f:
+    with open("/app/rings/botdata/userdata.csv","r") as f:
         reader = csv.reader(f)
         for row in reader:
             permsDict = ast.literal_eval(row[5])
             userData[row[0]] = {"money":int(row[1]),"daily":row[2],"title":row[3],"exp":int(row[4]),"perms":permsDict,"warnings":row[6].split(","),"lastMessage":"","lastMessageTime":0, "locked":""}
 
-    with open("C:\\Users\\Clement\\Desktop\\necrobot\\rings\\botdata\\setting.csv","r") as f:
+    with open("/app/rings/botdata/setting.csv","r") as f:
         reader = csv.reader(f)
         superDuperIgnoreList = list(next(reader))
         next(reader)

@@ -30,7 +30,7 @@ bot = commands.Bot(command_prefix=get_pre, description=description, formatter=Ne
 userData = Data.userData
 serverData = Data.serverData
 superDuperIgnoreList = Data.superDuperIgnoreList
-default_path = ""
+default_path = "/app/"
 version = "v0.5"
 ERROR_LOG = "351356683231952897"
 lock_socket = None
