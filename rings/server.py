@@ -215,24 +215,24 @@ class Server():
 
     @settings.command(pass_context = True, name="welcome")
     async def settings_welcome(self, cont, *, message):
-        """Sets the welcome message (aka the message sent to the welcome channel when a new user joins), you can format the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` will be replaced by the server name. To add emojis you need to add a backslash `\` before every semi-colon `:` (e.g `\:smiley_face\:`) (Permission level required: 5+ (Server Owner))
+        r"""Sets the welcome message (aka the message sent to the welcome channel when a new user joins), you can format the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` will be replaced by the server name. To add emojis you need to add a backslash `\` before every semi-colon `:` (e.g `\:smiley_face\:`) (Permission level required: 5+ (Server Owner))
          
         {usage}
         
         __Example__
-        `{pre}settings welcome Hello {member} \\:wave\\:` - sets the welcome message to be 'Hello {member} :wave:' with `{member}` being replaced by the new member's name"""
+        `{pre}settings welcome Hello {member} \:wave\:` - sets the welcome message to be 'Hello {member} :wave:' with `{member}` being replaced by the new member's name"""
         message = message.replace("\\","")
         await self.bot.say(":white_check_mark: | Your server's welcome message will be: " + message)
         serverData[cont.message.server.id]["welcome"] = message
 
     @settings.command(pass_context = True, name="goodbye")
     async def settings_goodbye(self, cont, *, message):
-        """Sets the goodbye message (aka the message sent to the welcome channel when a user leaves), you can format the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` will be replaced by the server name. To add emojis you need to add a backslash `\` before every semi-colon `:` (e.g `\:smiley_face\:`) (Permission level required: 5+ (Server Owner))
+        r"""Sets the goodbye message (aka the message sent to the welcome channel when a user leaves), you can format the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` will be replaced by the server name. To add emojis you need to add a backslash `\` before every semi-colon `:` (e.g `\:smiley_face\:`) (Permission level required: 5+ (Server Owner))
          
         {usage}
         
         __Example__
-        `{pre}settings goodbye Goodbye {member} \\:wave\\:` - sets the goodbye message to be 'Goodbye {member} :wave:' with `{member}` being replaced by the new member's name"""
+        `{pre}settings goodbye Goodbye {member} \:wave\:` - sets the goodbye message to be 'Goodbye {member} :wave:' with `{member}` being replaced by the new member's name"""
         message = message.replace("\\","")
         await self.bot.say(":white_check_mark: | Your server's goodbye message will be: \n" + message)
         serverData[cont.message.server.id]["goodbye"] = message
