@@ -418,7 +418,7 @@ def run_bot():
     token = open(default_path + "token.txt", "r").read()
     bot.run(token)
 
-port = os.getenv("PORT")
+port = int(os.getenv("PORT"))
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind((socket.gethostname(), port))
 serversocket.listen(5)
