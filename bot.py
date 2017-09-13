@@ -2,6 +2,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
+import os
 import re
 import csv
 import sys
@@ -33,7 +34,6 @@ superDuperIgnoreList = Data.superDuperIgnoreList
 default_path = "/app/"
 version = "v0.5"
 ERROR_LOG = "351356683231952897"
-lock_socket = None
 
 extensions = [
     "animals",
@@ -60,18 +60,6 @@ replyList = [
 # *****************************************************************************************************************
 #  Internal Function
 # *****************************************************************************************************************
-def is_lock_free():
-    global lock_socket
-    lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    try:
-        lock_id = "necro.necrobot"   # this should be unique. using your username as a prefix is a convention
-        lock_socket.bind('\0' + lock_id)
-        logging.debug("Acquired lock %r" % (lock_id,))
-        return True
-    except socket.error:
-        # socket already locked, task must already be running
-        logging.info("Failed to acquire lock %r" % (lock_id,))
-        return False
 
 #forgive me gods of Python
 def startswith_prefix(message):
@@ -430,7 +418,9 @@ def run_bot():
     token = open(default_path + "token.txt", "r").read()
     bot.run(token)
 
-# if not is_lock_free():
-#     sys.exit()
+port = os.getenv("PORT")
+serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serversocket.bind((socket.gethostname(), port))
+serversocket.listen(5)
 
 run_bot()
