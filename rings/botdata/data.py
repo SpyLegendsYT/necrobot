@@ -23,6 +23,7 @@ class Data():
         reader = csv.reader(f)
         superDuperIgnoreList = list(sys.argv[4])
         next(reader)
+        next(reader)
         for row in reader:
             tagsDict = ast.literal_eval(row[9])
             serverData[row[0]] = {"mute":row[1],"automod":row[2],"welcome-channel":row[3], "selfRoles":row[4].split(","),"ignoreCommand":row[5].split(","),"ignoreAutomod":row[6].split(","),"welcome":row[7],"goodbye":row[8],"tags":tagsDict, "prefix":row[10]}
