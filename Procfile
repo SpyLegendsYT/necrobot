@@ -1,1 +1,1 @@
-web: python bot.py MzE3NjE5MjgzMzc3MjU4NDk3.DI2mfQ.FaXOoKRzfFZg7KymdAqoewlmGBA /app/ /app/rings/botdata/
+web: python bot.py MzE3NjE5MjgzMzc3MjU4NDk3.DJwugg.LhF0XOMZf_UrBwdjukm7qHABtV8 /app/ /app/rings/botdata/
