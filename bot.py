@@ -31,7 +31,7 @@ bot = commands.Bot(command_prefix=get_pre, description=description, formatter=Ne
 userData = Data.userData
 serverData = Data.serverData
 superDuperIgnoreList = Data.superDuperIgnoreList
-default_path = "/app/"
+default_path = sys.argv[2]
 version = "v0.5"
 ERROR_LOG = "351356683231952897"
 
@@ -415,12 +415,14 @@ async def on_message(message):
 
 def run_bot():
     bot.loop.create_task(hourly_task())
-    token = open(default_path + "token.txt", "r").read()
-    bot.run(token)
+    bot.run(sys.argv[1])
 
-port = int(os.getenv("PORT"))
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind((socket.gethostname(), port))
-serversocket.listen(5)
+try:
+    port = int(os.getenv("PORT"))
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((socket.gethostname(), port))
+    serversocket.listen(5)
+except TypeError:
+    pass
 
 run_bot()

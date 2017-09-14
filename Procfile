@@ -1,1 +1,1 @@
-web: python bot.py
+web: python bot.py MzE3NjE5MjgzMzc3MjU4NDk3.DI2mfQ.FaXOoKRzfFZg7KymdAqoewlmGBA /app/ /app/necrobot/rings/botdata/
