@@ -1,11 +1,7 @@
-soup
 *.pyc
-adventure
-selfbot
 token.txt
 logfile.txt
 rings/botdata/userdata.csv
 rings/botdata/settings.csv
-
-archive/music.py
 logfile.txt
+necrobot
