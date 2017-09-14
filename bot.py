@@ -63,7 +63,13 @@ replyList = [
 
 #forgive me gods of Python
 def startswith_prefix(message):
-    return message.content.startswith(tuple(prefixes)) or (serverData[message.server.id]["prefix"] != "" and message.content.startswith(serverData[message.server.id]["prefix"]))
+    if message.content.startswith(tuple(prefixes)):
+        return True
+
+    if serverData[message.server.id]["prefix"] != "" and message.content.startswith(serverData[message.server.id]["prefix"]):
+        return True
+
+    return False
 
 def is_spam(message):
     userID = userData[message.author.id]
@@ -71,12 +77,27 @@ def is_spam(message):
     if serverData[message.server.id]["automod"] == "":
         return False
 
-    return ((message.content.lower() == userID['lastMessage'].lower() and userID['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userID['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not startswith_prefix(message)
+    if any([userID, channelID] in serverData[message.server.id]["ignoreAutomod"]):
+        return False
+
+    if startswith_prefix(message):
+        return False
+
+    if message.content.lower() == userID['lastMessage'].lower() and userID['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
+        return True
+
+    if userID['lastMessageTime'] > c.timegm(t.gmtime()) + 1:
+        return True
+
 
 def is_allowed_summon(message):
     userID = userData[message.author.id]
     channelID = message.channel.id
-    return ((channelID not in serverData[message.server.id]["ignoreCommand"] and message.author.id not in serverData[message.server.id]["ignoreCommand"]) or userID["perms"][message.server.id] >= 4) and startswith_prefix(message)
+    if userID["perms"][message.server.id] >= 4:
+        return True
+
+    if any([userID, channelID] in serverData[message.server.id]["ignoreCommand"]):
+        return False
 
 def logit(message):
     if startswith_prefix(message):
