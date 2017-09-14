@@ -12,6 +12,7 @@ class Data():
 
     serverData = dict()
     userData = dict()
+    superDuperIgnoreList = list()
 
     with open(default_path + "userdata.csv","r") as f:
         reader = csv.reader(f)
@@ -21,7 +22,7 @@ class Data():
 
     with open(default_path + "setting.csv","r") as f:
         reader = csv.reader(f)
-        superDuperIgnoreList = list(sys.argv[4])
+        superDuperIgnoreList.append(sys.argv[4])
         next(reader)
         next(reader)
         for row in reader:
