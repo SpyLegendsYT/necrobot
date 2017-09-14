@@ -21,7 +21,7 @@ class Data():
 
     with open(default_path + "setting.csv","r") as f:
         reader = csv.reader(f)
-        superDuperIgnoreList = list(next(reader))
+        superDuperIgnoreList = list(sys.argv[4])
         next(reader)
         for row in reader:
             tagsDict = ast.literal_eval(row[9])

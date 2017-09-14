@@ -269,12 +269,6 @@ async def on_ready():
     for server in bot.servers:
         if server.id not in serverData:
                 serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : ""}
-    
-    for server in serverData.keys():
-        try:
-            bot.get_server(server)
-        except AttributeError:
-            del serverData[server]
 
     await bot.edit_message(msg, "All servers checked")
 
