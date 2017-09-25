@@ -271,7 +271,10 @@ async def on_ready():
     msg = await bot.send_message(channel, "Bot user ready")
 
     for member in bot.get_all_members():
-        default_stats(member, member.server)
+        if member.id not in userData:
+            await bot.edit_message(msg, member.name)
+            default_stats(member, member.server)
+            
     await bot.edit_message(msg, "All members checked")
 
     for server in bot.servers:
@@ -392,6 +395,7 @@ async def on_command(command, cont):
 
 @bot.event
 async def on_message(message):
+    await bot.wait_until_ready()
     userID = message.author.id
     channelID = message.channel.id
 
