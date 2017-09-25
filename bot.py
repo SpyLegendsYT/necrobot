@@ -91,7 +91,7 @@ def is_spam(message):
 
 
 def is_allowed_summon(message):
-    userID = userData[message.author.id]
+    userID = message.author.id
     channelID = message.channel.id
     if userID["perms"][message.server.id] >= 4:
         return True
