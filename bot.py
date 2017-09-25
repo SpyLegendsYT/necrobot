@@ -405,6 +405,7 @@ async def on_command(command, cont):
 
 @bot.event
 async def on_message(message):
+    await bot.wait_until_ready()
     userID = message.author.id
     channelID = message.channel.id
 
