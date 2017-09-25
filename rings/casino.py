@@ -244,7 +244,7 @@ class Casino():
 
                                 return await self.game_end(player, bank, bet, cont, status)
                         else:
-                            await self.bot.say(":negative_squared_cross_mark: | Not enough money to double bet")
+                            await self.bot.say(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
 
                     elif res.reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
                         await self.bot.say("**You** pass your turn", delete_after=5)

@@ -156,37 +156,41 @@ class Moderation():
             lockedList.append(user.id)
             await self.bot.say(":white_check_mark: | User locked in channel **"+ v_channel.name + "**")
 
-    # *****************************************************************************************************************
-    #  Purge Checks
-    # *****************************************************************************************************************
-    def is_bot(self, m):
-        return m.author == bot.user
-
-    def has_link(self, m):
-        return "http" in m.content
-
-    def has_image(self, m):
-        return len(m.attachments) > 0
-
     @commands.command(pass_context = True)
     @commands.cooldown(1, 10, BucketType.channel)
     @has_perms(4)
-    async def purge(self, cont, number : int = 1):
+    async def purge(self, cont, number : int = 1, check="", extra=""):
         """Removes number of messages from the channel it is called in. That's all it does at the moment but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ (Server Admin))
         
         {usage}
         
         __Example__
-        `{pre}purge 50` - purges the last 50 messages"""
+        `{pre}purge 50` - purges the last 50 messages
+        `{pre}purge 15 link` - purges all messages containing links from the previous 15 messages
+        `{pre}purge 20 mention @Necro` - purges all messages sent by @Necro from the previous 20 messages
+        `{pre}purge 35 bot` - purges all messages sent by the bot from the previous 35 messages"""
         channel = serverData[cont.message.server.id]["automod"]
         serverData[cont.message.server.id]["automod"] = ""
-        await self.bot.purge_from(cont.message.channel, limit=number+1)
-        await self.bot.say(":wastebasket: | **" + str(number) + "** messages purged.", delete_after=5)
+
+        if check == "link":
+            deleted = await self.bot.purge_from(cont.message.channel, limit=number+1, check=lambda m: "http" in m.content)
+        elif check == "mention":
+            deleted = await self.bot.purge_from(cont.message.channel, limit=number+1, check=lambda m: m.author.mention == extra)
+        elif check == "image":
+            deleted = await self.bot.purge_from(cont.message.channel, limit=number+1, check=lambda m: len(m.attachments) > 0)
+        elif check == "bot":
+            deleted = await self.bot.purge_from(cont.message.channel, limit=number+1, check=lambda m: m.author == self.bot.user)
+        else:
+            deleted = await self.bot.purge_from(cont.message.channel, limit=number+1)
+
+        await self.bot.say(":wastebasket: | **{}** messages purged.".format(len(deleted)), delete_after=5)
+
         serverData[cont.message.server.id]["automod"] = channel
 
     @commands.command(pass_context = True)
+    @has_perms(3)
     async def speak(self, cont, channel : str, *, message : str):
-        """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 4+ (Server Admin))
+        """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 3+ (Semi-Admin))
         
         {usage}
         
@@ -199,7 +203,7 @@ class Moderation():
             await self.bot.say("No channel with that name")
             return
         
-        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 4 and userData[cont.message.author.id]["perms"][channel.server.id] >= 4:
+        if userData[cont.message.author.id]["perms"][cont.message.server.id] >= 3 and userData[cont.message.author.id]["perms"][channel.server.id] >= 3:
             await self.bot.send_message(channel, ":loudspeaker: | " + message)
         elif userData[cont.message.author.id]["perms"][channel.server.id] < 4:
             await self.bot.say(":negative_squared_cross_mark: | You do not have the required NecroBot permissions on the server you're trying to send the message to.")

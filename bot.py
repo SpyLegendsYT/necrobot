@@ -298,7 +298,7 @@ async def on_ready():
             bot.load_extension("rings."+extension)
         except Exception as e:
             exc = '{} : {}'.format(type(e).__name__, e)
-            await bot.send_message(bot.get_channel(ERROR_LOG) ,"Failed to load extension {}\n{}".format(extension.exc))
+            await bot.send_message(bot.get_channel(ERROR_LOG) ,"Failed to load extension {}\n{}".format(extension))
     await bot.edit_message(msg, "All extensions loaded")
 
     await bot.send_message(channel, "**Bot Online**")
@@ -333,7 +333,7 @@ async def on_command_error(error, cont):
     elif isinstance(error, discord.errors.Forbidden):
         msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your server.")
     elif isinstance(error, commands.CommandInvokeError):
-        await bot.send_message(bot.get_channel(ERROR_LOG), 'In {0.command.qualified_name}:'.format(cont))
+        await bot.send_message(bot.get_channel(ERROR_LOG), 'On server {0}({1}) \n In {2.command.qualified_name}:'.format(cont.message.server.name, cont.message.server.id, cont))
         await bot.send_message(bot.get_channel(ERROR_LOG),"```" + " ".join(traceback.format_exception(type(error), error, error.__traceback__)) + " ```")
         await bot.send_message(bot.get_channel(ERROR_LOG), '{0.__class__.__name__}: {0}'.format(error.original))
 
@@ -401,6 +401,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_command(command, cont):
     logit(cont.message)
+    pass
 
 @bot.event
 async def on_message(message):

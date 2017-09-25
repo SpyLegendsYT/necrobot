@@ -12,6 +12,7 @@ from overwatch_api.constants import *
 import re
 import json
 import asyncio
+import urbandictionary as ud
 
 ball8List = ["It is certain"," It is decidedly so"," Without a doubt","Yes, definitely","You may rely on it","As I see it, yes"," Most likely","Outlook good","Yes","Signs point to yes","Reply hazy try again","Ask again later","Better not tell you now"," Cannot predict now","Concentrate and ask again","Don't count on it"," My reply is no","My sources say no","Outlook not so good","Very doubtful"]
 
@@ -362,7 +363,15 @@ class Utilities():
             await self.bot.edit_message(msg, embed=self.get_a_hero_stat(data, username, hero_int, hero_list))
             asyncio.sleep(1)
 
+    @commands.command(pass_context = True, name="ud", aliases=["urbandictionary"])
+    async def udict(self, cont, word):
+        defs = ud.define(word)
+        definition = defs[0]
 
+        embed = discord.Embed(title="__**{}*__".format(word.title()), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition.definition)
+        embed.add_field(name="__Examples__", value=definition.example)
+
+        await self.bot.say(embed=embed)
 
 
 def setup(bot):

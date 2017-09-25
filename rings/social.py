@@ -66,6 +66,9 @@ class Social():
         __Example__
         `{pre}rr 3` - game of russian roulette with 3 bullets
         `{pre}rr` - game of russian roulette with 1 bullet"""
+        if bullets > 6 or bullets < 0:
+            bullets = 1
+            
         msg = ":gun: | You insert {} bullets, give the barrel a good spin and put the gun against your temple... \n:persevere: | You take a deep breath... and pull the trigger!".format(bullets)
         if random.randint(1,7) <= bullets:
             msg += "\n:boom: | You weren't so lucky this time. Rest in peace my friend."
