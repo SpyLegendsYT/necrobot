@@ -42,3 +42,6 @@ simpleeval == 0.9.5
 
 # rings\wiki.py: 6
 wikia == 1.4.3
+
+# rings\utilities.py: 15
+urbandictionary == 1.1

@@ -6,5 +6,5 @@ setup(name='NecroBot',
       author='Clement Julia',
       author_email='clement.julia13@gmail.com',
       url='https://github.com/ClementJ18/necrobot',
-      packages=['aiohttp', 'beautifulsoup4', 'dice', 'discord.py', 'mwclient', 'overwatch_api', 'simpleeval', 'wikia'],
+      packages=['aiohttp', 'beautifulsoup4', 'dice', 'discord.py', 'mwclient', 'overwatch_api', 'simpleeval', 'wikia','urbandictionary'],
      )

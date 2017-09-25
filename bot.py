@@ -93,7 +93,7 @@ def is_spam(message):
 def is_allowed_summon(message):
     userID = message.author.id
     channelID = message.channel.id
-    if userID["perms"][message.server.id] >= 4:
+    if serverData[userID]["perms"][message.server.id] >= 4:
         return True
 
     if any([userID, channelID] in serverData[message.server.id]["ignoreCommand"]):
