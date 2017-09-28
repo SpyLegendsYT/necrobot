@@ -79,10 +79,10 @@ def is_spam(message):
     userID = message.author.id
     channelID = message.channel.id
     if serverData[message.server.id]["automod"] == "" or startswith_prefix(message):
-        return True
+        return False
 
     if userID in serverData[message.server.id]["ignoreAutomod"] or channelID in serverData[message.server.id]["ignoreAutomod"]:
-        return True
+        return False
 
     if message.content.lower() == userData[userID]['lastMessage'].lower() and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
         return True
