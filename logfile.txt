@@ -1,0 +1,23 @@
+
+Thu Sep 28 15:49:00 2017: Necro#6714 used n!help
+Thu Sep 28 15:53:05 2017: Necro#6714 used n!off
+Thu Sep 28 19:14:46 2017: Necro#6714 used n!reload utilit
+Thu Sep 28 19:14:57 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:15:30 2017: Necro#6714 used n!debug bot.say(list(userData.keys())[:10])
+Thu Sep 28 19:18:34 2017: Necro#6714 used n!debug bot.say(userData["241942232867799040"])
+Thu Sep 28 19:21:30 2017: Necro#6714 used n!off
+Thu Sep 28 19:25:18 2017: Necro#6714 used n!off
+Thu Sep 28 19:26:22 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:26:28 2017: Necro#6714 used n!translate en Water is nat
+Thu Sep 28 19:26:49 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:26:51 2017: Necro#6714 used n!translate en Water is nat
+Thu Sep 28 19:27:20 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:27:24 2017: Necro#6714 used n!translate en Water is nat
+Thu Sep 28 19:27:48 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:27:56 2017: Necro#6714 used n!translate en Water is nat
+Thu Sep 28 19:28:25 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:28:27 2017: Necro#6714 used n!translate en Water is nat
+Thu Sep 28 19:28:43 2017: Necro#6714 used n!reload utilities
+Thu Sep 28 19:28:48 2017: Necro#6714 used n!translate en Water is nat
+Thu Sep 28 19:30:01 2017: Necro#6714 used n!translate en bonjour
+Thu Sep 28 19:30:36 2017: Necro#6714 used n!translate en Ik hou van jou

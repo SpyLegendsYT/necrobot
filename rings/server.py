@@ -153,13 +153,13 @@ class Server():
             else:
                 await self.bot.say(":negative_squared_cross_mark: | **"+ x.name +"** is not ignored.")
 
-    @commands.group(invoke_without_command = True, aliases=["setting"])
+    @commands.group(aliases=["setting"])
     @has_perms(5)
     async def settings(self):
         """Used to decide of the NecroBot settings for the server. Useless without a subcommand. (Permission level required: 5+ (Server Owner))
          
         {usage}"""
-        await self.bot.say(":negative_squared_cross_mark: | Please pass in a valid subcommand. (welcome, welcome-channel, goodbye, mute, automod)")
+        pass
 
     @settings.command(pass_context = True, name="mute")
     async def settings_mute(self, cont, *, role=""):
@@ -192,9 +192,9 @@ class Server():
         `{pre}settings welcome-channel` - disables welcome messages"""
         if channel == "":
             serverData[cont.message.server.id]["welcome-channel"] = ""
-            await self.bot.say(":white_check_mark: | Welcome messages **disabled**")
+            await self.bot.say(":white_check_mark: | Welcome/Goodbye messages **disabled**")
         else:
-            await self.bot.say(":white_check_mark: | Okay, users will get their welcome message in " + channel.mention + " from now on.")
+            await self.bot.say(":white_check_mark: | Okay, users will get their welcome/goodbye message in " + channel.mention + " from now on.")
             serverData[cont.message.server.id]["welcome-channel"] = channel.id
 
     @settings.command(pass_context = True, name="automod-channel")

@@ -31,7 +31,10 @@ bot = commands.Bot(command_prefix=get_pre, description=description, formatter=Ne
 userData = Data.userData
 serverData = Data.serverData
 superDuperIgnoreList = Data.superDuperIgnoreList
-default_path = sys.argv[2]
+if sys.argv[2] == "none":
+    default_path = ""
+else:
+    default_path = sys.argv[2]
 version = "v0.5"
 ERROR_LOG = "351356683231952897"
 
@@ -47,7 +50,8 @@ extensions = [
     "tags",
     "server",
     "casino",
-    "admin"
+    "admin",
+    "decisions"
 ]
 
 replyList = [
@@ -63,28 +67,41 @@ replyList = [
 
 #forgive me gods of Python
 def startswith_prefix(message):
-    return message.content.startswith(tuple(prefixes)) or (serverData[message.server.id]["prefix"] != "" and message.content.startswith(serverData[message.server.id]["prefix"]))
+    if message.content.startswith(tuple(prefixes)):
+        return True
+
+    if serverData[message.server.id]["prefix"] != "" and message.content.startswith(serverData[message.server.id]["prefix"]):
+        return True
+
+    return False
 
 def is_spam(message):
     userID = userData[message.author.id]
     channelID = message.channel.id
-    if serverData[message.server.id]["automod"] == "":
+    if serverData[message.server.id]["automod"] == "" or startswith_prefix(message):
+        return True
+
+    if userID in serverData[message.server.id]["ignoreAutomod"] or channelID in serverData[message.server.id]["ignoreAutomod"]:
+        return True
+
+    if message.content.lower() == userID['lastMessage'].lower() and userID['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
+        return True
+
+    if userID['lastMessageTime'] > c.timegm(t.gmtime()) + 1:
         return False
 
-    return ((message.content.lower() == userID['lastMessage'].lower() and userID['lastMessageTime'] > c.timegm(t.gmtime()) + 2) or userID['lastMessageTime'] > c.timegm(t.gmtime()) + 1) and (userID not in serverData[message.server.id]["ignoreAutomod"] and channelID not in serverData[message.server.id]["ignoreAutomod"]) and not startswith_prefix(message)
+    return False
 
 def is_allowed_summon(message):
     userID = message.author.id
     channelID = message.channel.id
-<<<<<<< HEAD
-    if serverData[userID]["perms"][message.server.id] >= 4:
+    if userData[userID]["perms"][message.server.id] >= 4 or message.channel.is_private:
         return True
 
     if any([userID, channelID] in serverData[message.server.id]["ignoreCommand"]):
         return False
-=======
-    return ((channelID not in serverData[message.server.id]["ignoreCommand"] and message.author.id not in serverData[message.server.id]["ignoreCommand"]) or userID["perms"][message.server.id] >= 4) and startswith_prefix(message)
->>>>>>> parent of bd1e5c2... trying for webpage
+
+    return True
 
 def logit(message):
     if startswith_prefix(message):
@@ -151,7 +168,7 @@ async def save():
 async def hourly_task():
     await bot.wait_until_ready()
     while not bot.is_closed:
-        await asyncio.sleep(2700) # task runs every 45 min
+        await asyncio.sleep(3600) # task runs every hour
         await save()
 
 # *****************************************************************************************************************
@@ -252,9 +269,9 @@ async def leave(cont, ID, *, reason : str ="unspecified"):
     {usage}"""
     server = bot.get_server(ID)
     if not server is None:
-        await bot.say(":white_check_mark: | Okay Necro, I'm leaving {}".format(server.name))
         await bot.send_message(list(server.channels)[0], "I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
         await bot.leave_server(server)
+        await bot.say(":white_check_mark: | Okay Necro, I've left {}".format(server.name))
     else:
         await bot.say(":negative_squared_cross_mark: | I'm not on that server")
 
@@ -263,6 +280,7 @@ async def leave(cont, ID, *, reason : str ="unspecified"):
 # *****************************************************************************************************************
 @bot.event
 async def on_ready():
+    await bot.change_presence(game=discord.Game(name="Bot booting...", type=0))
     print("SuperDuperIgnore List: {}".format(superDuperIgnoreList))
     print(serverData)
     print('------')
@@ -270,9 +288,9 @@ async def on_ready():
     await bot.send_message(channel, "**Initiating Bot**")
     msg = await bot.send_message(channel, "Bot user ready")
 
-    for member in bot.get_all_members():
+    members = bot.get_all_members()
+    for member in members:
         if member.id not in userData:
-            await bot.edit_message(msg, member.name)
             default_stats(member, member.server)
             
     await bot.edit_message(msg, "All members checked")
@@ -367,7 +385,7 @@ async def on_message_edit(before, after):
 async def on_member_join(member):
     default_stats(member, member.server)
 
-    if serverData[member.server.id]["welcome-channel"] == "" or member.bot:
+    if serverData[member.server.id]["welcome-channel"] == "" or member.bot or serverData[member.server.id]["welcome"] == "":
         return
 
     channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
@@ -380,7 +398,7 @@ async def on_member_remove(member):
     if userData[member.id]["perms"][member.server.id] < 6:
         userData[member.id]["perms"][member.server.id] = 0
 
-    if serverData[member.server.id]["welcome-channel"] == "" or member.bot:
+    if serverData[member.server.id]["welcome-channel"] == "" or member.bot or serverData[member.server.id]["goodbye"] == "":
         return
 
     channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
@@ -391,7 +409,6 @@ async def on_member_remove(member):
 @bot.event
 async def on_command(command, cont):
     logit(cont.message)
-    pass
 
 @bot.event
 async def on_message(message):
@@ -406,6 +423,7 @@ async def on_message(message):
         if is_spam(message) and serverData[message.server.id]["automod"] != "":
             await bot.delete_message(message)
             await bot.send_message(bot.get_channel(serverData[message.server.id]["automod"]), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
+            return
 
         userData[userID]['lastMessage'] = message.content
         userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()))
@@ -424,12 +442,12 @@ def run_bot():
     bot.loop.create_task(hourly_task())
     bot.run(sys.argv[1])
 
-try:
-    port = int(os.getenv("PORT"))
-    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind((socket.gethostname(), port))
-    serversocket.listen(5)
-except TypeError:
-    pass
+# try:
+#     port = int(os.getenv("PORT"))
+#     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     serversocket.bind((socket.gethostname(), port))
+#     serversocket.listen(5)
+# except TypeError:
+#     pass
 
 run_bot()
