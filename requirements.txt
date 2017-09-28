@@ -4,20 +4,21 @@
 # rings\animals.py: 5
 # rings\modding.py: 6
 # rings\social.py: 7
-# rings\utilities.py: 8
+# rings\utilities.py: 7
 aiohttp == 2.2.5
 
 # rings\modding.py: 5
 # rings\social.py: 6
 beautifulsoup4 == 4.6.0
 
-# rings\utilities.py: 7
+# rings\decisions.py: 5
 dice == 1.1.1
 
 # bot.py: 2,3,4
 # rings\admin.py: 2,3,4
 # rings\animals.py: 2,3,4
 # rings\casino.py: 2,3,4
+# rings\decisions.py: 2,3,4
 # rings\help.py: 2,3
 # rings\modding.py: 2,3,4
 # rings\moderation.py: 2,3,4
@@ -25,23 +26,36 @@ dice == 1.1.1
 # rings\server.py: 2,3,4
 # rings\social.py: 2,3,4
 # rings\support.py: 2,3,4
+# rings\tags.py: 2,3,4
 # rings\utilities.py: 2,3,4
 # rings\wiki.py: 2,3,4
 discord.py == 0.16.8
 
+# rings\utilities.py: 15
+googletrans == 2.1.4
+
 # rings\wiki.py: 7
 mwclient == 0.8.6
 
-# rings\utilities.py: 10,11
+# rings\utilities.py: 9,10
 overwatch_api == 0.5
+
+# bot.py: 17,18
+# rings\admin.py: 5
+# rings\casino.py: 6
+# rings\moderation.py: 5
+# rings\profile.py: 6
+# rings\server.py: 5
+# rings\tags.py: 5
+rings == 0.7.3
 
 # rings\admin.py: 6
 # rings\profile.py: 7
 # rings\utilities.py: 5
 simpleeval == 0.9.5
 
+# rings\utilities.py: 14
+urbandictionary == 1.1
+
 # rings\wiki.py: 6
 wikia == 1.4.3
-
-# rings\utilities.py: 15
-urbandictionary == 1.1
