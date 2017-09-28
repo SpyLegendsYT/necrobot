@@ -76,7 +76,7 @@ def startswith_prefix(message):
     return False
 
 def is_spam(message):
-    userID = userData[message.author.id]
+    userID = message.author.id
     channelID = message.channel.id
     if serverData[message.server.id]["automod"] == "" or startswith_prefix(message):
         return True
@@ -84,10 +84,10 @@ def is_spam(message):
     if userID in serverData[message.server.id]["ignoreAutomod"] or channelID in serverData[message.server.id]["ignoreAutomod"]:
         return True
 
-    if message.content.lower() == userID['lastMessage'].lower() and userID['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
+    if message.content.lower() == userData[userID]['lastMessage'].lower() and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
         return True
 
-    if userID['lastMessageTime'] > c.timegm(t.gmtime()) + 1:
+    if userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1:
         return False
 
     return False
@@ -442,12 +442,12 @@ def run_bot():
     bot.loop.create_task(hourly_task())
     bot.run(sys.argv[1])
 
-# try:
-#     port = int(os.getenv("PORT"))
-#     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#     serversocket.bind((socket.gethostname(), port))
-#     serversocket.listen(5)
-# except TypeError:
-#     pass
+try:
+    port = int(os.getenv("PORT"))
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((socket.gethostname(), port))
+    serversocket.listen(5)
+except TypeError:
+    pass
 
 run_bot()
