@@ -6,6 +6,11 @@ from discord.ext.commands.cooldowns import BucketType
 from rings.botdata.data import Data
 from simpleeval import simple_eval
 import datetime as d
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw 
+import os
+import aiohttp
 
 userData = Data.userData
 serverData = Data.serverData
@@ -84,7 +89,7 @@ class Profile():
     @commands.command(pass_context = True, aliases=["profile"])
     @commands.cooldown(3, 5, BucketType.user)
     async def info(self, cont, *user : discord.Member):
-        """Returns a rich embed of the given user's info. If no user is provided it will return your own info.
+        """Returns a rich embed of the given user's info. If no user is provided it will return your own info. **WIP**
         
         {usage}
         
@@ -111,6 +116,52 @@ class Profile():
         embed.add_field(name="Warning List", value=userData[user.id]["warnings"])
 
         await self.bot.say(embed=embed)
+
+    @commands.command(pass_context = True, disabled = True)
+    async def pic(self, cont, *user : discord.Member):
+        """Shows your profile information in a picture
+
+        {usage}
+            
+        __Example__
+        `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
+        `{pre}info` - returns your own NecroBot info"""
+        if user:
+            user = user[0]
+        else:
+            user = cont.message.author
+
+        url = user.avatar_url.replace("webp","jpg").replace("?size=1024","")
+        async with aiohttp.ClientSession() as cs:
+            async with cs.get(url) as r:
+                filename = os.path.basename(url)
+                with open(filename, 'wb') as f_handle:
+                    while True:
+                        chunk = await r.content.read(1024)
+                        if not chunk:
+                            break
+                        f_handle.write(chunk)
+                await r.release()
+
+        im = Image.open("rings/botdata/Profile.png")
+        til = Image.open(filename).resize((299,299))
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype("arial.ttf", 48)
+        if cont.message.channel.is_private:
+            perms = "0"
+        else:
+            perms = userData[user.id]["perms"][cont.message.server.id]
+
+        draw.text((480, 120), str(perms), (0,0,0), font=font)    
+        draw.text((93, 643), user.display_name, (0,0,0), font=font)
+        draw.text((32, 246), str(userData[user.id]["exp"]), (0,0,0), font=font)
+        draw.text((720, 246), str(userData[user.id]["money"]), (0,0,0), font=font)
+        draw.text((212, 538), str(userData[user.id]["title"]), (0,0,0), font=ImageFont.truetype("arial.ttf", 48))
+        im.paste(til, box=(361, 214, 660, 513))
+        im.save('profile2.png')
+        await self.bot.upload('profile2.png')
+        os.remove("profile2.png")
+        os.remove(filename)
 
     @commands.command(pass_context = True)
     @commands.cooldown(3, 5, BucketType.user)

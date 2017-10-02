@@ -17,8 +17,12 @@ class Moderation():
         self.bot = bot
 
     def has_perms(perms_level):
-        def predicate(cont):
-            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level and not cont.message.channel.is_private 
+        def predicate(cont): 
+            if cont.message.channel.is_private:
+                return False
+
+            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
+              
         return commands.check(predicate)
 
     def is_necro():
@@ -101,7 +105,7 @@ class Moderation():
         __Example__
         `{pre}unmute @NecroBot` - unmutes NecroBot if he is muted"""
         if serverData[cont.message.server.id]["mute"] == "":
-            await self.bot.say(":negative_squared_cross_mark: | Please set up the mute role with `{pre}settings mute [rolename]` first.")
+            await self.bot.say(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
             
         role = discord.utils.get(cont.message.server.roles, name=serverData[cont.message.server.id]["mute"])

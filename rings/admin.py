@@ -8,14 +8,20 @@ import inspect
 
 userData = Data.userData
 serverData = Data.serverData
+starboard_messages = Data.starboard_messages
+
 
 class Admin():
     def __init__(self, bot):
         self.bot = bot
 
     def has_perms(perms_level):
-        def predicate(cont):
-            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level and not cont.message.channel.is_private 
+        def predicate(cont): 
+            if cont.message.channel.is_private:
+                return False
+
+            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
+              
         return commands.check(predicate)
 
     def is_necro():

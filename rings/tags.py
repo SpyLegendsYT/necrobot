@@ -11,8 +11,18 @@ serverData = Data.serverData
 class Tags():
     def __init__(self, bot):
         self.bot = bot
+        
+    def has_perms(perms_level):
+        def predicate(cont): 
+            if cont.message.channel.is_private:
+                return False
+
+            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
+              
+        return commands.check(predicate)
 
     @commands.group(pass_context = True, invoke_without_command = True, aliases=["t","tags"])
+    @has_perms(0)
     @commands.cooldown(5, 10, BucketType.channel)
     async def tag(self, cont, tag : str, *, tag_args : str = ""):
         """The base of the tag system. Also used to summoned tags through the [tag] argument.

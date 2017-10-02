@@ -21,3 +21,210 @@ Thu Sep 28 19:28:43 2017: Necro#6714 used n!reload utilities
 Thu Sep 28 19:28:48 2017: Necro#6714 used n!translate en Water is nat
 Thu Sep 28 19:30:01 2017: Necro#6714 used n!translate en bonjour
 Thu Sep 28 19:30:36 2017: Necro#6714 used n!translate en Ik hou van jou
+Fri Sep 29 01:15:02 2017: Necro#6714 used n!help
+Fri Sep 29 01:15:08 2017: Necro#6714 used n!cat
+Fri Sep 29 01:15:16 2017: Necro#6714 used n!blackjack 10
+Fri Sep 29 01:16:09 2017: Necro#6714 used n!riddle
+Fri Sep 29 01:16:36 2017: Necro#6714 used n!debug bot.say("True")
+Fri Sep 29 01:49:55 2017: Necro#6714 used n!help
+Fri Sep 29 02:38:17 2017: Necro#6714 used n!reload profile
+Fri Sep 29 02:38:23 2017: Necro#6714 used n!pic
+Fri Sep 29 02:39:57 2017: Necro#6714 used n!reload profile
+Fri Sep 29 02:40:01 2017: Necro#6714 used n!pic
+Fri Sep 29 02:40:16 2017: Necro#6714 used n!reload profile
+Fri Sep 29 02:40:22 2017: Necro#6714 used n!pic
+Fri Sep 29 02:45:05 2017: Necro#6714 used n!reload utilities
+Fri Sep 29 02:45:08 2017: Necro#6714 used n!pic
+Fri Sep 29 02:45:48 2017: Necro#6714 used n!reload utilities
+Fri Sep 29 02:45:51 2017: Necro#6714 used n!pic
+Fri Sep 29 03:04:58 2017: Necro#6714 used n!reload utilities
+Fri Sep 29 03:05:25 2017: Necro#6714 used n!pic
+Fri Sep 29 03:09:29 2017: Necro#6714 used n!reload profile
+Fri Sep 29 03:10:36 2017: Necro#6714 used n!reload profile
+Fri Sep 29 14:51:53 2017: Necro#6714 used n!help
+Fri Sep 29 14:52:34 2017: Necro#6714 used n!cat
+Fri Sep 29 14:53:05 2017: Necro#6714 used n!help
+Fri Sep 29 14:53:11 2017: Necro#6714 used n!help
+Fri Sep 29 14:55:05 2017: Necro#6714 used n!debug bot.say("true")
+Fri Sep 29 14:55:09 2017: Necro#6714 used n!help
+Fri Sep 29 14:57:46 2017: Necro#6714 used n!debug bot.invoke_command(bot.get_command("help"))
+Fri Sep 29 14:57:53 2017: Necro#6714 used n!debug cont.invoke_command(bot.get_command("help"))
+Fri Sep 29 14:58:03 2017: Necro#6714 used n!debug cont.invoke(bot.get_command("help"))
+Fri Sep 29 14:58:25 2017: Necro#6714 used n!cat
+Fri Sep 29 14:58:29 2017: Necro#6714 used n!help
+Fri Sep 29 15:05:33 2017: Necro#6714 used n!help
+Fri Sep 29 15:09:47 2017: Necro#6714 used n!off
+Fri Sep 29 15:09:53 2017: Necro#6714 used n!off
+Fri Sep 29 15:11:58 2017: Necro#6714 used n!help
+Fri Sep 29 15:12:42 2017: Necro#6714 used n!help
+Fri Sep 29 15:17:50 2017: Necro#6714 used n!off
+Fri Sep 29 15:21:18 2017: Necro#6714 used n!help
+Fri Sep 29 15:26:03 2017: Necro#6714 used n!help
+Fri Sep 29 15:32:21 2017: Necro#6714 used n!reload toags
+Fri Sep 29 15:32:24 2017: Necro#6714 used n!reload tags
+Fri Sep 29 15:32:27 2017: Necro#6714 used n!reload server
+Fri Sep 29 15:32:29 2017: Necro#6714 used n!help
+Fri Sep 29 15:38:02 2017: Necro#6714 used n!pic
+Fri Sep 29 15:45:18 2017: Necro#6714 used n!reload profile
+Fri Sep 29 15:47:39 2017: Necro#6714 used n!pic
+Fri Sep 29 15:50:14 2017: Necro#6714 used n!reload profile
+Fri Sep 29 15:51:15 2017: Necro#6714 used n!pic
+Fri Sep 29 15:51:46 2017: Necro#6714 used n!reload profile
+Fri Sep 29 15:52:21 2017: Necro#6714 used n!pic
+Fri Sep 29 15:57:18 2017: Necro#6714 used n!reload profile
+Fri Sep 29 15:57:21 2017: Necro#6714 used n!pic
+Fri Sep 29 15:59:48 2017: Necro#6714 used n!reload profile
+Fri Sep 29 15:59:51 2017: Necro#6714 used n!pic
+Fri Sep 29 16:04:08 2017: Necro#6714 used n!reload profile
+Fri Sep 29 16:04:11 2017: Necro#6714 used n!pic
+Fri Sep 29 16:07:40 2017: Necro#6714 used n!reload profile
+Fri Sep 29 16:07:48 2017: Necro#6714 used n!pic
+Fri Sep 29 16:07:55 2017: Necro#6714 used n!pic
+Fri Sep 29 16:08:14 2017: Necro#6714 used n!reload profile
+Fri Sep 29 16:08:16 2017: Necro#6714 used n!pic
+Fri Sep 29 16:09:18 2017: Necro#6714 used n!reload profile
+Fri Sep 29 16:09:19 2017: Necro#6714 used n!pic
+Fri Sep 29 16:13:33 2017: Necro#6714 used n!reload profile
+Fri Sep 29 16:13:35 2017: Necro#6714 used n!pic
+Fri Sep 29 16:14:45 2017: Necro#6714 used n!pic <@317619283377258497>
+Fri Sep 29 16:20:58 2017: Necro#6714 used n!off
+Sat Sep 30 01:24:13 2017: Necro#6714 used n!define snad
+Sat Sep 30 01:24:15 2017: Necro#6714 used n!define sand
+Sat Sep 30 01:27:03 2017: Necro#6714 used n!reload utilities
+Sat Sep 30 01:27:07 2017: Necro#6714 used n!define sand
+Sat Sep 30 01:27:52 2017: Necro#6714 used n!define sand
+Sat Sep 30 01:28:24 2017: Necro#6714 used n!reload utilities
+Sat Sep 30 01:28:28 2017: Necro#6714 used n!define sand
+Sat Sep 30 01:28:55 2017: Necro#6714 used n!define nejfazfza
+Sat Sep 30 01:32:32 2017: Necro#6714 used n!reload utilities
+Sat Sep 30 01:32:35 2017: Necro#6714 used n!define nejfazfza
+Sat Sep 30 01:33:23 2017: Necro#6714 used n!define sand
+Sat Sep 30 01:34:57 2017: Necro#6714 used n!reload utilities
+Sat Sep 30 01:35:00 2017: Necro#6714 used n!define super cala fragilistic expialidocious
+Sat Sep 30 01:35:39 2017: Necro#6714 used n!define pneumonoultramicroscopicsilicovolcanoconiosis
+Sat Sep 30 01:36:02 2017: Necro#6714 used n!define sand
+Sat Sep 30 01:36:22 2017: Necro#6714 used n!define to be
+Sat Sep 30 01:36:35 2017: Necro#6714 used n!define be
+Sat Sep 30 01:36:44 2017: Necro#6714 used n!define bee
+Sat Sep 30 01:36:49 2017: Necro#6714 used n!define to
+Sat Sep 30 01:53:42 2017: Necro#6714 used n!off
+Sat Sep 30 18:25:53 2017: Necro#6714 used n!reload server
+Sat Sep 30 18:26:02 2017: Necro#6714 used n!settings broadcast <#312243840046202881> Don't forget to check www.twitch.com/NotFakeTwitch
+Sat Sep 30 18:54:56 2017: Necro#6714 used n!translate nl chestnut
+Sat Sep 30 18:55:29 2017: Necro#6714 used n!define chestnut
+Sat Sep 30 19:06:26 2017: Necro#6714 used n!off
+Sat Sep 30 19:09:38 2017: Necro#6714 used n!off
+Sat Sep 30 19:25:05 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:25:32 2017: Necro#6714 used n!settings broadcast
+Sat Sep 30 19:33:38 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:34:24 2017: Necro#6714 used n!settings info
+Sat Sep 30 19:34:54 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:34:57 2017: Necro#6714 used n!settings info
+Sat Sep 30 19:35:18 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:35:21 2017: Necro#6714 used n!settings info
+Sat Sep 30 19:35:34 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:35:38 2017: Necro#6714 used n!settings info
+Sat Sep 30 19:36:33 2017: Necro#6714 used n!settings broadcast
+Sat Sep 30 19:37:51 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:37:56 2017: Necro#6714 used n!settings broadcast
+Sat Sep 30 19:40:41 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:40:45 2017: Necro#6714 used n!settings broadcast
+Sat Sep 30 19:41:15 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:44:41 2017: Necro#6714 used n!settings broadcast
+Sat Sep 30 19:47:53 2017: Necro#6714 used n!reload server
+Sat Sep 30 19:48:04 2017: Necro#6714 used n!settings broadcast
+Sat Sep 30 19:48:13 2017: Necro#6714 used n!settings info
+Sat Sep 30 19:55:53 2017: Necro#6714 used n!settings broadcast <#312243840046202881> AND IF THIS IS YOUR ARMY, THEN WHY DOES IT GO?
+Sat Sep 30 19:56:02 2017: Necro#6714 used n!settings info
+Sat Sep 30 20:07:48 2017: Necro#6714 used n!reload server
+Sat Sep 30 20:07:54 2017: Necro#6714 used n!help settings broadcast
+Sat Sep 30 23:18:33 2017: Necro#6714 used n!off
+Sat Sep 30 23:23:49 2017: Necro#6714 used n!settings starboard <#312902474753245184> 1
+Sat Sep 30 23:30:11 2017: Necro#6714 used n!debug bot.get_message()
+Sun Oct  1 00:11:23 2017: Necro#6714 used n!debug bot.add_reaction(bot.get_message("363813221074993153"), "\N{WHITE MEDIUM STAR}")
+Sun Oct  1 00:11:53 2017: Necro#6714 used n!debug bot.add_reaction(bot.get_message(bot.get_channel("342357827031007243"), "363813221074993153"), "\N{WHITE MEDIUM STAR}")
+Sun Oct  1 00:12:19 2017: Necro#6714 used n!debug bot.get_message()
+Sun Oct  1 00:12:56 2017: Necro#6714 used n!debug bot.add_reaction(channel, bot.get_message("363813221074993153"), "\N{WHITE MEDIUM STAR}")
+Sun Oct  1 00:13:13 2017: Necro#6714 used n!debug bot.add_reaction(bot.get_message(channel, "363813221074993153"), "\N{WHITE MEDIUM STAR}")
+Sun Oct  1 00:13:31 2017: Necro#6714 used n!debug bot.get_message(channel, "363813221074993153")
+Sun Oct  1 00:13:53 2017: Necro#6714 used n!debug bot.say(bot.get_message(channel, "363813221074993153").content)
+Sun Oct  1 00:14:07 2017: Necro#6714 used n!debug bot.say(bot.get_message(channel, "363813221074993153"))
+Sun Oct  1 00:14:26 2017: Necro#6714 used n!debug bot.say(list(bot.get_message(channel, "363813221074993153"))[0].content)
+Sun Oct  1 00:17:05 2017: Necro#6714 used n!off
+Sun Oct  1 00:18:39 2017: Necro#6714 used n!settings starboard <#312902474753245184> 1
+Sun Oct  1 00:19:09 2017: Necro#6714 used n!off
+Sun Oct  1 00:26:34 2017: Necro#6714 used n!off
+Sun Oct  1 00:28:54 2017: Necro#6714 used n!off
+Sun Oct  1 01:13:51 2017: Necro#6714 used n!off
+Sun Oct  1 01:14:47 2017: Necro#6714 used n!settings <#312902474753245184> 1
+Sun Oct  1 01:14:57 2017: Necro#6714 used n!settings starboard <#312902474753245184> 1
+Sun Oct  1 01:18:07 2017: Necro#6714 used n!off
+Sun Oct  1 01:19:14 2017: Necro#6714 used n!settings starboard <#312902474753245184> 1
+Sun Oct  1 01:19:37 2017: Necro#6714 used n!debug bot.say(serverData[server.id]["starboard"])
+Sun Oct  1 01:19:57 2017: Necro#6714 used n!debug bot.say(serverData[server.id]["starboard-count"])
+Sun Oct  1 01:21:28 2017: Necro#6714 used n!debug bot.say(starboard_messages)
+Sun Oct  1 01:22:18 2017: Necro#6714 used n!reload admin
+Sun Oct  1 01:22:23 2017: Necro#6714 used n!debug bot.say(starboard_messages)
+Sun Oct  1 01:33:35 2017: Necro#6714 used n!off
+Sun Oct  1 01:50:17 2017: Necro#6714 used n!off
+Sun Oct  1 01:51:31 2017: Necro#6714 used n!off
+Sun Oct  1 01:51:49 2017: Necro#6714 used n!off
+Sun Oct  1 01:52:58 2017: Necro#6714 used n!off
+Sun Oct  1 13:11:51 2017: Necro#6714 used n!off
+Sun Oct  1 13:14:54 2017: Necro#6714 used n!off
+Sun Oct  1 18:25:45 2017: Necro#6714 used n!off
+Sun Oct  1 18:26:45 2017: SilverElf#6462 used n!unmute <@!271259290415792129>
+Sun Oct  1 18:26:56 2017: Necro#6714 used n!cat
+Sun Oct  1 18:27:11 2017: Finrod#5887 used n!mute
+Sun Oct  1 18:27:18 2017: CreepElen#6403 used N!daily
+Sun Oct  1 18:27:25 2017: CreepElen#6403 used N!bj
+Sun Oct  1 18:27:27 2017: Finrod#5887 used n!unmute <@!271259290415792129>
+Sun Oct  1 18:27:39 2017: CreepElen#6403 used N!bj 210
+Sun Oct  1 18:27:50 2017: Finrod#5887 used n!settings mute
+Sun Oct  1 18:28:44 2017: Necro#6714 used n!perms <@203015871378096128> 4
+Sun Oct  1 18:28:54 2017: SilverElf#6462 used n!profile
+Sun Oct  1 18:28:55 2017: Finrod#5887 used n!mute settings
+Sun Oct  1 18:29:11 2017: SilverElf#6462 used n!settings mute
+Sun Oct  1 18:29:17 2017: SilverElf#6462 used n!settings mute Time Out
+Sun Oct  1 18:29:22 2017: SilverElf#6462 used n!mute <@!271259290415792129>
+Sun Oct  1 18:29:33 2017: Finrod#5887 used n!unmute <@!271259290415792129>
+Sun Oct  1 18:30:29 2017: Necro#6714 used n!help purge
+Sun Oct  1 18:32:12 2017: SilverElf#6462 used n!giveme Arnor
+Sun Oct  1 18:32:19 2017: SilverElf#6462 used n!giveme
+Sun Oct  1 18:32:20 2017: Necro#6714 used n!debug [bot.say("!gamble") for x in range(0,10)]
+Sun Oct  1 18:32:30 2017: SilverElf#6462 used n!help
+Sun Oct  1 18:33:30 2017: SilverElf#6462 used n!giveme Arnor
+Sun Oct  1 18:44:45 2017: Necro#6714 used n!tag create satan https://cdn.discordapp.com/attachments/239698192994795530/363794348380520448/20170812_124708.png
+Sun Oct  1 18:47:46 2017: Necro#6714 used n!debug bot.say([x.name for x in bot.servers])
+Sun Oct  1 18:47:54 2017: Necro#6714 used n!invites
+Sun Oct  1 18:51:52 2017: Necro#6714 used n!help tag add
+Sun Oct  1 18:53:18 2017: Necro#6714 used n!t cookie <@!271259290415792129>
+Sun Oct  1 19:02:23 2017: Necro#6714 used n!settings starboard <#287420616930492416> 1
+Sun Oct  1 19:03:12 2017: Necro#6714 used n!settings starboard <#320689998087323649>  1
+Sun Oct  1 19:04:47 2017: Necro#6714 used n!off
+Sun Oct  1 19:04:56 2017: Necro#6714 used n!off
+Sun Oct  1 19:05:27 2017: Necro#6714 used n!t del cookie
+Sun Oct  1 19:05:30 2017: Necro#6714 used n!off
+Sun Oct  1 19:09:00 2017: Sean Mad Dog MacGregor#0750 used n!help
+Sun Oct  1 19:09:48 2017: Sean Mad Dog MacGregor#0750 used n!giveme
+Sun Oct  1 19:10:18 2017: Sean Mad Dog MacGregor#0750 used n!help giveme
+Sun Oct  1 19:10:58 2017: Thirisdir#6839 used N!t pat <@317619283377258497>
+Sun Oct  1 19:28:16 2017: Necro#6714 used n!t pinfin
+Sun Oct  1 19:28:23 2017: Necro#6714 used n!t pingfin
+Sun Oct  1 19:28:30 2017: Necro#6714 used n!t list
+Sun Oct  1 19:29:00 2017: Necro#6714 used n!t add pingfin @fin...
+Sun Oct  1 19:29:28 2017: Seanpower2#3723 used n!today events
+Sun Oct  1 19:29:57 2017: Seanpower2#3723 used n!today events
+Sun Oct  1 19:30:29 2017: Seanpower2#3723 used n!today events
+Sun Oct  1 19:31:20 2017: Seanpower2#3723 used n!today events
+Sun Oct  1 19:31:28 2017: Fjodor#0785 used n!t satan
+Sun Oct  1 19:40:51 2017: Necro#6714 used n!define platonic
+Sun Oct  1 19:58:11 2017: Necro#6714 used n!define caress
+Sun Oct  1 20:00:31 2017: Julio229#8063 used n!rr 2
+Sun Oct  1 20:01:10 2017: Fjodor#0785 used n!rr 1
+Sun Oct  1 20:03:41 2017: Necro#6714 used n!rr 6
+Sun Oct  1 20:09:40 2017: Necro#6714 used n!settings info
+Sun Oct  1 20:12:09 2017: Julio229#8063 used n!rr 700
+Sun Oct  1 22:13:20 2017: Necro#6714 used n!t count
+Sun Oct  1 22:13:46 2017: Necro#6714 used n!t raw count
+Mon Oct  2 00:29:39 2017: Necro#6714 used n!off

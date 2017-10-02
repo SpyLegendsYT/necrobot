@@ -1,4 +1,6 @@
 #!/usr/bin/python3.6
+#!/usr/bin/env python -W ignore::DeprecationWarning
+
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
@@ -13,6 +15,11 @@ import json
 import asyncio
 import urbandictionary as ud
 from googletrans import Translator
+from PyDictionary import PyDictionary 
+
+dictionary=PyDictionary() 
+translator = Translator()
+
 
 class Utilities():
     """A bunch of useful commands to do various tasks."""
@@ -324,16 +331,35 @@ class Utilities():
         defs = ud.define(word)
         definition = defs[0]
 
-        embed = discord.Embed(title="__**{}*__".format(word.title()), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition.definition)
+        embed = discord.Embed(title="__**{}**__".format(word.title()), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition.definition)
         embed.add_field(name="__Examples__", value=definition.example)
 
         await self.bot.say(embed=embed)
 
     @commands.command(pass_context = True)
     async def translate(self, cont, lang, *, sentence):
-        translator = Translator()
         translated = translator.translate(sentence, dest=lang)
         await self.bot.say("Translated `{0.origin}` from {0.src} to {0.dest}: **{0.text}**".format(translated))
+
+    @commands.command(pass_context = True)
+    async def define(self, cont, *, word):
+        """Defines the given word
+
+        {usage}
+
+        __Example__
+        `{pre}define sand` - defines the word sand
+        `{pre}define life` - defines the word life"""
+        meaning = dictionary.meaning(word)
+        if meaning is None:
+            await self.bot.say(":negative_squared_cross_mark: | **No definition found for this word**")
+            return
+
+        embed = discord.Embed(title="__**{}**__".format(word.title()), url="https://en.oxforddictionaries.com/", colour=discord.Colour(0x277b0), description="Information on this word")
+        for x in meaning:
+            embed.add_field(name=x, value="-" + "\n-".join(meaning[x]))
+
+        await self.bot.say(embed=embed)
 
 
 def setup(bot):
