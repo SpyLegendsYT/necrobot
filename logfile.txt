@@ -228,3 +228,597 @@ Sun Oct  1 20:12:09 2017: Julio229#8063 used n!rr 700
 Sun Oct  1 22:13:20 2017: Necro#6714 used n!t count
 Sun Oct  1 22:13:46 2017: Necro#6714 used n!t raw count
 Mon Oct  2 00:29:39 2017: Necro#6714 used n!off
+Mon Oct  2 11:23:27 2017: Necro#6714 used n!save
+Mon Oct  2 11:29:18 2017: Necro#6714 used n!debug bot.say(serverData["311630847969198082"].keys())
+Mon Oct  2 11:33:04 2017: Necro#6714 used n!save
+Mon Oct  2 11:36:43 2017: Necro#6714 used n!debug bot.say(bot.get_server("301955211881349122").name)
+Mon Oct  2 11:37:23 2017: Necro#6714 used n!debug bot.say([x.name for x in bot.servers])
+Mon Oct  2 11:38:27 2017: Necro#6714 used n!save
+Mon Oct  2 11:46:00 2017: Necro#6714 used n!save
+Mon Oct  2 11:47:24 2017: Necro#6714 used n!save
+Mon Oct  2 11:48:18 2017: Necro#6714 used n!save
+Mon Oct  2 15:19:02 2017: Seanpower2#3723 used n!today events
+Mon Oct  2 15:30:52 2017: Necro#6714 used n!off
+Mon Oct  2 20:49:04 2017: Necro#6714 used n!today events
+Mon Oct  2 20:51:19 2017: Seanpower2#3723 used n!today events
+Mon Oct  2 20:51:22 2017: Necro#6714 used n!today deaths
+Mon Oct  2 20:51:27 2017: Necro#6714 used n!today births
+Mon Oct  2 20:52:23 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 20:52:23 2017: Thirisdir#6839 used n!8ball  Did i Break Necro Bot once
+Mon Oct  2 20:52:48 2017: Julio229#8063 used n!8ball did Elf break Botto to keep his rule over Discord
+Mon Oct  2 20:52:48 2017: Thirisdir#6839 used n!8ball Did <@!271259290415792129>  Break Necro Bot once
+Mon Oct  2 20:53:14 2017: Julio229#8063 used n!8ball Is Elf out for power?
+Mon Oct  2 20:54:05 2017: Seanpower2#3723 used n!8ball Is Wormtongue the true overlord?
+Mon Oct  2 23:18:23 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 23:18:59 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 23:19:06 2017: Necro#6714 used n!elfspeak michmatch
+Mon Oct  2 23:21:28 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 23:21:37 2017: Necro#6714 used n!elfspeak
+Mon Oct  2 23:21:46 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 23:21:49 2017: Necro#6714 used n!elfspeak
+Mon Oct  2 23:22:04 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 23:22:07 2017: Necro#6714 used n!elfspeak
+Mon Oct  2 23:24:16 2017: Necro#6714 used n!reload utilities
+Mon Oct  2 23:24:25 2017: Necro#6714 used n!help elf
+Mon Oct  2 23:24:35 2017: Necro#6714 used n!elf
+Mon Oct  2 23:24:44 2017: Necro#6714 used n!elf michmatch
+Mon Oct  2 23:28:42 2017: Necro#6714 used n!elf michmatch
+Mon Oct  2 23:43:08 2017: Thirisdir#6839 used n!t neverforgett
+Mon Oct  2 23:43:20 2017: Julio229#8063 used n!t neverforget
+Mon Oct  2 23:44:08 2017: Julio229#8063 used n!elf wistels
+Tue Oct  3 01:17:22 2017: Necro#6714 used n!settings prefix nec!
+Tue Oct  3 01:17:27 2017: Necro#6714 used nec!off
+Tue Oct  3 15:35:07 2017: Necro#6714 used n!serverinfo
+Tue Oct  3 15:37:36 2017: Necro#6714 used n!debug bot.say(bot.add_roles(server.get_member("143209616103178241"), discord.utils.get(cont.message.author.roles, name="King of Games)))
+Tue Oct  3 15:37:44 2017: Necro#6714 used n!debug bot.say(bot.add_roles(server.get_member("143209616103178241"), discord.utils.get(cont.message.author.roles, name="King of Games")))
+Tue Oct  3 15:38:55 2017: Necro#6714 used n!debug bot.add_roles(server.get_member("143209616103178241"), discord.utils.get(cont.message.author.roles, name="King of Games"))
+Tue Oct  3 15:39:51 2017: Necro#6714 used n!debug bot.say(server.get_member("143209616103178241").name)
+Tue Oct  3 15:40:25 2017: Necro#6714 used n!debug bot.say(discord.utils.get(cont.message.author.roles, name="King of Games").name)
+Tue Oct  3 15:40:41 2017: Necro#6714 used n!debug bot.say(discord.utils.get(cont.message.author.roles, name="Heir of Jondor").name)
+Tue Oct  3 15:41:18 2017: Necro#6714 used n!debug bot.add_roles(server.get_member("143209616103178241"), discord.utils.get(cont.message.server.roles, name="King of Games"))
+Tue Oct  3 16:11:13 2017: Necro#6714 used nec!define sand
+Tue Oct  3 16:23:49 2017: Lediga1#6330 used n!today namedays
+Tue Oct  3 16:29:44 2017: Necro#6714 used n!today events
+Tue Oct  3 16:38:42 2017: Seanpower2#3723 used n!today events
+Tue Oct  3 18:13:57 2017: Necro#6714 used n!define namesday
+Tue Oct  3 18:14:06 2017: Necro#6714 used n!define nameday
+Tue Oct  3 18:14:12 2017: Necro#6714 used n!ud nameday
+Tue Oct  3 20:14:40 2017: Necro#6714 used n!t add yaoikiss {member.mention} kisses {arg0}
+http://i0.kym-cdn.com/photos/images/original/000/795/067/995.gif
+Tue Oct  3 20:14:47 2017: Necro#6714 used n!t yaoikiss <@!271259290415792129>
+Tue Oct  3 20:18:51 2017: Necro#6714 used n!t yaoikiss <@!271259290415792129>
+Tue Oct  3 21:04:32 2017: Julio229#8063 used n!8ball Will Necrobot marry Haman?
+Tue Oct  3 21:04:46 2017: Necro#6714 used n!settings starboard <#364865230972387340> 3
+Tue Oct  3 21:05:30 2017: Necro#6714 used n!settings starboard <#364865230972387340> 2
+Tue Oct  3 21:05:44 2017: Julio229#8063 used n!8ball Will I pass tomorrow's exam?
+Tue Oct  3 21:06:12 2017: Haman#9701 used n!8ball Is <:grond:336918428881518592> > <:rohan:339020623915515906> ?
+Tue Oct  3 21:06:58 2017: Necro#6714 used n!settings starboard <#364865230972387340> 5
+Tue Oct  3 21:09:55 2017: MelkorADeceiver#1763 used n!rr 2
+Tue Oct  3 21:10:27 2017: Julio229#8063 used n!elf michmatch
+Tue Oct  3 21:27:34 2017: SilverElf#6462 used n!purge 3
+Tue Oct  3 21:28:11 2017: Julio229#8063 used n!blackjack
+Tue Oct  3 21:29:30 2017: Thirisdir#6839 used n!blackjack
+Tue Oct  3 21:29:56 2017: Thirisdir#6839 used n!profile
+Tue Oct  3 21:30:06 2017: Thirisdir#6839 used n!blackjack
+Tue Oct  3 21:30:34 2017: Thirisdir#6839 used n!blackjack
+Tue Oct  3 21:30:43 2017: Thirisdir#6839 used n!blackjack 50
+Tue Oct  3 21:31:17 2017: Gandy#8220 used n!profile
+Tue Oct  3 21:31:24 2017: Julio229#8063 used n!profile
+Tue Oct  3 21:31:44 2017: Necro#6714 used n!help settitle
+Tue Oct  3 21:31:59 2017: Julio229#8063 used n!settitle Rider Of Eothain
+Tue Oct  3 21:32:13 2017: Gandy#8220 used n!settitle Lord of Palantirs
+Tue Oct  3 21:32:36 2017: Thirisdir#6839 used n!settitle Greatest Maiar
+Tue Oct  3 21:40:20 2017: SilverElf#6462 used n!settitle Necro's Steward
+Tue Oct  3 21:49:06 2017: Necro#6714 used n!debug [await bot.say("!gamble") for x in range(0,5)]
+Tue Oct  3 21:53:23 2017: Fjodor#0785 used n!settitle Avenger of Naruto
+Tue Oct  3 21:59:52 2017: Julio229#8063 used n!moddb
+Tue Oct  3 22:12:59 2017: SilverElf#6462 used n!nick <@!271259290415792129> Steward Elfu
+Tue Oct  3 22:13:15 2017: Necro#6714 used n!info <@!271259290415792129>
+Tue Oct  3 23:32:10 2017: Julio229#8063 used n!t count
+Wed Oct  4 00:33:14 2017: Necro#6714 used n!settings starboard <#364865230972387340> 3
+Wed Oct  4 00:33:33 2017: Necro#6714 used n!settings starboard <#361274916487561237> 5
+Wed Oct  4 01:01:59 2017: Necro#6714 used n!off
+Wed Oct  4 11:17:08 2017: Necro#6714 used n!define sand
+Wed Oct  4 11:24:40 2017: Necro#6714 used n!reload utilitie
+Wed Oct  4 11:24:43 2017: Necro#6714 used n!reload utilities
+Wed Oct  4 11:24:48 2017: Necro#6714 used n!define sand
+Wed Oct  4 11:25:29 2017: Necro#6714 used n!reload utilities
+Wed Oct  4 11:25:32 2017: Necro#6714 used n!define snad
+Wed Oct  4 11:25:35 2017: Necro#6714 used n!define sand
+Wed Oct  4 11:27:12 2017: Necro#6714 used n!define sand
+Wed Oct  4 11:28:39 2017: Necro#6714 used n!reload utilities
+Wed Oct  4 11:28:47 2017: Necro#6714 used n!define sand
+Wed Oct  4 11:28:54 2017: Necro#6714 used n!define sand
+Wed Oct  4 11:46:59 2017: Necro#6714 used n!help
+Wed Oct  4 11:47:05 2017: Necro#6714 used n!cat
+Wed Oct  4 11:47:10 2017: Necro#6714 used n!cat
+Wed Oct  4 11:47:23 2017: Necro#6714 used n!avatar <@317619283377258497>
+Wed Oct  4 12:50:00 2017: Necro#6714 used n!help
+Wed Oct  4 12:50:26 2017: Necro#6714 used n!lotr Morgoth
+Wed Oct  4 17:14:28 2017: Necro#6714 used n!today events
+Wed Oct  4 17:17:31 2017: ColonelNat#0446 used n!today events
+Wed Oct  4 20:06:21 2017: CreepElen#6403 used N!claim
+Wed Oct  4 20:06:31 2017: CreepElen#6403 used N!bj 200
+Wed Oct  4 20:13:41 2017: Lediga1#6330 used n!today nameday
+Wed Oct  4 21:10:08 2017: Seanpower2#3723 used n!today events
+Wed Oct  4 22:19:05 2017: SilverElf#6462 used n!t yaoikiss <@!241942232867799040>
+Wed Oct  4 23:55:52 2017: SilverElf#6462 used n!t yaoikiss <@!241942232867799040>
+Thu Oct  5 00:23:19 2017: Alpharius Omegon#5658 used n!t yaoikiss <@220502526393450497>
+Thu Oct  5 12:24:22 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/the-strategy-and-tactics-submod
+Thu Oct  5 12:24:33 2017: Necro#6714 used n!off
+Mon Oct  9 16:09:19 2017: Necro#6714 used n!lotr Aragorn
+Mon Oct  9 17:10:52 2017: Necro#6714 used n!help
+Mon Oct  9 17:10:57 2017: Necro#6714 used n!kill
+Mon Oct  9 17:11:11 2017: Necro#6714 used n!rr
+Mon Oct  9 17:11:51 2017: Necro#6714 used n!rr 6
+Mon Oct  9 17:11:54 2017: Necro#6714 used n!rr 6
+Mon Oct  9 17:11:59 2017: Necro#6714 used n!rr 6
+Mon Oct  9 17:12:10 2017: Necro#6714 used n!rr 6
+Mon Oct  9 17:12:13 2017: Necro#6714 used n!rr 7
+Mon Oct  9 17:52:32 2017: Seanpower2#3723 used n!today events
+Mon Oct  9 17:53:03 2017: Seanpower2#3723 used n!today events
+Mon Oct  9 17:53:47 2017: Seanpower2#3723 used n!today events
+Tue Oct 10 10:04:23 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:04:25 2017: Necro#6714 used n!pic
+Tue Oct 10 10:05:04 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:05:07 2017: Necro#6714 used n!pic
+Tue Oct 10 10:06:33 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:06:35 2017: Necro#6714 used n!pic
+Tue Oct 10 10:07:12 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:07:13 2017: Necro#6714 used n!pic
+Tue Oct 10 10:08:53 2017: Necro#6714 used n!profile
+Tue Oct 10 10:21:46 2017: Necro#6714 used n!reload pic
+Tue Oct 10 10:22:08 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:22:36 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:22:40 2017: Necro#6714 used n!pic
+Tue Oct 10 10:22:55 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:22:56 2017: Necro#6714 used n!pic
+Tue Oct 10 10:25:51 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:25:54 2017: Necro#6714 used n!pic
+Tue Oct 10 10:42:26 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:42:32 2017: Necro#6714 used n!pic
+Tue Oct 10 10:42:58 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:43:01 2017: Necro#6714 used n!pic
+Tue Oct 10 10:44:05 2017: Necro#6714 used n!reload profile
+Tue Oct 10 10:44:06 2017: Necro#6714 used n!pic
+Tue Oct 10 11:01:01 2017: Necro#6714 used n!pic
+Tue Oct 10 11:05:18 2017: Necro#6714 used n!reload profile
+Tue Oct 10 11:05:19 2017: Necro#6714 used n!pic
+Tue Oct 10 11:05:40 2017: Necro#6714 used n!reload profile
+Tue Oct 10 11:05:42 2017: Necro#6714 used n!pic
+Tue Oct 10 13:05:24 2017: Necro#6714 used n!settings broadcast
+Tue Oct 10 13:08:56 2017: Necro#6714 used n!reload pic
+Tue Oct 10 13:08:59 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:09:23 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:11:40 2017: Necro#6714 used n!test 311630847969198082
+Tue Oct 10 13:13:59 2017: Necro#6714 used n!debug print(serverData.keys())
+Tue Oct 10 13:16:08 2017: Necro#6714 used n!debug bot.say(userData["139191103625625600"]["perms"].keys())
+Tue Oct 10 13:19:36 2017: Necro#6714 used n!off
+Tue Oct 10 13:20:28 2017: Necro#6714 used n!debug bot.say(userData["139191103625625600"]["perms"].keys())
+Tue Oct 10 13:20:43 2017: Necro#6714 used n!ignore list
+Tue Oct 10 13:23:09 2017: Necro#6714 used n!load profile
+Tue Oct 10 13:23:38 2017: Necro#6714 used n!load profile
+Tue Oct 10 13:23:47 2017: Necro#6714 used n!pic 005
+Tue Oct 10 13:24:03 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:24:07 2017: Necro#6714 used n!pic 005
+Tue Oct 10 13:25:29 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:25:33 2017: Necro#6714 used n!pic
+Tue Oct 10 13:25:38 2017: Necro#6714 used n!pic 001
+Tue Oct 10 13:26:27 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:26:31 2017: Necro#6714 used n!pic 001
+Tue Oct 10 13:28:06 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:28:08 2017: Necro#6714 used n!pic
+Tue Oct 10 13:28:13 2017: Necro#6714 used n!pic
+Tue Oct 10 13:29:29 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:29:35 2017: Necro#6714 used n!pic
+Tue Oct 10 13:30:20 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:30:21 2017: Necro#6714 used n!pic
+Tue Oct 10 13:46:49 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:46:53 2017: Necro#6714 used n!pic
+Tue Oct 10 13:48:18 2017: Necro#6714 used n!reload profile
+Tue Oct 10 13:48:20 2017: Necro#6714 used n!pic
+Tue Oct 10 14:00:41 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:00:43 2017: Necro#6714 used n!pic
+Tue Oct 10 14:01:39 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:01:41 2017: Necro#6714 used n!pic
+Tue Oct 10 14:02:48 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:02:49 2017: Necro#6714 used n!pic
+Tue Oct 10 14:03:50 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:03:51 2017: Necro#6714 used n!pic
+Tue Oct 10 14:06:06 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:06:08 2017: Necro#6714 used n!pic
+Tue Oct 10 14:06:51 2017: Necro#6714 used n!pic <@317619283377258497>
+Tue Oct 10 14:09:58 2017: Necro#6714 used n!pic
+Tue Oct 10 14:10:03 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:10:04 2017: Necro#6714 used n!pic
+Tue Oct 10 14:30:15 2017: Necro#6714 used n!pic
+Tue Oct 10 14:31:49 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:31:51 2017: Necro#6714 used n!pic
+Tue Oct 10 14:33:01 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:33:02 2017: Necro#6714 used n!pic
+Tue Oct 10 14:48:41 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:48:43 2017: Necro#6714 used n!pic
+Tue Oct 10 14:49:14 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:49:16 2017: Necro#6714 used n!pic
+Tue Oct 10 14:49:41 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:49:42 2017: Necro#6714 used n!pic
+Tue Oct 10 14:49:53 2017: Necro#6714 used n!profile <@317619283377258497>
+Tue Oct 10 14:49:57 2017: Necro#6714 used n!pic <@317619283377258497>
+Tue Oct 10 14:50:04 2017: Necro#6714 used n!pic <@271259290415792129>
+Tue Oct 10 14:50:13 2017: Necro#6714 used n!pic <@357852849029513216>
+Tue Oct 10 14:52:02 2017: Necro#6714 used n!today events
+Tue Oct 10 14:52:06 2017: Necro#6714 used n!today events
+Tue Oct 10 14:52:08 2017: Necro#6714 used n!today events
+Tue Oct 10 14:56:00 2017: Necro#6714 used n!reload profile
+Tue Oct 10 14:56:03 2017: Necro#6714 used n!pic
+Tue Oct 10 14:56:19 2017: Necro#6714 used n!pic
+Tue Oct 10 14:56:26 2017: Necro#6714 used n!pic
+Tue Oct 10 14:56:42 2017: Necro#6714 used n!pic
+Tue Oct 10 15:08:01 2017: SilverElf#6462 used n!mute <@356181169533878294>
+Tue Oct 10 15:08:22 2017: Isaac632#0243 used n!giveme pancakes
+Tue Oct 10 15:08:40 2017: Julio229#8063 used n!t dancealone
+Tue Oct 10 15:28:19 2017: Julio229#8063 used n!settitle Honorary Valar
+Tue Oct 10 15:28:25 2017: Julio229#8063 used n!info
+Tue Oct 10 15:30:04 2017: Necro#6714 used n!claim
+Tue Oct 10 15:30:09 2017: Julio229#8063 used n!claim
+Tue Oct 10 15:31:26 2017: Seanpower2#3723 used n!info
+Tue Oct 10 15:31:37 2017: SilverElf#6462 used n!info
+Tue Oct 10 15:31:38 2017: Isaac632#0243 used n!claim
+Tue Oct 10 15:31:44 2017: Isaac632#0243 used n!claim
+Tue Oct 10 15:32:39 2017: Isaac632#0243 used n!info
+Tue Oct 10 15:33:01 2017: SilverElf#6462 used n!add <@217288149783674881> +5
+Tue Oct 10 15:36:00 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:36:01 2017: Necro#6714 used n!pic
+Tue Oct 10 15:36:29 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:36:30 2017: Necro#6714 used n!pic
+Tue Oct 10 15:40:08 2017: Julio229#8063 used n!elf michmatch
+Tue Oct 10 15:41:04 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:41:05 2017: Necro#6714 used n!pic
+Tue Oct 10 15:41:49 2017: Necro#6714 used n!pic
+Tue Oct 10 15:42:58 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:43:00 2017: Necro#6714 used n!pic
+Tue Oct 10 15:43:33 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:43:35 2017: Necro#6714 used n!pic
+Tue Oct 10 15:45:25 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:45:26 2017: Necro#6714 used n!pic
+Tue Oct 10 15:46:18 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:46:19 2017: Necro#6714 used n!pic
+Tue Oct 10 15:51:12 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:51:14 2017: Necro#6714 used n!pic
+Tue Oct 10 15:55:26 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:55:30 2017: Necro#6714 used n!pic
+Tue Oct 10 15:55:44 2017: Necro#6714 used n!pic
+Tue Oct 10 15:56:19 2017: Necro#6714 used n!info
+Tue Oct 10 15:56:20 2017: Isaac632#0243 used n!pic
+Tue Oct 10 15:56:33 2017: CaptainChunk!#8441 used n!pic
+Tue Oct 10 15:56:41 2017: Julio229#8063 used n!pic
+Tue Oct 10 15:56:57 2017: SilverElf#6462 used n!pic
+Tue Oct 10 15:57:26 2017: Fjodor#0785 used n!pic
+Tue Oct 10 15:59:17 2017: Necro#6714 used n!reload profile
+Tue Oct 10 15:59:22 2017: Necro#6714 used n!pic
+Tue Oct 10 16:00:21 2017: Necro#6714 used n!reload pic
+Tue Oct 10 16:00:24 2017: Necro#6714 used n!pic <@271259290415792129>
+Tue Oct 10 16:00:29 2017: Necro#6714 used n!reload profile
+Tue Oct 10 16:00:31 2017: Necro#6714 used n!pic <@271259290415792129>
+Tue Oct 10 16:47:07 2017: Seanpower2#3723 used n!pic
+Tue Oct 10 16:50:19 2017: Thirisdir#6839 used n!pic
+Tue Oct 10 16:51:34 2017: Asif Ali Zardari#4711 used n!pic
+Tue Oct 10 16:56:44 2017: Necro#6714 used n!perms <@!252766865724538880> 3
+Tue Oct 10 16:56:49 2017: Necro#6714 used n!perms <@339439319368466432> 3
+Tue Oct 10 16:56:52 2017: Necro#6714 used n!save
+Tue Oct 10 16:57:52 2017: Trondheim#0303 used n!pic
+Tue Oct 10 16:58:38 2017: Thirisdir#6839 used n!pic
+Tue Oct 10 16:59:23 2017: Asif Ali Zardari#4711 used n!info
+Tue Oct 10 16:59:39 2017: Thirisdir#6839 used n!info
+Tue Oct 10 16:59:48 2017: Julio229#8063 used n!info
+Tue Oct 10 17:00:25 2017: Walküre#0557 used n!pic
+Tue Oct 10 17:00:53 2017: Thirisdir#6839 used n!pic
+Tue Oct 10 17:00:54 2017: Asif Ali Zardari#4711 used n!settitle Mannis
+Tue Oct 10 17:01:29 2017: Asif Ali Zardari#4711 used N!pic
+Tue Oct 10 17:03:49 2017: Julio229#8063 used n!pic
+Tue Oct 10 17:04:00 2017: Trondheim#0303 used n!info
+Tue Oct 10 17:04:10 2017: Thirisdir#6839 used n!help
+Tue Oct 10 17:05:12 2017: Necro#6714 used n!perms <@!271259290415792129> 2
+Tue Oct 10 17:05:15 2017: SilverElf#6462 used n!help
+Tue Oct 10 17:05:19 2017: Necro#6714 used n!perms <@!271259290415792129> 6
+Tue Oct 10 17:05:43 2017: SilverElf#6462 used n!help
+Tue Oct 10 17:07:57 2017: Thirisdir#6839 used n!help setstats
+Tue Oct 10 17:11:59 2017: Asif Ali Zardari#4711 used n!tag neverforget
+Tue Oct 10 17:13:08 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:13:09 2017: Necro#6714 used n!pic
+Tue Oct 10 17:13:39 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:13:41 2017: Necro#6714 used n!pic
+Tue Oct 10 17:14:00 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:14:01 2017: Necro#6714 used n!pic
+Tue Oct 10 17:14:58 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:14:59 2017: Necro#6714 used n!pic
+Tue Oct 10 17:15:55 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:16:02 2017: Necro#6714 used n!pic
+Tue Oct 10 17:21:09 2017: Necro#6714 used n!t neverforget
+Tue Oct 10 17:29:24 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:29:25 2017: Necro#6714 used n!pic
+Tue Oct 10 17:29:38 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:29:39 2017: Necro#6714 used n!pic
+Tue Oct 10 17:31:09 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:31:12 2017: Necro#6714 used n!pic
+Tue Oct 10 17:31:48 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:31:50 2017: Necro#6714 used n!pic
+Tue Oct 10 17:32:07 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:32:08 2017: Necro#6714 used n!pic
+Tue Oct 10 17:32:41 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:32:42 2017: Necro#6714 used n!pic
+Tue Oct 10 17:32:53 2017: Necro#6714 used n!pic
+Tue Oct 10 17:33:22 2017: Necro#6714 used n!pic
+Tue Oct 10 17:36:54 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:36:55 2017: Necro#6714 used n!pic
+Tue Oct 10 17:37:30 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:37:30 2017: Necro#6714 used n!pic
+Tue Oct 10 17:37:42 2017: Necro#6714 used n!debug print("bob")
+Tue Oct 10 17:37:45 2017: Necro#6714 used n!pic
+Tue Oct 10 17:38:01 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:38:02 2017: Necro#6714 used n!pic
+Tue Oct 10 17:39:54 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:40:01 2017: Necro#6714 used n!pic
+Tue Oct 10 17:40:30 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:40:31 2017: Necro#6714 used n!pic
+Tue Oct 10 17:40:54 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:40:56 2017: Necro#6714 used n!pic
+Tue Oct 10 17:41:51 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:41:53 2017: Necro#6714 used n!pic
+Tue Oct 10 17:47:53 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:47:54 2017: Necro#6714 used n!pic
+Tue Oct 10 17:48:27 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:48:28 2017: Necro#6714 used n!pic
+Tue Oct 10 17:48:44 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:48:46 2017: Necro#6714 used n!pic
+Tue Oct 10 17:49:04 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:49:06 2017: Necro#6714 used n!pic
+Tue Oct 10 17:55:38 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:55:39 2017: Necro#6714 used n!pic
+Tue Oct 10 17:56:27 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:56:28 2017: Necro#6714 used n!pic
+Tue Oct 10 17:56:54 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:56:55 2017: Necro#6714 used n!pic
+Tue Oct 10 17:59:19 2017: Necro#6714 used n!reload profile
+Tue Oct 10 17:59:31 2017: Necro#6714 used n!pic
+Tue Oct 10 17:59:44 2017: Thirisdir#6839 used n!pic
+Tue Oct 10 17:59:56 2017: Asif Ali Zardari#4711 used n!pic
+Tue Oct 10 18:05:02 2017: Gandy#8220 used n!pic
+Tue Oct 10 18:06:11 2017: Julio229#8063 used n!pic
+Tue Oct 10 18:11:10 2017: Necro#6714 used n!coin
+Tue Oct 10 18:11:12 2017: Necro#6714 used n!coin
+Tue Oct 10 18:11:15 2017: Necro#6714 used n!coin
+Tue Oct 10 18:13:19 2017: Julio229#8063 used n!rr
+Tue Oct 10 18:15:30 2017: Necro#6714 used n!reload profile
+Tue Oct 10 18:15:32 2017: Necro#6714 used n!pic
+Tue Oct 10 18:16:19 2017: Necro#6714 used n!reload profile
+Tue Oct 10 18:16:19 2017: Necro#6714 used n!pic
+Tue Oct 10 18:17:31 2017: Necro#6714 used n!reload profile
+Tue Oct 10 18:17:32 2017: Necro#6714 used n!pic
+Tue Oct 10 18:18:15 2017: Necro#6714 used n!reload profike
+Tue Oct 10 18:18:16 2017: Necro#6714 used n!pic
+Tue Oct 10 18:18:21 2017: Necro#6714 used n!reload profile
+Tue Oct 10 18:18:22 2017: Necro#6714 used n!pic
+Tue Oct 10 19:29:21 2017: Thirisdir#6839 used n!8ball will gandy ever play online (also counts for julio)
+Tue Oct 10 19:36:27 2017: Gandy#8220 used n!avatar
+Tue Oct 10 20:00:13 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:00:14 2017: Necro#6714 used n!pic
+Tue Oct 10 20:00:31 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:00:36 2017: Necro#6714 used n!pic
+Tue Oct 10 20:03:30 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:03:34 2017: Necro#6714 used n!pic
+Tue Oct 10 20:08:48 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:08:50 2017: Necro#6714 used n!pic
+Tue Oct 10 20:21:12 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:21:16 2017: Necro#6714 used n!pic
+Tue Oct 10 20:24:23 2017: Necro#6714 used n!pic
+Tue Oct 10 20:24:28 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:24:29 2017: Necro#6714 used n!pic
+Tue Oct 10 20:25:07 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:25:10 2017: Necro#6714 used n!pic
+Tue Oct 10 20:25:58 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:26:01 2017: Necro#6714 used n!pic
+Tue Oct 10 20:26:36 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:26:37 2017: Necro#6714 used n!pic
+Tue Oct 10 20:27:06 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:27:07 2017: Necro#6714 used n!pic
+Tue Oct 10 20:30:24 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:30:25 2017: Necro#6714 used n!pic
+Tue Oct 10 20:33:24 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:33:26 2017: Necro#6714 used n!pic
+Tue Oct 10 20:35:32 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:35:34 2017: Necro#6714 used n!pic
+Tue Oct 10 20:36:21 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:36:22 2017: Necro#6714 used n!pic
+Tue Oct 10 20:41:54 2017: Necro#6714 used n!reload profile
+Tue Oct 10 20:41:56 2017: Necro#6714 used n!pic
+Tue Oct 10 21:08:50 2017: Necro#6714 used n!reload pic
+Tue Oct 10 21:08:54 2017: Necro#6714 used n!pic
+Tue Oct 10 21:08:59 2017: Necro#6714 used n!reload profile
+Tue Oct 10 21:09:00 2017: Necro#6714 used n!pic
+Tue Oct 10 21:11:46 2017: Necro#6714 used n!reload profile
+Tue Oct 10 21:11:49 2017: Necro#6714 used n!pic
+Tue Oct 10 21:20:52 2017: 139191103625625600 used n!pic
+Tue Oct 10 21:33:19 2017: Necro#6714 used n!add <@241942232867799040> *0+4000
+Tue Oct 10 21:33:23 2017: Necro#6714 used n!pic
+Tue Oct 10 21:33:38 2017: Necro#6714 used n!reload profile
+Tue Oct 10 21:33:39 2017: Necro#6714 used n!pic
+Tue Oct 10 21:33:50 2017: Necro#6714 used n!reload profile
+Tue Oct 10 21:33:51 2017: Necro#6714 used n!pic
+Tue Oct 10 23:18:53 2017: Thirisdir#6839 used n!pic
+Tue Oct 10 23:19:32 2017: Thirisdir#6839 used n!settitle Mouth Of Necro
+Tue Oct 10 23:19:38 2017: Thirisdir#6839 used n!pic
+Tue Oct 10 23:36:59 2017: Necro#6714 used n!reload profile
+Tue Oct 10 23:37:02 2017: Necro#6714 used n!pic
+Tue Oct 10 23:37:16 2017: Necro#6714 used n!add <@241942232867799040> *0+4000
+Tue Oct 10 23:37:19 2017: Necro#6714 used n!pic
+Tue Oct 10 23:44:35 2017: Necro#6714 used n!reload profile
+Tue Oct 10 23:45:10 2017: Necro#6714 used n!reload profile
+Tue Oct 10 23:45:19 2017: Necro#6714 used n!pic
+Tue Oct 10 23:48:09 2017: Necro#6714 used n!reload profile
+Tue Oct 10 23:48:10 2017: Necro#6714 used n!pic
+Tue Oct 10 23:49:51 2017: Necro#6714 used n!reload profile
+Tue Oct 10 23:49:52 2017: Necro#6714 used n!pic
+Tue Oct 10 23:50:09 2017: Necro#6714 used n!reload profile
+Tue Oct 10 23:50:10 2017: Necro#6714 used n!pic
+Wed Oct 11 00:10:47 2017: Necro#6714 used n!off
+Wed Oct 11 00:10:47 2017: Necro#6714 used n!off
+Wed Oct 11 15:33:33 2017: Necro#6714 used n!profile
+Wed Oct 11 15:44:39 2017: Necro#6714 used n!reload profile
+Wed Oct 11 15:44:42 2017: Necro#6714 used n!off
+Wed Oct 11 15:48:55 2017: Necro#6714 used n!today events
+Wed Oct 11 16:49:05 2017: SilverElf#6462 used n!t yaoikiss <@!241942232867799040>
+Wed Oct 11 17:07:19 2017: Necro#6714 used n!profile
+Wed Oct 11 17:07:35 2017: SilverElf#6462 used n!profile
+Wed Oct 11 17:08:14 2017: SilverElf#6462 used n!avatar <@!271259290415792129>
+Wed Oct 11 17:31:35 2017: |DA HYPE TRAIN|#2468 used n!help
+Wed Oct 11 17:31:58 2017: |DA HYPE TRAIN|#2468 used n!purge 100
+Wed Oct 11 17:32:11 2017: |DA HYPE TRAIN|#2468 used n!purge 1000
+Wed Oct 11 17:41:37 2017: |DA HYPE TRAIN|#2468 used n!purge 999999999999999999999999
+Wed Oct 11 17:43:45 2017: |DA HYPE TRAIN|#2468 used n!purge
+Wed Oct 11 17:44:29 2017: |DA HYPE TRAIN|#2468 used n!purge 9999
+Wed Oct 11 18:12:29 2017: Bot Person#2468 used n!purge 999999999999999999
+Wed Oct 11 18:27:04 2017: Bot Person#2468 used n!purge
+Wed Oct 11 18:27:08 2017: Bot Person#2468 used n!purge 999
+Wed Oct 11 18:27:17 2017: Bot Person#2468 used n!purge 999999999999999999
+Wed Oct 11 18:34:40 2017: Bot Person#2468 used n!info
+Wed Oct 11 18:42:25 2017: Bot Person#2468 used n!purge 60
+Wed Oct 11 18:42:39 2017: Bot Person#2468 used n!purge 1
+Wed Oct 11 18:42:42 2017: Bot Person#2468 used n!purge 300
+Wed Oct 11 18:42:52 2017: Bot Person#2468 used n!purge 3000000
+Wed Oct 11 18:46:14 2017: Bot Person#2468 used n!purge 20
+Wed Oct 11 18:52:25 2017: Bot Person#2468 used n!purge 4
+Wed Oct 11 19:43:29 2017: Isaac632#0243 used n!claim
+Wed Oct 11 19:45:10 2017: Necro#6714 used n!info
+Wed Oct 11 19:45:12 2017: Necro#6714 used n!profile
+Wed Oct 11 19:45:45 2017: Thirisdir#6839 used n!profile
+Wed Oct 11 19:46:04 2017: Isaac632#0243 used n!profile
+Wed Oct 11 19:46:07 2017: Julio229#8063 used n!claim
+Wed Oct 11 19:46:30 2017: Julio229#8063 used n!profile
+Wed Oct 11 19:46:50 2017: Thirisdir#6839 used n!profile
+Wed Oct 11 19:46:57 2017: SilverElf#6462 used n!help
+Wed Oct 11 19:46:59 2017: Necro#6714 used n!cat
+Wed Oct 11 19:47:18 2017: SilverElf#6462 used n!setstats <@!252766865724538880> 3
+Wed Oct 11 19:47:21 2017: Thirisdir#6839 used n!claim
+Wed Oct 11 19:47:28 2017: Thirisdir#6839 used n!profile
+Wed Oct 11 19:47:35 2017: Gandy#8220 used n!profile
+Wed Oct 11 19:47:59 2017: Thirisdir#6839 used n!info
+Wed Oct 11 19:48:15 2017: SilverElf#6462 used n!info
+Wed Oct 11 19:48:23 2017: Fjodor#0785 used n!profile
+Wed Oct 11 19:48:34 2017: Julio229#8063 used n!info
+Wed Oct 11 19:48:40 2017: Isaac632#0243 used n!info
+Wed Oct 11 19:49:02 2017: Julio229#8063 used n!settitle Rider of Eothain and Honorary Valar
+Wed Oct 11 19:52:29 2017: Julio229#8063 used n!profile
+Wed Oct 11 19:52:48 2017: Thirisdir#6839 used n!profile
+Wed Oct 11 19:54:25 2017: Necro#6714 used n!perms <@!252766865724538880> 3
+Wed Oct 11 19:54:33 2017: Thirisdir#6839 used n!profile
+Wed Oct 11 19:55:04 2017: Thirisdir#6839 used n!profile
+Wed Oct 11 19:55:46 2017: Julio229#8063 used n!profile
+Wed Oct 11 19:56:14 2017: Gandy#8220 used n!claim
+Wed Oct 11 19:56:20 2017: Julio229#8063 used n!claim
+Wed Oct 11 20:26:00 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:26:03 2017: Necro#6714 used n!profile
+Wed Oct 11 20:30:53 2017: Necro#6714 used n!profile
+Wed Oct 11 20:31:08 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:31:15 2017: Necro#6714 used n!profile
+Wed Oct 11 20:34:38 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:34:41 2017: Necro#6714 used n!profile
+Wed Oct 11 20:39:43 2017: Necro#6714 used n!reload profie
+Wed Oct 11 20:39:46 2017: Necro#6714 used n!profile
+Wed Oct 11 20:40:01 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:40:06 2017: Necro#6714 used n!profile
+Wed Oct 11 20:42:49 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:42:52 2017: Necro#6714 used n!profile
+Wed Oct 11 20:43:10 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:43:17 2017: Necro#6714 used n!profile
+Wed Oct 11 20:53:09 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:53:15 2017: Necro#6714 used n!profile
+Wed Oct 11 20:54:22 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:55:42 2017: Necro#6714 used n!profile
+Wed Oct 11 20:58:34 2017: Necro#6714 used n!reload profile
+Wed Oct 11 20:58:36 2017: Necro#6714 used n!profile
+Wed Oct 11 21:05:18 2017: Necro#6714 used n!reload profile
+Wed Oct 11 21:05:22 2017: Necro#6714 used n!profile
+Wed Oct 11 21:05:38 2017: Necro#6714 used n!profile
+Wed Oct 11 21:25:18 2017: Necro#6714 used n!reload profile
+Wed Oct 11 21:25:21 2017: Necro#6714 used n!profile
+Wed Oct 11 21:30:07 2017: Necro#6714 used n!reload profile
+Wed Oct 11 21:31:46 2017: Necro#6714 used n!off
+Sat Oct 14 20:12:03 2017: Necro#6714 used n!today events
+Sat Oct 14 20:12:45 2017: Seanpower2#3723 used n!today events
+Sat Oct 14 20:14:44 2017: Seanpower2#3723 used n!today events
+Sat Oct 14 20:15:23 2017: Seanpower2#3723 used n!today events
+Sat Oct 14 22:24:09 2017: Thirisdir#6839 used n!profile
+Sat Oct 14 22:24:35 2017: Julio229#8063 used n!claim
+Sat Oct 14 22:24:42 2017: Julio229#8063 used n!profile
+Sat Oct 14 22:25:00 2017: Julio229#8063 used n!settitle Honorary Valar
+Sat Oct 14 22:36:55 2017: Thirisdir#6839 used n!claim
+Sun Oct 15 23:27:45 2017: Necro#6714 used n!today events
+Sun Oct 15 23:27:49 2017: Necro#6714 used n!today events
+Sun Oct 15 23:27:52 2017: Necro#6714 used n!today events
+Tue Oct 17 10:25:27 2017: Necro#6714 used n!reload animals
+Tue Oct 17 10:25:49 2017: Necro#6714 used n!reload animals
+Tue Oct 17 10:26:12 2017: Necro#6714 used n!reload animals
+Tue Oct 17 10:26:16 2017: Necro#6714 used n!cat
+Tue Oct 17 10:26:25 2017: Necro#6714 used n!cat
+Tue Oct 17 10:27:34 2017: Necro#6714 used n!reload animals
+Tue Oct 17 10:27:36 2017: Necro#6714 used n!cat
+Tue Oct 17 10:27:56 2017: Necro#6714 used n!reload animals
+Tue Oct 17 10:29:47 2017: Necro#6714 used n!reload server
+Tue Oct 17 10:30:03 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Oct 17 10:30:48 2017: Necro#6714 used n!reload server
+Tue Oct 17 10:30:53 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Oct 17 10:31:11 2017: Necro#6714 used n!reload server
+Tue Oct 17 10:31:17 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Oct 17 10:32:09 2017: Necro#6714 used n!off
+Tue Oct 17 10:32:32 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Oct 17 10:33:21 2017: Necro#6714 used n!off
+Tue Oct 17 10:33:37 2017: Necro#6714 used n!automod add <@339330190742126595>
+Tue Oct 17 10:36:24 2017: Necro#6714 used n!off
+Wed Oct 25 13:45:13 2017: Necro#6714 used n!profile
+Wed Oct 25 13:45:40 2017: Necro#6714 used n!nick <@!241942232867799040> Lord of the Void
+Wed Oct 25 13:47:19 2017: Necro#6714 used n!debug bot.change_nickname(bot.get_server("265064978740936705").get_member("241942232867799040"), "Lord of the Void")
+Sun Nov 12 13:51:49 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 13:53:05 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 13:53:20 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 13:53:45 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 13:53:51 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 13:54:25 2017: Necro#6714 used n!off
+Sun Nov 12 13:54:39 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 13:55:09 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 13:55:12 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 13:55:39 2017: Necro#6714 used n!lotr Morgoth
+Sun Nov 12 14:03:15 2017: Necro#6714 used n!reload wiki
+n!lotr Aragorn
+Sun Nov 12 14:03:20 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 14:04:10 2017: Necro#6714 used n!reload wiki
+n!lotr Aragorn
+Sun Nov 12 14:04:22 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 14:05:25 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 14:05:29 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 14:06:22 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 14:06:27 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 14:06:47 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 14:06:52 2017: Necro#6714 used n!lotr aragorn
+Sun Nov 12 14:07:52 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 14:07:56 2017: Necro#6714 used n!reload wiki
+Sun Nov 12 14:08:00 2017: Necro#6714 used n!lotr Aragorn
+Sun Nov 12 14:08:06 2017: Necro#6714 used n!lotr Morgoth
+Sun Nov 12 14:08:13 2017: Necro#6714 used n!lotr Galadriel
+Thu Nov 23 15:59:08 2017: Necro#6714 used n!help
+Thu Nov 23 15:59:22 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Thu Nov 23 16:00:15 2017: Necro#6714 used n!reload modding
+Thu Nov 23 16:00:22 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Thu Nov 23 16:07:53 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Thu Nov 23 16:09:05 2017: Necro#6714 used n!sean
+Thu Nov 23 16:09:38 2017: Necro#6714 used n!sean
+Thu Nov 23 16:09:50 2017: Necro#6714 used n!sean
+Thu Nov 23 16:10:05 2017: Necro#6714 used n!sean
+Thu Nov 23 16:10:20 2017: Necro#6714 used n!sean
+Thu Nov 23 16:12:44 2017: Necro#6714 used n!reload modding
+Thu Nov 23 16:12:49 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Thu Nov 23 16:13:07 2017: Necro#6714 used n!reload modding
+Thu Nov 23 16:13:07 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Thu Nov 23 16:15:29 2017: Necro#6714 used n!reload modding
+Thu Nov 23 16:15:37 2017: Necro#6714 used n!moddb http://www.moddb.com/mods/edain-mod
+Thu Nov 23 16:19:55 2017: Necro#6714 used n!off

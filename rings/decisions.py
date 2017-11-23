@@ -33,7 +33,7 @@ class Decisions():
         """Flips a coin and returns the result
         
         {usage}"""
-        await self.bot.say(random.choice(["<:head:351456287453872135> **Head**","<:tail:351456234257514496> | **Tail**"]))
+        await self.bot.say(random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"]))
 
     @commands.command(pass_context = True)
     @commands.cooldown(5, 5, BucketType.user)

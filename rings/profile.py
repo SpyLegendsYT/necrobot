@@ -9,11 +9,12 @@ import datetime as d
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw 
+from PIL import ImageColor 
 import os
 import aiohttp
+import random
+from rings.botdata.utils import userData, serverData
 
-userData = Data.userData
-serverData = Data.serverData
 
 #Permissions Names
 permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","NecroBot Admin","The Bot Smith"]
@@ -86,7 +87,7 @@ class Profile():
         await self.bot.delete_message(msg)
 
 
-    @commands.command(pass_context = True, aliases=["profile"])
+    @commands.command(pass_context = True)
     @commands.cooldown(3, 5, BucketType.user)
     async def info(self, cont, *user : discord.Member):
         """Returns a rich embed of the given user's info. If no user is provided it will return your own info. **WIP**
@@ -111,14 +112,12 @@ class Profile():
 
         embed.add_field(name="**User Name**", value=user.name + "#" + user.discriminator)
         embed.add_field(name="**Top Role**", value=user.top_role.name, inline=True)
-
-        embed.add_field(name="**NecroBot Data**", value="__Permission Level__ - " + permsName[userData[user.id]["perms"][serverID]] + "\n__Balance__ - {:,} :euro: \n__Experience__  - ".format(userData[user.id]["money"]) + str(userData[user.id]["exp"]))
         embed.add_field(name="Warning List", value=userData[user.id]["warnings"])
 
         await self.bot.say(embed=embed)
 
-    @commands.command(pass_context = True, disabled = True)
-    async def pic(self, cont, *user : discord.Member):
+    @commands.command(pass_context = True)
+    async def profile(self, cont, *user : discord.Member):
         """Shows your profile information in a picture
 
         {usage}
@@ -143,30 +142,38 @@ class Profile():
                         f_handle.write(chunk)
                 await r.release()
 
-        im = Image.open("rings/botdata/Profile.png")
-        til = Image.open(filename).resize((299,299))
+        im = Image.open("rings/botdata/profile/backgrounds/{}.jpg".format(random.randint(1,139))).resize((1024,512)).crop((59,29,964,482))
         draw = ImageDraw.Draw(im)
-        font = ImageFont.truetype("arial.ttf", 48)
-        if cont.message.channel.is_private:
-            perms = "0"
-        else:
-            perms = userData[user.id]["perms"][cont.message.server.id]
 
-        draw.text((480, 120), str(perms), (0,0,0), font=font)    
-        draw.text((93, 643), user.display_name, (0,0,0), font=font)
-        draw.text((32, 246), str(userData[user.id]["exp"]), (0,0,0), font=font)
-        draw.text((720, 246), str(userData[user.id]["money"]), (0,0,0), font=font)
-        draw.text((212, 538), str(userData[user.id]["title"]), (0,0,0), font=ImageFont.truetype("arial.ttf", 48))
-        im.paste(til, box=(361, 214, 660, 513))
-        im.save('profile2.png')
-        await self.bot.upload('profile2.png')
-        os.remove("profile2.png")
+        pfp = Image.open(filename).resize((150,150))
+        overlay = Image.open("rings/botdata/profile/overlay.png")
+        perms_level = Image.open("rings/botdata/profile/perms_level/{}.png".format(userData[user.id]["perms"][cont.message.server.id])).resize((50,50))
+        line = Image.open("rings/botdata/profile/underline.png").resize((235,30))
+
+        im.paste(overlay, box=(0, 0, 905, 453), mask=overlay)
+        im.paste(pfp, box=(75, 132, 225, 282))
+        im.paste(perms_level, box=(125, 25, 175, 75))
+
+        font20 = ImageFont.truetype("Ringbearer Medium.ttf", 20)
+        font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
+        font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
+
+        draw.text((70,85), permsName[userData[user.id]["perms"][cont.message.server.id]], (0,0,0), font=font20)
+        draw.text((260,125), "{:,}$".format(userData[user.id]["money"]), (0,0,0), font=font30)
+        draw.text((260,230), "{:,} EXP".format(userData[user.id]["exp"]), (0,0,0), font=font30)
+        draw.text((43,313), user.display_name, (0,0,0), font=font21)
+        draw.text((43,356), userData[user.id]["title"], (0,0,0), font=font21)
+        draw.line((52,346,468,346),fill=(0,0,0), width=2)
+
+        im.save('{}.png'.format(user.id))
+        await self.bot.upload('{}.png'.format(user.id))
+        os.remove("{}.png".format(user.id))
         os.remove(filename)
 
     @commands.command(pass_context = True)
     @commands.cooldown(3, 5, BucketType.user)
     async def settitle(self, cont, *, text : str = ""):
-        """Sets your NecroBot title to [text]. If no text is provided it will reset it. Limited to max 20 characters.
+        """Sets your NecroBot title to [text]. If no text is provided it will reset it. Limited to max 25 characters.
         
         {usage}
         
@@ -175,10 +182,10 @@ class Profile():
         `{pre}settitle` - resets your title"""
         if text == "":
             await self.bot.say(":white_check_mark: | Your title has been reset")
-        elif len(text) <= 20:
+        elif len(text) <= 25:
             await self.bot.say(":white_check_mark: | Great your title is now **" + text + "**")
         else:
-            await self.bot.say(":negative_squared_cross_mark: | You have gone over the 20 character limit, your title wasn't set.")
+            await self.bot.say(":negative_squared_cross_mark: | You have gone over the 25 character limit, your title wasn't set.")
             return
 
         userData[cont.message.author.id]["title"] = text

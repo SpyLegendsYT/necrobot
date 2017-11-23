@@ -2,44 +2,14 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
-from rings.botdata.data import Data
-import re
+from rings.botdata.utils import has_perms, is_necro, allmentions, userData, serverData
 
-userData = Data.userData
-serverData = Data.serverData
+
 roleList = [["Helper",discord.Colour.teal()],["Moderator",discord.Colour.orange()],["Semi-Admin",discord.Colour.darker_grey()],["Admin",discord.Colour.blue()],["Server Owner",discord.Colour.magenta()],["NecroBot Admin",discord.Colour.dark_green()],["The Bot Smith",discord.Colour.dark_red()]]
 
 class Server():
     def __init__(self, bot):
         self.bot = bot
-
-    def has_perms(perms_level):
-        def predicate(cont): 
-            if cont.message.channel.is_private:
-                return False
-
-            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
-              
-        return commands.check(predicate)
-
-    def is_necro():
-        def predicate(cont):
-            return cont.message.author.id == "241942232867799040"
-        return commands.check(predicate)
-
-    def allmentions(self, cont, msg):
-        myList = []
-        mentions = msg.split(" ")
-        for x in mentions:
-            ID = re.sub('[<>!#@]', '', x)
-            if not self.bot.get_channel(ID) is None:
-                channel = self.bot.get_channel(ID)
-                myList.append(channel)
-            elif not cont.message.server.get_member(ID) is None:
-                member = cont.message.server.get_member(ID)
-                myList.append(member)
-
-        return myList
 
     @commands.command(pass_context = True)
     async def perms(self, cont, user : discord.Member, level : int):
@@ -83,7 +53,7 @@ class Server():
         
         __Example__
         `{pre}automod add #channel #channel2 @NecroBot` - have NecroBot ignore moderation from user 'NecroBot' and channels 'channel' and 'channel2'"""
-        myList = self.allmentions(cont, mentions)
+        myList = allmentions(cont, mentions)
         for x in myList:
             if x.id not in serverData[cont.message.server.id]["ignoreAutomod"]:
                 serverData[cont.message.server.id]["ignoreAutomod"].append(x.id)

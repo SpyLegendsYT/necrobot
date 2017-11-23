@@ -92,24 +92,10 @@ class Wiki():
                 return           
 
         url = "http://tolkiengateway.net/wiki/" + article.name.replace(" ","_")
-        raw_desc = re.sub(r"\{\{([^}]+)\}\}","", article.text())
-
-        raw_links = re.findall(r"\[\[([^]]*)\]\]", raw_desc)
-        for x in raw_links:
-            link = x.split("|")
-            if not link[0].startswith("File:"):
-                if len(link) == 2:
-                    link = "[{}](http://tolkiengateway.net/wiki/{})".format(link[1].replace("[", "").replace("]", ""), link[0].replace("[", "").replace("]", "").replace(" ", "_"))
-                else: #need to escape [
-                    link = link[0].replace("[", "").replace("]", "")
-                    link = "[{}](http://tolkiengateway.net/wiki/{})".format(link, link.replace(" ", "_"))
-
-                raw_desc = raw_desc.replace(x + "]]", link)
-            else:
-                raw_desc = raw_desc.replace(x + "]]\n", "")
-
-        description = re.sub('<[^<]+?>', '', unwiki.loads(raw_desc))[:2040] + "..."
-        embed = discord.Embed(title="__**{}**__".format(article.name), colour=discord.Colour(0x277b0), url=url, description=description)
+        raw_desc = re.sub('<[^<]+?>', '', article.text(section=0))
+        
+        description = unwiki.UnWiki(raw_desc).__str__()
+        embed = discord.Embed(title="__**{}**__".format(article.name), colour=discord.Colour(0x277b0), url=url, description=description[:2047])
 
         try:
             embed.set_thumbnail(url= list(article.images())[0].imageinfo["url"]+ "?size=400")

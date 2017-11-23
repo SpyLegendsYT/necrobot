@@ -5,45 +5,14 @@ from discord.ext.commands.cooldowns import BucketType
 from rings.botdata.data import Data
 from simpleeval import simple_eval
 import inspect
+from rings.botdata.utils import has_perms, is_necro, default_stats, userData, serverData
 
-userData = Data.userData
-serverData = Data.serverData
 starboard_messages = Data.starboard_messages
 
 
 class Admin():
     def __init__(self, bot):
         self.bot = bot
-
-    def has_perms(perms_level):
-        def predicate(cont): 
-            if cont.message.channel.is_private:
-                return False
-
-            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
-              
-        return commands.check(predicate)
-
-    def is_necro():
-        def predicate(cont):
-            return cont.message.author.id == "241942232867799040"
-        return commands.check(predicate)
-
-    def default_stats(self, member, server):
-        if member.id not in userData:
-            userData[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], 'lastMessage': '', 'lastMessageTime': 0, 'locked': ''}
-
-        if server.id not in userData[member.id]["perms"]:
-            if any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
-                userData[member.id]["perms"][server.id] = 7
-            elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
-                userData[member.id]["perms"][server.id] = 6
-            elif member.id == server.owner.id:
-                userData[member.id]["perms"][server.id] = 5
-            elif member.server_permissions.administrator:
-                userData[member.id]["perms"][server.id] = 4
-            else:
-                userData[member.id]["perms"][server.id] = 0
 
     @commands.command(pass_context = True)
     @has_perms(2)
@@ -80,6 +49,28 @@ class Admin():
             await self.bot.say(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, userData[user.id]["money"]))
         except (NameError,SyntaxError):
             await self.bot.say(":negative_squared_cross_mark: | Operation no recognized.")
+
+    @commands.group()
+    @has_perms(6)
+    async def modify(self):
+        pass
+
+    @modify.command(pass_context = True)
+    async def modify_server(self, cont, setting, *, value):
+        try:
+            serverData[cont.message.server.id][setting] = value
+            await self.bot.say(":white_check_mark: | `{}` for this server will now be `{}`".format(setting, value))
+        except KeyError:
+            await self.bot.say(":negative_squared_cross_mark: | Setting not found")
+
+    @modify.command(pass_context = True)
+    async def modify_user(self, cont, user:discord.Member, setting, *, value):
+        try:
+            userData[user.id][setting] = value
+            await self.bot.say(":white_check_mark: | `{}` for this user will now be `{}`".format(setting, value))
+        except KeyError:
+            await self.bot.say(":negative_squared_cross_mark: | Setting not found")
+
 
     @commands.command()
     @has_perms(6)

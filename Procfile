@@ -1,1 +1,0 @@
-web: python bot.py MzE3NjE5MjgzMzc3MjU4NDk3.DK57Fg.Ns_gxYXfPUGOiJJeVOtbsq2qzuU /app/ /app/rings/botdata/ 342357827031007243

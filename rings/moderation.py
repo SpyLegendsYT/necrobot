@@ -5,9 +5,8 @@ from discord.ext.commands.cooldowns import BucketType
 from rings.botdata.data import Data
 import asyncio
 import re
+from rings.botdata.utils import has_perms, is_necro, allmentions, userData, serverData
 
-userData = Data.userData
-serverData = Data.serverData
 lockedList = list()
 
 
@@ -15,33 +14,6 @@ class Moderation():
     """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. All you need to keep your server clean and tidy"""
     def __init__(self, bot):
         self.bot = bot
-
-    def has_perms(perms_level):
-        def predicate(cont): 
-            if cont.message.channel.is_private:
-                return False
-
-            return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
-              
-        return commands.check(predicate)
-
-    def is_necro():
-        def predicate(cont):
-            return cont.message.author.id == "241942232867799040"
-        return commands.check(predicate)
-
-    def allmentions(self, cont, msg):
-        myList = []
-        mentions = msg.split(" ")
-        for x in mentions:
-            ID = re.sub('[<>!#@]', '', x)
-            if not self.bot.get_channel(ID) is None:
-                channel = self.bot.get_channel(ID)
-                myList.append(channel)
-            elif not cont.message.server.get_member(ID) is None:
-                member = cont.message.server.get_member(ID)
-                myList.append(member)
-        return myList
 
     @commands.command(aliases=["rename","name"], pass_context = True)
     @has_perms(1)
