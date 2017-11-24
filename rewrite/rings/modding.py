@@ -27,7 +27,7 @@ class Modding():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 5, BucketType.channel)
     async def moddb(self, ctx, url):
         """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`
@@ -38,7 +38,7 @@ class Modding():
         `{pre}moddb http://www.moddb.com/mods/edain-mod` - creates a rich embed of the Edain Mod ModDB page"""
     
         if not url.startswith("http://www.moddb.com/mods/"):
-            await self.bot.say("URL was not valid, try again with a valid url. URL must be from an existing mod page. Acceptable examples: `http://www.moddb.com/mods/edain-mod`, `http://www.moddb.com/mods/rotwk-hd-edition`, ect...")
+            await ctx.channel.send("URL was not valid, try again with a valid url. URL must be from an existing mod page. Acceptable examples: `http://www.moddb.com/mods/edain-mod`, `http://www.moddb.com/mods/rotwk-hd-edition`, ect...")
             return
 
         reader = AsyncReader()
@@ -65,8 +65,9 @@ class Modding():
         for suggestion in mod.suggestions:
             suggestion_list.append("[{0}]({1})".format(suggestion.name, suggestion.url))
             embed.add_field(name="You may also like",value=" - ".join(suggestionList))
-        await self.bot.say(embed=embed)
-        await self.bot.delete_message(ctx.message)
+            
+        await ctx.channel.send(embed=embed)
+        await ctx.message.delete_message()
 
 def setup(bot):
     bot.add_cog(Modding(bot))
