@@ -22,7 +22,7 @@ class Social():
 
     @commands.command(aliases=["sean","joke"])
     @commands.cooldown(3, 5, BucketType.user)
-    async def dadjoke(self):
+    async def dadjoke(self, ctx):
         """Send a random dadjoke from a long list. Whoever PM's Necro with the reason for one of the aliases being "sean" gets a free 1,000 NecroBot currency.
         
         {usage}"""
@@ -58,7 +58,7 @@ class Social():
 
     @commands.command()
     @commands.cooldown(3, 5, BucketType.user)
-    async def rr(self, bullets : int = 1):
+    async def rr(self, ctx, bullets : int = 1):
         """Plays a game of russian roulette with the user. If no number of bullets is entered it will default to one. 
         
         {usage}
@@ -79,7 +79,7 @@ class Social():
 
     @commands.command()
     @commands.cooldown(3, 5, BucketType.user)
-    async def lotrfact(self):
+    async def lotrfact(self, ctx):
         """Prints a random Lord of the Rings fact. 
         
         {usage}"""
@@ -88,7 +88,7 @@ class Social():
 
     @commands.command()
     @commands.cooldown(3, 5, BucketType.user)
-    async def pokefusion(self):
+    async def pokefusion(self, ctx):
         """Generates a rich embed containing a random pokefusion.
         
         {usage}"""

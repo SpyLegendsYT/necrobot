@@ -11,7 +11,7 @@ class Animals():
 
     @commands.command()
     @commands.cooldown(3, 3, BucketType.user)
-    async def cat(self):
+    async def cat(self, ctx):
         """Posts a random cat picture from random.cat
         
         {usage}"""
@@ -22,7 +22,7 @@ class Animals():
 
     @commands.command()
     @commands.cooldown(3, 3, BucketType.user)
-    async def dog(self):
+    async def dog(self, ctx):
         """Posts a random dog picture from random.dog 
         
         {usage}"""
