@@ -1,7 +1,6 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-from discord.ext.commands.cooldowns import BucketType
 import aiohttp
 
 class Animals():
@@ -10,7 +9,6 @@ class Animals():
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(3, 3, BucketType.user)
     async def cat(self, ctx):
         """Posts a random cat picture from random.cat
         
@@ -21,7 +19,6 @@ class Animals():
                 await ctx.channel.send(res['file'])
 
     @commands.command()
-    @commands.cooldown(3, 3, BucketType.user)
     async def dog(self, ctx):
         """Posts a random dog picture from random.dog 
         

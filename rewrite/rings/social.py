@@ -1,7 +1,6 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-from discord.ext.commands.cooldowns import BucketType
 import random
 from bs4 import BeautifulSoup
 import aiohttp
@@ -21,7 +20,6 @@ class Social():
 
 
     @commands.command(aliases=["sean","joke"])
-    @commands.cooldown(3, 5, BucketType.user)
     async def dadjoke(self, ctx):
         """Send a random dadjoke from a long list. Whoever PM's Necro with the reason for one of the aliases being "sean" gets a free 1,000 NecroBot currency.
         
@@ -29,7 +27,6 @@ class Social():
         await ctx.channel.send(":speaking_head: | **{}**".format(random.choice(self.dad_joke)))
 
     @commands.command()
-    @commands.cooldown(3, 5, BucketType.channel)
     async def riddle(self, ctx):
         """Ask a riddle to the user from a long list and waits 30 seconds for the answer. If the user fails to answer they go feed Gollum's fishies. To answer the riddle simply type out the answer, no need to prefix it with anything. 
         
@@ -48,7 +45,6 @@ class Social():
             await ctx.channel.send("Wrong answer! Now you go to feed the fishies!")
 
     @commands.command()
-    @commands.cooldown(3, 3, BucketType.user)
     async def tarot(self, ctx):
         """Using the mystical art of tarology, NecroBot reads the user's fate in the card and returns the explanation for each card. Not to be taken seriously. 
         
@@ -57,7 +53,6 @@ class Social():
         await ctx.channel.send(":white_flower: | Settle down now and let Necro see your future my dear "+ ctx.message.author.name + "...\n**Card #1:** {}\n**Card #2:** {}\n**Card #3:** {}\n__*That is your fate, none can change it for better or worst.*__".format(card_list[0], card_list[1], card_list[2]))
 
     @commands.command()
-    @commands.cooldown(3, 5, BucketType.user)
     async def rr(self, ctx, bullets : int = 1):
         """Plays a game of russian roulette with the user. If no number of bullets is entered it will default to one. 
         
@@ -78,7 +73,6 @@ class Social():
         await ctx.channel.send(msg)
 
     @commands.command()
-    @commands.cooldown(3, 5, BucketType.user)
     async def lotrfact(self, ctx):
         """Prints a random Lord of the Rings fact. 
         
@@ -87,7 +81,6 @@ class Social():
         await ctx.channel.send("<:onering:351442796420399119> | **Fact #{}**: {}".format(self.lotr_list.index(choice) + 1, choice))
 
     @commands.command()
-    @commands.cooldown(3, 5, BucketType.user)
     async def pokefusion(self, ctx):
         """Generates a rich embed containing a random pokefusion.
         

@@ -1,7 +1,6 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-from discord.ext.commands.cooldowns import BucketType
 
 import wikia
 from mwclient import Site
@@ -16,7 +15,6 @@ class Wiki():
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(2, 5, BucketType.user)
     async def edain(self, ctx, *, article : str):
         """Performs a search on the Edain Mod Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
         

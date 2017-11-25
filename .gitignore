@@ -2,3 +2,4 @@
 *.jpg
 *.pyc
 rings/botdata/Profile.png
+rewrite/config.py

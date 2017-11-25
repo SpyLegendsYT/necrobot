@@ -1,8 +1,8 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-from discord.ext.commands.cooldowns import BucketType
 import aiohttp
+from rings.botdata.cooldowns import _medium_cooldown
 
 class Animals():
     """Show pictures of cute animals us the power of the internet."""
@@ -10,7 +10,7 @@ class Animals():
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(3, 3, BucketType.user)
+    @commands.cooldown(*_medium_cooldown())
     async def cat(self):
         """Posts a random cat picture from random.cat
         
@@ -21,7 +21,7 @@ class Animals():
                 await self.bot.say(res['file'])
 
     @commands.command()
-    @commands.cooldown(3, 3, BucketType.user)
+    @commands.cooldown(*_medium_cooldown())
     async def dog(self):
         """Posts a random dog picture from random.dog 
         

@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from discord.ext.commands.cooldowns import BucketType
 from moddb_reader import Reader
 import aiohttp
 from bs4 import BeautifulSoup
@@ -28,7 +27,6 @@ class Modding():
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(1, 5, BucketType.channel)
     async def moddb(self, ctx, url):
         """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`
         
