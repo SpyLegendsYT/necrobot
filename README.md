@@ -1,4 +1,7 @@
 # NecroBot
+
+**BROKEN**
+
 NecroBot has two very specific reason to be, it is meant to increase the Discord Moderation abilities tenfold but more importantly it is meant to be the first bot to support mod creators throughout the world. The bot will work hand in hand with modders all across Discord to help them showcase their content on their servers through rich embeds. NecroBot also contains it's own hierarchy system which means that server owners no longer need to give users specific permissions on their servers for them to use the bot, simply set their NecroBot permission level to be as you wish using `n!perms`. Not sure what permission level to use? Just have a look at `n!h` for help. Bot prefix is 'n![command]'.
 
 __Hierachy Ladder:__
