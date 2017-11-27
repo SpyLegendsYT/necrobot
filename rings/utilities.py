@@ -438,6 +438,14 @@ class Utilities():
         else:
             await self.bot.say(":negative_squared_cross_mark: | Word not found in the **Elf Speak Dictionary**")
 
+    @commands.command(pass_context = True)
+    async def x(self, ctx):
+        member_list = list()
+        for member in list(ctx.message.server.members):
+            await self.bot.say("**{}**: <{}>".format(member.name, member.avatar_url.replace("webp","jpg")))
+            await asyncio.sleep(1)
+
+
 
 def setup(bot):
     bot.add_cog(Utilities(bot))

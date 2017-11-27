@@ -27,7 +27,7 @@ class Modding():
         self.bot = bot
 
     @commands.command()
-    async def moddb(self, ctx, url):
+    async def moddb(self, ctx, url : str):
         """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`
         
         {usage}

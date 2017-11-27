@@ -1,0 +1,201 @@
+#Feast
+##Non-Fatal
+{p1} gathers as much food into a bag as they can before fleeing.
+
+{p1} sobs while gripping a photo of their friends and family.
+
+{p1} and {p2} decide to work together to get more supplies.
+
+{p1} and {p2} get into a fight over raw meat, but {p2} gives up and runs away.
+
+{p1} and {p2} get into a fight over raw meat, but {p1} gives up and runs away.
+
+{p1}, {p2}, and {p3} confront each other, but grab what they want slowly to avoid conflict.
+
+{p1} destroys {p2}'s memoirs out of spite.
+
+{p1}, {p2}, {p3}, and {p4} team up to grab food, supplies, weapons, and memoirs.
+
+{p1} steals {p2}'s memoirs.
+
+{p1} takes a staff leaning against the cornucopia.
+
+{p1} stuffs a bundle of dry clothing into a backpack before sprinting away.
+
+##Fatal
+{p1} throws a knife into {p2}'s head.
+Killed: p2
+
+{p1} accidently steps on a landmine.
+Killed: p1
+
+{p1} catches {p2} off guard and kills them.
+Killed: p2
+
+{p1} and {p2} work together to drown {p3}.
+Killed: p3
+
+{p1} strangles {p2} after engaging in a fist fight.
+Killed: p2
+
+{p1} shoots an arrow into {p2}'s head.
+Killed: p2
+
+{p1} bleeds out due to untreated injuries.
+Killed: p1
+
+{p1} cannot handle the circumstances and commits suicide.
+Killed: p1
+
+{p1} bashes {p2}'s head against a rock several times.
+Killed: p2
+
+{p1} snaps {p2}'s neck.
+Killed: p2
+
+{p1} decapitates {p2} with a sword.
+Killed: p2
+
+{p1} dies from an infection.
+Killed: p1
+
+{p1} spears {p2} in the abdomen.
+Killed: p2
+
+{p1} sets {p2} on fire with a molotov.
+Killed: p2
+
+{p1} falls into a pit and dies.
+Killed: p1
+
+{p1} stabs {p2} while their back is turned.
+Killed: p2
+
+{p1} severely injures {p2}, but puts them out of their misery.
+Killed: p2
+
+{p1} severely injures {p2} and leaves them to die.
+Killed: p2
+
+{p1} bashes {p2}'s head in with a mace.
+Killed: p2
+
+{p1} pushes {p2} off a cliff during a knife fight.
+Killed: p2
+
+{p1} throws a knife into {p2}'s chest.
+Killed: p2
+
+{p1}'s trap kills {p2}.
+Killed: p2
+
+{p1} is unable to convince {p2} to not kill them.
+Killed: p1
+
+{p1} convinces {p2} to not kill them, only to kill {p2} instead.
+Killed: p2
+
+{p1} falls into a frozen lake and drowns.
+Killed: p1
+
+{p1}, {p2}, and {p3} start fighting, but {p2} runs away as {p1} kills {p3}.
+Killed: p3
+
+{p1} kills {p2} with their own weapon.
+Killed: p2
+
+{p1} overpowers {p2}, killing them.
+Killed: p2
+
+{p1} sets an explosive off, killing {p2}.
+Killed: p2
+
+{p1} sets an explosive off, killing {p2}, and {p3}.
+Killed: p2, p3
+
+{p1} sets an explosive off, killing {p2}, {p3}, and {p4}.
+Killed: p2, p3, p4
+
+{p1} sets an explosive off, killing {p2}, {p3}, {p4} and {p5}.
+Killed: p2, p3, p4, p5
+
+{p1} kills {p2} as they try to run.
+Killed: p2
+
+{p1} and {p2} threaten a double suicide. It fails and they die.
+Killed: p1, p2
+
+{p1}, {p2}, {p3}, and {p4} form a suicide pact, killing themselves.
+Killed: p1, p2, p3, p4
+
+{p1} kills {p2} with a hatchet.
+Killed: p2
+
+{p1} and {p2} fight {p3} and {p4}. {p1} and {p2} survive.
+Killed: p3, p4
+
+{p1} and {p2} fight {p3} and {p4}. {p3} and {p4} survive.
+Killed: p1, p2
+
+{p1} attacks {p2}, but {p3} protects them, killing {p1}.
+Killed: p1
+
+{p1} ambushes {p2} and kills them.
+Killed: p2
+
+{p1} severely slices {p2} with a sword.
+Killed: p2
+
+{p1} strangles {p2} with a rope.
+Killed: p2
+
+{p1} kills {p2} for their supplies.
+Killed: p2
+
+{p1} shoots an arrow at {p2}, but misses and kills {p3} instead.
+Killed: p3
+
+{p1} shoots a poisonous blow dart into {p2}'s neck, slowly killing them.
+Killed: p2
+
+{p1}, {p2}, and {p3} successfully ambush and kill {p4}, {p5}, and {p6}.
+Killed: p4, p5, p6
+
+{p1}, {p2}, and {p3} unsuccessfully ambush {p4}, {p5}, and {p6}, who kill them instead.
+Killed: p1, p2, p3
+
+{p1} stabs {p2} with a tree branch.
+Killed: p2
+
+{p1} stabs {p2} in the back with a trident.
+Killed: p2
+
+{p1}, {p2}, and {p3} get into a fight. {p1} triumphantly kills them both.
+Killed: p2, p3
+
+{p1}, {p2}, and {p3} get into a fight. {p2} triumphantly kills them both.
+Killed: p1, p3
+
+{p1}, {p2}, and {p3} get into a fight. {p3} triumphantly kills them both.
+Killed: p1, p2
+
+{p1} kills {p2} with a sickle.
+Killed: p2
+
+{p1}, {p2}, {p3}, {p4}, and {p5} track down and kill {p6}.
+Killed: p6
+
+{p1}, {p2}, {p3}, and {p4} track down and kill {p5}.
+Killed: p5
+
+{p1}, {p2}, and {p3} track down and kill {p4}.
+Killed: p4
+
+{p1} and {p2} track down and kill {p3}.
+Killed: p3
+
+{p1} tracks down and kills {p2}.
+Killed: p2
+
+{p1} repeatedly stabs {p2} to death with sais.
+Killed: p2

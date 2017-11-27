@@ -137,7 +137,7 @@ class Utilities():
         await ctx.channel.send(user.avatar_url.replace("webp","jpg"))
 
     @commands.group(invoke_without_command = True)
-    async def today(self, ctx, date : str =""):
+    async def today(self, ctx, date : str = None):
         """Creates a rich information about events/deaths/births that happened today or any day you indicate using the `mm/dd` format
 
         {usage}
@@ -150,7 +150,7 @@ class Utilities():
         
 
     @today.command(name="events")
-    async def today_events(self, ctx, date : str = ""):
+    async def today_events(self, ctx, date : str = None):
         """Creates a rich information about events that happened today or any day you indicate using the `mm/dd` format
 
         {usage}
@@ -158,7 +158,7 @@ class Utilities():
         __Example__
         `{pre}today events` - prints five events that happened today
         `{pre}today events 02/14` - prints five events that happened on the 14th of February"""
-        if date != "":
+        if date != None:
             date = "/"+date
 
 
@@ -182,7 +182,7 @@ class Utilities():
         await ctx.channel.send(embed=embed)
 
     @today.command(name="deaths")
-    async def today_deaths(self, ctx, date=""):
+    async def today_deaths(self, ctx, date : str = None):
         """Creates a rich information about deaths that happened today or any day you indicate using the `mm/dd` format
 
         {usage}
@@ -190,7 +190,7 @@ class Utilities():
         __Example__
         `{pre}today deaths` - prints deaths that happened today
         `{pre}today deaths 02/14` - prints deaths that happened on the 14th of February"""
-        if date != "":
+        if date != None:
             date = "/"+date
 
 
@@ -214,7 +214,7 @@ class Utilities():
 
 
     @today.command(name="births")
-    async def today_births(self, ctx, date=""):
+    async def today_births(self, ctx, date : str = None):
         """Creates a rich information about births that happened today or any day you indicate using the `mm/dd` format
 
         {usage}
@@ -222,7 +222,7 @@ class Utilities():
         __Example__
         `{pre}today births` - prints births that happened today
         `{pre}today births 02/14` - prints births that happened on the 14th of February"""
-        if date != "":
+        if date != None:
             date = "/"+date
 
 
@@ -282,7 +282,7 @@ class Utilities():
 
 
     @commands.command()
-    async def ow(self, ctx, username):
+    async def ow(self, ctx, username : str):
         """Creates a rich embed of the user's Owerwatch stats for PC only. You must parse through a valid Battle.NET Battle Tag.
 
         {usage}
@@ -346,7 +346,7 @@ class Utilities():
             asyncio.sleep(1)
 
     @commands.command(name="ud", aliases=["urbandictionary"])
-    async def udict(self, ctx, word):
+    async def udict(self, ctx, word : str):
         """Searches for the given word on urban dictionnary
 
         {usage}
@@ -362,7 +362,7 @@ class Utilities():
         await ctx.message.send(embed=embed)
 
     @commands.command()
-    async def translate(self, ctx, lang, *, sentence):
+    async def translate(self, ctx, lang : str, *, sentence : str):
         """Auto detects the language of the setence you input and translates it to the desired language.
 
         {usage}
@@ -374,7 +374,7 @@ class Utilities():
         await ctx.message.send("Translated `{0.origin}` from {0.src} to {0.dest}: **{0.text}**".format(translated))
 
     @commands.command()
-    async def define(self, ctx, word):
+    async def define(self, ctx, word : str):
         """Defines the given word
 
         {usage}

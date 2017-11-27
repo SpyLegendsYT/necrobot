@@ -106,7 +106,7 @@ class Wiki():
 
     @commands.command()
     @commands.cooldown(2, 5, BucketType.user)
-    async def wiki(self, ctx, wiki, *, article):
+    async def wiki(self, ctx, wiki : str, *, article : str):
         """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
         {usage}
