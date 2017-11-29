@@ -163,7 +163,7 @@ Killed: p3, p4
 {p1} and {p2} fight {p3} and {p4}. {p3} and {p4} survive.
 Killed: p1, p2
 
-{p1} attacks {p2}, but {p3} protects {him/her2}, killing {p1}.
+{p1} attacks {p2}, but {p3} protects them, killing {p1}.
 Killed: p1
 
 {p1} severely slices {p2} with a sword.
@@ -172,13 +172,13 @@ Killed: p2
 {p1} strangles {p2} with a rope.
 Killed: p2
 
-{p1} kills {p2} for {his/her2} supplies.
+{p1} kills {p2} for their supplies.
 Killed: p2
 
 {p1} shoots an arrow at {p2}, but misses and kills {p3} instead.
 Killed: p3
 
-{p1} shoots a poisonous blow dart into {p2}'s neck, slowly killing {him/her2}.
+{p1} shoots a poisonous blow dart into {p2}'s neck, slowly killing them.
 Killed: p2
 
 {p1} stabs {p2} with a tree branch.
@@ -196,10 +196,10 @@ Killed: p1, p3
 {p1}, {p2}, and {p3} get into a fight. {p3} triumphantly kills them both.
 Killed: p1, p2
 
-{p1} finds {p2} hiding in the cornucopia and kills {him/her2}.
+{p1} finds {p2} hiding in the cornucopia and kills them.
 Killed: p2
 
-{p1} finds {p2} hiding in the cornucopia, but {p2} kills {him/her1}.
+{p1} finds {p2} hiding in the cornucopia, but {p2} kills them.
 Killed: p1
 
 {p1} kills {p2} with a sickle.

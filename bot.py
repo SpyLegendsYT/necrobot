@@ -32,6 +32,7 @@ ERROR_LOG = "351356683231952897"
 prefixes = ["n!","N!", "<@317619283377258497> "]
 
 extensions = [
+    "hunger",
     "animals",
     "social",
     "wiki",
