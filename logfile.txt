@@ -1077,3 +1077,42 @@ Wed Nov 29 13:59:24 2017: SilverElf#6462 used n!fight Bork | Borking | Borked |B
 Wed Nov 29 16:09:10 2017: Giacomo#9397 used n!profile
 Wed Nov 29 16:10:19 2017: Giacomo#9397 used n!settitle Meme Nazgul
 Wed Nov 29 16:12:45 2017: Lediga1#6330 used n!profile
+Wed Nov 29 16:43:52 2017: Finrod#5887 used n!profile
+Wed Nov 29 16:45:02 2017: Thirisdir#6839 used n!mute <@252766865724538880>
+Wed Nov 29 17:17:38 2017: Trondheim#0303 used n!profile
+Wed Nov 29 17:19:41 2017: The evil Overlord#3260 used n!profile
+Wed Nov 29 17:23:11 2017: Trondheim#0303 used n!settitle "I don't have much experience, but I make up for it with enthusiasm, charm, and hard work!"
+Wed Nov 29 17:26:53 2017: Trondheim#0303 used n!settitle Entmaster
+Wed Nov 29 17:27:00 2017: Trondheim#0303 used n!profile
+Wed Nov 29 17:27:24 2017: Thirisdir#6839 used n!profile
+Wed Nov 29 19:07:46 2017: Haman#9701 used n!profile
+Wed Nov 29 19:08:11 2017: Giacomo#9397 used n!profile
+Wed Nov 29 19:08:24 2017: CaptainChunk!#8441 used n!profile
+Wed Nov 29 19:08:39 2017: Thirisdir#6839 used n!profile
+Wed Nov 29 19:09:15 2017: Night King#8220 used n!profile
+Wed Nov 29 19:09:29 2017: Thirisdir#6839 used n!serverinfo
+Wed Nov 29 19:09:57 2017: Haman#9701 used n!settitle Knight of Grondor
+Wed Nov 29 19:14:00 2017: Julio229#8063 used n!info
+Wed Nov 29 19:14:16 2017: Fjodor#0785 used n!info
+Wed Nov 29 19:17:45 2017: Giacomo#9397 used n!info
+Wed Nov 29 19:17:59 2017: Night King#8220 used n!info
+Wed Nov 29 19:18:27 2017: Asif Ali Zardari#4711 used n!profile
+Wed Nov 29 19:18:40 2017: Thirisdir#6839 used n!info
+Wed Nov 29 19:19:37 2017: Asif Ali Zardari#4711 used n!info
+Wed Nov 29 19:28:54 2017: Giacomo#9397 used n!settitle The grand inquisitor
+Wed Nov 29 19:29:08 2017: Giacomo#9397 used n!settitle The Grand Inquisitor
+Wed Nov 29 19:46:23 2017: SilverElf#6462 used n!help
+Wed Nov 29 19:48:13 2017: SilverElf#6462 used n!lotrfact
+Wed Nov 29 19:49:21 2017: SilverElf#6462 used n!elfspeak
+Wed Nov 29 19:49:30 2017: SilverElf#6462 used n!elfspeak michmatch
+Wed Nov 29 23:33:04 2017: Lostir#0355 used n!profile
+Wed Nov 29 23:33:26 2017: Lostir#0355 used n!info
+Thu Nov 30 15:20:01 2017: Necro#6714 used n!fight Necro | Bob | John | Smith | Laura | Alice | Elfu | A Baka | Your Mom | A potato | Cookie | Trap | Emilia | Lord of the Ashes | Sauron | Mairon | The Deceiver | The Lord of Potatoes | Mage | Rogue | Assassin | Bork | Borker | Borked | Esmeralda
+Thu Nov 30 15:21:16 2017: Necro#6714 used n!invites
+Thu Nov 30 15:28:17 2017: Necro#6714 used n!fight Devils | Being a Scrub
+Thu Nov 30 15:36:04 2017: Necro#6714 used n!tag add dab *dabs*
+Thu Nov 30 15:37:33 2017: Lediga1#6330 used n!tag dab
+Thu Nov 30 15:40:31 2017: Necro#6714 used n!debug print(bot.get_message("385817251510616064").content)
+Thu Nov 30 15:41:03 2017: Necro#6714 used n!debug print(bot.get_message(channel, "385817251510616064").content)
+Thu Nov 30 15:41:33 2017: Necro#6714 used n!debug print(await bot.get_message(channel, "385817251510616064").content)(edited)
+Thu Nov 30 15:56:43 2017: SilverElf#6462 used n!tag killyourself

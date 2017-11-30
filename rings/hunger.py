@@ -39,8 +39,8 @@ class Hunger():
                 event = random.choice([event for event in idle_events if event["tributes"] <= len(idle_tributes) and len(event["killed"]) < len(tributes_list)])
                 tributes = random.sample(idle_tributes, event["tributes"])
                 idle_tributes = [x for x in idle_tributes if x not in tributes]
-                idle_events.remove(event)
                 if len(event["killed"]) > 0:
+                    idle_events.remove(event)
                     for killed in event["killed"]:
                         tribute = tributes[int(killed)-1]
                         tributes_list.remove(tribute)
