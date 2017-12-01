@@ -1,23 +1,23 @@
 
 def default_stats(member, server):
-    if member.id not in userData:
-        userData[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], 'lastMessage': '', 'lastMessageTime': 0, 'locked': ''}
+    if member.id not in user_data:
+        user_data[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], 'lastMessage': '', 'lastMessageTime': 0, 'locked': ''}
 
-    if server.id not in userData[member.id]["perms"]:
-        if any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
-            userData[member.id]["perms"][server.id] = 7
-        elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
-            userData[member.id]["perms"][server.id] = 6
+    if server.id not in user_data[member.id]["perms"]:
+        if any(user_data[member.id]["perms"][x] == 7 for x in user_data[member.id]["perms"]):
+            user_data[member.id]["perms"][server.id] = 7
+        elif any(user_data[member.id]["perms"][x] == 6 for x in user_data[member.id]["perms"]):
+            user_data[member.id]["perms"][server.id] = 6
         elif member.id == server.owner.id:
-            userData[member.id]["perms"][server.id] = 5
+            user_data[member.id]["perms"][server.id] = 5
         elif member.server_permissions.administrator:
-            userData[member.id]["perms"][server.id] = 4
+            user_data[member.id]["perms"][server.id] = 4
         else:
-            userData[member.id]["perms"][server.id] = 0
+            user_data[member.id]["perms"][server.id] = 0
             
 def all_mentions(cont, msg):
-    mention_list = []
-    mentions = msg.split(" ")
+    mention_list = list()
+    mentions = msg
     for x in mentions:
         ID = re.sub('[<>!#@]', '', x)
         if not bot.get_channel(ID) is None:
@@ -32,7 +32,7 @@ def has_perms(perms_level):
     def predicate(cont): 
         if cont.message.channel.is_private:
             return False
-        return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
+        return user_data[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
     return commands.check(predicate)
 
 def is_necro():

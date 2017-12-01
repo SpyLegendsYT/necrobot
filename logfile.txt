@@ -1116,3 +1116,8 @@ Thu Nov 30 15:40:31 2017: Necro#6714 used n!debug print(bot.get_message("3858172
 Thu Nov 30 15:41:03 2017: Necro#6714 used n!debug print(bot.get_message(channel, "385817251510616064").content)
 Thu Nov 30 15:41:33 2017: Necro#6714 used n!debug print(await bot.get_message(channel, "385817251510616064").content)(edited)
 Thu Nov 30 15:56:43 2017: SilverElf#6462 used n!tag killyourself
+Thu Nov 30 16:26:38 2017: Necro#6714 used n!help speak
+Thu Nov 30 16:26:53 2017: Necro#6714 used n!speak 242612484962254850 ***Bork***
+Thu Nov 30 16:27:39 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel("242612484962254850"), "***Bork***")
+Thu Nov 30 22:07:51 2017: SilverElf#6462 used n!purge 34
+Thu Nov 30 22:08:05 2017: SilverElf#6462 used n!purge 8
