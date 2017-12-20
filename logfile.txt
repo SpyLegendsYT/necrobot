@@ -1121,3 +1121,73 @@ Thu Nov 30 16:26:53 2017: Necro#6714 used n!speak 242612484962254850 ***Bork***
 Thu Nov 30 16:27:39 2017: Necro#6714 used n!debug bot.send_message(bot.get_channel("242612484962254850"), "***Bork***")
 Thu Nov 30 22:07:51 2017: SilverElf#6462 used n!purge 34
 Thu Nov 30 22:08:05 2017: SilverElf#6462 used n!purge 8
+Sun Dec  3 19:53:57 2017: Lostir#0355 used n!profile
+Sun Dec  3 20:25:07 2017: Elrohir#6644 used n!profile
+Sun Dec  3 20:25:56 2017: Asif Ali Zardari#4711 used n!help
+Sun Dec  3 20:28:42 2017: Thirisdir#6839 used n!profile
+Sun Dec  3 20:30:06 2017: Thirisdir#6839 used n!profile like this
+Sun Dec  3 20:30:17 2017: Thirisdir#6839 used n!profile
+Sun Dec  3 20:33:28 2017: SilverElf#6462 used n!profile
+Sun Dec  3 22:42:39 2017: Julio229#8063 used n!profile
+Sun Dec  3 22:46:12 2017: Lostir#0355 used n!claim
+Sun Dec  3 22:46:18 2017: Julio229#8063 used n!claim
+Sun Dec  3 22:46:59 2017: CaptainChunk!#8441 used n!settitle Invoker
+Sun Dec  3 22:47:12 2017: CaptainChunk!#8441 used n!profile
+Sun Dec  3 22:47:25 2017: Lostir#0355 used n!settitle Farrillion the Green
+Sun Dec  3 22:47:29 2017: Thirisdir#6839 used n!claim
+Sun Dec  3 22:47:31 2017: Lostir#0355 used n!profile
+Sun Dec  3 22:47:59 2017: Lostir#0355 used n!settitle Farillion the Green
+Sun Dec  3 22:48:26 2017: Julio229#8063 used n!rr 300
+Sun Dec  3 22:48:36 2017: Lostir#0355 used n!balance
+Sun Dec  3 22:48:44 2017: Julio229#8063 used n!balance
+Sun Dec  3 22:48:53 2017: Lostir#0355 used n!claim
+Sun Dec  3 22:48:59 2017: Lostir#0355 used n!pay
+Sun Dec  3 22:49:04 2017: Thirisdir#6839 used n!claim
+Sun Dec  3 22:49:05 2017: Lostir#0355 used n!help pay
+Sun Dec  3 22:49:19 2017: Thirisdir#6839 used n!balance
+Sun Dec  3 22:49:21 2017: Julio229#8063 used n!t neverforget
+Sun Dec  3 22:57:06 2017: Asif Ali Zardari#4711 used N!claim
+Sun Dec  3 22:57:33 2017: Asif Ali Zardari#4711 used N!profile
+Sun Dec  3 23:03:16 2017: Thirisdir#6839 used n!help
+Sun Dec  3 23:03:58 2017: Thirisdir#6839 used n!giveme Mordor
+Sun Dec  3 23:04:15 2017: Asif Ali Zardari#4711 used n!help translate
+Sun Dec  3 23:06:02 2017: Asif Ali Zardari#4711 used N!translate ar Hello
+Sun Dec  3 23:07:07 2017: Thirisdir#6839 used N!translate de Yellow
+Sun Dec  3 23:07:33 2017: Asif Ali Zardari#4711 used N!translate de a new power is rising
+Sun Dec  3 23:08:18 2017: Lostir#0355 used n!claim
+Sun Dec  3 23:09:37 2017: Thirisdir#6839 used N!translate de Looks like meats back on the menu boys
+Sun Dec  3 23:09:37 2017: Lostir#0355 used n!translate a new power is climbing up the mountains
+Sun Dec  3 23:10:15 2017: Lostir#0355 used n!translate de a new power is climbing up the mountains
+Sun Dec  3 23:11:23 2017: Lostir#0355 used n!translate de Shelob
+Sun Dec  3 23:11:34 2017: Asif Ali Zardari#4711 used N!translate la Nisus was guard of the gate
+Sun Dec  3 23:13:22 2017: Asif Ali Zardari#4711 used N!translate en what is happening right now
+Sun Dec  3 23:13:43 2017: Lostir#0355 used n!translate help
+Sun Dec  3 23:13:50 2017: Lostir#0355 used n!help translate
+Sun Dec  3 23:14:19 2017: SilverElf#6462 used n!elfspeak michmatch
+Sun Dec  3 23:14:21 2017: Lostir#0355 used n!translate Sonnenhut
+Sun Dec  3 23:14:33 2017: Lostir#0355 used n!translate en Sonnenhut
+Sun Dec  3 23:15:02 2017: Lostir#0355 used n!translate en Le senieur des aneux
+Sun Dec  3 23:15:24 2017: Asif Ali Zardari#4711 used N!help elfspeak
+Sun Dec  3 23:15:26 2017: SilverElf#6462 used n!translate en in the ban van de ring
+Sun Dec  3 23:15:37 2017: Asif Ali Zardari#4711 used N!elfspeak
+Sun Dec  3 23:15:48 2017: SilverElf#6462 used n!translate in the ban van de ring
+Sun Dec  3 23:16:00 2017: SilverElf#6462 used n!translate nl the lord of the rings
+Sun Dec  3 23:16:05 2017: Lostir#0355 used n!translate en In einer Höhle unter der Erde lebte einst ein Hobbit.
+Sun Dec  3 23:16:50 2017: Lostir#0355 used n!translate en Raus aus der Bratpfanne rein ins Feuer
+Sun Dec  3 23:16:57 2017: SilverElf#6462 used n!translate en een hol onder de grond woonde een hobbit
+Sun Dec  3 23:17:07 2017: Lostir#0355 used n!translate de Queer Lodgings
+Sun Dec  3 23:18:06 2017: Lostir#0355 used n!translate nl Frohes neues Jahr
+Sun Dec  3 23:18:34 2017: SilverElf#6462 used n!translate en de kat krapt de krullen van de trap
+Sun Dec  3 23:19:52 2017: Lostir#0355 used n!translate de one for sorrow, two  for joy, three for a girl and four for a boy. Five for silver, six for gold, seven for a secret never to be told
+Sun Dec  3 23:20:51 2017: Lostir#0355 used n!translate de hickory dickory dock the mouse went up the clock
+Sun Dec  3 23:21:00 2017: SilverElf#6462 used n!translate en in the land van mordor in het vuur van doomberg
+Sun Dec  3 23:21:31 2017: Lostir#0355 used n!translate en ash nazg durbatuluk
+Sun Dec  3 23:21:46 2017: SilverElf#6462 used n!translate en daar heb je gelijk in thir
+Sun Dec  3 23:22:07 2017: SilverElf#6462 used n!profile
+Sun Dec  3 23:22:20 2017: SilverElf#6462 used n!add <@!271259290415792129> *2
+Sun Dec  3 23:22:42 2017: Lostir#0355 used n!add <@339041205973155840> *2
+Sun Dec  3 23:22:54 2017: SilverElf#6462 used n!add <@339041205973155840> -1
+Sun Dec  3 23:23:09 2017: Lostir#0355 used n!kill SilverDerp
+Sun Dec  3 23:23:25 2017: SilverElf#6462 used n!add <@339041205973155840> +500
+Sun Dec  3 23:23:51 2017: SilverElf#6462 used n!add <@!252766865724538880> +1
+Sun Dec  3 23:59:28 2017: Necro#6714 used n!off

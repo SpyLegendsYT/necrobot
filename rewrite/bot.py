@@ -1,20 +1,22 @@
 import discord
 from discord.ext import commands
 from rings.utils.help import NecroBotHelpFormatter
-from rings.utils.utils import is_necro
 import time
+import json
+import random
+from config import *
+import sys
+import time as t
+import asyncio
+import traceback
+import re
 
 
-class NecroBot(commands.Bot):
-    def __init__(self, user_data, server_data, settings, ERROR_LOG):
-        self.command_prefix = get_pre
-        self.description = ["A bot for moderation and LOTR"]
-        self.formatter = NecroBotHelpFormatter()
-        self.uptime_start = time.time()
-        self.user_data = user_data
-        self.sever_data = server_data
-        self.settings = settings
-        self.ERROR_LOG = ERROR_LOG
+async def get_pre(bot, message):
+    if not isinstance(message.channel, discord.DMChannel):
+        if bot.server_data[message.guild.id]["prefix"] != "":
+            return bot.server_data[message.guild.id]["prefix"]
+    return bot.prefixes
 
 extensions = [
     "hunger",
@@ -39,148 +41,333 @@ replyList = [
     "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?",
     "Second sight ordains it! I mean sure..."
     ]
+class NecroBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix=get_pre, description="A bot for moderation and LOTR", formatter=NecroBotHelpFormatter())
+        self.uptime_start = time.time()
+        self.user_data = dict()
+        self.server_data = dict()
 
-# *****************************************************************************************************************
-#  Internal Function
-# *****************************************************************************************************************
+        #force typecast to int for all ids
+        raw_user_data = json.load(open("rings/utils/data/user_data.json", "r"))
+        for user in raw_user_data:
+            self.user_data[int(user)] = raw_user_data[user]
+            raw_perms = dict()
+            for server in raw_user_data[user]["perms"]:
+                raw_perms[int(server)] = raw_user_data[user]["perms"][server]
 
-#forgive me gods of Python
-def startswith_prefix(message):
-    server_id = message.server.id
+            self.user_data[int(user)]["perms"] = raw_perms
+        
+        raw_server_data = json.load(open("rings/utils/data/server_data.json", "r"))
+        for server in raw_server_data:
+            self.server_data[int(server)] = raw_server_data[server]
 
-    if message.content.startswith(tuple(prefixes)):
-        return True
-    if server_data[server_id]["prefix"] != "" and message.content.startswith(server_data[server_id]["prefix"]):
-        return True
+        self.ERROR_LOG = 351356683231952897
+        self.version = 1.0
+        self.prefixes = ["n!", "N!"]
 
-    return False
+        self.add_command(self.load)
+        self.add_command(self.unload)
+        self.add_command(self.reload)
+        self.add_command(self.off)
 
-def is_spam(message):
-    user_id = message.author.id
-    channel_id = message.channel.id
-    server_id = message.server.id
+    # *****************************************************************************************************************
+    #  Internal Function
+    # *****************************************************************************************************************
 
-    if server_data[server_id]["automod"] == "" or startswith_prefix(message):
+    def _startswith_prefix(self, message):
+        if message.content.startswith(tuple(self.prefixes)):
+            return True
+
+        if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
+            return True
+
         return False
-    if user_id in server_data[server_id]["ignoreAutomod"] or channel_id in server_data[server_id]["ignoreAutomod"]:
-        return False
-    if message.content.lower() == user_data[user_id]['lastMessage'].lower() and user_data[user_id]['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
+
+    def _is_allowed_summon(self, message):
+        user_id = message.author.id
+        channel_id = message.channel.id
+        if self.user_data[user_id]["perms"][message.guild.id] >= 4:
+            return True
+
+        if user_id in self.server_data[message.guild.id]["ignoreCommand"] or channel_id in self.server_data[message.guild.id]["ignoreCommand"]:
+            return False
+
         return True
-    if user_data[user_id]['lastMessageTime'] > c.timegm(t.gmtime()) + 1:
-        return False
 
-    return False
+    def logit(self, message):
+        if self._startswith_prefix(message):
+            with open("rings/utils/data/logfile.txt","a+") as log:
+                localtime = "\n{}: ".format(t.asctime(t.localtime(t.time())))
+                try: 
+                    author = "{}#{}".format(message.author.name, message.author.discriminator)
+                except UnicodeEncodeError:
+                    author = message.author.id
 
-def is_allowed_summon(message):
-    user_id = message.author.id
-    channel_id = message.channel.id
-    server_id = message.server.id
+                log.write("{}{} used {}".format(localtime, author, message.content))
 
-    if user_data[user_id]["perms"][server_id] >= 4:
-        return True
-    if user_id in server_data[server_id]["ignoreCommand"] or channel_id in server_data[server_id]["ignoreCommand"]:
-        return False
+    async def broadcast(self):
+        for server in self.server_data:
+            if self.server_data[server]["broadcast"] != "" and self.server_data[server]["broadcast-channel"] != "":
+                channel = self.get_channel(self.server_data[server]["broadcast-channel"])
+                await channel.send(self.server_data[server]["broadcast"])
 
-    return True
+    # *****************************************************************************************************************
+    #  Background Tasks
+    # *****************************************************************************************************************
+    async def hourly_task(self):
+        await self.wait_until_ready()
+        while not self.is_closed:
+            await asyncio.sleep(3600) # task runs every hour
+            
+            #hourly save
+            with open("rings/utils/data/server_data.json", "w") as out:
+                json.dump(self.server_data, out)
 
-async def save():
-    with open(default_path + "rings/botdata/userdata.csv","w",newline="") as csvfile:
-        Awriter = csv.writer(csvfile)
-        for x in user_data:
-            warningList = ",".join(user_data[x]["warnings"])
-            Awriter.writerow([x,user_data[x]["money"],user_data[x]["daily"],user_data[x]["title"],user_data[x]["exp"],user_data[x]["perms"],warningList])
+            with open("rings/utils/data/user_data.json", "w") as out:
+                json.dump(self.user_data, out)
 
-    with open(default_path + "rings/botdata/setting.csv","w",newline="") as csvfile:
-        Awriter = csv.writer(csvfile)
-        Awriter.writerow([starboard_messages])
-        for x in server_data:
+            #background tasks
+            await broadcast()
+
+    # *****************************************************************************************************************
+    #  Internal Checks
+    # *****************************************************************************************************************
+
+    def default_stats(self, member, guild):
+        if member.id not in self.user_data:
+            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': []}
+
+        if guild.id not in self.user_data[member.id]["perms"]:
+            if any(self.user_data[member.id]["perms"][x] == 7 for x in self.user_data[member.id]["perms"]):
+                self.user_data[member.id]["perms"][guild.id] = 7
+            elif any(self.user_data[member.id]["perms"][x] == 6 for x in self.user_data[member.id]["perms"]):
+                self.user_data[member.id]["perms"][guild.id] = 6
+            elif member.id == guild.owner.id:
+                self.user_data[member.id]["perms"][guild.id] = 5
+            elif member.guild_permissions.administrator:
+                self.user_data[member.id]["perms"][guild.id] = 4
+            else:
+                self.user_data[member.id]["perms"][guild.id] = 0
+                
+    def all_mentions(self, ctx, msg):
+        mention_list = list()
+        for x in msg:
+            ID = re.sub('[<>!#@]', '', x)
+            if not self.get_channel(ID) is None:
+                channel = self.get_channel(ID)
+                mention_list.append(channel)
+            elif not ctx.message.guild.get_member(ID) is None:
+                member = ctx.message.guild.get_member(ID)
+                mention_list.append(member)
+        return mention_list
+
+    def has_perms(self, perms_level):
+        def predicate(ctx): 
+            if isinstance(message.channel, discord.DMChannel):
+                return False
+            return self.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level
+        return commands.check(predicate)
+
+    # *****************************************************************************************************************
+    #  Cogs Commands
+    # *****************************************************************************************************************
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def load(self, ctx, extension_name : str):
+        """Loads the extension name if in NecroBot's list of rings.
+        
+        {usage}"""
+        try:
+            self.load_extension("rings." + extension_name)
+        except (AttributeError,ImportError) as e:
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            return
+        await ctx.channel.send("{} loaded.".format(extension_name))
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def unload(self, ctx, extension_name : str):
+        """Unloads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        self.unload_extension("rings." + extension_name)
+        await ctx.channel.send("{} unloaded.".format(extension_name))
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def reload(self, ctx, extension_name : str):
+        """Unload and loads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        self.unload_extension("rings." + extension_name)
+        try:
+            self.load_extension("rings." + extension_name)
+        except (AttributeError,ImportError) as e:
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            return
+        await ctx.channel.send("{} reloaded.".format(extension_name))
+
+    # *****************************************************************************************************************
+    # Bot Smith Commands
+    # *****************************************************************************************************************
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def off(self, ctx):
+        """Saves all the data and terminate the self. (Permission level required: 7+ (The Bot Smith))
+         
+        {usage}"""
+        channel = self.get_channel(318465643420712962)
+        msg = await channel.send("**Saving...**")
+
+        with open("rings/utils/data/server_data.json", "w") as out:
+            json.dump(self.server_data, out)
+
+        with open("rings/utils/data/user_data.json", "w") as out:
+            json.dump(self.user_data, out)
+
+        await msg.edit(content="**Saved**")
+        await channel.send("**Bot Offline**")
+        await self.logout()
+
+    # *****************************************************************************************************************
+    # Events
+    # *****************************************************************************************************************
+    async def on_ready(self):
+        await self.change_presence(game=discord.Game(name="Bot booting...", type=0))
+        print(self.server_data)
+        print('------')
+        channel = self.get_channel(318465643420712962)
+        await channel.send("**Initiating Bot**")
+        msg = await channel.send("Bot User ready")
+
+        members = self.get_all_members()
+        for member in members:
+            self.default_stats(member, member.guild)
+        await msg.edit(content="All members checked")
+
+        for guild in self.guilds:
+            if guild.id not in self.server_data:
+                    self.server_data[guild.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": ""}
+        await msg.edit(content="All servers checked")
+
+        for extension in extensions:
             try:
-                selfRolesList = ",".join(server_data[x]["selfRoles"])
-                automodList = ",".join(server_data[x]["ignoreAutomod"])
-                commandList = ",".join(server_data[x]["ignoreCommand"])
-                Awriter.writerow([x,server_data[x]["mute"],server_data[x]["automod"],server_data[x]["welcome-channel"],selfRolesList,commandList,automodList,server_data[x]["welcome"],server_data[x]["goodbye"],server_data[x]["tags"], server_data[x]["prefix"], server_data[x]["broadcast"], server_data[x]["broadcast-channel"], server_data[x]["starboard"], server_data[x]["starboard-count"]])
-            except KeyError:
-                print(x)
-                Awriter.writerow([x,"","","","","","","Welcome {member} to {server}!","Leaving so soon? We'll miss you, {member}!","{}","","","","",""])
+                self.load_extension("rings."+extension)
+            except Exception as e:
+                print(f'Failed to load extension {extension}.', file=sys.stderr)
+                traceback.print_exc()
+        await msg.edit(content="All extensions loaded")
 
-    await bot.send_message(bot.get_channel(bot.ERROR_LOG), "Saved at " + str(t.asctime(t.localtime(t.time()))))
+        await channel.send("**Bot Online**")
+        await msg.delete()
 
-async def broadcast():
-    for x in server_data:
-        if server_data[x]["broadcast"] != "" and server_data[x]["broadcast-channel"] != "":
-            await bot.send_message(bot.get_channel(server_data[x]["broadcast-channel"]), server_data[x]["broadcast"])
+        await self.change_presence(game=discord.Game(name="n!help for help", type=0))
 
-# *****************************************************************************************************************
-#  Background Tasks
-# *****************************************************************************************************************
-async def hourly_task():
-    await bot.wait_until_ready()
-    while not bot.is_closed:
-        await asyncio.sleep(3600) # task runs every hour
-        await save()
-        await broadcast()
+    async def on_command_error(self, ctx, error):
+        """Catches error and sends a message to the user that caused the error with a helpful message."""
+        channel = ctx.message.channel
 
-# *****************************************************************************************************************
-#  Cogs Commands
-# *****************************************************************************************************************
-@bot.command(hidden=True)
-@is_necro()
-async def load(ctx, extension_name : str):
-    """Loads the extension name if in NecroBot's list of rings.
-    
-    {usage}"""
-    try:
-        bot.load_extension("rings." + extension_name)
-    except (AttributeError,ImportError) as e:
-        await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
-        return
-    await ctx.channel.send("{} loaded.".format(extension_name))
+        if isinstance(error, commands.MissingRequiredArgument):
+            msg = await channel.send(":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(ctx.command.name))
+        elif isinstance(error, commands.CheckFailure):
+            msg = await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
+        elif isinstance(error, commands.CommandOnCooldown):
+            msg = await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
+        elif isinstance(error, commands.NoPrivateMessage):
+            msg = await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.")
+        elif isinstance(error, commands.DisabledCommand):
+            msg = await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
+        elif isinstance(error, commands.BadArgument):
+            msg = await channel.send(":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
+        elif isinstance(error, discord.errors.Forbidden):
+            msg = await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your guild.")
+        elif isinstance(error, commands.CommandInvokeError):
+            print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
+            traceback.print_tb(error.original.__traceback__)
+            print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
+            return
+        else:
+            print(type(error))
+            return
 
-@bot.command(hidden=True)
-@is_necro()
-async def unload(ctx, extension_name : str):
-    """Unloads the extension name if in NecroBot's list of rings.
-     
-    {usage}"""
-    bot.unload_extension("rings." + extension_name)
-    await ctx.channel.send("{} unloaded.".format(extension_name))
+        await asyncio.sleep(10)
+        await msg.delete()
 
-@bot.command(hidden=True)
-@is_necro()
-async def reload(ctx, extension_name : str):
-    """Unload and loads the extension name if in NecroBot's list of rings.
-     
-    {usage}"""
-    bot.unload_extension("rings." + extension_name)
-    try:
-        bot.load_extension("rings." + extension_name)
-    except (AttributeError,ImportError) as e:
-        await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
-        return
-    await ctx.channel.send("{} reloaded.".format(extension_name))
+    async def on_guild_join(self, guild):
+        self.server_data[guild.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix": "", "broadcast-channel": "", "broadcast": ""}
 
-# *****************************************************************************************************************
-# Bot Smith Commands
-# *****************************************************************************************************************
-@bot.command()
-@is_necro()
-async def off(ctx):
-    """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
-     
-    {usage}"""
-    await save()
-    await bot.get_channel("318465643420712962").send("**Bot Offline**")
-    await bot.logout()
+        for member in guild.members:
+            self.default_stats(member, guild)
 
-@bot.command(name="save")
-@is_necro()
-async def command_save(ctx):
-    """Saves all the data. (Permission level required: 7+ (The Bot Smith))
-     
-    {usage}"""
-    msg = await ctx.channel.send("**Saving Data...**")
-    try:
-        await save()
-        await msg.edit_message("**Data saved**")
-    except KeyError:
-        await msg.edit_message("**Failed to save Data**")
+        await guild.owner.send(":information_source: I've just been invited to a server you own. Everything is good to go, your server has been set up on my side. However, most of my automatic functionalities are disabled by default (automoderation, welcome-messages and mute). You just need to set those up using `n!settings`. Check out the help with `n!help settings`")
+
+    async def on_message_delete(self, message):
+        if isinstance(message.channel, discord.DMChannel) or self.server_data[message.guild.id]["automod"] == "" or message.author.bot:
+            return
+
+        if message.author.id not in self.server_data[message.guild.id]["ignoreAutomod"] and message.channel.id not in self.server_data[message.guild.id]["ignoreAutomod"]:
+            fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ``` {0.content} ```'
+            channel = self.get_channel(self.server_data[message.guild.id]["automod"])
+            await channel.send(fmt.format(message))
+
+    async def on_message_edit(self, before, after):
+        if isinstance(before.channel, discord.DMChannel) or self.server_data[before.guild.id]["automod"] == "" or before.author.bot or before.content == after.content:
+            return
+
+        if before.author.id not in self.server_data[before.guild.id]["ignoreAutomod"] and before.channel.id not in self.server_data[before.guild.id]["ignoreAutomod"]:
+            fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {0.content} \n {1.content} ```'
+            channel = self.get_channel(self.server_data[before.guild.id]["automod"])
+            await channel.send(fmt.format(before, after))
+
+
+    async def on_member_join(self, member):
+        self.default_stats(member, member.guild)
+
+        if self.server_data[member.guild.id]["welcome-channel"] == "" or member.bot or self.server_data[member.guild.id]["welcome"] == "":
+            return
+
+        channel = self.get_channel(self.server_data[member.guild.id]["welcome-channel"])
+        message = self.server_data[member.guild.id]["welcome"]
+
+        await channel.send(message.format(member=member.mention, server=member.guild.name))
+
+    async def on_member_remove(self, member):
+        if self.user_data[member.id]["perms"][member.guild.id] < 6:
+            self.user_data[member.id]["perms"][member.guild.id] = 0
+
+        if self.server_data[member.guild.id]["welcome-channel"] == "" or member.bot or self.server_data[member.guild.id]["goodbye"] == "":
+            return
+
+        channel = self.get_channel(self.server_data[member.guild.id]["welcome-channel"])
+        message = self.server_data[member.guild.id]["goodbye"]
+
+        await channel.send(message.format(member=member.mention))
+
+    async def on_command(self, ctx):
+        self.logit(ctx.message)
+
+    async def on_message(self, message):
+        await self.wait_until_ready()
+        user_id = message.author.id
+        channel_id = message.channel.id
+
+        if message.author.bot:
+            return
+
+        if not isinstance(message.channel, discord.DMChannel):
+            self.user_data[user_id]["exp"] += random.randint(2,5)
+
+            if not self._is_allowed_summon(message):
+                return
+
+            if message.content.startswith("<@317619283377258497>"):
+                await message.channel.send(random.choice(replyList))
+
+            
+        await self.process_commands(message)
+
+
+bot = NecroBot()
+bot.loop.create_task(bot.hourly_task())
+bot.run(token)

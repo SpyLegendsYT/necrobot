@@ -3,3 +3,7 @@
 *.pyc
 rings/botdata/Profile.png
 rewrite/config.py
+*.json
+*.txt
+rewrite/config.py
+rewrite/config.py

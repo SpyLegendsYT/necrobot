@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from moddb_reader import Reader
+from moddb_reader.moddb_objects import Mod
 import aiohttp
 from bs4 import BeautifulSoup
 
@@ -54,18 +55,18 @@ class Modding():
         for article in mod.articles[:3]:
             embed.add_field(name=article.title, value="{0}... [Link]({1})\nPublished {2}".format(article.desc, article.url, article.date))
 
-        embed.add_field(name="\u200b", value="#" + " #".join(["[{0}]({1})".format(tag.name, tag.url) for tag in mod.tags]))
-        embed.add_field(name="Misc: ", value="{0} \n{1}  -  {2}\n**{3}**  -  **{4}**".format(mod.rating, mod.publishers, mod.release_date, mod.comment, mod.follow))
+        embed.add_field(name="\u200b", value=" ".join(["[#{0}]({1})".format(tag.name, tag.url) for tag in mod.tags]))
+        embed.add_field(name="Misc: ", value="{0} \n{1}  -  {2}\n**[Comment]({3})**  -  **[Follow]({4})**".format(mod.rating, mod.publishers, mod.release_date, mod.comment, mod.follow))
         embed.add_field(name="Style", value= "\n".join([mod.style.genre, mod.style.theme, mod.style.players]), inline=True)
-        embed.add_field(name="Stats", value= "\n".join([mod.rank, mod.count.visits, mod.count.files, mod.count.articles, mod.count.reviews, mod.last_update]))
+        embed.add_field(name="Stats", value= "\n".join(["Rank: " + mod.rank, "Visits: " + mod.count.visits, "Files: " + mod.count.files, "Articles: " + mod.count.articles, "Reviews: " + mod.count.reviews, "Last Update: " + mod.last_update]))
 
         suggestion_list = list()
         for suggestion in mod.suggestions:
             suggestion_list.append("[{0}]({1})".format(suggestion.name, suggestion.url))
-            embed.add_field(name="You may also like",value=" - ".join(suggestionList))
-            
+        embed.add_field(name="You may also like",value=" - ".join(suggestion_list))
+    
         await ctx.channel.send(embed=embed)
-        await ctx.message.delete_message()
+        await ctx.message.delete()
 
 def setup(bot):
     bot.add_cog(Modding(bot))

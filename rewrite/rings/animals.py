@@ -4,7 +4,7 @@ from discord.ext import commands
 import aiohttp
 
 class Animals():
-    """Show pictures of cute animals us the power of the internet."""
+    """Show pictures of cute animals using the power of the internet."""
     def __init__(self, bot):
         self.bot = bot
 

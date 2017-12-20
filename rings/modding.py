@@ -66,7 +66,7 @@ class Modding():
         for suggestion in mod.suggestions:
             suggestion_list.append("[{0}]({1})".format(suggestion.name, suggestion.url))
         embed.add_field(name="You may also like",value=" - ".join(suggestion_list))
-
+        
         await self.bot.say(embed=embed)
         await self.bot.delete_message(ctx.message)
 
