@@ -142,7 +142,7 @@ class Moderation():
 
     @commands.command()
     @has_perms(3)
-    async def speak(self, ctx, channel : str, *, message : str):
+    async def speak(self, ctx, channel : int, *, message : str):
         """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 3+ (Semi-Admin))
         
         {usage}

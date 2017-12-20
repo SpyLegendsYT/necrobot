@@ -11,6 +11,20 @@ class Admin():
         self.bot = bot
 
     @commands.command()
+    @commands.is_owner()
+    async def leave(self, ctx, id : int, *, reason : str ="unspecified"):
+        """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
+        {usage}"""
+        guild = self.bot.get_guild(id)
+        if not guild is None:
+            channel = guild.text_channels[1]
+            await channel.send("I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
+            await guild.leave()
+            await ctx.message.channel.send(":white_check_mark: | Okay Necro, I've left {}".format(guild.name))
+        else:
+            await ctx.message.channel.send(":negative_squared_cross_mark: | I'm not on that server")
+
+    @commands.command()
     @has_perms(2)
     async def set(self, ctx, user : discord.Member):
         """Allows server specific authorities to set the default stats for a user that might have slipped past the on_ready and on_member_join events (Permission level required: 2+ (Moderator))
@@ -131,10 +145,13 @@ class Admin():
         {usage}"""
         for guild in self.bot.guilds:
             try:
-                invite = await self.bot.create_invite(guild, max_age=86400)
-                await ctx.message.author.send("Server: " + guild.name + " - <" + invite.url + ">")
+                channel = guild.text_channels[1]
+                invite = await channel.create_invite(max_age=86400)
+                await ctx.message.author.send("Server: " + guild.name + "(" + str(guild.id) + ") - <" + invite.url + ">")
             except discord.errors.Forbidden:
-                await ctx.message.author.send("I don't have the necessary permissions on " + guild.name + ". That server is owned by " + guild.owner.name + "#" + str(guild.owner.discriminator) + " (" + str(guild.id) + ")")
+                await ctx.message.author.send("I don't have the necessary permissions on " + guild.name + "(" + str(guild.id) + "). That server is owned by " + guild.owner.name + "#" + str(guild.owner.discriminator) + " (" + str(guild.id) + ")")
+            except IndexError:
+                await ctx.message.author.send("No text channels in " + guild.name + "(" + str(guild.id) + ")")
 
     @commands.command()
     @commands.is_owner()

@@ -234,8 +234,6 @@ class NecroBot(commands.Bot):
     # *****************************************************************************************************************
     async def on_ready(self):
         await self.change_presence(game=discord.Game(name="Bot booting...", type=0))
-        print(self.server_data)
-        print('------')
         channel = self.get_channel(318465643420712962)
         await channel.send("**Initiating Bot**")
         msg = await channel.send("Bot User ready")
@@ -262,6 +260,8 @@ class NecroBot(commands.Bot):
         await msg.delete()
 
         await self.change_presence(game=discord.Game(name="n!help for help", type=0))
+        print(self.server_data)
+        print('------')
 
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
