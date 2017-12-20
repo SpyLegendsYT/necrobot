@@ -68,7 +68,6 @@ class Wiki():
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    @commands.cooldown(2, 5, BucketType.user)
     async def lotr(self, ctx, *, article_name : str):
         """Performs a search on the Lord of the Rings Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
@@ -105,7 +104,6 @@ class Wiki():
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    @commands.cooldown(2, 5, BucketType.user)
     async def wiki(self, ctx, wiki : str, *, article : str):
         """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
