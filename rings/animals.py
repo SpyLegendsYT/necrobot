@@ -2,34 +2,31 @@
 import discord
 from discord.ext import commands
 import aiohttp
-from rings.botdata.cooldowns import _medium_cooldown
 
 class Animals():
-    """Show pictures of cute animals us the power of the internet."""
+    """Show pictures of cute animals using the power of the internet."""
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(*_medium_cooldown())
-    async def cat(self):
+    async def cat(self, ctx):
         """Posts a random cat picture from random.cat
         
         {usage}"""
         async with aiohttp.ClientSession() as cs:
             async with cs.get('http://random.cat/meow') as r:
                 res = await r.json()
-                await self.bot.say(res['file'])
+                await ctx.channel.send(res['file'])
 
     @commands.command()
-    @commands.cooldown(*_medium_cooldown())
-    async def dog(self):
+    async def dog(self, ctx):
         """Posts a random dog picture from random.dog 
         
         {usage}"""
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
             async with cs.get('https://random.dog/woof.json') as r:
                 res = await r.json()
-                await self.bot.say(res['url'])
+                await ctx.channel.send(res['url'])
 
 def setup(bot):
     bot.add_cog(Animals(bot))

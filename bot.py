@@ -1,35 +1,22 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-from discord.ext.commands.cooldowns import BucketType
-import os
-import re
-import csv
-import sys
-import socket
+from rings.utils.help import NecroBotHelpFormatter
+import time
+import json
 import random
-import logging
+from config import *
+import sys
+import time as t
 import asyncio
 import traceback
-import time as t
-import calendar as c
-import datetime as d
-from rings.botdata.data import Data
-from bs4 import BeautifulSoup
-import aiohttp
-from rings.botdata.utils import bot
+import re
 
-userData = Data.userData
-serverData = Data.serverData
-superDuperIgnoreList = Data.superDuperIgnoreList
-starboard_messages = Data.starboard_messages
-if sys.argv[2] == "none":
-    default_path = ""
-else:
-    default_path = sys.argv[2]
-version = "v0.5"
-ERROR_LOG = "351356683231952897"
-prefixes = ["n!","N!", "<@317619283377258497> "]
+
+async def get_pre(bot, message):
+    if not isinstance(message.channel, discord.DMChannel):
+        if bot.server_data[message.guild.id]["prefix"] != "":
+            return bot.server_data[message.guild.id]["prefix"]
+    return bot.prefixes
 
 extensions = [
     "hunger",
@@ -43,7 +30,6 @@ extensions = [
     "profile",
     "tags",
     "server",
-    "casino",
     "admin",
     "decisions"
 ]
@@ -54,429 +40,333 @@ replyList = [
     "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?",
     "Second sight ordains it! I mean sure..."
     ]
+class NecroBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix=get_pre, description="A bot for moderation and LOTR", formatter=NecroBotHelpFormatter())
+        self.uptime_start = time.time()
+        self.user_data = dict()
+        self.server_data = dict()
 
-# *****************************************************************************************************************
-#  Internal Function
-# *****************************************************************************************************************
+        #force typecast to int for all ids
+        raw_user_data = json.load(open("rings/utils/data/user_data.json", "r"))
+        for user in raw_user_data:
+            self.user_data[int(user)] = raw_user_data[user]
+            raw_perms = dict()
+            for server in raw_user_data[user]["perms"]:
+                raw_perms[int(server)] = raw_user_data[user]["perms"][server]
 
-#forgive me gods of Python
-def startswith_prefix(message):
-    if message.content.startswith(tuple(prefixes)):
-        return True
+            self.user_data[int(user)]["perms"] = raw_perms
+        
+        raw_server_data = json.load(open("rings/utils/data/server_data.json", "r"))
+        for server in raw_server_data:
+            self.server_data[int(server)] = raw_server_data[server]
 
-    if serverData[message.server.id]["prefix"] != "" and message.content.startswith(serverData[message.server.id]["prefix"]):
-        return True
+        self.ERROR_LOG = 351356683231952897
+        self.version = 1.0
+        self.prefixes = ["n!", "N!"]
 
-    return False
+        self.add_command(self.load)
+        self.add_command(self.unload)
+        self.add_command(self.reload)
+        self.add_command(self.off)
 
-def is_spam(message):
-    userID = message.author.id
-    channelID = message.channel.id
-    if serverData[message.server.id]["automod"] == "" or startswith_prefix(message):
+    # *****************************************************************************************************************
+    #  Internal Function
+    # *****************************************************************************************************************
+
+    def _startswith_prefix(self, message):
+        if message.content.startswith(tuple(self.prefixes)):
+            return True
+
+        if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
+            return True
+
         return False
 
-    if userID in serverData[message.server.id]["ignoreAutomod"] or channelID in serverData[message.server.id]["ignoreAutomod"]:
-        return False
+    def _is_allowed_summon(self, message):
+        user_id = message.author.id
+        channel_id = message.channel.id
+        if self.user_data[user_id]["perms"][message.guild.id] >= 4:
+            return True
 
-    if message.content.lower() == userData[userID]['lastMessage'].lower() and userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 2:
-        return True
-
-    if userData[userID]['lastMessageTime'] > c.timegm(t.gmtime()) + 1:
-        return False
-
-    return False
-
-def is_allowed_summon(message):
-    userID = message.author.id
-    channelID = message.channel.id
-    if userData[userID]["perms"][message.server.id] >= 4:
-        return True
-
-    if userID in serverData[message.server.id]["ignoreCommand"] or channelID in serverData[message.server.id]["ignoreCommand"]:
-        return False
-
-    return True
-
-def logit(message):
-    if startswith_prefix(message):
-        with open(default_path + "logfile.txt","a+") as log:
-            localtime = "\n{}: ".format(t.asctime(t.localtime(t.time())))
-            try: 
-                author = "{}#{}".format(message.author.name, message.author.discriminator)
-                log.write("{}{} used {}".format(localtime, author, message.content))
-            except UnicodeEncodeError:
-                author = message.author.id
-                log.write("{}{} used {}".format(localtime, author, message.content))
-
-def default_stats(member, server):
-    if member.id not in userData:
-        userData[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], 'lastMessage': '', 'lastMessageTime': 0, 'locked': ''}
-
-    if server.id not in userData[member.id]["perms"]:
-        if any(userData[member.id]["perms"][x] == 7 for x in userData[member.id]["perms"]):
-            userData[member.id]["perms"][server.id] = 7
-        elif any(userData[member.id]["perms"][x] == 6 for x in userData[member.id]["perms"]):
-            userData[member.id]["perms"][server.id] = 6
-        elif member.id == server.owner.id:
-            userData[member.id]["perms"][server.id] = 5
-        elif member.server_permissions.administrator:
-            userData[member.id]["perms"][server.id] = 4
-        else:
-            userData[member.id]["perms"][server.id] = 0
-            
-def allmentions(cont, msg):
-    myList = []
-    mentions = msg.split(" ")
-    for x in mentions:
-        ID = re.sub('[<>!#@]', '', x)
-        if not bot.get_channel(ID) is None:
-            channel = bot.get_channel(ID)
-            myList.append(channel)
-        elif not cont.message.server.get_member(ID) is None:
-            member = cont.message.server.get_member(ID)
-            myList.append(member)
-    return myList
-
-async def save():
-    with open(default_path + "rings/botdata/userdata.csv","w",newline="") as csvfile:
-        Awriter = csv.writer(csvfile)
-        for x in userData:
-            warningList = ",".join(userData[x]["warnings"])
-            Awriter.writerow([x,userData[x]["money"],userData[x]["daily"],userData[x]["title"],userData[x]["exp"],userData[x]["perms"],warningList])
-
-    with open(default_path + "rings/botdata/setting.csv","w",newline="") as csvfile:
-        Awriter = csv.writer(csvfile)
-        Awriter.writerow([starboard_messages])
-        for x in serverData:
-            try:
-                selfRolesList = ",".join(serverData[x]["selfRoles"])
-                automodList = ",".join(serverData[x]["ignoreAutomod"])
-                commandList = ",".join(serverData[x]["ignoreCommand"])
-                Awriter.writerow([x,serverData[x]["mute"],serverData[x]["automod"],serverData[x]["welcome-channel"],selfRolesList,commandList,automodList,serverData[x]["welcome"],serverData[x]["goodbye"],serverData[x]["tags"], serverData[x]["prefix"], serverData[x]["broadcast"], serverData[x]["broadcast-channel"], serverData[x]["starboard"], serverData[x]["starboard-count"]])
-            except KeyError:
-                print(x)
-                Awriter.writerow([x,"","","","","","","Welcome {member} to {server}!","Leaving so soon? We'll miss you, {member}!","{}","","","","",""])
-
-    await bot.send_message(bot.get_channel(ERROR_LOG), "Saved at " + str(t.asctime(t.localtime(t.time()))))
-
-async def broadcast():
-    for x in serverData:
-        if serverData[x]["broadcast"] != "" and serverData[x]["broadcast-channel"] != "":
-            await bot.send_message(bot.get_channel(serverData[x]["broadcast-channel"]), serverData[x]["broadcast"])
-
-# *****************************************************************************************************************
-#  Background Tasks
-# *****************************************************************************************************************
-async def hourly_task():
-    await bot.wait_until_ready()
-    while not bot.is_closed:
-        await asyncio.sleep(3600) # task runs every hour
-        await save()
-        await broadcast()
-
-# *****************************************************************************************************************
-#  Custom Checks
-# *****************************************************************************************************************
-def has_perms(perms_level):
-    def predicate(cont): 
-        if cont.message.channel.is_private:
+        if user_id in self.server_data[message.guild.id]["ignoreCommand"] or channel_id in self.server_data[message.guild.id]["ignoreCommand"]:
             return False
 
-        return userData[cont.message.author.id]["perms"][cont.message.server.id] >= perms_level
-          
-    return commands.check(predicate)
+        return True
 
-def is_necro():
-    def predicate(cont):
-        return cont.message.author.id == "241942232867799040"
-    return commands.check(predicate)
-        
+    def logit(self, message):
+        if self._startswith_prefix(message):
+            with open("rings/utils/data/logfile.txt","a+") as log:
+                localtime = "\n{}: ".format(t.asctime(t.localtime(t.time())))
+                try: 
+                    author = "{}#{}".format(message.author.name, message.author.discriminator)
+                except UnicodeEncodeError:
+                    author = message.author.id
 
-# *****************************************************************************************************************
-#  Cogs Commands
-# *****************************************************************************************************************
-@bot.command(hidden=True)
-@is_necro()
-async def load(extension_name : str):
-    """Loads the extension name if in NecroBot's list of rings.
-    
-    {usage}"""
-    try:
-        bot.load_extension("rings." + extension_name)
-    except (AttributeError,ImportError) as e:
-        await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
-        return
-    await bot.say("{} loaded.".format(extension_name))
+                log.write("{}{} used {}".format(localtime, author, message.content))
 
-@bot.command(hidden=True)
-@is_necro()
-async def unload(extension_name : str):
-    """Unloads the extension name if in NecroBot's list of rings.
-     
-    {usage}"""
-    bot.unload_extension("rings." + extension_name)
-    await bot.say("{} unloaded.".format(extension_name))
+    async def broadcast(self):
+        for server in self.server_data:
+            if self.server_data[server]["broadcast"] != "" and self.server_data[server]["broadcast-channel"] != "":
+                channel = self.get_channel(self.server_data[server]["broadcast-channel"])
+                await channel.send(self.server_data[server]["broadcast"])
 
-@bot.command(hidden=True)
-@is_necro()
-async def reload(extension_name : str):
-    """Unload and loads the extension name if in NecroBot's list of rings.
-     
-    {usage}"""
-    bot.unload_extension("rings." + extension_name)
-    try:
-        bot.load_extension("rings." + extension_name)
-    except (AttributeError,ImportError) as e:
-        await bot.say("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
-        return
-    await bot.say("{} reloaded.".format(extension_name))
-
-
-# *****************************************************************************************************************
-# Commands
-# *****************************************************************************************************************
-@bot.command(aliases=["off"])
-@is_necro()
-async def kill():
-    """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
-     
-    {usage}"""
-    await save()
-    await bot.send_message(bot.get_channel("318465643420712962"), "**Bot Offline**")
-    await bot.logout()
-
-@bot.command(name="save")
-@is_necro()
-async def command_save():
-    """Saves all the data. (Permission level required: 7+ (The Bot Smith))
-     
-    {usage}"""
-    msg = await bot.say("**Saving Data...**")
-    try:
-        await save()
-        await bot.edit_message(msg, "**Data saved**")
-    except KeyError:
-        await bot.edit_message(msg, "**Failed to save Data**")
-
-@bot.command(pass_context = True)
-async def about(cont):
-    """Creates a rich embed of the bot's details.
-
-    {usage}"""
-    bot_desc = "Hello! :wave: I'm NecroBot, a moderation bot with many commands for a wide variety of server and a high modularity which means you can enable/disable just about every part of me as you wish. I'm still WIP so please be nice with me, but do enjoy my commands to their fullest."
-    embed = discord.Embed(title="__**NecroBot**__", colour=discord.Colour(0x277b0), description=bot_desc)
-    embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
-    embed.add_field(name="Version", value=version)
-    embed.add_field(name="About", value="I'm currently in {} guilds and I can see {} members. I was created using Python and the d.py library. ".format(len(list(bot.servers)), len(list(bot.get_all_members()))))
-
-    await bot.say(embed=embed)
-
-@bot.command(pass_context = True)
-@is_necro()
-async def leave(cont, ID, *, reason : str ="unspecified"):
-    """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
-
-    {usage}"""
-    server = bot.get_server(ID)
-    if not server is None:
-        await bot.send_message(list(server.channels)[0], "I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
-        await bot.leave_server(server)
-        await bot.say(":white_check_mark: | Okay Necro, I've left {}".format(server.name))
-    else:
-        await bot.say(":negative_squared_cross_mark: | I'm not on that server")
-
-# *****************************************************************************************************************
-#  Events
-# *****************************************************************************************************************
-@bot.event
-async def on_ready():
-    await bot.change_presence(game=discord.Game(name="Bot booting...", type=0))
-    print("SuperDuperIgnore List: {}".format(superDuperIgnoreList))
-    print(starboard_messages)
-    print(serverData)
-    print('------')
-    channel = bot.get_channel("318465643420712962")
-    await bot.send_message(channel, "**Initiating Bot**")
-    msg = await bot.send_message(channel, "Bot user ready")
-
-    members = bot.get_all_members()
-    for member in members:
-        default_stats(member, member.server)
+    # *****************************************************************************************************************
+    #  Background Tasks
+    # *****************************************************************************************************************
+    async def hourly_task(self):
+        await self.wait_until_ready()
+        while not self.is_closed:
+            await asyncio.sleep(3600) # task runs every hour
             
-    await bot.edit_message(msg, "All members checked")
+            #hourly save
+            with open("rings/utils/data/server_data.json", "w") as out:
+                json.dump(self.server_data, out)
 
-    for server in bot.servers:
-        if server.id not in serverData:
-                serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : ""}
+            with open("rings/utils/data/user_data.json", "w") as out:
+                json.dump(self.user_data, out)
 
-    await bot.edit_message(msg, "All servers checked")
+            #background tasks
+            await broadcast()
 
-    for extension in extensions:
+    # *****************************************************************************************************************
+    #  Internal Checks
+    # *****************************************************************************************************************
+
+    def default_stats(self, member, guild):
+        if member.id not in self.user_data:
+            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': []}
+
+        if guild.id not in self.user_data[member.id]["perms"]:
+            if any(self.user_data[member.id]["perms"][x] == 7 for x in self.user_data[member.id]["perms"]):
+                self.user_data[member.id]["perms"][guild.id] = 7
+            elif any(self.user_data[member.id]["perms"][x] == 6 for x in self.user_data[member.id]["perms"]):
+                self.user_data[member.id]["perms"][guild.id] = 6
+            elif member.id == guild.owner.id:
+                self.user_data[member.id]["perms"][guild.id] = 5
+            elif member.guild_permissions.administrator:
+                self.user_data[member.id]["perms"][guild.id] = 4
+            else:
+                self.user_data[member.id]["perms"][guild.id] = 0
+                
+    def all_mentions(self, ctx, msg):
+        mention_list = list()
+        for x in msg:
+            ID = re.sub('[<>!#@]', '', x)
+            if not self.get_channel(ID) is None:
+                channel = self.get_channel(ID)
+                mention_list.append(channel)
+            elif not ctx.message.guild.get_member(ID) is None:
+                member = ctx.message.guild.get_member(ID)
+                mention_list.append(member)
+        return mention_list
+
+    def has_perms(self, perms_level):
+        def predicate(ctx): 
+            if isinstance(message.channel, discord.DMChannel):
+                return False
+            return self.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level
+        return commands.check(predicate)
+
+    # *****************************************************************************************************************
+    #  Cogs Commands
+    # *****************************************************************************************************************
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def load(self, ctx, extension_name : str):
+        """Loads the extension name if in NecroBot's list of rings.
+        
+        {usage}"""
         try:
-            bot.load_extension("rings."+extension)
-        except Exception as e:
-            exc = '{} : {}'.format(type(e).__name__, e)
-            await bot.send_message(bot.get_channel(ERROR_LOG) ,"Failed to load extension {}\n{}".format(extension, exc))
-    await bot.edit_message(msg, "All extensions loaded")
+            self.load_extension("rings." + extension_name)
+        except (AttributeError,ImportError) as e:
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            return
+        await ctx.channel.send("{} loaded.".format(extension_name))
 
-    await bot.send_message(channel, "**Bot Online**")
-    await bot.delete_message(msg)
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def unload(self, ctx, extension_name : str):
+        """Unloads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        self.unload_extension("rings." + extension_name)
+        await ctx.channel.send("{} unloaded.".format(extension_name))
 
-    await bot.change_presence(game=discord.Game(name="n!help for help", type=0))
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def reload(self, ctx, extension_name : str):
+        """Unload and loads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        self.unload_extension("rings." + extension_name)
+        try:
+            self.load_extension("rings." + extension_name)
+        except (AttributeError,ImportError) as e:
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            return
+        await ctx.channel.send("{} reloaded.".format(extension_name))
 
-@bot.event
-async def on_reaction_add(reaction, user):
-    if reaction.emoji != "\N{WHITE MEDIUM STAR}" or reaction.message.channel.id == serverData[user.server.id]["starboard"]:
-        return
+    # *****************************************************************************************************************
+    # Bot Smith Commands
+    # *****************************************************************************************************************
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def off(self, ctx):
+        """Saves all the data and terminate the self. (Permission level required: 7+ (The Bot Smith))
+         
+        {usage}"""
+        channel = self.get_channel(318465643420712962)
+        msg = await channel.send("**Saving...**")
 
-    if serverData[user.server.id]["starboard"] != "" and reaction.count >= int(serverData[user.server.id]["starboard-count"]):
-        embed = discord.Embed(title=reaction.message.author.display_name, colour=discord.Colour(0x277b0), description = reaction.message.content)
-        embed.set_author(name='\N{ZERO WIDTH SPACE}', icon_url=reaction.message.author.avatar_url.replace("webp","jpg"))
-        embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
+        with open("rings/utils/data/server_data.json", "w") as out:
+            json.dump(self.server_data, out)
 
-        msg = "{} :star: | {}".format(reaction.count, reaction.message.channel.mention)
-        
-        if reaction.message.id in starboard_messages:
-            message = await bot.get_message(reaction.message.channel, starboard_messages[reaction.message.id])
-            await bot.edit_message(message, msg, embed=embed)
-        # elif reaction.message.channel.id ==  serverData[user.server.id]["starboard"]:
-        #     stars = re.find(r'/\d+/g', message.content)
-        #     content = "{} {}".format(int(stars) + 1, message.content.replace(r'/\d+/g', ''))
-        #     await bot.edit_message(reaction.message, content, embed=.reaction.message.embeds[0])
+        with open("rings/utils/data/user_data.json", "w") as out:
+            json.dump(self.user_data, out)
+
+        await msg.edit(content="**Saved**")
+        await channel.send("**Bot Offline**")
+        await self.logout()
+
+    # *****************************************************************************************************************
+    # Events
+    # *****************************************************************************************************************
+    async def on_ready(self):
+        await self.change_presence(game=discord.Game(name="Bot booting...", type=0))
+        print(self.server_data)
+        print('------')
+        channel = self.get_channel(318465643420712962)
+        await channel.send("**Initiating Bot**")
+        msg = await channel.send("Bot User ready")
+
+        members = self.get_all_members()
+        for member in members:
+            self.default_stats(member, member.guild)
+        await msg.edit(content="All members checked")
+
+        for guild in self.guilds:
+            if guild.id not in self.server_data:
+                    self.server_data[guild.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": ""}
+        await msg.edit(content="All servers checked")
+
+        for extension in extensions:
+            try:
+                self.load_extension("rings."+extension)
+            except Exception as e:
+                print(f'Failed to load extension {extension}.', file=sys.stderr)
+                traceback.print_exc()
+        await msg.edit(content="All extensions loaded")
+
+        await channel.send("**Bot Online**")
+        await msg.delete()
+
+        await self.change_presence(game=discord.Game(name="n!help for help", type=0))
+
+    async def on_command_error(self, ctx, error):
+        """Catches error and sends a message to the user that caused the error with a helpful message."""
+        channel = ctx.message.channel
+
+        if isinstance(error, commands.MissingRequiredArgument):
+            msg = await channel.send(":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(ctx.command.name))
+        elif isinstance(error, commands.CheckFailure):
+            msg = await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
+        elif isinstance(error, commands.CommandOnCooldown):
+            msg = await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
+        elif isinstance(error, commands.NoPrivateMessage):
+            msg = await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.")
+        elif isinstance(error, commands.DisabledCommand):
+            msg = await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
+        elif isinstance(error, commands.BadArgument):
+            msg = await channel.send(":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
+        elif isinstance(error, discord.errors.Forbidden):
+            msg = await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your guild.")
+        elif isinstance(error, commands.CommandInvokeError):
+            print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
+            traceback.print_tb(error.original.__traceback__)
+            print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
+            return
         else:
-            channel = bot.get_channel(serverData[user.server.id]["starboard"])
-            message = await bot.send_message(channel, msg, embed=embed)
-            starboard_messages[reaction.message.id] = message.id
+            print(type(error))
+            return
 
-@bot.event
-async def on_reaction_remove(reaction, user):
-    if reaction.message.id in starboard_messages and reaction.emoji == "\N{WHITE MEDIUM STAR}":
-        embed = discord.Embed(title=reaction.message.author.display_name, colour=discord.Colour(0x277b0), description = reaction.message.content)
-        embed.set_author(name=reaction.message.author.display_name, icon_url=reaction.message.author.avatar_url.replace("webp","jpg"))
-        embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
-
-        msg = "{} :star: | {}".format(reaction.count, reaction.message.channel.mention)
-        message = await bot.get_message(bot.get_channel(serverData[user.server.id]["starboard"]), starboard_messages[reaction.message.id])
-        await bot.edit_message(message, msg, embed=embed)
-
-
-
-@bot.event
-async def on_command_error(error, cont):
-    """Catches error and sends a message to the user that caused the error with a helpful message."""
-    channel = cont.message.channel
-    msg = None
-
-    if isinstance(error, commands.MissingRequiredArgument):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(cont.command.name))
-    elif isinstance(error, commands.CheckFailure):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
-    elif isinstance(error, commands.CommandOnCooldown):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
-    elif isinstance(error, commands.NoPrivateMessage):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | This command cannot be used in private messages.")
-    elif isinstance(error, commands.DisabledCommand):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
-    elif isinstance(error, commands.BadArgument):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
-    elif isinstance(error, discord.errors.Forbidden):
-        msg = await bot.send_message(channel, ":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your server.")
-    elif isinstance(error, commands.CommandInvokeError):
-        print('In {0.command.qualified_name}:'.format(cont), file=sys.stderr)
-        traceback.print_tb(error.original.__traceback__)
-        print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
-
-    if not msg is None:
         await asyncio.sleep(10)
-        await bot.delete_message(msg)
+        await msg.delete()
 
-@bot.event
-async def on_server_join(server):
-    serverData[server.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix": ""}
+    async def on_guild_join(self, guild):
+        self.server_data[guild.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix": "", "broadcast-channel": "", "broadcast": ""}
 
-    membList = server.members
-    for x in membList:
-        default_stats(x, server)
+        for member in guild.members:
+            self.default_stats(member, guild)
 
-    await bot.send_message(server.owner, ":information_source: I've just been invited to a server you own. Everything is good to go, your server has been set up on my side. However, most my automatic functionalities are disabled by default (automoderation, welcome-messages and mute). You just need to set those up using `n!settings`. Check out the help with `n!help settings`")
+        await guild.owner.send(":information_source: I've just been invited to a server you own. Everything is good to go, your server has been set up on my side. However, most of my automatic functionalities are disabled by default (automoderation, welcome-messages and mute). You just need to set those up using `n!settings`. Check out the help with `n!help settings`")
 
-@bot.event
-async def on_message_delete(message):
-    if message.channel.is_private or serverData[message.server.id]["automod"] == "" or message.author.bot:
-        return
-
-    if message.author.id not in serverData[message.server.id]["ignoreAutomod"] and message.channel.id not in serverData[message.server.id]["ignoreAutomod"]:
-        fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ``` {0.content} ```'
-        await bot.send_message(bot.get_channel(serverData[message.server.id]["automod"]), fmt.format(message))
-
-@bot.event
-async def on_message_edit(before, after):
-    if before.channel.is_private or serverData[before.server.id]["automod"] == "" or before.author.bot or before.content == after.content:
-        return
-
-    if before.author.id not in serverData[before.server.id]["ignoreAutomod"] and before.channel.id not in serverData[before.server.id]["ignoreAutomod"]:
-        fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {0.content} \n {1.content} ```'
-        await bot.send_message(bot.get_channel(serverData[before.server.id]["automod"]), fmt.format(before, after))
-
-@bot.event
-async def on_member_join(member):
-    default_stats(member, member.server)
-
-    if serverData[member.server.id]["welcome-channel"] == "" or member.bot or serverData[member.server.id]["welcome"] == "":
-        return
-
-    channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
-    message = serverData[member.server.id]["welcome"]
-
-    await bot.send_message(channel, message.format(member=member.mention, server=member.server.name))
-
-@bot.event
-async def on_member_remove(member):
-    if userData[member.id]["perms"][member.server.id] < 6:
-        userData[member.id]["perms"][member.server.id] = 0
-
-    if serverData[member.server.id]["welcome-channel"] == "" or member.bot or serverData[member.server.id]["goodbye"] == "":
-        return
-
-    channel = bot.get_channel(serverData[member.server.id]["welcome-channel"])
-    message = serverData[member.server.id]["goodbye"]
-
-    await bot.send_message(channel, message.format(member=member.mention))
-
-@bot.event
-async def on_command(command, cont):
-    logit(cont.message)
-
-@bot.event
-async def on_message(message):
-    await bot.wait_until_ready()
-    userID = message.author.id
-    channelID = message.channel.id
-
-    if message.author.bot or channelID in superDuperIgnoreList:
-        return
-
-    if not message.channel.is_private:
-        if is_spam(message) and serverData[message.server.id]["automod"] != "":
-            await bot.delete_message(message)
-            await bot.send_message(bot.get_channel(serverData[message.server.id]["automod"]), "User: {0.author} spammed message: ``` {0.content} ```".format(message))
+    async def on_message_delete(self, message):
+        if isinstance(message.channel, discord.DMChannel) or self.server_data[message.guild.id]["automod"] == "" or message.author.bot:
             return
 
-        userData[userID]['lastMessage'] = message.content
-        userData[userID]['lastMessageTime'] = int(c.timegm(t.gmtime()))
-        userData[userID]["exp"] += random.randint(2,5)
+        if message.author.id not in self.server_data[message.guild.id]["ignoreAutomod"] and message.channel.id not in self.server_data[message.guild.id]["ignoreAutomod"]:
+            fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ``` {0.content} ```'
+            channel = self.get_channel(self.server_data[message.guild.id]["automod"])
+            await channel.send(fmt.format(message))
 
-        if not is_allowed_summon(message):
+    async def on_message_edit(self, before, after):
+        if isinstance(before.channel, discord.DMChannel) or self.server_data[before.guild.id]["automod"] == "" or before.author.bot or before.content == after.content:
             return
 
-        if message.content.startswith("<@317619283377258497>"):
-            await bot.send_message(message.channel, random.choice(replyList))
+        if before.author.id not in self.server_data[before.guild.id]["ignoreAutomod"] and before.channel.id not in self.server_data[before.guild.id]["ignoreAutomod"]:
+            fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {0.content} \n {1.content} ```'
+            channel = self.get_channel(self.server_data[before.guild.id]["automod"])
+            await channel.send(fmt.format(before, after))
 
-        
-    await bot.process_commands(message)
 
-def run_bot():
-    bot.loop.create_task(hourly_task())
-    bot.run(sys.argv[1])
+    async def on_member_join(self, member):
+        self.default_stats(member, member.guild)
 
-run_bot()
+        if self.server_data[member.guild.id]["welcome-channel"] == "" or member.bot or self.server_data[member.guild.id]["welcome"] == "":
+            return
+
+        channel = self.get_channel(self.server_data[member.guild.id]["welcome-channel"])
+        message = self.server_data[member.guild.id]["welcome"]
+
+        await channel.send(message.format(member=member.mention, server=member.guild.name))
+
+    async def on_member_remove(self, member):
+        if self.user_data[member.id]["perms"][member.guild.id] < 6:
+            self.user_data[member.id]["perms"][member.guild.id] = 0
+
+        if self.server_data[member.guild.id]["welcome-channel"] == "" or member.bot or self.server_data[member.guild.id]["goodbye"] == "":
+            return
+
+        channel = self.get_channel(self.server_data[member.guild.id]["welcome-channel"])
+        message = self.server_data[member.guild.id]["goodbye"]
+
+        await channel.send(message.format(member=member.mention))
+
+    async def on_command(self, ctx):
+        self.logit(ctx.message)
+
+    async def on_message(self, message):
+        await self.wait_until_ready()
+        user_id = message.author.id
+        channel_id = message.channel.id
+
+        if message.author.bot:
+            return
+
+        if not isinstance(message.channel, discord.DMChannel):
+            self.user_data[user_id]["exp"] += random.randint(2,5)
+
+            if not self._is_allowed_summon(message):
+                return
+
+            if message.content.startswith("<@317619283377258497>"):
+                await message.channel.send(random.choice(replyList))
+
+            
+        await self.process_commands(message)
+
+
+bot = NecroBot()
+bot.loop.create_task(bot.hourly_task())
+bot.run(token)
