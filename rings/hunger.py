@@ -104,7 +104,8 @@ class Hunger():
 
             day += 1
 
-        await ctx.message.channel.send(tributes_list[0] + " is the Winner!") 
+        await ctx.message.channel.send(":tada:" + tributes_list[0] + " is the Winner! :tada:") 
+
 
 
 

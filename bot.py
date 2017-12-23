@@ -31,7 +31,8 @@ extensions = [
     "tags",
     "server",
     "admin",
-    "decisions"
+    "decisions",
+    "casino"
 ]
 
 replyList = [
@@ -69,6 +70,8 @@ class NecroBot(commands.Bot):
         self.add_command(self.unload)
         self.add_command(self.reload)
         self.add_command(self.off)
+        self.bg_task = self.loop.create_task(self.hourly_task())
+
 
     # *****************************************************************************************************************
     #  Internal Function
@@ -105,18 +108,13 @@ class NecroBot(commands.Bot):
 
                 log.write("{}{} used {}".format(localtime, author, message.content))
 
-    async def broadcast(self):
-        for server in self.server_data:
-            if self.server_data[server]["broadcast"] != "" and self.server_data[server]["broadcast-channel"] != "":
-                channel = self.get_channel(self.server_data[server]["broadcast-channel"])
-                await channel.send(self.server_data[server]["broadcast"])
-
     # *****************************************************************************************************************
     #  Background Tasks
     # *****************************************************************************************************************
     async def hourly_task(self):
         await self.wait_until_ready()
-        while not self.is_closed:
+        log = bot.get_channel(self.ERROR_LOG)
+        while not self.is_closed():
             await asyncio.sleep(3600) # task runs every hour
             
             #hourly save
@@ -126,8 +124,14 @@ class NecroBot(commands.Bot):
             with open("rings/utils/data/user_data.json", "w") as out:
                 json.dump(self.user_data, out)
 
+            await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
+
             #background tasks
-            await broadcast()
+            #broadcast
+            for guild in self.server_data:
+                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "":
+                    channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
+                    await channel.send(self.server_data[guild]["broadcast"])
 
     # *****************************************************************************************************************
     #  Internal Checks
@@ -151,22 +155,15 @@ class NecroBot(commands.Bot):
                 
     def all_mentions(self, ctx, msg):
         mention_list = list()
-        for x in msg:
-            ID = re.sub('[<>!#@]', '', x)
-            if not self.get_channel(ID) is None:
-                channel = self.get_channel(ID)
+        for mention in msg:
+            id = int(re.sub('[<>!#@]', '', mention))
+            if not self.get_channel(id) is None:
+                channel = self.get_channel(id)
                 mention_list.append(channel)
-            elif not ctx.message.guild.get_member(ID) is None:
-                member = ctx.message.guild.get_member(ID)
+            elif not ctx.message.guild.get_member(id) is None:
+                member = ctx.message.guild.get_member(id)
                 mention_list.append(member)
         return mention_list
-
-    def has_perms(self, perms_level):
-        def predicate(ctx): 
-            if isinstance(message.channel, discord.DMChannel):
-                return False
-            return self.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level
-        return commands.check(predicate)
 
     # *****************************************************************************************************************
     #  Cogs Commands
@@ -262,36 +259,32 @@ class NecroBot(commands.Bot):
         await self.change_presence(game=discord.Game(name="n!help for help", type=0))
         print(self.server_data)
         print('------')
+        print("Logged in as {0.user}".format(self))
 
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
         channel = ctx.message.channel
 
         if isinstance(error, commands.MissingRequiredArgument):
-            msg = await channel.send(":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(ctx.command.name))
+            await channel.send(":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(ctx.command.name), delete_after=10)
         elif isinstance(error, commands.CheckFailure):
-            msg = await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
+            await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.", delete_after=10)
         elif isinstance(error, commands.CommandOnCooldown):
-            msg = await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after))
+            await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after), delete_after=10)
         elif isinstance(error, commands.NoPrivateMessage):
-            msg = await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.")
+            await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.", delete_after=10)
         elif isinstance(error, commands.DisabledCommand):
-            msg = await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.")
+            await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
         elif isinstance(error, commands.BadArgument):
-            msg = await channel.send(":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.")
+            await channel.send(":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.", delete_after=10)
         elif isinstance(error, discord.errors.Forbidden):
-            msg = await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your guild.")
+            await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your guild.", delete_after=10)
         elif isinstance(error, commands.CommandInvokeError):
             print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
             traceback.print_tb(error.original.__traceback__)
             print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
-            return
         else:
             print(type(error))
-            return
-
-        await asyncio.sleep(10)
-        await msg.delete()
 
     async def on_guild_join(self, guild):
         self.server_data[guild.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix": "", "broadcast-channel": "", "broadcast": ""}
@@ -315,7 +308,7 @@ class NecroBot(commands.Bot):
             return
 
         if before.author.id not in self.server_data[before.guild.id]["ignoreAutomod"] and before.channel.id not in self.server_data[before.guild.id]["ignoreAutomod"]:
-            fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: ``` {0.content} \n {1.content} ```'
+            fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: \n**Before**``` {0.content} ``` \n**After** ``` {1.content} ```'
             channel = self.get_channel(self.server_data[before.guild.id]["automod"])
             await channel.send(fmt.format(before, after))
 
@@ -347,7 +340,6 @@ class NecroBot(commands.Bot):
         self.logit(ctx.message)
 
     async def on_message(self, message):
-        await self.wait_until_ready()
         user_id = message.author.id
         channel_id = message.channel.id
 
@@ -360,13 +352,11 @@ class NecroBot(commands.Bot):
             if not self._is_allowed_summon(message):
                 return
 
-            if message.content.startswith("<@317619283377258497>"):
+            if message.content.startswith(self.user.mention):
                 await message.channel.send(random.choice(replyList))
 
-            
         await self.process_commands(message)
 
 
 bot = NecroBot()
-bot.loop.create_task(bot.hourly_task())
 bot.run(token)

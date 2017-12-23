@@ -75,26 +75,27 @@ class NecroBotHelpFormatter(HelpFormatter):
 
 
     def _add_commands_to_page(self, max_width, commands):
-        commandList = list()
+        command_list = list()
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
 
-            if command.can_run(self.context) and self.context.bot.can_run(self.context):
-                commandList.append("`{}`".format(name))
+            valid = yield from command.can_run(self.context)
+            if valid:
+                command_list.append("`{0}`".format(name))
             else:
-                commandList.append("~~{}~~".format(name))
+                command_list.append("~~{0}~~".format(name))
 
-        return " | ".join(commandList)
+        yield " | ".join(command_list)
 
     def _add_subcommands_to_page(self, max_width, commands):
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
-
-            if command.can_run(self.context) and self.context.bot.can_run(self.context):
+            valid = yield from command.can_run(self.context)
+            if valid:
                 entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
             else:
                 entry = '  ~~{0:<{width}}~~ - {1}'.format(name, command.short_doc, width=max_width)
@@ -160,7 +161,7 @@ class NecroBotHelpFormatter(HelpFormatter):
                 commands = sorted(commands)
                 counter += 1
                 if len(commands) > 0:
-                    self._paginator.add_line(str(counter) + ". " + category +  self._add_commands_to_page(max_width, commands))
+                    self._paginator.add_line(str(counter) + ". " + str(category) +  " | ".join(self._add_commands_to_page(max_width, commands)))
 
             ending_note = self.get_ending_note()
 

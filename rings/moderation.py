@@ -51,7 +51,7 @@ class Moderation():
             await ctx.message.channel.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
 
-        role = discord.utils.get(ctx.message.guild.roles, name=self.bot.server_data[ctx.message.guild.id]["mute"])
+        role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role not in user.roles:
             await user.add_roles(role)
             await ctx.message.channel.send(":white_check_mark: | User: **{0}** has been muted".format(user.display_name))
@@ -78,7 +78,7 @@ class Moderation():
             await ctx.message.channel.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
             
-        role = discord.utils.get(ctx.message.guild.roles, name=self.bot.server_data[ctx.message.guild.id]["mute"])
+        role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role in user.roles:
             await user.remove_roles(role)
             await ctx.message.channel.send(":white_check_mark: | User: **{0}** has been unmuted".format(user.display_name))
@@ -124,17 +124,18 @@ class Moderation():
         `{pre}purge 35 bot` - purges all messages sent by the bot from the previous 35 messages"""
         channel = self.bot.server_data[ctx.message.guild.id]["automod"]
         self.bot.server_data[ctx.message.guild.id]["automod"] = ""
+        ctx.message.delete()
 
         if check == "link":
-            deleted = await ctx.message.channel.purge(limit=number+1, check=lambda m: "http" in m.content)
+            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: "http" in m.content)
         elif check == "mention":
-            deleted = await ctx.message.channel.purge(limit=number+1, check=lambda m: m.author.mention == extra)
+            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: m.author.mention == extra)
         elif check == "image":
-            deleted = await ctx.message.channel.purge(limit=number+1, check=lambda m: len(m.attachments) > 0)
+            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: len(m.attachments) > 0)
         elif check == "bot":
-            deleted = await ctx.message.channel.purge(limit=number+1, check=lambda m: m.author == self.bot.user)
+            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: m.author == self.bot.user)
         else:
-            deleted = await ctx.message.channel.purge(limit=number+1)
+            deleted = await ctx.message.channel.purge(limit=number)
 
         await ctx.message.channel.send(":wastebasket: | **{}** messages purged.".format(len(deleted)), delete_after=5)
 
