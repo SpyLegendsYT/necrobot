@@ -27,12 +27,7 @@ class SafeDict(dict):
         return MissingAttrHandler('{{{}'.format(key))
 
 class NecroBotHelpFormatter(HelpFormatter):
-    def __init__(self, show_hidden=False, show_check_failure=True, width=80):
-        self.width = width
-        self.show_hidden = show_hidden
-        self.show_check_failure = show_check_failure
-
-        """The default base implementation that handles formatting of the help
+    """The default base implementation that handles formatting of the help
     command.
 
     To override the behaviour of the formatter, :meth:`~.HelpFormatter.format`
@@ -51,7 +46,7 @@ class NecroBotHelpFormatter(HelpFormatter):
         The maximum number of characters that fit in a line.
         Defaults to 80.
     """
-    def __init__(self, show_hidden=False, show_check_failure=False, width=80):
+    def __init__(self, show_hidden=False, show_check_failure=True, width=80):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
@@ -73,7 +68,7 @@ class NecroBotHelpFormatter(HelpFormatter):
         return "Type {0}{1} [command] [subcommand] for more info on a command's subcommand.\n" \
                "Example: `{0}help settings welcome-channel` - display help on the welcome-channel subcommand of the settings command \n".format(self.clean_prefix, command_name)
 
-
+    @asyncio.coroutine
     def _add_commands_to_page(self, max_width, commands):
         command_list = list()
         for name, command in commands:
@@ -81,20 +76,35 @@ class NecroBotHelpFormatter(HelpFormatter):
                 # skip aliases
                 continue
 
-            valid = yield from command.can_run(self.context)
+            @asyncio.coroutine
+            def predicate():
+                try:
+                    return (yield from command.can_run(self.context))
+                except CommandError:
+                    return False
+
+            valid = yield from predicate()
             if valid:
                 command_list.append("`{0}`".format(name))
             else:
                 command_list.append("~~{0}~~".format(name))
 
-        yield " | ".join(command_list)
+        return command_list
 
     def _add_subcommands_to_page(self, max_width, commands):
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
-            valid = yield from command.can_run(self.context)
+
+            @asyncio.coroutine
+            def predicate():
+                try:
+                    return (yield from command.can_run(self.context))
+                except CommandError:
+                    return False
+
+            valid = predicate()
             if valid:
                 entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
             else:
@@ -161,7 +171,8 @@ class NecroBotHelpFormatter(HelpFormatter):
                 commands = sorted(commands)
                 counter += 1
                 if len(commands) > 0:
-                    self._paginator.add_line(str(counter) + ". " + str(category) +  " | ".join(self._add_commands_to_page(max_width, commands)))
+                    command_list = yield from self._add_commands_to_page(max_width, commands)
+                    self._paginator.add_line(str(counter) + ". " + str(category) +  " | ".join(command_list))
 
             ending_note = self.get_ending_note()
 
