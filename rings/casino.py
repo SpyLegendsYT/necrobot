@@ -119,28 +119,6 @@ class Casino():
         self.bot = bot
         self.IS_GAME = list()
 
-    def win(self, player, bank, bet, ctx, msg):
-        self.IS_GAME.remove(ctx.message.channel.id)
-        self.bot.user_data[ctx.message.author.id]["money"] += bet * 2
-        return "{2} \nEnd of the game \n**{4}'s** hand: {0} \n**Dealer's** hand: {1} \nYour bet money is doubled, you win {3} :euro:".format(player.hand.value(), bank.hand.value(), msg, bet * 2, ctx.message.author.display_name)
- 
-
-    def loose(self, player, bank, bet, ctx, msg):
-        self.IS_GAME.remove(ctx.message.channel.id)
-        return "{2} \nEnd of the game \n**{3}'s** hand: {0} \n**Dealer's** hand: {1}. \nYou lose the game and the bet money placed.".format(player.hand.value(), bank.hand.value(), msg, ctx.message.author.display_name)
-
-    async def game_end(self, player, bank, bet, ctx, status):
-        await ctx.message.channel.send("**The Dealer** passes his turn too", delete_after=5)
-        if bank.hand.beats(player.hand):
-            await ctx.message.channel.send(self.loose(player, bank, bet, ctx, "**The Dealer's** hand beats **your** hand."))
-        elif player.hand.beats(bank.hand):
-            await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**Your** hand beats **the Dealer's** hand."))
-        else:
-            await ctx.message.channel.send("Tie, everything is reset.")
-            self.IS_GAME.remove(ctx.message.channel.id)
-            self.bot.user_data[ctx.message.author.id]["money"] += bet
-        await status.delete()
-
     @commands.command(aliases=["bj"])
     async def blackjack(self, ctx, bet : int = 10):
         """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
@@ -150,7 +128,29 @@ class Casino():
         __Example__
         `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
         `{pre}blackjack` - bet the default 10 :euro:"""
-        
+
+        def win(msg):
+            self.IS_GAME.remove(ctx.message.channel.id)
+            self.bot.user_data[ctx.message.author.id]["money"] += bet * 2
+            return "{2} \nEnd of the game \n**{4}'s** hand: {0} \n**Dealer's** hand: {1} \nYour bet money is doubled, you win {3} :euro:".format(player.hand.value(), bank.hand.value(), msg, bet * 2, ctx.message.author.display_name)
+     
+
+        def lose(msg):
+            self.IS_GAME.remove(ctx.message.channel.id)
+            return "{2} \nEnd of the game \n**{3}'s** hand: {0} \n**Dealer's** hand: {1}. \nYou lose the game and the bet money placed.".format(player.hand.value(), bank.hand.value(), msg, ctx.message.author.display_name)
+
+        async def game_end():
+            await ctx.message.channel.send("**The Dealer** passes his turn too", delete_after=5)
+            if bank.hand.beats(player.hand):
+                await ctx.message.channel.send(lose("**The Dealer's** hand beats **your** hand."))
+            elif player.hand.beats(bank.hand):
+                await ctx.message.channel.send(win("**Your** hand beats **the Dealer's** hand."))
+            else:
+                await ctx.message.channel.send("Tie, everything is reset.")
+                self.IS_GAME.remove(ctx.message.channel.id)
+                self.bot.user_data[ctx.message.author.id]["money"] += bet
+            await status.delete()
+            
 
         if ctx.message.channel.id in self.IS_GAME:
             await ctx.message.channel.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
@@ -178,7 +178,7 @@ class Casino():
             while not game.is_over():
                 status = await ctx.message.channel.send("**You** have {0} Total: {1} \n**The Dealer** has {2} Total: {3}".format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
                 if player.hand.value() == 21:
-                    await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**BLACKJACK**"))
+                    await ctx.message.channel.send(win("**BLACKJACK**"))
                     await status.delete()
                     return
                 
@@ -193,7 +193,7 @@ class Casino():
                     if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
                         await ctx.message.channel.send("**You** " + game.play(player), delete_after=5)
                         if player.hand.busted:
-                            await ctx.message.channel.send(self.loose(player, bank, bet, ctx, "**You** go bust."))
+                            await ctx.message.channel.send(lose("**You** go bust."))
                             await status.delete()
                             return
                         else:
@@ -202,10 +202,10 @@ class Casino():
                             else:
                                 await ctx.message.channel.send("**The Dealer** " + game.play(bank), delete_after=5)
                                 if bank.hand.busted:
-                                    await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**The Dealer** goes bust."))
+                                    await ctx.message.channel.send(win("**The Dealer** goes bust."))
                                     return
                                 elif player.hand.value() == 21:
-                                    await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**BLACKJACK**"))
+                                    await ctx.message.channel.send(win("**BLACKJACK**"))
                                     await status.delete()
                                     return
                     elif reaction.emoji == "\N{MONEY BAG}":
@@ -214,21 +214,21 @@ class Casino():
                             self.bot.user_data[ctx.message.author.id]["money"] -= bet
                             bet *= 2
                             if player.hand.busted:
-                                await ctx.message.channel.send(self.loose(player, bank, bet, ctx, "**You** go bust."))
+                                await ctx.message.channel.send(lose("**You** go bust."))
                                 await status.delete()
                                 return
                             elif player.hand.value() == 21 and bank.hand.value() < 21:
-                                await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**BLACKJACK**"))
+                                await ctx.message.channel.send(win("**BLACKJACK**"))
                                 await status.delete()
                                 return
                             else:
                                 while not bank.hand.is_passing():
                                     await ctx.message.channel.send("**The Dealer** " + game.play(bank), delete_after=5)
                                     if bank.hand.busted:
-                                        await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**The Dealer** goes bust."))
+                                        await ctx.message.channel.send(win("**The Dealer** goes bust."))
                                         return
 
-                                return await self.game_end(player, bank, bet, ctx, status)
+                                return await game_end()
                         else:
                             await ctx.message.channel.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
 
@@ -237,11 +237,11 @@ class Casino():
                         if not bank.hand.is_passing():
                             await ctx.message.channel.send("**The Dealer** " + game.play(bank), delete_after=5)
                             if bank.hand.busted:
-                                await ctx.message.channel.send(self.win(player, bank, bet, ctx, "**The Dealer** goes bust."))
+                                await ctx.message.channel.send(win("**The Dealer** goes bust."))
                                 await status.delete()
                                 return
                         else:
-                            return await self.game_end(player, bank, bet, ctx, status)
+                            return await game_end()
                 else:
                     await ctx.message.channel.send("Too slow, please decide within one minute next time.")
                     self.IS_GAME.remove(ctx.message.channel.id)

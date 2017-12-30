@@ -293,15 +293,17 @@ class Utilities():
         await ctx.message.channel.send(embed=embed)
 
     @commands.command()
-    async def ow(self, ctx, username, region="eu"):
-        """Creates a rich embed of the user's Owerwatch stats for PC only. You must parse through a valid Battle.NET Battle Tag.
+    async def ow(self, ctx, username, region="eu", hero=None):
+        """Creates a rich embed of the user's Owerwatch stats for PC only. You must parse through a valid Battle.NET Battle 
+        Tag. You can also optionally parse in a hero's name to start the embeds at this hero.
 
 
         {usage}
 
 
         __Example__
-        `{pre}ow FakeTag#1234 us` - generates the embed for user FakeTag#1234 in region us"""
+        `{pre}ow FakeTag#1234 us` - generates an embed for user FakeTag#1234 in region us
+        `{pre}ow FakeTag#0000 eu Winston` - generates an embed for user FakeTag#0000 in region eu starting at winston"""
         def get_a_hero_stat():
             prog_list = ["__**"+hero.title()+"**__" if hero_list.index(hero) == hero_int else hero.title() for hero in hero_list]
             prog = " - ".join(prog_list)
@@ -338,7 +340,6 @@ class Utilities():
             return embed
 
         async with ctx.message.channel.typing():
-            hero_int = 0
             username = username.replace("#", "-")
             headers = {"User-Agent":"NecroBot"}
             async with aiohttp.ClientSession() as cs:
@@ -346,6 +347,14 @@ class Utilities():
                     data = await r.json()
 
             hero_list = list(data[region]["heroes"]["stats"]["quickplay"].keys())
+
+            if hero == None:
+                hero_int = 0
+            else:
+                try:
+                    hero_int = hero_list.index(hero.lower())
+                except:
+                    hero_int = 0
 
             msg = await ctx.message.channel.send(embed=get_a_hero_stat())
 
@@ -365,8 +374,10 @@ class Utilities():
             def check(reaction, user):
                 return user == ctx.message.author and str(reaction.emoji) in react_list and msg.id == reaction.message.id
 
-
-            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+            except asyncio.TimeoutError:
+                return
 
             if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
                 await msg.clear_reactions()
