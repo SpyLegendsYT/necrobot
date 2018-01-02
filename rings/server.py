@@ -241,25 +241,44 @@ class Server():
             self.bot.server_data[ctx.message.guild.id]["prefix"] = prefix
             await ctx.message.channel.send(":white_check_mark: | Server prefix is now **{}**".format(prefix))
 
-    @settings.command(name="broadcast")
-    async def settings_broadcast(self, ctx, channel : discord.TextChannel = "", *, message = ""):
-        """Enables hourly broadcasting on your server, sending the given message at the given channel once ever hour. If one 
-        of the two arguments is missing, either the channel or the message, then it will disable the broadcasts, same if both are missing.
-
+    @commands.group(name="broadcast", invoke_without_command=True)
+    @has_perms(4)
+    async def broadcast(self, ctx, disable):
+        """Enables hourly broadcasting on your server, sending the given message at the given channel once every hour if no other time is specified.
+        The broacast will not fire if either the message or channel is missing. You can also disable/reset it through this command, disabling resets
+        the channel and message, they will have to be set again to re-enable the broadcast.
         {usage}
         
         __Example__
-        `{pre}settings broadcast #general test 1 2 3` - sends the message 'test 1 2 3' to #general
-        `{pre}settings broadcast` - disables broadcasted messages"""
-        if channel == "" or message == "":
+        `{pre}broadcast channel #general test 1 2 3` - sets the broadcast channel to #general
+        `{pre}broadcast message #general test 1 2 3` - sets the broadcast channel to #general
+        `{pre}broadcast time #general test 1 2 3` - sets the broadcast channel to #general
+        `{pre}broadcast disable` - disables broadcasted messages"""
+        if disable == "disable":
             await ctx.message.channel.send(":white_check_mark: | **Broadcast messages disabled**")
             self.bot.server_data[ctx.message.guild.id]["broadcast"] = ""
             self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = ""
-            return
-        else:
-            self.bot.server_data[ctx.message.guild.id]["broadcast"] = message
-            self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = channel.id
-            await ctx.message.channel.send(":white_check_mark: | Okay, The following message will be broadcasted hourly in {} \n{}".format(channel.mention, message))        
+
+
+    @broadcast.command(name="channel")
+    @has_perms(4)
+    async def broadcast_channel(self, ctx, channel : discord.TextChannel = ""):
+        self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = channel.id
+        await ctx.message.channel.send(":white_check_mark: | Okay, the broacast message you set through `n!broacast message` will be broadcasted in {}".format(channel.mention))        
+
+    @broadcast.command(name="message")
+    @has_perms(4)
+    async def broadcast_message(self, ctx, *, message = ""):
+        self.bot.server_data[ctx.message.guild.id]["broadcast"] = message
+        await ctx.message.channel.send(":white_check_mark: | Okay, the following messqge will be broadcasted in the channel you set using `n!broadcast channel` \n {}".format(message))        
+
+    @broadcast.command(name="time")
+    @has_perms(4)
+    async def broadcast_time(self, ctx, hours : int):
+        if hours > 0:
+            self.bot.server_data[ctx.message.guild.id]["broacast-time"] = hours
+            await ctx.message.channel.send(":white_check_mark: | Okay, the broacast message you set through `n!broacast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{}` hour(s)".format(hours))        
+
 
     @commands.group(invoke_without_command = True)
     @commands.guild_only()

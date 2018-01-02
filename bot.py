@@ -10,7 +10,13 @@ import time as t
 import asyncio
 import traceback
 import re
+import logging
 
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
@@ -114,8 +120,10 @@ class NecroBot(commands.Bot):
     async def hourly_task(self):
         await self.wait_until_ready()
         log = bot.get_channel(self.ERROR_LOG)
+        counter = 0
         while not self.is_closed():
             await asyncio.sleep(3600) # task runs every hour
+            counter += 1
             
             #hourly save
             with open("rings/utils/data/server_data.json", "w") as out:
@@ -129,7 +137,8 @@ class NecroBot(commands.Bot):
             #background tasks
             #broadcast
             for guild in self.server_data:
-                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "":
+                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "" and counter % self.server_data[guild]["broadcast-time"] == 0:
+
                     channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
                     await channel.send(self.server_data[guild]["broadcast"])
 

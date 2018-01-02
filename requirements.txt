@@ -40,15 +40,6 @@ mwclient == 0.8.6
 # rings\utilities.py: 9,10
 overwatch_api == 0.5
 
-# bot.py: 17,18
-# rings\admin.py: 5
-# rings\casino.py: 6
-# rings\moderation.py: 5
-# rings\profile.py: 6
-# rings\server.py: 5
-# rings\tags.py: 5
-rings == 0.7.3
-
 # rings\admin.py: 6
 # rings\profile.py: 7
 # rings\utilities.py: 5

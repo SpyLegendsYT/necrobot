@@ -6,3 +6,5 @@ rewrite/config.py
 *.json
 *.txt
 
+config.py
+*.log
