@@ -8,3 +8,4 @@ rewrite/config.py
 
 config.py
 *.log
+archive/
