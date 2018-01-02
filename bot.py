@@ -67,6 +67,8 @@ class NecroBot(commands.Bot):
         raw_server_data = json.load(open("rings/utils/data/server_data.json", "r"))
         for server in raw_server_data:
             self.server_data[int(server)] = raw_server_data[server]
+            if "broadcast-time" not in self.server_data[int(server)]:
+                self.server_data[int(server)]["broadcast-time"] = 1
 
         self.ERROR_LOG = 351356683231952897
         self.version = 1.0
@@ -122,23 +124,25 @@ class NecroBot(commands.Bot):
         log = bot.get_channel(self.ERROR_LOG)
         counter = 0
         while not self.is_closed():
+            if counter >= 24:
+                counter = 0
             await asyncio.sleep(3600) # task runs every hour
             counter += 1
             
-            #hourly save
-            with open("rings/utils/data/server_data.json", "w") as out:
-                json.dump(self.server_data, out)
+            # #hourly save
+            # with open("rings/utils/data/server_data.json", "w") as out:
+            #     json.dump(self.server_data, out)
 
-            with open("rings/utils/data/user_data.json", "w") as out:
-                json.dump(self.user_data, out)
+            # with open("rings/utils/data/user_data.json", "w") as out:
+            #     json.dump(self.user_data, out)
 
-            await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
+            # await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
 
             #background tasks
             #broadcast
             for guild in self.server_data:
-                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "" and counter % self.server_data[guild]["broadcast-time"] == 0:
-
+                hour_mod = counter % self.server_data[guild]["broadcast-time"]
+                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "" and hour_mod == 0:
                     channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
                     await channel.send(self.server_data[guild]["broadcast"])
 
