@@ -159,7 +159,7 @@ class Casino():
             self.IS_GAME.append(ctx.message.channel.id)
 
         if self.bot.user_data[ctx.message.author.id]["money"] >= bet and bet >= 10:
-            await ctx.message.channel.send(":white_check_mark: | Starting a game of Blackjack with **{0.display_name}** for {1} :euro:".format(ctx.message.author, bet))
+            await ctx.message.channel.send(":white_check_mark: | Starting a game of Blackjack with **{0.display_name}** for {1} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ".format(ctx.message.author, bet))
             self.bot.user_data[ctx.message.author.id]["money"] -= bet
             name = ctx.message.author.display_name
             player = Player(name, 0)
@@ -185,7 +185,7 @@ class Casino():
                 msg = await ctx.message.channel.send("**Current bet** - {} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card".format(bet))
                 await msg.add_reaction("\N{PLAYING CARD BLACK JOKER}")
                 await msg.add_reaction("\N{BLACK SQUARE FOR STOP}")
-                await msg.add_reaction("\N{MONEY BAG}")
+                await msg.add_reaction("\N{MONEY BAG}") 
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=60)
 
                 if reaction is not None:
@@ -251,6 +251,11 @@ class Casino():
         else:
             self.IS_GAME.remove(ctx.message.channel.id)
             await ctx.message.channel.send("You don't have enough money to do that, also, the minimum bet is 10 :euro:.")
+
+        try:
+            self.IS_GAME.remove(ctx.message.channel.id)
+        except ValueError:
+            pass
 
 
 

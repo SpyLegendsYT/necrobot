@@ -129,14 +129,14 @@ class NecroBot(commands.Bot):
             await asyncio.sleep(3600) # task runs every hour
             counter += 1
             
-            # #hourly save
-            # with open("rings/utils/data/server_data.json", "w") as out:
-            #     json.dump(self.server_data, out)
+            #hourly save
+            with open("rings/utils/data/server_data.json", "w") as out:
+                json.dump(self.server_data, out)
 
-            # with open("rings/utils/data/user_data.json", "w") as out:
-            #     json.dump(self.user_data, out)
+            with open("rings/utils/data/user_data.json", "w") as out:
+                json.dump(self.user_data, out)
 
-            # await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
+            await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
 
             #background tasks
             #broadcast
