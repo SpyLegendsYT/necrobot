@@ -21,7 +21,8 @@ logger.addHandler(handler)
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
         if bot.server_data[message.guild.id]["prefix"] != "":
-            return list(bot.server_data[message.guild.id]["prefix"]).append("n@")
+            return [bot.server_data[message.guild.id]["prefix"], "n@"]
+
     return bot.prefixes
 
 extensions = [
@@ -321,20 +322,20 @@ class NecroBot(commands.Bot):
         await guild.owner.send(":information_source: I've just been invited to a server you own. Everything is good to go, your server has been set up on my side. However, most of my automatic functionalities are disabled by default (automoderation, welcome-messages and mute). You just need to set those up using `n!settings`. Check out the help with `n!help settings`")
 
     async def on_message_delete(self, message):
-        role_id = [role.id for role in message.author.roles]
         if isinstance(message.channel, discord.DMChannel) or self.server_data[message.guild.id]["automod"] == "" or message.author.bot:
             return
 
+        role_id = [role.id for role in message.author.roles]
         if message.author.id not in self.server_data[message.guild.id]["ignoreAutomod"] and message.channel.id not in self.server_data[message.guild.id]["ignoreAutomod"] and not any(x in role_id for x in self.server_data[message.guild.id]["ignoreAutomod"]):
             fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ``` {0.content} ```'
             channel = self.get_channel(self.server_data[message.guild.id]["automod"])
             await channel.send(fmt.format(message))
 
     async def on_message_edit(self, before, after):
-        role_id = [role.id for role in before.author.roles]
         if isinstance(before.channel, discord.DMChannel) or self.server_data[before.guild.id]["automod"] == "" or before.author.bot or before.content == after.content:
             return
 
+        role_id = [role.id for role in before.author.roles]
         if before.author.id not in self.server_data[before.guild.id]["ignoreAutomod"] and before.channel.id not in self.server_data[before.guild.id]["ignoreAutomod"] and not any(x in role_id for x in self.server_data[before.guild.id]["ignoreAutomod"]):
             fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: \n**Before**``` {0.content} ``` \n**After** ``` {1.content} ```'
             channel = self.get_channel(self.server_data[before.guild.id]["automod"])
