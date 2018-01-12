@@ -122,7 +122,7 @@ class Utilities():
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def avatar(self, ctx, user : discord.Member=None):
+    async def avatar(self, ctx,* , user : discord.Member=None):
         """Returns a link to the given user's profile pic 
         
         {usage}

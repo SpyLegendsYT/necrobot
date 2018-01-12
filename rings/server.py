@@ -53,9 +53,13 @@ class Server():
                     try:
                         myList.append("U: "+self.bot.get_member(x).name)
                     except AttributeError:
-                        pass
+                        try:
+                            role = discord.utils.get(ctx.message.guild.roles, id=x)
+                            myList.append("R: " + role.name)
+                        except AttributeError:
+                            pass
 
-            await ctx.message.channel.send("Channels(**C**) and Users(**U**) ignored by auto moderation: ``` "+str(myList)+" ```")
+            await ctx.message.channel.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` "+str(myList)+" ```")
         else:
             myList = self.bot.all_mentions(ctx, mentions)
             for x in myList:
@@ -92,9 +96,13 @@ class Server():
                     try:
                         myList.append("U: "+self.bot.get_member(x).name)
                     except AttributeError:
-                        pass
+                        try:
+                            role = discord.utils.get(ctx.message.guild.roles, id=x)
+                            myList.append("R: " + role.name)
+                        except AttributeError:
+                            pass
 
-            await ctx.message.channel.send("Channels(**C**) and Users(**U**) ignored by NecroBot: ``` "+str(myList)+" ```")
+            await ctx.message.channel.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` "+str(myList)+" ```")
         else:
             myList = self.bot.all_mentions(ctx, mentions)
             for x in myList:

@@ -164,6 +164,23 @@ class Moderation():
         else:
             await ctx.message.channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
 
+    @commands.command()
+    @has_perms(4)
+    async def disable(self, ctx, command):
+        """Disables a command
+
+        {usage}"""
+        disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
+        if self.bot.get_command(command) is None:
+            await ctx.send(":negative_squared_cross_mark: | No such command.", delete_after=5)
+            return
+
+        if command not in disabled:
+            disabled.append(command)
+            await ctx.send(":white_check_mark: | Command **{}** will now be ignored".format(command))
+        else:
+            disabled.remove(command)
+            await ctx.send(":white_check_mark: | Command **{}** will no longer be ignored".format(command))
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

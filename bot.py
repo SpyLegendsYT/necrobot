@@ -21,7 +21,7 @@ logger.addHandler(handler)
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
         if bot.server_data[message.guild.id]["prefix"] != "":
-            return bot.server_data[message.guild.id]["prefix"]
+            return list(bot.server_data[message.guild.id]["prefix"]).append("n@")
     return bot.prefixes
 
 extensions = [
@@ -72,7 +72,7 @@ class NecroBot(commands.Bot):
 
         self.ERROR_LOG = 351356683231952897
         self.version = 1.0
-        self.prefixes = ["n!", "N!"]
+        self.prefixes = ["n!", "N!", "n@"]
 
         self.add_command(self.load)
         self.add_command(self.unload)
@@ -80,27 +80,34 @@ class NecroBot(commands.Bot):
         self.add_command(self.off)
         self.bg_task = self.loop.create_task(self.hourly_task())
 
+        @self.check
+        def disabled_check(ctx):
+            return not ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@"
+                
+        self.add_check(disabled_check)
+
 
     # *****************************************************************************************************************
     #  Internal Function
     # *****************************************************************************************************************
 
     def _startswith_prefix(self, message):
-        if message.content.startswith(tuple(self.prefixes)):
+        if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
             return True
 
-        if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
+        if message.content.startswith(tuple(self.prefixes)):
             return True
 
         return False
 
     def _is_allowed_summon(self, message):
+        role_id = [role.id for role in message.author.roles]
         user_id = message.author.id
         channel_id = message.channel.id
-        if self.user_data[user_id]["perms"][message.guild.id] >= 4:
+        if self.user_data[user_id]["perms"][message.guild.id] >= 4 and message.content.startswith("n@"):
             return True
 
-        if user_id in self.server_data[message.guild.id]["ignoreCommand"] or channel_id in self.server_data[message.guild.id]["ignoreCommand"]:
+        if user_id in self.server_data[message.guild.id]["ignoreCommand"] or channel_id in self.server_data[message.guild.id]["ignoreCommand"] or any(x in role_id for x in self.server_data[message.guild.id]["ignoreCommand"]):
             return False
 
         return True
@@ -169,13 +176,17 @@ class NecroBot(commands.Bot):
     def all_mentions(self, ctx, msg):
         mention_list = list()
         for mention in msg:
-            id = int(re.sub('[<>!#@]', '', mention))
+            id = int(re.sub('[<>!&#@]', '', mention))
             if not self.get_channel(id) is None:
                 channel = self.get_channel(id)
                 mention_list.append(channel)
             elif not ctx.message.guild.get_member(id) is None:
                 member = ctx.message.guild.get_member(id)
                 mention_list.append(member)
+            elif not discord.utils.get(ctx.message.guild.roles, id=id) is None:
+                role = discord.utils.get(ctx.message.guild.roles, id=id)
+                mention_list.append(role)
+
         return mention_list
 
     # *****************************************************************************************************************
@@ -277,6 +288,10 @@ class NecroBot(commands.Bot):
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
         channel = ctx.message.channel
+        if ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@":
+            await ctx.send(":negative_squared_cross_mark: | Command {} cannot be used on this server.".format(ctx.command.name), delete_after=10)
+            await ctx.message.delete()
+            return
 
         if isinstance(error, commands.MissingRequiredArgument):
             await channel.send(":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(ctx.command.name), delete_after=10)
@@ -296,8 +311,6 @@ class NecroBot(commands.Bot):
             print('In {0.command.qualified_name}:'.format(ctx), file=sys.stderr)
             traceback.print_tb(error.original.__traceback__)
             print('{0.__class__.__name__}: {0}'.format(error.original), file=sys.stderr)
-        else:
-            print(type(error))
 
     async def on_guild_join(self, guild):
         self.server_data[guild.id] = {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix": "", "broadcast-channel": "", "broadcast": ""}
@@ -308,19 +321,21 @@ class NecroBot(commands.Bot):
         await guild.owner.send(":information_source: I've just been invited to a server you own. Everything is good to go, your server has been set up on my side. However, most of my automatic functionalities are disabled by default (automoderation, welcome-messages and mute). You just need to set those up using `n!settings`. Check out the help with `n!help settings`")
 
     async def on_message_delete(self, message):
+        role_id = [role.id for role in message.author.roles]
         if isinstance(message.channel, discord.DMChannel) or self.server_data[message.guild.id]["automod"] == "" or message.author.bot:
             return
 
-        if message.author.id not in self.server_data[message.guild.id]["ignoreAutomod"] and message.channel.id not in self.server_data[message.guild.id]["ignoreAutomod"]:
+        if message.author.id not in self.server_data[message.guild.id]["ignoreAutomod"] and message.channel.id not in self.server_data[message.guild.id]["ignoreAutomod"] and not any(x in role_id for x in self.server_data[message.guild.id]["ignoreAutomod"]):
             fmt = '**Auto Moderation: Deletion Detected!**\n Message by **{0.author}** was deleted in {0.channel.name}, it contained: ``` {0.content} ```'
             channel = self.get_channel(self.server_data[message.guild.id]["automod"])
             await channel.send(fmt.format(message))
 
     async def on_message_edit(self, before, after):
+        role_id = [role.id for role in before.author.roles]
         if isinstance(before.channel, discord.DMChannel) or self.server_data[before.guild.id]["automod"] == "" or before.author.bot or before.content == after.content:
             return
 
-        if before.author.id not in self.server_data[before.guild.id]["ignoreAutomod"] and before.channel.id not in self.server_data[before.guild.id]["ignoreAutomod"]:
+        if before.author.id not in self.server_data[before.guild.id]["ignoreAutomod"] and before.channel.id not in self.server_data[before.guild.id]["ignoreAutomod"] and not any(x in role_id for x in self.server_data[before.guild.id]["ignoreAutomod"]):
             fmt = '**Auto Moderation: Edition Detected!**\n{0.author} edited their message: \n**Before**``` {0.content} ``` \n**After** ``` {1.content} ```'
             channel = self.get_channel(self.server_data[before.guild.id]["automod"])
             await channel.send(fmt.format(before, after))
@@ -362,7 +377,9 @@ class NecroBot(commands.Bot):
         if not isinstance(message.channel, discord.DMChannel):
             self.user_data[user_id]["exp"] += random.randint(2,5)
 
-            if not self._is_allowed_summon(message):
+            if not self._is_allowed_summon(message) and self._startswith_prefix(message):
+                await message.delete()
+                await message.channel.send(":negative_squared_cross_mark: | Commands not allowed in the channel or you are being ignored.", delete_after=5)
                 return
 
             if message.content.startswith(self.user.mention):

@@ -19,6 +19,10 @@ permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","Ne
 class Profile():
     def __init__(self, bot):
         self.bot = bot
+        self.font20 = ImageFont.truetype("Ringbearer Medium.ttf", 20)
+        self.font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
+        self.font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
+        self.overlay = Image.open("rings/utils/profile/overlay.png")
 
     @commands.command()
     async def balance(self, ctx, user : discord.Member = None):
@@ -76,6 +80,8 @@ class Profile():
                 return
 
             await ctx.message.channel.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
+            await payee.send(":money: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
+            
             self.bot.user_data[payer.id]["money"] -= amount
             self.bot.user_data[payee.id]["money"] += amount
             
@@ -140,31 +146,19 @@ class Profile():
             draw = ImageDraw.Draw(im)
 
             pfp = Image.open(filename).resize((150,150))
-            overlay = Image.open("rings/utils/profile/overlay.png")
             perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.message.guild.id])).resize((50,50))
 
-            asyncio.sleep(1)
-
-            im.paste(overlay, box=(0, 0, 905, 453), mask=overlay)
+            im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
             im.paste(pfp, box=(75, 132, 225, 282))
             im.paste(perms_level, box=(125, 25, 175, 75))
 
-            asyncio.sleep(1)
 
-            font20 = ImageFont.truetype("Ringbearer Medium.ttf", 20)
-            font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
-            font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
-
-            asyncio.sleep(1)
-
-            draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.message.guild.id]], (0,0,0), font=font20)
-            draw.text((260,125), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=font30)
-            draw.text((260,230), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=font30)
-            draw.text((43,313), user.display_name, (0,0,0), font=font21)
-            draw.text((43,356), self.bot.user_data[user.id]["title"], (0,0,0), font=font21)
+            draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.message.guild.id]], (0,0,0), font=self.font20)
+            draw.text((260,125), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=self.font30)
+            draw.text((260,230), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=self.font30)
+            draw.text((43,313), user.display_name, (0,0,0), font=self.font21)
+            draw.text((43,356), self.bot.user_data[user.id]["title"], (0,0,0), font=self.font21)
             draw.line((52,346,468,346),fill=(0,0,0), width=2)
-
-            asyncio.sleep(1)
 
             im.save('{}.png'.format(user.id))
             ifile = discord.File('{}.png'.format(user.id))
