@@ -108,6 +108,7 @@ class Profile():
 
         embed.add_field(name="**Date Created**", value=user.created_at.strftime("%d - %B - %Y %H:%M"))
         embed.add_field(name="**Date Joined**", value=user.joined_at.strftime("%d - %B - %Y %H:%M"), inline=True)
+        embed.add_field(name="**Permission Level", value=self.bot.user_data[user.id]["perms"][ctx.guild.id])
 
         embed.add_field(name="**User Name**", value=user.name + "#" + user.discriminator)
         embed.add_field(name="**Top Role**", value=user.top_role.name, inline=True)
@@ -130,7 +131,7 @@ class Profile():
             if user is None:
                 user = ctx.message.author
 
-            url = user.avatar_url.replace("webp","jpg").replace("?size=1024","")
+            url = user.avatar_url.replace("webp","jpg")
             async with aiohttp.ClientSession() as cs:
                 async with cs.get(url) as r:
                     filename = os.path.basename(url)

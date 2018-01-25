@@ -4,6 +4,8 @@ from discord.ext import commands
 from simpleeval import simple_eval
 import inspect
 from rings.utils.utils import has_perms
+import json
+
 
 
 class Admin():
@@ -23,6 +25,13 @@ class Admin():
             await ctx.message.channel.send(":white_check_mark: | Okay Necro, I've left {}".format(guild.name))
         else:
             await ctx.message.channel.send(":negative_squared_cross_mark: | I'm not on that server")
+
+    @commands.command(name="admin-perms")
+    @commands.is_owner()
+    async def a_perms(self, ctx, server : int, user : discord.Member, level : int):
+        self.bot.user_data[user.id]["perms"][server] = level
+        await ctx.message.channel.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ str(level) + "** on server " + self.bot.get_guild(server).name)
+
 
     @commands.command()
     @has_perms(2)
@@ -172,7 +181,9 @@ class Admin():
             'message': ctx.message,
             'server': ctx.message.guild,
             'channel': ctx.message.channel,
-            'author': ctx.message.author
+            'author': ctx.message.author,
+            'server_data' : self.bot.server_data,
+            'user_data ' : self.bot.user_data
         }
 
         env.update(globals())
@@ -184,6 +195,67 @@ class Admin():
         except Exception as e:
             await ctx.message.channel.send(python.format(type(e).__name__ + ': ' + str(e)))
             return
+
+    # *****************************************************************************************************************
+    #  Cogs Commands
+    # *****************************************************************************************************************
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def load(self, ctx, extension_name : str):
+        """Loads the extension name if in NecroBot's list of rings.
+        
+        {usage}"""
+        try:
+            self.bot.load_extension("rings." + extension_name)
+        except (AttributeError,ImportError) as e:
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            return
+        await ctx.channel.send("{} loaded.".format(extension_name))
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def unload(self, ctx, extension_name : str):
+        """Unloads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        self.bot.unload_extension("rings." + extension_name)
+        await ctx.channel.send("{} unloaded.".format(extension_name))
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def reload(self, ctx, extension_name : str):
+        """Unload and loads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        self.bot.unload_extension("rings." + extension_name)
+        try:
+            self.bot.load_extension("rings." + extension_name)
+        except (AttributeError,ImportError) as e:
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            return
+        await ctx.channel.send("{} reloaded.".format(extension_name))
+
+    # *****************************************************************************************************************
+    # Bot Smith Commands
+    # *****************************************************************************************************************
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def off(self, ctx):
+        """Saves all the data and terminate the self. (Permission level required: 7+ (The Bot Smith))
+         
+        {usage}"""
+        channel = self.bot.get_channel(318465643420712962)
+        msg = await channel.send("**Saving...**")
+
+        with open("rings/utils/data/server_data.json", "w") as out:
+            json.dump(self.bot.server_data, out)
+
+        with open("rings/utils/data/user_data.json", "w") as out:
+            json.dump(self.bot.user_data, out)
+
+        await msg.edit(content="**Saved**")
+        await channel.send("**Bot Offline**")
+        await self.bot.logout()
 
 def setup(bot):
     bot.add_cog(Admin(bot))

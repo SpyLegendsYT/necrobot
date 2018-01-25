@@ -105,7 +105,7 @@
 2,2,"{p1} stabs {p2} with a tree branch."
 4,3,"{p1} forces {p2} to kill {p3} or {p4}. They decides to kill {p3}."
 4,4,"{p1} forces {p2} to kill {p3} or {p4}. They decides to kill {p4}."
-4,1,"{p1} forces {p2} to kill {p3} or {p4}. They refuses to kill, so {p1} kills them instead."
+4,2,"{p1} forces {p2} to kill {p3} or {p4}. They refuses to kill, so {p1} kills them instead."
 2,1,"{p1} poisons {p2}'s drink, but mistakes it for their own and dies."
 2,2,"{p1} poisons {p2}'s drink. They drinks it and dies."
 2,2,"{p1} stabs {p2} in the back with a trident."

@@ -15,6 +15,7 @@ from googletrans import Translator
 from PyDictionary import PyDictionary 
 from bs4 import BeautifulSoup
 import ast
+from rings.utils.utils import has_perms
 
 class NecroBotPyDict(PyDictionary):
     def __init__(self, *args):
@@ -61,6 +62,9 @@ class Utilities():
     """A bunch of useful commands to do various tasks."""
     def __init__(self, bot):
         self.bot = bot
+        self.queue = {}
+        for guild in self.bot.guilds:
+            self.queue[guild.id] = {"end": True, "list" : []}
 
     @commands.command()
     async def calc(self, ctx, *, equation : str):
@@ -389,6 +393,106 @@ class Utilities():
 
             await msg.clear_reactions()
             await msg.edit(embed=get_a_hero_stat())
+
+    @commands.command(enabled=False)
+    async def reminder(self, ctx, *, message):
+        """Creates a reminder in seconds. Doesn't work at the moment.
+
+        {usage}
+
+        __Examples__
+        `{pre}reminder do the dishes in 40` - will remind you to do the dishes in 40 seconds"""
+        if "in" not in message:
+            await ctx.send(":negative_squared_cross_mark: | Something went wrong, you need to use the format <message> in <time>")
+
+        text = message.split(" in ")[0]
+        time =int(message.split(" in ")[1])
+        await ctx.send(":white_check_mark: | Okay I will remind you in **{}** seconds of **{}**".format(time, text))
+
+        await asyncio.sleep(time)
+
+        await ctx.send(":alarm_clock: | You asked to be reminded: **{}**".format(text))
+
+    @commands.group(invoke_without_command=True)
+    async def q(self, ctx):
+        """Displays the content of the queue at the moment.
+
+        {usage}"""
+        if len(self.queue[ctx.guild.id]["list"]) > 0:
+            queue = ["**" + ctx.guild.get_member(x).display_name + "**" for x in self.queue[ctx.guild.id]["list"]]
+            await ctx.send("So far the queue has the following users in it:\n-{}".format("\n-".join(queue)))
+        else:
+            await ctx.send("So far this queue has no users in it.")
+
+    @q.command(name="start")
+    @has_perms(2)
+    async def q_start(self, ctx):
+        """Starts a queue, if there is already an ongoing queue it will fail. The ongoing queue must be cleared first using `{pre}q clear`.
+
+        {usage}"""
+        if len(self.queue[ctx.guild.id]["list"]) > 0:
+            await ctx.send(":negative_squared_cross_mark: | A queue is already ongoing, please clear the queu first")
+            return
+
+        self.queue[ctx.guild.id] = {"end": False, "list" : []}
+        await ctx.send(":white_check_mark: | Queue initialized")
+
+    @q.command(name="end")
+    @has_perms(2)
+    async def q_end(self, ctx):
+        """Ends a queue but does not clear it. Users will no longer be able to use `{pre}q me`
+
+        {usage}"""
+        self.queue[ctx.guild.id]["end"] = True
+        await ctx.send(":white_check_mark: | Users will now not be able to add themselves to queue")
+
+    @q.command(name="clear")
+    @has_perms(2)
+    async def q_clear(self, ctx):
+        """Ends a queue and clears it. Users will no longer be able to add themselves and the content of the queue will be 
+        emptied. Use it in order to start a new queue
+
+        {usage}"""
+        self.queue[ctx.guild.id]["list"] = []
+        self.queue[ctx.guild.id]["end"] = True
+        await ctx.send(":white_check_mark: | Queue cleared and ended. Please start a new queue to be able to add users again")
+
+    @q.command(name="me")
+    async def q_me(self, ctx):
+        """Queue the user that used the command to the current queue. Will fail if queue has been ended or cleared.
+
+        {usage}"""
+        if self.queue[ctx.guild.id]["end"]:
+            await ctx.send(":negative_squared_cross_mark: | Sorry, you can no longer add yourself to the queue")
+            return
+
+        if ctx.author.id in self.queue[ctx.guild.id]["list"]:
+            await ctx.send(":white_check_mark: | You have been removed from the queue")
+            self.queue[ctx.guild.id]["list"].remove(ctx.author.id)
+            return
+
+        self.queue[ctx.guild.id]["list"].append(ctx.author.id)
+        await ctx.send(":white_check_mark: |  You have been added to the queue")
+
+    @q.command(name="next")
+    @has_perms(2)
+    async def q_next(self, ctx):
+        """Mentions the next user and the one after that so they can get ready.
+        
+        {usage}"""
+        if len(self.queue[ctx.guild.id]["list"]) < 1:
+            await ctx.send(":negative_squared_cross_mark: | No users left in that queue")
+            return
+
+        msg = ":bell: | {}, you're next. Get ready!".format(ctx.guild.get_member(self.queue[ctx.guild.id]["list"][0]).mention)
+
+        if len(self.queue[ctx.guild.id]["list"]) > 1:
+            msg += " \n{}, you're right after them. Start warming up!".format(ctx.guild.get_member(self.queue[ctx.guild.id]["list"][1]).mention)
+        else:
+            msg += "\nThat's the last user in the queue"
+
+        await ctx.send(msg)
+        self.queue[ctx.guild.id]["list"].pop(0)
 
 def setup(bot):
     bot.add_cog(Utilities(bot))

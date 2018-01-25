@@ -125,6 +125,7 @@ class Moderation():
         channel = self.bot.server_data[ctx.message.guild.id]["automod"]
         self.bot.server_data[ctx.message.guild.id]["automod"] = ""
         ctx.message.delete()
+        number += 1
 
         if check == "link":
             deleted = await ctx.message.channel.purge(limit=number, check=lambda m: "http" in m.content)
@@ -137,13 +138,13 @@ class Moderation():
         else:
             deleted = await ctx.message.channel.purge(limit=number)
 
-        await ctx.message.channel.send(":wastebasket: | **{}** messages purged.".format(len(deleted)), delete_after=5)
+        await ctx.message.channel.send(":wastebasket: | **{}** messages purged.".format(len(deleted)-1), delete_after=5)
 
         self.bot.server_data[ctx.message.guild.id]["automod"] = channel
 
     @commands.command()
     @has_perms(3)
-    async def speak(self, ctx, channel : int, *, message : str):
+    async def speak(self, ctx, channel, *, message : str):
         """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 3+ (Semi-Admin))
         
         {usage}
@@ -152,7 +153,7 @@ class Moderation():
         `{pre}speak #general Hello` - sends hello to the mentionned #general channel
         `{pre}speak 235426357468543 Hello` - sends hello to the channel with the given ID (if any)"""
         try: 
-            channel = self.bot.all_mentions(ctx, channel)[0]
+            channel = self.bot.all_mentions(ctx, [channel])[0]
         except IndexError:
             await ctx.message.channel.send("No channel with that name")
             return
