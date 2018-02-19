@@ -26,11 +26,33 @@ class Decisions():
         await ctx.channel.send("I choose **{}**".format(random.choice(choice_list)))
 
     @commands.command(aliases=["flip"])
-    async def coin(self, ctx):
-        """Flips a coin and returns the result
+    async def coin(self, ctx, choice : str = None, bet : int = None):
+        """Flips a coin and returns the result. Can also be used to bet money on the result (`h` for head and `t` for tail.
         
-        {usage}"""
-        await ctx.channel.send(random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"]))
+        {usage}
+
+        __Example__
+        `{pre}coin` - flips a coin
+        `{pre}coin h 50` - bet 50 coins on the result being head"""
+        msg = await ctx.channel.send(random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"]))
+
+        if choice is None and bet is None:
+            return
+
+        if "head" in msg.content:
+            if choice == "h":
+                await ctx.send("Well done!")
+                self.bot.user_data[ctx.author.id]["money"] += bet
+            else:
+                await ctx.send("Better luck next time")
+                self.bot.user_data[ctx.author.id]["money"] -= bet
+        elif "tail" in msg.content:
+            if choice == "t":
+                await ctx.send("Well done!")
+                self.bot.user_data[ctx.author.id]["money"] += bet
+            else:
+                await ctx.send("Better luck next time")
+                self.bot.user_data[ctx.author.id]["money"] -= bet
 
     @commands.command()
     async def roll(self, ctx, dices="1d6"):

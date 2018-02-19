@@ -34,9 +34,9 @@ class Profile():
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
         if user is not None:
-            await ctx.message.channel.send(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(self.bot.user_data[user.id]["money"]))
+            await ctx.channel.send(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(self.bot.user_data[user.id]["money"]))
         else:
-            await ctx.message.channel.send(":atm: | **"+ str(ctx.message.author.name) +"** you have **{:,}** :euro:".format(self.bot.user_data[ctx.message.author.id]["money"]))
+            await ctx.channel.send(":atm: | **"+ str(ctx.author.name) +"** you have **{:,}** :euro:".format(self.bot.user_data[ctx.author.id]["money"]))
 
     @commands.command(aliases=["daily"])
     async def claim(self, ctx):
@@ -44,12 +44,12 @@ class Profile():
         
         {usage}"""
         day = str(d.datetime.today().date())
-        if day != self.bot.user_data[ctx.message.author.id]["daily"]:
-            await ctx.message.channel.send(":m: | You have received your daily **200** :euro:")
-            self.bot.user_data[ctx.message.author.id]["money"] += 200
-            self.bot.user_data[ctx.message.author.id]["daily"] = day
+        if day != self.bot.user_data[ctx.author.id]["daily"]:
+            await ctx.channel.send(":m: | You have received your daily **200** :euro:")
+            self.bot.user_data[ctx.author.id]["money"] += 200
+            self.bot.user_data[ctx.author.id]["daily"] = day
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
+            await ctx.channel.send(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
 
     @commands.command()
     async def pay(self, ctx, payee : discord.User, amount : int):
@@ -60,26 +60,26 @@ class Profile():
         __Example__
         `{pre}pay @NecroBot 200` - pays NecroBot 200 :euro:"""
         amount = abs(amount)
-        payer = ctx.message.author
+        payer = ctx.author
 
-        msg = await ctx.message.channel.send("Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(amount, payee.display_name))
+        msg = await ctx.channel.send("Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(amount, payee.display_name))
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
         def check(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+            return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
 
         reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.message.channel.send(":white_check_mark: | **{}** cancelled the transaction.".format(payer.display_name))
+            await ctx.channel.send(":white_check_mark: | **{}** cancelled the transaction.".format(payer.display_name))
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[payer.id]["money"] < amount:
-                await ctx.message.channel.send(":negative_squared_cross_mark: | You don't have enough money")
+                await ctx.channel.send(":negative_squared_cross_mark: | You don't have enough money")
                 await msg.delete()
                 return
 
-            await ctx.message.channel.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
+            await ctx.channel.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
             await payee.send(":money: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
             
             self.bot.user_data[payer.id]["money"] -= amount
@@ -99,22 +99,22 @@ class Profile():
         `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
         `{pre}info` - returns your own NecroBot info"""
         if user is None:
-            user = ctx.message.author
+            user = ctx.author
 
-        server_id = ctx.message.guild.id
-        embed = discord.Embed(title="__**" + user.display_name + "**__", colour=discord.Colour(0x277b0), description="**Title**: " + self.bot.user_data[user.id]["title"])
+        server_id = ctx.guild.id
+        embed = discord.Embed(title="__" + user.display_name + "__", colour=discord.Colour(0x277b0), description="**Title**: " + self.bot.user_data[user.id]["title"])
         embed.set_thumbnail(url=user.avatar_url.replace("webp","jpg"))
         embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
 
-        embed.add_field(name="**Date Created**", value=user.created_at.strftime("%d - %B - %Y %H:%M"))
-        embed.add_field(name="**Date Joined**", value=user.joined_at.strftime("%d - %B - %Y %H:%M"), inline=True)
-        embed.add_field(name="**Permission Level", value=self.bot.user_data[user.id]["perms"][ctx.guild.id])
+        embed.add_field(name="Date Created", value=user.created_at.strftime("%d - %B - %Y %H:%M"))
+        embed.add_field(name="Date Joined", value=user.joined_at.strftime("%d - %B - %Y %H:%M"), inline=True)
+        embed.add_field(name="Permission Level", value=self.bot.user_data[user.id]["perms"][ctx.guild.id])
 
-        embed.add_field(name="**User Name**", value=user.name + "#" + user.discriminator)
-        embed.add_field(name="**Top Role**", value=user.top_role.name, inline=True)
+        embed.add_field(name="User Name", value=user.name + "#" + user.discriminator)
+        embed.add_field(name="Top Role", value=user.top_role.name, inline=True)
         embed.add_field(name="Warning List", value=self.bot.user_data[user.id]["warnings"])
 
-        await ctx.message.channel.send(embed=embed)
+        await ctx.channel.send(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -126,12 +126,13 @@ class Profile():
         __Example__
         `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
         `{pre}info` - returns your own NecroBot info"""
-        async with ctx.message.channel.typing():
+        async with ctx.channel.typing():
 
             if user is None:
-                user = ctx.message.author
+                user = ctx.author
 
-            url = user.avatar_url.replace("webp","jpg")
+            url = user.avatar_url_as(format="png").replace("?size=1024", "")
+            print(url)
             async with aiohttp.ClientSession() as cs:
                 async with cs.get(url) as r:
                     filename = os.path.basename(url)
@@ -147,14 +148,14 @@ class Profile():
             draw = ImageDraw.Draw(im)
 
             pfp = Image.open(filename).resize((150,150))
-            perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.message.guild.id])).resize((50,50))
+            perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.guild.id])).resize((50,50))
 
             im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
             im.paste(pfp, box=(75, 132, 225, 282))
             im.paste(perms_level, box=(125, 25, 175, 75))
 
 
-            draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.message.guild.id]], (0,0,0), font=self.font20)
+            draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
             draw.text((260,125), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=self.font30)
             draw.text((260,230), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=self.font30)
             draw.text((43,313), user.display_name, (0,0,0), font=self.font21)
@@ -163,7 +164,7 @@ class Profile():
 
             im.save('{}.png'.format(user.id))
             ifile = discord.File('{}.png'.format(user.id))
-            await ctx.message.channel.send(file=ifile)
+            await ctx.send(file=ifile)
             os.remove("{}.png".format(user.id))
             os.remove(filename)
 
@@ -177,14 +178,14 @@ class Profile():
         `{pre}settitle Cool Dood` - set your title to 'Cool Dood'
         `{pre}settitle` - resets your title"""
         if text == "":
-            await ctx.message.channel.send(":white_check_mark: | Your title has been reset")
+            await ctx.channel.send(":white_check_mark: | Your title has been reset")
         elif len(text) <= 25:
-            await ctx.message.channel.send(":white_check_mark: | Great, your title is now **" + text + "**")
+            await ctx.channel.send(":white_check_mark: | Great, your title is now **" + text + "**")
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | You have gone over the 25 character limit, your title wasn't set.")
+            await ctx.channel.send(":negative_squared_cross_mark: | You have gone over the 25 character limit, your title wasn't set.")
             return
 
-        self.bot.user_data[ctx.message.author.id]["title"] = text
+        self.bot.user_data[ctx.author.id]["title"] = text
 
 def setup(bot):
     bot.add_cog(Profile(bot))

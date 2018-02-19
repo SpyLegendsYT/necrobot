@@ -135,8 +135,8 @@ class Utilities():
         `{pre}avatar @NecroBot` - return the link to NecroBot's avatar"""
         if user is None:
             user = ctx.message.author
-
-        await ctx.channel.send(user.avatar_url.replace("webp","jpg"))
+        avatar = user.avatar_url_as(format="png")
+        await ctx.channel.send(avatar)
 
     @commands.group(invoke_without_command = True)
     async def today(self, ctx, date : str = ""):
