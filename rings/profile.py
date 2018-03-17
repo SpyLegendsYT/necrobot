@@ -13,6 +13,8 @@ import aiohttp
 import random
 import asyncio
 
+#/usr/share/fonts/
+
 #Permissions Names
 permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","NecroBot Admin","The Bot Smith"]
 
@@ -132,7 +134,6 @@ class Profile():
                 user = ctx.author
 
             url = user.avatar_url_as(format="png").replace("?size=1024", "")
-            print(url)
             async with aiohttp.ClientSession() as cs:
                 async with cs.get(url) as r:
                     filename = os.path.basename(url)
@@ -170,7 +171,7 @@ class Profile():
 
     @commands.command()
     async def settitle(self, ctx, *, text : str = ""):
-        """Sets your NecroBot title to [text]. If no text is provided it will reset it. Limited to max 25 characters.
+        """Sets your NecroBot title to [text]. If no text is provided it will reset it. Limited to max 32 characters.
         
         {usage}
         
@@ -179,10 +180,10 @@ class Profile():
         `{pre}settitle` - resets your title"""
         if text == "":
             await ctx.channel.send(":white_check_mark: | Your title has been reset")
-        elif len(text) <= 25:
+        elif len(text) <= 32:
             await ctx.channel.send(":white_check_mark: | Great, your title is now **" + text + "**")
         else:
-            await ctx.channel.send(":negative_squared_cross_mark: | You have gone over the 25 character limit, your title wasn't set.")
+            await ctx.channel.send(":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({}/32)".format(len(text)))
             return
 
         self.bot.user_data[ctx.author.id]["title"] = text

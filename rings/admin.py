@@ -77,15 +77,15 @@ class Admin():
     async def modify(self, ctx):
         pass
 
-    @modify.command()
-    async def modify_server(self, ctx, setting, *, value):
+    @modify.command(name="server")
+    async def modify_server(self, ctx, guild, setting, *, value):
         try:
-            self.bot.server_data[ctx.message.guild.id][setting] = value
+            self.bot.server_data[guild][setting] = value
             await ctx.message.channel.send(":white_check_mark: | `{}` for this server will now be `{}`".format(setting, value))
         except KeyError:
             await ctx.message.channel.send(":negative_squared_cross_mark: | Setting not found")
 
-    @modify.command()
+    @modify.command(name="user")
     async def modify_user(self, ctx, user:discord.Member, setting, *, value):
         try:
             self.bot.user_data[user.id][setting] = value

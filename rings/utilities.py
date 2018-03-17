@@ -11,7 +11,7 @@ import re
 import json
 import asyncio
 import urbandictionary as ud
-from googletrans import Translator
+import googletrans
 from PyDictionary import PyDictionary 
 from bs4 import BeautifulSoup
 import ast
@@ -55,7 +55,7 @@ class NecroBotPyDict(PyDictionary):
                 print("Error: The Following Error occured: %s" % e)
 
 dictionary = NecroBotPyDict() 
-translator = Translator()
+translator = googletrans.Translator()
 
 
 class Utilities():
@@ -119,9 +119,11 @@ class Utilities():
         embed.add_field(name="**Server ID**", value=guild.id, inline=True)
 
         channel_list = [channel.name for channel in guild.channels]
+        channels = ", ".join(channel_list) if len(", ".join(channel_list)) < 1024 else ""
         role_list = [role.name for role in guild.roles]
-        embed.add_field(name="**Channels**", value="{}: {}".format(len(channel_list), ", ".join(channel_list)))
-        embed.add_field(name="**Roles**", value="{}: {}".format(len(role_list), ", ".join(role_list)))
+        roles = ", ".join(role_list) if len(", ".join(role_list)) < 1024 else ""
+        embed.add_field(name="**Channels**", value="{}: {}".format(len(channel_list), channels))
+        embed.add_field(name="**Roles**", value="{}: {}".format(len(role_list), roles))
 
         await ctx.channel.send(embed=embed)
 
@@ -249,22 +251,26 @@ class Utilities():
         await ctx.channel.send(embed=embed)
 
     @commands.command(name="ud", aliases=["urbandictionary"])
-    async def udict(self, ctx, word : str):
+    async def udict(self, ctx, *, word : str):
         """Searches for the given word on urban dictionnary
 
         {usage}
 
         __Example__
         `{pre}ud pimp` - searches for pimp on Urban dictionnary"""
-        defs = ud.define(word)
-        definition = defs[0]
+        try:
+            defs = ud.define(word)
+            definition = defs[0]
+        except IndexError:
+            await ctx.send(":negative_squared_cross_mark: | Sorry, I didn't find a definition for this word.")
+            return
 
         embed = discord.Embed(title="__**{}**__".format(word.title()), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition.definition)
         embed.add_field(name="__Examples__", value=definition.example)
 
         await ctx.message.channel.send(embed=embed)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def translate(self, ctx, lang : str, *, sentence : str):
         """Auto detects the language of the setence you input and translates it to the desired language.
 
@@ -273,8 +279,19 @@ class Utilities():
         __Example__
         `{pre}translate en Bonjour` - detects french and translates to english
         `{pre}translate ne Hello` - detects english and translates to dutch"""
-        translated = translator.translate(sentence, dest=lang)
-        await ctx.message.channel.send("Translated `{0.origin}` from {0.src} to {0.dest}: **{0.text}**".format(translated))
+        try:
+            translated = translator.translate(sentence, dest=lang)
+            await ctx.message.channel.send("Translated `{0.origin}` from {0.src} to {0.dest}: **{0.text}**".format(translated))
+        except ValueError:
+            await ctx.message.channel.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")
+    
+    @translate.command(name="list")
+    async def translate_list(self, ctx):
+        text = ""
+        for lang in googletrans.LANGUAGES:
+            text += "**{}**: {}, ".format(googletrans.LANGUAGES[lang], lang)
+
+        await ctx.send(text[:-2])
 
     @commands.command()
     async def define(self, ctx, word : str):
@@ -493,6 +510,12 @@ class Utilities():
 
         await ctx.send(msg)
         self.queue[ctx.guild.id]["list"].pop(0)
+
+    # @commands.command(aliases=["tz"])
+    # async def timezone(self, ctx, time, origin_tz, convert_tz):
+    #     hour, minute = time.split(":")
+    #     datetime_obj = timedelta(hour=hour, minute=minute)
+    #     datetime_obj_utc = datetime_obj.replace(tzinfo=timezone(origin_tz))
 
 def setup(bot):
     bot.add_cog(Utilities(bot))

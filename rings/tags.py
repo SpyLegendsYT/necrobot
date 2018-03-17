@@ -25,7 +25,10 @@ class Tags():
         if tag in self.bot.server_data[ctx.message.guild.id]["tags"]:
             tag_content = self.bot.server_data[ctx.message.guild.id]["tags"][tag]["content"]
             self.bot.server_data[ctx.message.guild.id]["tags"][tag]["counter"] += 1
-            await ctx.channel.send(tag_content.format(server=ctx.message.guild, member=ctx.message.author, channel=ctx.message.channel, content=ctx.message.content,**arg_dict))
+            try:
+                await ctx.channel.send(tag_content.format(server=ctx.message.guild, member=ctx.message.author, channel=ctx.message.channel, content=ctx.message.content,**arg_dict))
+            except KeyError as e:
+                await ctx.channel.send("Expecting the following argument: {}".format(e.args[0]))
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | This tag doesn't exist on this guild.")
 

@@ -14,7 +14,7 @@ class Animals():
         
         {usage}"""
         async with aiohttp.ClientSession() as cs:
-            async with cs.get('http://random.cat/meow') as r:
+            async with cs.get('http://aws.random.cat/meow') as r:
                 res = await r.json()
                 await ctx.channel.send(res['file'])
 

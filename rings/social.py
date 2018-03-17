@@ -4,6 +4,7 @@ from discord.ext import commands
 import random
 from bs4 import BeautifulSoup
 import aiohttp
+import asyncio
 
 class Social():
     """All of NecroBot's fun commands to keep a user active and entertained"""
@@ -37,7 +38,10 @@ class Social():
         def check(m):
             return m.author == ctx.message.author and m.channel == ctx.message.channel
 
-        msg = await self.bot.wait_for("message", check=check, timeout=30)
+        try:
+            msg = await self.bot.wait_for("message", check=check, timeout=30)
+        except asyncio.TimeoutError:
+            msg = None
 
         if riddle[1] in msg.content.lower():
             await ctx.channel.send("Well played, that was the correct answer.")

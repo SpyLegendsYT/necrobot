@@ -39,18 +39,21 @@ class Decisions():
         if choice is None and bet is None:
             return
 
+        if bet is None:
+            bet = 0
+
         if "head" in msg.content:
             if choice == "h":
                 await ctx.send("Well done!")
                 self.bot.user_data[ctx.author.id]["money"] += bet
-            else:
+            elif choice == "t":
                 await ctx.send("Better luck next time")
                 self.bot.user_data[ctx.author.id]["money"] -= bet
         elif "tail" in msg.content:
             if choice == "t":
                 await ctx.send("Well done!")
                 self.bot.user_data[ctx.author.id]["money"] += bet
-            else:
+            elif choice == "h":
                 await ctx.send("Better luck next time")
                 self.bot.user_data[ctx.author.id]["money"] -= bet
 
