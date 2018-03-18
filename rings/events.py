@@ -30,7 +30,7 @@ class NecroEvents():
             await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
         elif isinstance(error, commands.BadArgument):
             await channel.send(":negative_squared_cross_mark: | Something went wrongs with the arguments you sent, make sure you're sending what is required.", delete_after=10)
-        elif isinstance(error, discord.errors.Forbidden):
+        elif isinstance(error, discord.Forbidden):
             await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your guild.", delete_after=10)
         elif isinstance(error, commands.CommandInvokeError):
             channel = self.bot.get_channel(415169176693506048)
@@ -126,6 +126,15 @@ class NecroEvents():
     async def on_reaction_add(self, reaction, user):
         if isinstance(user, discord.User):
             return
+
+        if reaction.emoji == "\N{CHERRY BLOSSOM}" and reaction.message.id in self.bot.events:
+            if user.id in self.bot.events[reaction.message.id]["users"]:
+                return
+
+            self.bot.events[reaction.message.id]["users"].append(user.id)
+            self.bot.user_data[user.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
+            await reaction.message.channel.send("{} has been awarded {} :cherry_blossom:".format(user.name, self.bot.events[reaction.message.id]["amount"]))
+
 
         if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
             return

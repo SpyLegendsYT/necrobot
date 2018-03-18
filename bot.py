@@ -37,7 +37,8 @@ extensions = [
     "admin",
     "decisions",
     "casino",
-    "events"
+    "events",
+    "waifu"
 ]
 
 replyList = [
@@ -68,26 +69,20 @@ class NecroBot(commands.Bot):
         for server in raw_server_data:
             try:
                 self.server_data[int(server)] = raw_server_data[server]
-
-                if "starboard-channel" not in self.server_data[int(server)]:
-                    self.server_data[int(server)]["starboard-channel"] = ""
-
-                # if "starboard-reaction" not in self.server_data[int(server)]:
-                #     self.server_data[int(server)]["starboard-reaction"] = ""
-
-                if "starboard-limit" not in self.server_data[int(server)]:
-                    self.server_data[int(server)]["starboard-limit"] = 5
             except ValueError:
-                pass
+                self.server_data[server] = raw_server_data[server]
+
 
         if "starred-messages" not in self.server_data:
             self.server_data["starred-messages"] = []
+
 
         self.ERROR_LOG = 351356683231952897
         self.version = 1.0
         self.prefixes = ["n!", "N!", "n@"]
 
         self.bg_task = self.loop.create_task(self.hourly_task())
+        self.events = {}
 
         @self.check
         def disabled_check(ctx):
@@ -107,7 +102,10 @@ class NecroBot(commands.Bot):
     #  Internal Function
     # *****************************************************************************************************************
     def _new_server(self):
-        return {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "starboard-channel":"", "starboard-limit":5}
+        return {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "starboard-channel":"", "starboard-limit":5} 
+    
+    def _new_gifts(self):
+        return {"Cookie" : 0, "Rose": 0, "LoveLetter":0, "Chocolate":0, "Rice":0, "MovieTicket":0, "Book":0, "Lipstick":0, "Laptop":0, "Violin":0, "Ring":0, "Helicopter":0}
 
     def _startswith_prefix(self, message):
         if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
@@ -217,7 +215,7 @@ class NecroBot(commands.Bot):
 
     def default_stats(self, member, guild):
         if member.id not in self.user_data:
-            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': []}
+            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], "waifu-value":50, "waifu-claimer":"", "affinity":"", "heart-changes":0, "divorces":0, "waifus":[], "flowers":0, "gifts":self._new_gifts()}
 
         if guild.id not in self.user_data[member.id]["perms"]:
             if any(self.user_data[member.id]["perms"][x] == 7 for x in self.user_data[member.id]["perms"]):

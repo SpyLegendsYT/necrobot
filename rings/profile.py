@@ -82,7 +82,7 @@ class Profile():
                 return
 
             await ctx.channel.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
-            await payee.send(":money: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
+            await payee.send(":euro: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
             
             self.bot.user_data[payer.id]["money"] -= amount
             self.bot.user_data[payee.id]["money"] += amount
