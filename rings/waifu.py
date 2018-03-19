@@ -2,7 +2,8 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType, Cooldown, CooldownMapping
-from rings.utils.utils import is_waifu_admin
+from rings.utils.utils import has_perms
+import asyncio
 
 # bypassablecooldown = Cooldown(1, 1800, BucketType.user)
 # bypassablecooldownmapping = CooldownMapping(bypassablecooldown)
@@ -37,8 +38,8 @@ class Waifu():
             return
 
         self.bot.user_data[ctx.author.id]["money"] -= coins
-        self.bot.user_data[ctx.author.id]["flowers"] += coins
-        await ctx.send(":white_check_mark: | You exchanged **{}** Necroins for **{}** :cherry_blossom:".format(coins, coins))
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] += coins
+        await ctx.send(":white_check_mark: | You exchanged **{}** Necroins for **{}** :cherry_blossom: on this server".format(coins, coins))
 
     @commands.command(name="$")
     async def balance(self, ctx, user: discord.Member = None):
@@ -54,7 +55,7 @@ class Waifu():
         if user is None:
             user = ctx.author
 
-        embed = discord.Embed(color=discord.Colour(0x277b0), description="{} has **{}** :cherry_blossom:".format(user.name, self.bot.user_data[user.id]["flowers"]))
+        embed = discord.Embed(color=discord.Colour(0x277b0), description="{} has **{}** :cherry_blossom:".format(user.name, self.bot.user_data[user.id][ctx.guild.id]["flowers"]))
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -69,17 +70,66 @@ class Waifu():
         if user is None:
             user = ctx.author
 
-        embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu {} - ".format(user.name))
-        embed.add_field(name="Price", value=self.bot.user_data[user.id]["waifu-value"])
-        embed.add_field(name="Claimed by", value=self.bot.get_user(self.bot.user_data[user.id]["waifu-claimer"]).name if self.bot.user_data[user.id]["waifu-claimer"] != "" else "None")
-        embed.add_field(name="Likes", value=self.bot.get_user(self.bot.user_data[user.id]["affinity"]).name if self.bot.user_data[user.id]["affinity"] != "" else "None")
-        embed.add_field(name="Changes of heart", value=self.bot.user_data[user.id]["heart-changes"])
-        embed.add_field(name="Divorces", value=self.bot.user_data[user.id]["divorces"])
-        gifts = self.bot.user_data[user.id]["gifts"]
+        count = self.bot.user_data[user.id][ctx.guild.id]["heart-changes"]
+        if count < 1:
+            title = "Pure"
+        elif count < 2:
+            title = "Faithful"
+        elif count < 4:
+            title = "Defiled"
+        elif count < 5:
+            title = "Cheater"
+        elif count < 6:
+            title = "Tainted"
+        elif count < 11:
+            title = "Corrupted"
+        elif count < 13:
+            title = "Lewd"
+        elif count < 15:
+            title = "Sloot"
+        elif count < 17:
+            title = "Depraved"
+        else:
+            title = "Harlot"
+
+        count = len(self.bot.user_data[user.id][ctx.guild.id]["waifus"])
+        if count == 0:
+            title_a = "Lonely"
+        elif count == 1:
+            title_a = "Devoted"
+        elif count < 4:
+            title_a = "Rookie"
+        elif count < 6:
+            title_a = "Schemer"
+        elif count < 8:
+            title_a = "Dilettante"
+        elif count < 10:
+            title_a = "Intermediate"
+        elif count < 12:
+            title_a = "Seducer"
+        elif count < 15:
+            title_a = "Expert"
+        elif count < 17:
+            title_a = "Veteran"
+        elif count < 25:
+            title_a = "Incubis"
+        elif count < 50:
+            title_a = "Harem King"
+        else:
+            title_a = "Harem God"
+
+
+        embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu {} - {}".format(user.name, title_a))
+        embed.add_field(name="Price", value=self.bot.user_data[user.id][ctx.guild.id]["waifu-value"])
+        embed.add_field(name="Claimed by", value=self.bot.get_user(self.bot.user_data[user.id][ctx.guild.id]["waifu-claimer"]).name if self.bot.user_data[user.id][ctx.guild.id]["waifu-claimer"] != "" else "None")
+        embed.add_field(name="Likes", value=self.bot.get_user(self.bot.user_data[user.id][ctx.guild.id]["affinity"]).name if self.bot.user_data[user.id][ctx.guild.id]["affinity"] != "" else "None")
+        embed.add_field(name="Changes of heart", value="{} the {}".format(self.bot.user_data[user.id][ctx.guild.id]["heart-changes"], title))
+        embed.add_field(name="Divorces", value=self.bot.user_data[user.id][ctx.guild.id]["divorces"])
+        gifts = self.bot.user_data[user.id][ctx.guild.id]["gifts"]
         gift_str = "\n".join(["{}x{}".format(self.gifts_e[x], gifts[x]) for x in gifts if gifts[x] > 0])
         embed.add_field(name="Gifts", value=gift_str if gift_str != "" else "None", inline=False)
-        waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id]["waifus"]])
-        embed.add_field(name="Waifus ({})".format(len(self.bot.user_data[user.id]["waifus"])), value=waifus if waifus != "" else "None", inline=False)
+        waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id][ctx.guild.id]["waifus"]])
+        embed.add_field(name="Waifus ({})".format(len(self.bot.user_data[user.id][ctx.guild.id]["waifus"])), value=waifus if waifus != "" else "None", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -111,13 +161,13 @@ class Waifu():
         except AttributeError:
             return
 
-        if self.bot.user_data[ctx.author.id]["flowers"] < price:
+        if self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] < price:
             await ctx.send(":negative_squared_cross_mark: | Not enough :cherry_blossom:")
             return
 
-        self.bot.user_data[ctx.author.id]["flowers"] -= price
-        self.bot.user_data[member.id]["waifu-value"] += price if self.bot.user_data[member.id]["affinity"] == ctx.author.id else price//2
-        self.bot.user_data[member.id]["gifts"][choice] += 1 
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] -= price
+        self.bot.user_data[member.id][ctx.guild.id]["waifu-value"] += price if self.bot.user_data[member.id][ctx.guild.id]["affinity"] == ctx.author.id else price//2
+        self.bot.user_data[member.id][ctx.guild.id]["gifts"][choice] += 1 
 
         embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="{} gifted **{}** {} to {}".format(ctx.author.display_name, choice, emoji, member.display_name))
 
@@ -139,13 +189,15 @@ class Waifu():
             return
 
         if member == "":
-            self.bot.user_data[ctx.author.id]["affinity"] = ""
+            self.bot.user_data[ctx.author.id][ctx.guild.id]["affinity"] = ""
             await ctx.send(":white_check_mark: | Your affinity has been reset")
         else:
-            self.bot.user_data[ctx.author.id]["affinity"] = member.id
+            self.bot.user_data[ctx.author.id][ctx.guild.id]["affinity"] = member.id
             await ctx.send(":white_check_mark: | Your affinity has been set to {}".format(member.display_name))
 
-        self.bot.user_data[ctx.author.id]["heart-changes"] += 1
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["heart-changes"] += 1
+
+        count = self.bot.user_data[ctx.author.id][ctx.guild.id]["heart-changes"]
 
 
     @affinity.error
@@ -167,7 +219,7 @@ class Waifu():
         `{pre}wclaim 500 @ThisLass` - claim use ThisLass for 500
 
         """
-        if member.id in self.bot.user_data[ctx.author.id]["waifus"]:
+        if member.id in self.bot.user_data[ctx.author.id][ctx.guild.id]["waifus"]:
             await ctx.send(":negative_squared_cross_mark: | You have already claimed this waifu as your own")
             return
 
@@ -175,20 +227,20 @@ class Waifu():
             await ctx.send(":negative_squared_cross_mark: | You can't claim yourself!")
             return
 
-        if self.bot.user_data[member.id]["affinity"] == ctx.author.id:
-            value = round(self.bot.user_data[member.id]["waifu-value"] * 0.90)
+        if self.bot.user_data[member.id][ctx.guild.id]["affinity"] == ctx.author.id:
+            value = round(self.bot.user_data[member.id][ctx.guild.id]["waifu-value"] * 0.90)
         else:
-            value = round(self.bot.user_data[member.id]["waifu-value"] * 1.10)
+            value = round(self.bot.user_data[member.id][ctx.guild.id]["waifu-value"] * 1.10)
 
-        if price > value and price <= self.bot.user_data[ctx.author.id]["flowers"]:
-            claimer = self.bot.user_data[member.id]["waifu-claimer"]
+        if price > value and price <= self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"]:
+            claimer = self.bot.user_data[member.id][ctx.guild.id]["waifu-claimer"]
             if claimer != "":
-                self.bot.user_data[claimer]["waifus"].remove(member.id)
+                self.bot.user_data[claimer][ctx.guild.id]["waifus"].remove(member.id)
 
-            self.bot.user_data[ctx.author.id]["waifus"].append(member.id)
-            self.bot.user_data[member.id]["waifu-claimer"] = ctx.author.id
-            self.bot.user_data[ctx.author.id]["flowers"] -= price
-            self.bot.user_data[member.id]["waifu-value"] = price
+            self.bot.user_data[ctx.author.id][ctx.guild.id]["waifus"].append(member.id)
+            self.bot.user_data[member.id][ctx.guild.id]["waifu-claimer"] = ctx.author.id
+            self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] -= price
+            self.bot.user_data[member.id][ctx.guild.id]["waifu-value"] = price
 
             await ctx.send(":white_check_mark: | You've claimed **{}** as your waifu".format(member.display_name))
         elif price <= value:
@@ -196,7 +248,7 @@ class Waifu():
         else:
             await ctx.send(":negative_squared_cross_mark: | You don't have enough :cherry_blossom:")
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @commands.cooldown(1, 21600, BucketType.user)
     async def divorce(self, ctx, member : discord.Member):
         """Divorce a user and get some money back, sometimes... Can only be used every 9 hours.
@@ -206,15 +258,15 @@ class Waifu():
         __Examples__
         `{pre}divorce @ThoseLasses` - divorce user ThosLasses
         """
-        if member.id not in self.bot.user_data[ctx.author.id]["waifus"]:
+        if member.id not in self.bot.user_data[ctx.author.id][ctx.guild.id]["waifus"]:
             return
 
-        if self.bot.user_data[member.id]["affinity"] != ctx.author.id:
-            money_back = self.bot.user_data[member.id]["waifu-value"] // 2
-            self.bot.user_data[ctx.author.id]["flowers"] += round(money_back)
+        if self.bot.user_data[member.id][ctx.guild.id]["affinity"] != ctx.author.id:
+            money_back = self.bot.user_data[member.id][ctx.guild.id]["waifu-value"] // 2
+            self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] += round(money_back)
 
-        self.bot.user_data[ctx.author.id]["waifus"].remove(member.id)
-        self.bot.user_data[member.id]["waifu-claimer"] = ""
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["waifus"].remove(member.id)
+        self.bot.user_data[member.id][ctx.guild.id]["waifu-claimer"] = ""
 
         if money_back:
             embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="You have divorced a waifu who doesn't like you. You received {} :cherry_blossom: back.".format(money_back))
@@ -223,7 +275,24 @@ class Waifu():
 
         await ctx.send(embed=embed)
 
-        self.bot.user_data[ctx.author.id]["divorces"] += 1
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["divorces"] += 1
+
+    @divorce.command(name="admin")
+    @has_perms(4)
+    async def divorce_admin(self, ctx, waifu : discord.Member):
+        """Admin command. Divorces a waifu from their claimer.
+
+        {usage}
+
+        __Examples__
+        `{pre}divorce @ThoseLasses` - divorce user ThosLasses
+        """
+        claimer = self.bot.user_data[waifu.id][ctx.guild.id]["waifu-claimer"]
+        self.bot.user_data[claimer][ctx.guild.id]["waifus"].remove(waifu.id)
+        self.bot.user_data[waifu.id][ctx.guild.id]["waifu-claimer"] = ""
+
+        embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="**ADMIN**: You have divorced a waifu")
+        await ctx.send(embed=embed)
 
     @divorce.error
     async def on_divorce_error(self, ctx, error):
@@ -233,7 +302,7 @@ class Waifu():
         self.bot.dispatch("on_command_error", ctx, error)
 
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def transfer(self, ctx, member : discord.Member, waifu : discord.Member):
         """Transfer a waifu to another user, you must be able to pay 10% of the waifu's price in order to tranfer them.
         
@@ -241,54 +310,74 @@ class Waifu():
 
         __Examples__
         `{pre}transfer @ThatLass @ThisGuy` - transfer waifu ThatGuy to user ThatLass"""
-        if self.bot.user_data[waifu.id]["waifu-claimer"] != ctx.author.id:
+        if self.bot.user_data[waifu.id][ctx.guild.id]["waifu-claimer"] != ctx.author.id:
             await ctx.send(":negative_squared_cross_mark: | This waifu is not yours to give!")
             return
 
-        if self.bot.user_data[ctx.author.id]["flowers"] < round(self.bot.user_data[waifu.id]["waifu-value"] * 0.10):
-            await ctx.send(":negative_squared_cross_mark: | You must have at least {} :cherry_blossom: to transfer this waifu".format(round(self.bot.user_data[waifu.id]["waifu-value"] * 0.10)))
+        if self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] < round(self.bot.user_data[waifu.id][ctx.guild.id]["waifu-value"] * 0.10):
+            await ctx.send(":negative_squared_cross_mark: | You must have at least {} :cherry_blossom: to transfer this waifu".format(round(self.bot.user_data[waifu.id][ctx.guild.id]["waifu-value"] * 0.10)))
             return
 
-        self.bot.user_data[ctx.author.id]["waifus"].remove(waifu.id)
-        self.bot.user_data[member.id]["waifus"].append(waifu.id)
-        self.bot.user_data[waifu.id]["waifu-claimer"] = member.id
-        self.bot.user_data[ctx.author.id]["flowers"] -= round(self.bot.user_data[waifu.id]["waifu-value"] * 0.10)
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["waifus"].remove(waifu.id)
+        self.bot.user_data[member.id][ctx.guild.id]["waifus"].append(waifu.id)
+        self.bot.user_data[waifu.id][ctx.guild.id]["waifu-claimer"] = member.id
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] -= round(self.bot.user_data[waifu.id][ctx.guild.id]["waifu-value"] * 0.10)
 
         embed = discord.Embed(color=discord.Colour(0x277b0),title=" ", description="You have transfered waifu **{}** to **{}**".format(waifu.name, member.name))
         await ctx.send(embed=embed)
 
+    @transfer.command(name="admin")
+    @has_perms(4)
+    async def transfer_admin(self, ctx, member : discord.Member, waifu : discord.Member):
+        """Admin command. Transfers a waifu to another user regardless of owner ship.
+
+        {usage}
+
+        __Examples__
+        `{pre}transfer @ThatLass @ThisGuy` - transfer waifu ThatGuy to user ThatLass"""
+        claimer = self.bot.user_data[waifu.id][ctx.guild.id]["waifu-claimer"]
+        if claimer != "":
+            self.bot.user_data[claimer][ctx.guild.id]["waifus"].remove(waifu.id)
+
+        self.bot.user_data[member.id][ctx.guild.id]["waifus"].append(waifu.id)
+        self.bot.user_data[waifu.id][ctx.guild.id]["waifu-claimer"] = member.id
+
+        embed = discord.Embed(color=discord.Colour(0x277b0),title=" ", description="**ADMIN**: You have transfered waifu **{}** to **{}**".format(waifu.name, member.name))
+        await ctx.send(embed=embed)
+
+
     @commands.command()
-    @is_waifu_admin()
-    async def award(self, ctx, amount : int, member : discord.Member, reason : str = ""):
+    @has_perms(4)
+    async def award(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Award :cherry_blossom: currency to a user, admin command.
 
         {usage}
 
         __Examples__
         `{pre}award 1000 @APerson` - awards 1000 :cherry_blossom: to user APerson"""
-        self.bot.user_data[member.id]["flowers"] += amount
+        self.bot.user_data[member.id][ctx.guild.id]["flowers"] += amount
         if reason != "": 
-            await ctx.send(":white_check_mark: | Awarded **{}** to **{}** for **{}**".format(amount, member.name), reason)
+            await ctx.send(":white_check_mark: | Awarded **{}** :cherry_blossom: to **{}** for **{}**".format(amount, member.name), reason)
         else:
-            await ctx.send(":white_check_mark:  | Awarded **{}** to **{}**".format(amount, member.name))
+            await ctx.send(":white_check_mark:  | Awarded **{}** :cherry_blossom: to **{}**".format(amount, member.name))
 
     @commands.command()
-    @is_waifu_admin()
-    async def take(self, ctx, amount : int, member : discord.Member, reason : str = ""):
+    @has_perms(4)
+    async def take(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Take :cherry_blossom: currency from a user, admin command.
 
         {usage}
 
         __Examples__
         `{pre}take 1000 @APerson` - takes 1000 :cherry_blossom: from user APerson"""
-        self.bot.user_data[member.id]["flowers"] -= amount
+        self.bot.user_data[member.id][ctx.guild.id]["flowers"] -= amount
         if reason != "": 
-            await ctx.send(":white_check_mark: | Took **{}** to **{}** for **{}**".format(amount, member.name), reason)
+            await ctx.send(":white_check_mark: | Took **{}** :cherry_blossom: from **{}** for **{}**".format(amount, member.name), reason)
         else:
-            await ctx.send(":white_check_mark:  | Took **{}** to **{}**".format(amount, member.name))
+            await ctx.send(":white_check_mark:  | Took **{}** :cherry_blossom: from **{}**".format(amount, member.name))
 
     @commands.command()
-    @is_waifu_admin()
+    @has_perms(4)
     async def flowerevent(self, ctx, amount : int):
         """Create a 24hr message, if reacted to, the use who reacted will be granted :cherry_blossom:
 
@@ -303,7 +392,7 @@ class Waifu():
 
 
     @commands.command()
-    async def give(self, ctx, amount : int, member : discord.Member, reason : str = ""):
+    async def give(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Transfer :cherry_blossom: from one user to another.
 
         {usage}
@@ -311,28 +400,27 @@ class Waifu():
         __Examples__
         `{pre}give 100 @ThisGuy` - give 100 :cherry_blossom: to user ThisGuy"""
         amount = abs(amount)
-        if self.bot.user_data[ctx.author.id]["flowers"] < amount:
+        if self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] < amount:
             await ctx.send(":negative_squared_cross_mark: | You don't have enough :cherry_blossom:")
 
-        self.bot.user_data[ctx.author.id]["flowers"] -= amount
-        self.bot.user_data[member.id]["flowers"] += amount
+        self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] -= amount
+        self.bot.user_data[member.id][ctx.guild.id]["flowers"] += amount
         await ctx.send(":white_check_mark: | **{}** has gifted **{}** :cherry_blossom: to **{}**".format(ctx.author.name, amount, member.name))
 
+    @commands.command(name="reset")
+    @has_perms(4)
+    async def waifu_reset(self, ctx, waifu : discord.Member, amount : int = 50):
+        """Reset the value of a waifu to a given value or to 50 if no value is given
 
-    @commands.command(name="wset", hidden=True)
-    @commands.is_owner()
-    async def set(self, ctx):
-        for x in self.bot.user_data:
-            self.bot.user_data[x]["waifu-value"] = 50
-            self.bot.user_data[x]["waifu-claimer"] = ""
-            self.bot.user_data[x]["affinity"] = ""
-            self.bot.user_data[x]["heart-changes"] = 0
-            self.bot.user_data[x]["divorces"] = 0
-            self.bot.user_data[x]["waifus"] = []
-            self.bot.user_data[x]["flowers"] = 0
-            self.bot.user_data[x]["gifts"] = self.bot._new_gifts()
+        {usage}
 
-        await ctx.send("All data set for waifu system")
+        __Examples__
+        `{pre}reset @ThisUser 500` - reset the value of the waifu to 500
+        `{pre}reset @ThisUser` - reset the value of the waifu to 50"""
+
+        self.bot.user_data[waifu.id][ctx.guild.id]["waifu-value"] = amount
+        await ctx.send(":white_check_mark: | Value of waifu {} reset to {}".format(waifu.name, amount))
+
 
 
 

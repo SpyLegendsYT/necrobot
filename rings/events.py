@@ -2,6 +2,7 @@
 import discord
 from discord.ext import commands
 import traceback
+from datetime import timedelta
 
 class NecroEvents():
     def __init__(self, bot):
@@ -23,7 +24,8 @@ class NecroEvents():
         elif isinstance(error, commands.CheckFailure):
             await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.", delete_after=10)
         elif isinstance(error, commands.CommandOnCooldown):
-            await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{0:.0f}** seconds".format(error.retry_after), delete_after=10)
+            retry_after = str(timedelta(seconds=error.retry_after)).partition(".")[0].replace(":", "{}")
+            await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{}**".format(retry_after.format("hours, ", "minutes and ") + "seconds"), delete_after=10)
         elif isinstance(error, commands.NoPrivateMessage):
             await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.", delete_after=10)
         elif isinstance(error, commands.DisabledCommand):
@@ -132,8 +134,8 @@ class NecroEvents():
                 return
 
             self.bot.events[reaction.message.id]["users"].append(user.id)
-            self.bot.user_data[user.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
-            await reaction.message.channel.send("{} has been awarded {} :cherry_blossom:".format(user.name, self.bot.events[reaction.message.id]["amount"]))
+            self.bot.user_data[user.id][reaction.message.guild.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
+            # await reaction.message.channel.send("{} has been awarded {} :cherry_blossom:".format(user.name, self.bot.events[reaction.message.id]["amount"]))
 
 
         if self.bot.server_data[user.guild.id]["starboard-channel"] == "":

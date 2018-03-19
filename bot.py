@@ -196,7 +196,7 @@ class NecroBot(commands.Bot):
             with open("rings/utils/data/user_data.json", "w") as out:
                 json.dump(self.user_data, out)
 
-            # await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
+            await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
 
             #background tasks
             #broadcast
@@ -215,7 +215,7 @@ class NecroBot(commands.Bot):
 
     def default_stats(self, member, guild):
         if member.id not in self.user_data:
-            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': [], "waifu-value":50, "waifu-claimer":"", "affinity":"", "heart-changes":0, "divorces":0, "waifus":[], "flowers":0, "gifts":self._new_gifts()}
+            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': []}
 
         if guild.id not in self.user_data[member.id]["perms"]:
             if any(self.user_data[member.id]["perms"][x] == 7 for x in self.user_data[member.id]["perms"]):
@@ -228,6 +228,9 @@ class NecroBot(commands.Bot):
                 self.user_data[member.id]["perms"][guild.id] = 4
             else:
                 self.user_data[member.id]["perms"][guild.id] = 0
+
+        if guild.id not in self.user_data[member.id]:
+            self.user_data[member.id][guild.id] = {"waifu-value":50, "waifu-claimer":"", "affinity":"", "heart-changes":0, "divorces":0, "waifus":[], "flowers":0, "gifts":self._new_gifts()}
                 
     def all_mentions(self, ctx, msg):
         mention_list = list()

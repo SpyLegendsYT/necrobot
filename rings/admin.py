@@ -250,8 +250,12 @@ class Admin():
         with open("rings/utils/data/server_data.json", "w") as out:
             json.dump(self.bot.server_data, out)
 
+        await msg.edit(content="**Saved server data...**")
+
         with open("rings/utils/data/user_data.json", "w") as out:
             json.dump(self.bot.user_data, out)
+
+        await msg.edit(content="**Saved user data...**")
 
         await msg.edit(content="**Saved**")
         await channel.send("**Bot Offline**")
