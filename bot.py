@@ -64,6 +64,12 @@ class NecroBot(commands.Bot):
                 raw_perms[int(server)] = raw_user_data[user]["perms"][server]
 
             self.user_data[int(user)]["perms"] = raw_perms
+
+            if "badges" not in self.user_data[int(user)]:
+                self.user_data[int(user)]["badges"] = []
+
+            if "places" not in self.user_data[int(user)]:
+                self.user_data[int(user)]["places"] = {"1":"", "2":"", "3":"", "4":"", "5":"", "6":"", "7":"", "8":""}
         
         raw_server_data = json.load(open("rings/utils/data/server_data.json", "r"))
         for server in raw_server_data:

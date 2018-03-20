@@ -25,6 +25,8 @@ class Profile():
         self.font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
         self.font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
         self.overlay = Image.open("rings/utils/profile/overlay.png")
+        self.badges_d = {"necrobot":10000, "edain":5000, "aotr":5000 }
+        self.badges_coords = [(516, 261, 598, 343), (609, 261, 691, 343), (703, 261, 785, 343), (796, 261, 878, 343), (516, 350, 598, 432), (609, 350, 691, 432), (704, 350, 786, 432), (796, 350, 878, 432)]
 
     @commands.command()
     async def balance(self, ctx, user : discord.Member = None):
@@ -145,15 +147,22 @@ class Profile():
                             f_handle.write(chunk)
                     await r.release()
 
-            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,139))).resize((1024,512)).crop((59,29,964,482))
+            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,139))).resize((1024,512)).crop((60,29,964,482))
             draw = ImageDraw.Draw(im)
 
             pfp = Image.open(filename).resize((150,150))
             perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.guild.id])).resize((50,50))
 
             im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
-            im.paste(pfp, box=(75, 132, 225, 282))
+            im.paste(pfp, box=(75, 132, 225, 282), mask=pfp)
             im.paste(perms_level, box=(125, 25, 175, 75))
+
+            for spot in self.bot.user_data[user.id]["places"]:
+                badge = self.bot.user_data[user.id]["places"][spot]
+                if badge != "":
+                    badge_img = Image.open("rings/utils/profile/badges/{}.png".format(badge))
+                    index = int(spot) - 1
+                    im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
 
             draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
@@ -187,6 +196,82 @@ class Profile():
             return
 
         self.bot.user_data[ctx.author.id]["title"] = text
+
+    @commands.group(invoke_without_command=True)
+    async def badges(self, ctx):
+        await ctx.send("You have the following badges: {}".format(" - ".join(self.bot.user_data[ctx.author.id]["badges"])))
+
+    @badges.command("place")
+    async def badges_place(self, ctx, badge : str = ""):
+        if badge not in self.bot.user_data[ctx.author.id]["badges"] and badge != "":
+            await ctx.send(":negative_squared_cross_mark: | You do not posses this badge")
+            return
+
+        def check(message):
+            if not message.content.isdigit():
+                return False
+
+            return ctx.author.id == message.author.id and int(message.content) > 0 and int(message.content) < 9
+
+        msg = await ctx.send("Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```")
+        
+        try:
+            reply = await self.bot.wait_for("message", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            await msg.delete()
+            return
+            
+
+        spot = reply.content
+        if badge == "":
+            self.bot.user_data[ctx.author.id]["places"][spot] = ""
+            await ctx.send(":white_check_mark: | The badge for this spot has been reset")
+            return
+
+        await ctx.send(":white_check_mark: | Placed badge **{}** on position **{}**".format(badge, spot))
+        self.bot.user_data[ctx.author.id]["places"][spot] = badge
+
+    @badges.command("buy")
+    async def badges_buy(self, ctx, badge : str = ""):
+        if badge == "":
+            await ctx.send("Click the link to see a list of badges: <https://github.com/ClementJ18/necrobot#badges>\nWant to suggest a new badge? Use n!report and include the link of an image with a 1:1 ratio.")
+            return
+
+        if badge not in self.badges_d:
+            await ctx.send(":negative_squared_cross_mark: | There is no such badge")
+            return
+
+        if badge in self.bot.user_data[ctx.author.id]["badges"]:
+            await ctx.send(":negative_squared_cross_mark: | You already posses that badge")
+            return
+
+        msg = await ctx.channel.send("Are you sure you want to buy the **{}** badge for **{}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(badge, self.badges_d[badge]))
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+        
+        try:
+            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            return
+
+        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await ctx.channel.send(":white_check_mark: | **{}** cancelled the transaction.".format(ctx.author.display_name))
+        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            if self.bot.user_data[ctx.author.id]["money"] < self.badges_d[badge]:
+                await ctx.channel.send(":negative_squared_cross_mark: | You don't have enough money")
+                await msg.delete()
+                return
+
+            await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badge place [badge]`")
+            self.bot.user_data[ctx.author.id]["money"] -= self.badges_d[badge]
+            self.bot.user_data[ctx.author.id]["badges"].append(badge)
+
+            
+        await msg.delete()
+
 
 def setup(bot):
     bot.add_cog(Profile(bot))
