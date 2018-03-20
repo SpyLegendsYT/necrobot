@@ -33,3 +33,13 @@ Hover on each badge to get its name.
 ![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necrobot.png "necrobot")
 ![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/aotr.png "aotr")
 
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/rohan.png "rohan")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/gondor.png "gondor")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/imladris.png "imladris")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/dwarves.png "dwarves")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/lorien.png "lorien")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/goblins.png "goblins")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/angmar.png "angmar")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/isengard.png "isengard")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/mordor.png "mordor")
+

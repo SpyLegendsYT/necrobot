@@ -25,7 +25,11 @@ class Profile():
         self.font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
         self.font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
         self.overlay = Image.open("rings/utils/profile/overlay.png")
-        self.badges_d = {"necrobot":10000, "edain":5000, "aotr":5000 }
+        self.badges_d = {
+            "necrobot": 10000, 
+            "edain": 5000, "aotr": 5000,
+            "rohan": 500, "angmar": 500, "dwarves": 500, "goblins": 500, "gondor": 500, "imladris": 500, "isengard": 500, "lorien": 500, "mordor": 500
+        }
         self.badges_coords = [(516, 261, 598, 343), (609, 261, 691, 343), (703, 261, 785, 343), (796, 261, 878, 343), (516, 350, 598, 432), (609, 350, 691, 432), (704, 350, 786, 432), (796, 350, 878, 432)]
 
     @commands.command()
@@ -265,7 +269,7 @@ class Profile():
                 await msg.delete()
                 return
 
-            await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badge place [badge]`")
+            await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badges place [badge]`")
             self.bot.user_data[ctx.author.id]["money"] -= self.badges_d[badge]
             self.bot.user_data[ctx.author.id]["badges"].append(badge)
 
