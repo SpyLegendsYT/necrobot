@@ -25,3 +25,10 @@ All commands can be seen on the discord provided below. This bot uses the rewrit
 
 Join to see in action: https://discord.gg/sce7jmB <br>
 Tell them GitHub sent you!
+
+# Badges
+Hover on each badge to get its name.
+
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/edain.png "edain")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necrobot.png "necrobot")
+
