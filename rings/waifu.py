@@ -18,8 +18,8 @@ class Waifu():
     wedding system, where users can \"marry \" each other. Just don't take it too seriously and have fun """
     def __init__(self, bot):
         self.bot = bot
-        self.gifts_e = {"Cookie" : ":cookie:", "Rose": ":rose:", "LoveLetter":":love_letter:", "Chocolate":":chocolate_bar:", "Rice":":rice:", "MovieTicket":":tickets:", "Book":":notebook_with_decorative_cover:", "Lipstick":":lipstick:", "Laptop":":computer:", "Violin":":violin:", "Ring":":ring:", "Helicopter":":helicopter:"}
-        self.gifts_p = {"Cookie" : 10, "Rose": 50, "LoveLetter":100, "Chocolate":200, "Rice":400, "MovieTicket":800, "Book":1500, "Lipstick":3000, "Laptop":5000, "Violin":7500, "Ring":10000, "Helicopter":20000}
+        self.gifts_e = {"cookie" : ":cookie:", "rose": ":rose:", "loveletter":":love_letter:", "chocolate":":chocolate_bar:", "rice":":rice:", "movieticket":":tickets:", "book":":notebook_with_decorative_cover:", "lipstick":":lipstick:", "laptop":":computer:", "violin":":violin:", "ring":":ring:", "helicopter":":helicopter:"}
+        self.gifts_p = {"cookie" : 10, "rose": 50, "loveletter":100, "chocolate":200, "rice":400, "movieticket":800, "book":1500, "lipstick":3000, "laptop":5000, "violin":7500, "ring":10000, "helicopter":20000}
 
     @commands.command()
     async def trade(self, ctx, coins : int):
@@ -126,7 +126,7 @@ class Waifu():
         embed.add_field(name="Changes of heart", value="{} the {}".format(self.bot.user_data[user.id][ctx.guild.id]["heart-changes"], title))
         embed.add_field(name="Divorces", value=self.bot.user_data[user.id][ctx.guild.id]["divorces"])
         gifts = self.bot.user_data[user.id][ctx.guild.id]["gifts"]
-        gift_str = "\n".join(["{}x{}".format(self.gifts_e[x], gifts[x]) for x in gifts if gifts[x] > 0])
+        gift_str = "\n".join(["{}x{}".format(self.gifts_e[x.lower()], gifts[x]) for x in gifts if gifts[x] > 0])
         embed.add_field(name="Gifts", value=gift_str if gift_str != "" else "None", inline=False)
         waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id][ctx.guild.id]["waifus"]])
         embed.add_field(name="Waifus ({})".format(len(self.bot.user_data[user.id][ctx.guild.id]["waifus"])), value=waifus if waifus != "" else "None", inline=False)
@@ -141,7 +141,7 @@ class Waifu():
 
         embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu gift shop")
         for gift in self.gifts_e:
-            embed.add_field(name="{} {}".format(self.gifts_e[gift], gift), value=self.gifts_p[gift])
+            embed.add_field(name="{} {}".format(self.gifts_e[gift], gift.title()), value=self.gifts_p[gift])
 
         await ctx.send(embed=embed)
 
@@ -155,11 +155,13 @@ class Waifu():
         __EXamples__
         `{pre}gift Chocolate @ThirdThot` - gifts a chocolate to the user ThirdThot
         """
-        try:
-            price = self.gifts_p[choice]
-            emoji = self.gifts_e[choice]
-        except AttributeError:
+        choice = choice.lower()
+        if choice not in self.gifts_e:
+            await ctx.send(":negative_squared_cross_mark: | No such gift")
             return
+
+        price = self.gifts_p[choice]
+        emoji = self.gifts_e[choice]
 
         if self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] < price:
             await ctx.send(":negative_squared_cross_mark: | Not enough :cherry_blossom:")
@@ -167,7 +169,7 @@ class Waifu():
 
         self.bot.user_data[ctx.author.id][ctx.guild.id]["flowers"] -= price
         self.bot.user_data[member.id][ctx.guild.id]["waifu-value"] += price if self.bot.user_data[member.id][ctx.guild.id]["affinity"] == ctx.author.id else price//2
-        self.bot.user_data[member.id][ctx.guild.id]["gifts"][choice] += 1 
+        self.bot.user_data[member.id][ctx.guild.id]["gifts"][choice.title()] += 1 
 
         embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="{} gifted **{}** {} to {}".format(ctx.author.display_name, choice, emoji, member.display_name))
 

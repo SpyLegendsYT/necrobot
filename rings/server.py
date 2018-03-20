@@ -380,10 +380,21 @@ class Server():
     @commands.group()
     @has_perms(4)
     async def starboard(self, ctx):
+        """Base of the concept of R.Danny's starboard but simplified. This will post a message in a desired channel once it hits
+        a certain number of :star: reactions. Default limit is 5, you can change the limit with `{pre}starboard limit`"""
         pass
 
     @starboard.command(name="channel")
     async def starboard_channel(self, ctx, channel : discord.TextChannel = ""):
+        """Sets a channel for the starboard messages, required in order for starboard to be enabled. Call the command
+        without a channel to disable starboard.
+
+        {usage}
+
+        __Examples__
+        `{pre}starboard channel #a-channel` - sets the starboard channel to #a-channel, all starred messages will be sent to
+        there
+        `{pre}starboard channel` - disables starboard"""
         if channel == "":
             self.bot.server_data[ctx.guild.id]["starboard-channel"] = ""
             await ctx.send(":white_check_mark: | Starboard messages disabled.")
@@ -394,6 +405,16 @@ class Server():
 
     @starboard.command(name="limit")
     async def starboard_limit(self, ctx, limit : int):
+        """Sets the amount of stars required to the given intenger. Must be more than 0. 
+
+        {usage}
+
+        __Examples__
+        `{pre}starboard limit 4` - set the required amount of stars on a message to 4, once a message hits 4 :star: they
+        will be posted if there is a starboard channel set."""
+        if limit < 1:
+            return
+
         self.bot.server_data[ctx.guild.id]["starboard-limit"] = limit
         await ctx.send(":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{}** stars".format(limit))
 
