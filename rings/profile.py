@@ -26,7 +26,7 @@ class Profile():
         self.font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
         self.overlay = Image.open("rings/utils/profile/overlay.png")
         self.badges_d = {
-            "necrobot": 10000, 
+            "necrobot": 1000000, "glorfindel" : 1000000, "necro" : 10000000,
             "edain": 5000, "aotr": 5000,
             "rohan": 500, "angmar": 500, "dwarves": 500, "goblins": 500, "gondor": 500, "imladris": 500, "isengard": 500, "lorien": 500, "mordor": 500
         }
@@ -99,7 +99,7 @@ class Profile():
     @commands.command()
     @commands.guild_only()
     async def info(self, ctx, user : discord.Member = None):
-        """Returns a rich embed of the given user's info. If no user is provided it will return your own info. **WIP**
+        """Returns a rich embed of the given user's info. If no user is provided it will return your own info.
         
         {usage}
         
@@ -212,20 +212,28 @@ class Profile():
             return
 
         def check(message):
-            if not message.content.isdigit():
+            if ctx.author.id != message.author.id:
                 return False
 
-            return ctx.author.id == message.author.id and int(message.content) > 0 and int(message.content) < 9
+            if message.content == "exit":
+                return True
 
-        msg = await ctx.send("Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```")
+            if message.content.isdigit():
+                return int(message.content) > 0 and int(message.content) < 9
+
+
+        msg = await ctx.send("Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge. Or type `exit` to exit the menu.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```")
         
         try:
             reply = await self.bot.wait_for("message", check=check, timeout=300)
         except asyncio.TimeoutError:
             await msg.delete()
             return
-            
 
+        if reply.content == "exit":
+            await msg.delete()
+            return
+            
         spot = reply.content
         if badge == "":
             self.bot.user_data[ctx.author.id]["places"][spot] = ""
@@ -269,9 +277,9 @@ class Profile():
                 await msg.delete()
                 return
 
-            await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badges place [badge]`")
             self.bot.user_data[ctx.author.id]["money"] -= self.badges_d[badge]
             self.bot.user_data[ctx.author.id]["badges"].append(badge)
+            await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badges place [badge]`")
 
             
         await msg.delete()

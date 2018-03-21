@@ -29,8 +29,11 @@ Tell them GitHub sent you!
 # Badges
 Hover on each badge to get its name.
 
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/edain.png "edain")
 ![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necrobot.png "necrobot")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/glorfindel.png "glorfindel")
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necro.png "necro")
+
+![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/edain.png "edain")
 ![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/aotr.png "aotr")
 
 ![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/rohan.png "rohan")
