@@ -244,22 +244,38 @@ class Admin():
         """Saves all the data and terminate the self. (Permission level required: 7+ (The Bot Smith))
          
         {usage}"""
-        channel = self.bot.get_channel(318465643420712962)
-        msg = await channel.send("**Saving...**")
+        msg = await ctx.send("Shut down?")
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
-        with open("rings/utils/data/server_data.json", "w") as out:
-            json.dump(self.bot.server_data, out)
+        def check(reaction, user):
+            return user.id == 241942232867799040 and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+        
+        try:
+            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            return
 
-        await msg.edit(content="**Saved server data...**")
+        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await msg.delete()
+        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            await msg.delete()
+            channel = self.bot.get_channel(318465643420712962)
+            msg = await channel.send("**Saving...**")
 
-        with open("rings/utils/data/user_data.json", "w") as out:
-            json.dump(self.bot.user_data, out)
+            with open("rings/utils/data/server_data.json", "w") as out:
+                json.dump(self.bot.server_data, out)
 
-        await msg.edit(content="**Saved user data...**")
+            await msg.edit(content="**Saved server data...**")
 
-        await msg.edit(content="**Saved**")
-        await channel.send("**Bot Offline**")
-        await self.bot.logout()
+            with open("rings/utils/data/user_data.json", "w") as out:
+                json.dump(self.bot.user_data, out)
+
+            await msg.edit(content="**Saved user data...**")
+
+            await msg.edit(content="**Saved**")
+            await channel.send("**Bot Offline**")
+            await self.bot.logout()
 
 def setup(bot):
     bot.add_cog(Admin(bot))

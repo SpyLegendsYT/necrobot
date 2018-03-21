@@ -257,7 +257,7 @@ class Profile():
             await ctx.send(":negative_squared_cross_mark: | You already posses that badge")
             return
 
-        msg = await ctx.channel.send("Are you sure you want to buy the **{}** badge for **{}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(badge, self.badges_d[badge]))
+        msg = await ctx.channel.send("Are you sure you want to buy the **{}** badge for **{:,}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(badge, self.badges_d[badge]))
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
