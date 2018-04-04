@@ -24,9 +24,10 @@ class Tags():
 
         if tag in self.bot.server_data[ctx.message.guild.id]["tags"]:
             tag_content = self.bot.server_data[ctx.message.guild.id]["tags"][tag]["content"]
-            self.bot.server_data[ctx.message.guild.id]["tags"][tag]["counter"] += 1
             try:
                 await ctx.channel.send(tag_content.format(server=ctx.message.guild, member=ctx.message.author, channel=ctx.message.channel, content=ctx.message.content,**arg_dict))
+                self.bot.server_data[ctx.message.guild.id]["tags"][tag]["counter"] += 1
+                await self.bot.query_executer("UPDATE necrobot.Tags SET uses = uses + 1 WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
             except KeyError as e:
                 await ctx.channel.send("Expecting the following argument: {}".format(e.args[0]))
         else:
@@ -80,6 +81,7 @@ class Tags():
         tag = tag.lower()
         if tag not in self.bot.server_data[ctx.message.guild.id]["tags"]:
             self.bot.server_data[ctx.message.guild.id]["tags"][tag] = {'content':content.replace("'", "\'").replace('"', '\"'),'owner':ctx.message.author.id, 'created':d.datetime.today().strftime("%d - %B - %Y %H:%M"), 'counter':0}
+            await self.bot.query_executer("INSERT INTO necrobot.Tags VALUES ($1, $2, $3, $4, 0, $5);", ctx.guild.id, tag, content, ctx.author.id, d.datetime.today().strftime("%d - %B - %Y %H:%M"))
             await ctx.channel.send(":white_check_mark: | Tag " + tag + " added")
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | A tag with this name already exists")
@@ -97,6 +99,7 @@ class Tags():
         if tag in self.bot.server_data[ctx.message.guild.id]["tags"]:
             if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
                 del self.bot.server_data[ctx.message.guild.id]["tags"][tag]
+                await self.bot.query_executer("DELETE FROM necrobot.Tags WHERE guild_id = $1 AND name = $2;", ctx.guild.id, tag)
                 await ctx.channel.send(":white_check_mark: | Tag " + tag + " removed")
             else:
                 await ctx.channel.send(":negative_squared_cross_mark: | You can't delete someone else's tag.")
@@ -116,6 +119,7 @@ class Tags():
         if tag in self.bot.server_data[ctx.message.guild.id]["tags"]:
             if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
                 self.bot.server_data[ctx.message.guild.id]["tags"][tag]["content"] = text.replace("'", "\'").replace('"', '\"')
+                await self.bot.query_executer("UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", text, ctx.guild.id, tag)
                 await ctx.channel.send(":white_check_mark: | Tag " + tag + " modified")
             else:
                 await ctx.channel.send(":negative_squared_cross_mark: | You can't edit someone else's tag.")

@@ -9,14 +9,16 @@ lockedList = list()
 
 
 class Moderation():
-    """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. All you need to keep your server clean and tidy"""
+    """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. 
+    All you need to keep your server clean and tidy"""
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(aliases=["rename","name"])
     @has_perms(1)
     async def nick(self, ctx, user : discord.Member, *, nickname=None):
-        """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return an error message if the user cannot be renamed due to permission issues. (Permission level required: 1+ (Helper))
+        """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return 
+        an error message if the user cannot be renamed due to permission issues. (Permission level required: 1+ (Helper))
         
         {usage}
         
@@ -40,13 +42,16 @@ class Moderation():
     @commands.command()
     @has_perms(2)
     async def mute(self, ctx, user : discord.Member, *,seconds : int=False):
-        """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely if no amount is given. (Permission level required: 2+ (Moderator))
+        """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
+        mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely 
+        if no amount is given. (Permission level required: 2+ (Moderator))
         
         {usage}
 
         __Example__
         `{pre}mute @NecroBot` - mute NecroBot until a user with the proper permission level does `{pre}unmute @NecroBot`
-        `{pre}mute @NecroBot 30` - mutes NecroBot for 30 seconds or until a user with the proper permission level does `{pre}unmute @NecroBot`"""
+        `{pre}mute @NecroBot 30` - mutes NecroBot for 30 seconds or until a user with the proper permission level does 
+        `{pre}unmute @NecroBot`"""
         if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
             await ctx.message.channel.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
@@ -68,7 +73,8 @@ class Moderation():
     @commands.command()
     @has_perms(2)
     async def unmute(self, ctx, user : discord.Member):
-        """Unmutes a user by removing the mute role, allowing them once again to write in text channels. (Permission level required: 2+ (Moderator))
+        """Unmutes a user by removing the mute role, allowing them once again to write in text channels. 
+        (Permission level required: 2+ (Moderator))
         
         {usage}
 
@@ -93,7 +99,8 @@ class Moderation():
         {usage}
         
         __Example__
-        `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to Necrobot's warning list and pm the warning message to him"""
+        `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
+        Necrobot's warning list and pm the warning message to him"""
         await ctx.message.channel.send(":white_check_mark: | Warning: **\"" + message + "\"** added to warning list of user " + user.display_name)
         self.bot.user_data[user.id]["warnings"].append(message + " by " + str(ctx.message.author) + " on server " + ctx.message.guild.name)
         await user.send("You have been warned on " + ctx.message.guild.name + ", the warning is: \n" + message)
@@ -101,7 +108,8 @@ class Moderation():
     @warn.command(name="del")
     @has_perms(3)
     async def warn_del(self, ctx, user : discord.Member, position : int):
-        """Removes the warning from the user's NecroBot system based on the given warning position. (Permission level required: 3+ (Server Semi-Admin)) 
+        """Removes the warning from the user's NecroBot system based on the given warning position. 
+        (Permission level required: 3+ (Server Semi-Admin)) 
         
         {usage}
         
@@ -113,7 +121,9 @@ class Moderation():
     @commands.command()
     @has_perms(4)
     async def purge(self, ctx, number : int = 1, check="", extra=""):
-        """Removes number of messages from the channel it is called in. That's all it does at the moment but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ (Server Admin))
+        """Removes number of messages from the channel it is called in. That's all it does at the moment 
+        but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ 
+        (Server Admin))
         
         {usage}
         
@@ -145,7 +155,8 @@ class Moderation():
     @commands.command()
     @has_perms(3)
     async def speak(self, ctx, channel, *, message : str):
-        """Send the given message to the channel mentioned either by id or by mention. Requires the correct permission level on both servers. (Permission level required: 3+ (Semi-Admin))
+        """Send the given message to the channel mentioned either by id or by mention. 
+        Requires the correct permission level on both servers. (Permission level required: 3+ (Semi-Admin))
         
         {usage}
         
@@ -168,19 +179,30 @@ class Moderation():
     @commands.command()
     @has_perms(4)
     async def disable(self, ctx, command):
-        """Disables a command
+        """Disables a command. Once a command is disabled only admins can use it with the special n@ prefix. To re-enable a command
+        call disable on it again.
 
-        {usage}"""
+        {usage}
+
+        __Examples__
+        `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
+        `{pre}disable cat` - reenables the cat command."""
         disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
         if self.bot.get_command(command) is None:
             await ctx.send(":negative_squared_cross_mark: | No such command.", delete_after=5)
             return
 
+        if command == "disable":
+            await ctx.send(":negative_squared_cross_mark: | ... Really?", delete_after=5)
+            return
+
         if command not in disabled:
             disabled.append(command)
+            await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
             await ctx.send(":white_check_mark: | Command **{}** will now be ignored".format(command))
         else:
             disabled.remove(command)
+            await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
             await ctx.send(":white_check_mark: | Command **{}** will no longer be ignored".format(command))
 
 def setup(bot):

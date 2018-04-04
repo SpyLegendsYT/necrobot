@@ -1,9 +1,8 @@
 import discord
 from discord.ext import commands
 from rings.utils.help import NecroBotHelpFormatter
-import json
 import random
-from config import token
+from config import token, dbpass
 import sys
 import time as t
 import asyncio
@@ -13,6 +12,9 @@ from bs4 import BeautifulSoup
 import aiohttp
 from PIL import Image
 import os
+import functools
+import psycopg2
+import asyncpg
 
 
 async def get_pre(bot, message):
@@ -36,7 +38,7 @@ extensions = [
     "server",
     "admin",
     "decisions",
-    "casino",
+    "economy",
     "events",
     "waifu"
 ]
@@ -54,65 +56,123 @@ class NecroBot(commands.Bot):
         self.uptime_start = t.time()
         self.user_data = dict()
         self.server_data = dict()
-
-        #force typecast to int for all ids
-        raw_user_data = json.load(open("rings/utils/data/user_data.json", "r"))
-        for user in raw_user_data:
-            self.user_data[int(user)] = raw_user_data[user]
-            raw_perms = dict()
-            for server in raw_user_data[user]["perms"]:
-                raw_perms[int(server)] = raw_user_data[user]["perms"][server]
-
-            self.user_data[int(user)]["perms"] = raw_perms
-
-            if "badges" not in self.user_data[int(user)]:
-                self.user_data[int(user)]["badges"] = []
-
-            if "places" not in self.user_data[int(user)]:
-                self.user_data[int(user)]["places"] = {"1":"", "2":"", "3":"", "4":"", "5":"", "6":"", "7":"", "8":""}
-        
-        raw_server_data = json.load(open("rings/utils/data/server_data.json", "r"))
-        for server in raw_server_data:
-            try:
-                self.server_data[int(server)] = raw_server_data[server]
-            except ValueError:
-                self.server_data[server] = raw_server_data[server]
-
-
-        if "starred-messages" not in self.server_data:
-            self.server_data["starred-messages"] = []
-
+        self.cat_cache = []
+        self.starred = []
 
         self.ERROR_LOG = 351356683231952897
         self.version = 1.0
         self.prefixes = ["n!", "N!", "n@"]
 
         self.bg_task = self.loop.create_task(self.hourly_task())
+        self.session = aiohttp.ClientSession(loop=self.loop)
         self.events = {}
+
 
         @self.check
         def disabled_check(ctx):
-            if ctx.command.name not in self.server_data[ctx.message.guild.id]["disabled"]:
+            if ctx.guild is None:
                 return True
 
-            if ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix == "n@":
-                return True
-            
-            if ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@":
-                return False
+            return not (ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@")
                 
         self.add_check(disabled_check)
+
+        conn = psycopg2.connect(dbname="postgres", user="postgres", password=dbpass)
+        cur = conn.cursor()
+
+        #create server cache
+        cur.execute("SELECT * FROM necrobot.Guilds;")
+        for g in cur.fetchall():
+            self.server_data[g[0]] = {
+                            "mute": g[1] if g[1] != 0 else "", 
+                            "automod":g[2] if g[2] != 0 else "", 
+                            "welcome-channel":g[3] if g[3] != 0 else "", 
+                            "welcome":g[4], 
+                            "goodbye":g[5], 
+                            "prefix":g[6],
+                            "broadcast-channel":g[7] if g[7] != 0 else "",
+                            "broadcast":g[8],
+                            "broadcast-time":g[9],
+                            "starboard-channel":g[10] if g[10] != 0 else "",
+                            "starboard-limit":g[11],
+                            "auto-role":g[12] if g[12] != 0 else "",
+                            "self-roles":[],
+                            "ignore-command":[],
+                            "ignore-automod":[],
+                            "tags":{},
+                            "disabled":[]
+                        }
+
+        cur.execute("SELECT * FROM necrobot.SelfRoles;")
+        for g in cur.fetchall():
+            self.server_data[g[0]]["self-roles"].append(g[1])
+
+        cur.execute("SELECT * FROM necrobot.Disabled;")
+        for g in cur.fetchall():
+            self.server_data[g[0]]["disabled"].append(g[1])
+
+        cur.execute("SELECT * FROM necrobot.IgnoreAutomod;")
+        for g in cur.fetchall():
+            self.server_data[g[0]]["ignore-automod"].append(g[1])
+
+        cur.execute("SELECT * FROM necrobot.IgnoreCommand;")
+        for g in cur.fetchall():
+            self.server_data[g[0]]["ignore-command"].append(g[1])
+
+        cur.execute("SELECT * FROM necrobot.Tags;")
+        for g in cur.fetchall():
+            self.server_data[g[0]]["tags"][g[1]] = {"content":g[2], "owner":g[3], "counter":g[4], "created":g[5]}
+
+        #create user cache
+        cur.execute("SELECT * FROM necrobot.Users;")
+        for u in cur.fetchall():
+            self.user_data[u[0]] = {
+                            "money": u[1],
+                            "exp": u[2],
+                            "daily": u[3],
+                            "badges": u[4].split(","),
+                            "title":u[5],
+                            "perms":{},
+                            "waifu":{},
+                            "places":{}
+                        }
+
+        cur.execute("SELECT * FROM necrobot.Permissions;")
+        for u in cur.fetchall():
+            self.user_data[u[1]]["perms"][u[0]] = u[2]
+
+        cur.execute("SELECT * FROM necrobot.Badges;")
+        for u in cur.fetchall():
+            self.user_data[u[0]]["places"][u[1]] = u[2]
+
+        cur.execute("SELECT * FROM necrobot.Waifu;")
+        for u in cur.fetchall():
+            self.user_data[u[0]]["waifu"][u[1]] = {
+                            "waifu-value":u[2],
+                            "waifu-claimer": u[3] if u[3] != 0 else "",
+                            "affinity": u[4] if u[4] != 0 else "",
+                            "heart-changes":u[5],
+                            "divorces":u[6],
+                            "flowers":u[7],
+                            "waifus":[],
+                            "gifts":{}
+                        }
+
+        cur.execute("SELECT * FROM necrobot.Waifus;")
+        for u in cur.fetchall():
+            self.user_data[u[0]]["waifu"][u[1]]["waifus"].append(u[2])
+
+        cur.execute("SELECT * FROM necrobot.Gifts;")
+        for u in cur.fetchall():
+            self.user_data[u[0]]["waifu"][u[1]]["gifts"][u[2]] = u[3]
 
 
     # *****************************************************************************************************************
     #  Internal Function
     # *****************************************************************************************************************
     def _new_server(self):
-        return {"mute":"","automod":"","welcome-channel":"", "selfRoles":[],"ignoreCommand":[],"ignoreAutomod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "starboard-channel":"", "starboard-limit":5} 
+        return {"mute":"","automod":"","welcome-channel":"", "self-roles":[],"ignore-command":[],"ignore-automod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "starboard-channel":"", "starboard-limit":5} 
     
-    def _new_gifts(self):
-        return {"Cookie" : 0, "Rose": 0, "LoveLetter":0, "Chocolate":0, "Rice":0, "MovieTicket":0, "Book":0, "Lipstick":0, "Laptop":0, "Violin":0, "Ring":0, "Helicopter":0}
-
     def _startswith_prefix(self, message):
         if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
             return True
@@ -129,26 +189,14 @@ class NecroBot(commands.Bot):
         if self.user_data[user_id]["perms"][message.guild.id] >= 4 and message.content.startswith("n@"):
             return True
 
-        if user_id in self.server_data[message.guild.id]["ignoreCommand"] or channel_id in self.server_data[message.guild.id]["ignoreCommand"] or any(x in role_id for x in self.server_data[message.guild.id]["ignoreCommand"]):
+        if user_id in self.server_data[message.guild.id]["ignore-command"] or channel_id in self.server_data[message.guild.id]["ignore-command"] or any(x in role_id for x in self.server_data[message.guild.id]["ignore-command"]):
             return False
 
         return True
 
-    def logit(self, message):
-        if self._startswith_prefix(message):
-            with open("rings/utils/data/logfile.txt","a+") as log:
-                localtime = "\n{}: ".format(t.asctime(t.localtime(t.time())))
-                try: 
-                    author = "{}#{}".format(message.author.name, message.author.discriminator)
-                except UnicodeEncodeError:
-                    author = message.author.id
-
-                log.write("{}{} used {}".format(localtime, author, message.content))
-
     async def _mu_auto_embed(self, url, message):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                soup = BeautifulSoup(await resp.text(), "html.parser")
+        async with self.session.get(url) as resp:
+            soup = BeautifulSoup(await resp.text(), "html.parser")
 
         try:
             header = list(soup.find_all("h3", class_="catbg")[-1].stripped_strings)[1].replace("Thema: ", "").split(" \xa0")
@@ -174,54 +222,71 @@ class NecroBot(commands.Bot):
     async def _bmp_converter(self, message):
         attachment = message.attachments[0]
         await attachment.save(attachment.filename)
+
         im = Image.open(attachment.filename)
         im.save('{}.png'.format(attachment.filename))
         ifile = discord.File('{}.png'.format(attachment.filename))
         await message.channel.send(file=ifile)
+
         os.remove("{}.png".format(attachment.filename))
         os.remove(attachment.filename)
-
 
     # *****************************************************************************************************************
     #  Background Tasks
     # *****************************************************************************************************************
+    async def _save(self):
+        #upload user cache
+        cached_users = self.user_data
+        for user in cached_users:
+            u = cached_users[user]
+            await self.query_executer("UPDATE necrobot.Users SET necroins = $1, exp = $2 WHERE user_id = $3;",
+                            u["money"], u["exp"], user)
+
+            for guild in u["waifu"]:
+                w = u["waifu"][guild]
+                await self.query_executer("UPDATE necrobot.Waifu SET value = $1, flowers = $2 WHERE user_id = $3 AND guild_id = $4;", 
+                                w["waifu-value"], w["flowers"], user, guild)
+                
     async def hourly_task(self):
         await self.wait_until_ready()
         # log = bot.get_channel(self.ERROR_LOG)
-        # counter = 0
+        counter = 0
         while not self.is_closed():
-            # if counter >= 24:
-            #     counter = 0
+            if counter >= 24:
+                counter = 0
+                
             await asyncio.sleep(3600) # task runs every hour
-            # counter += 1
+            counter += 1
             
             #hourly save
-            with open("rings/utils/data/server_data.json", "w") as out:
-                json.dump(self.server_data, out)
+            await log.send("Initiating hourly save")
+            await self._save()
+            await log.send("Hourly save at {}".format(t.asctime(t.localtime(t.time()))))
 
-            with open("rings/utils/data/user_data.json", "w") as out:
-                json.dump(self.user_data, out)
+            # background tasks
+            for guild in self.server_data:
+                hour_mod = counter % self.server_data[guild]["broadcast-time"]
+                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "" and hour_mod == 0:
+                    channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
+                    await channel.send(self.server_data[guild]["broadcast"])
 
-            await log.send("Hourly save at " + str(t.asctime(t.localtime(t.time()))))
-
-            #background tasks
-            #broadcast
-            # for guild in self.server_data:
-            #     if guild.isdigit():
-            #         hour_mod = counter % self.server_data[guild]["broadcast-time"]
-            #         if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "":
-            #             if hour_mod == 0:
-            #                 channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
-            #                 await channel.send(self.server_data[guild]["broadcast"])
-
+    async def query_executer(self, query, *args):
+        conn = await self.pool.acquire()
+        try:
+            await conn.execute(query, *args)
+        finally:
+            await self.pool.release(conn)
 
     # *****************************************************************************************************************
     #  Internal Checks
     # *****************************************************************************************************************
-
-    def default_stats(self, member, guild):
+    async def default_stats(self, member, guild):
         if member.id not in self.user_data:
-            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'warnings': []}
+            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, 'places':{"1":"", "2":"", "3":"", "4":"", "5":"", "6":"", "7":"", "8":""}}
+            await self.query_executer("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '');", member.id)
+            await self.query_executer("""INSERT INTO necrobot.Badges VALUES ($1, 1, ''), ($1, 2, ''), ($1, 3, ''),
+                                                                            ($1, 4, ''), ($1, 5, ''), ($1, 6, ''),
+                                                                            ($1, 7, ''), ($1, 8, '');""", member.id)
 
         if guild.id not in self.user_data[member.id]["perms"]:
             if any(self.user_data[member.id]["perms"][x] == 7 for x in self.user_data[member.id]["perms"]):
@@ -235,52 +300,32 @@ class NecroBot(commands.Bot):
             else:
                 self.user_data[member.id]["perms"][guild.id] = 0
 
-        if guild.id not in self.user_data[member.id]:
-            self.user_data[member.id][guild.id] = {"waifu-value":50, "waifu-claimer":"", "affinity":"", "heart-changes":0, "divorces":0, "waifus":[], "flowers":0, "gifts":self._new_gifts()}
-                
-    def all_mentions(self, ctx, msg):
-        mention_list = list()
-        for mention in msg:
-            id = re.sub('[<>!&#@]', '', mention)
-            id = int(id)
-            if not self.get_channel(id) is None:
-                channel = self.get_channel(id)
-                mention_list.append(channel)
-            elif not ctx.message.guild.get_member(id) is None:
-                member = ctx.message.guild.get_member(id)
-                mention_list.append(member)
-            elif not discord.utils.get(ctx.message.guild.roles, id=id) is None:
-                role = discord.utils.get(ctx.message.guild.roles, id=id)
-                mention_list.append(role)
+            await self.query_executer("INSERT INTO necrobot.Permissions VALUES ($1,$2,$3);", guild.id, member.id, self.user_data[member.id]["perms"][guild.id])
 
-        return mention_list
+        if guild.id not in self.user_data[member.id]["waifu"]:
+            self.user_data[member.id]["waifu"][guild.id] = {"waifu-value":50, "waifu-claimer":"", "affinity":"", "heart-changes":0, "divorces":0, "waifus":[], "flowers":0, "gifts":{}}
+            await self.query_executer("INSERT INTO necrobot.Waifu VALUES ($1,$2,50,0,0,0,0,0);", member.id, guild.id)
 
     # *****************************************************************************************************************
     # Events
     # *****************************************************************************************************************
     async def on_ready(self):
+        self.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         await self.change_presence(game=discord.Game(name="Bot booting...", type=0))
         channel = self.get_channel(318465643420712962)
         await channel.send("**Initiating Bot**")
         msg = await channel.send("Bot User ready")
 
-        members = self.get_all_members()
-        for member in members:
-            self.default_stats(member, member.guild)
-        await msg.edit(content="All members checked")
-
         for guild in self.guilds:
             if guild.id not in self.server_data:
                     self.server_data[guild.id] = self._new_server()
+                    await self.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
         await msg.edit(content="All servers checked")
 
-        for extension in extensions:
-            try:
-                self.load_extension("rings."+extension)
-            except Exception as e:
-                print(f'Failed to load extension {extension}.', file=sys.stderr)
-                traceback.print_exc()
-        await msg.edit(content="All extensions loaded")
+        members = self.get_all_members()
+        for member in members:
+            await self.default_stats(member, member.guild)
+        await msg.edit(content="All members checked")
 
         await channel.send("**Bot Online**")
         await msg.delete()
@@ -321,4 +366,12 @@ class NecroBot(commands.Bot):
 
 
 bot = NecroBot()
+
+for extension in extensions:
+    try:
+        bot.load_extension("rings."+extension)
+    except Exception as e:
+        print(f'Failed to load extension {extension}.', file=sys.stderr)
+        traceback.print_exc()
+
 bot.run(token)

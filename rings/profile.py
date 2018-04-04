@@ -4,12 +4,12 @@ from discord.ext import commands
 
 from simpleeval import simple_eval
 import datetime as d
+import time as t
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw 
 from PIL import ImageColor 
 import os
-import aiohttp
 import random
 import asyncio
 
@@ -24,13 +24,20 @@ class Profile():
         self.font20 = ImageFont.truetype("Ringbearer Medium.ttf", 20)
         self.font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
         self.font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
-        self.overlay = Image.open("rings/utils/profile/overlay.png")
+        self.overlay = Image.open("rings/utils/profile/overlay.png").convert("RGBA")
         self.badges_d = {
             "necrobot": 1000000, "glorfindel" : 1000000, "necro" : 10000000,
             "edain": 5000, "aotr": 5000,
             "rohan": 500, "angmar": 500, "dwarves": 500, "goblins": 500, "gondor": 500, "imladris": 500, "isengard": 500, "lorien": 500, "mordor": 500
         }
         self.badges_coords = [(516, 261, 598, 343), (609, 261, 691, 343), (703, 261, 785, 343), (796, 261, 878, 343), (516, 350, 598, 432), (609, 350, 691, 432), (704, 350, 786, 432), (796, 350, 878, 432)]
+        
+    def midnight(self):
+        """Get the number of seconds until midnight."""
+        tomorrow = d.datetime.now() + d.timedelta(1)
+        midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
+                            day=tomorrow.day, hour=0, minute=0, second=0)
+        return (midnight - d.datetime.now()).seconds
 
     @commands.command()
     async def balance(self, ctx, user : discord.Member = None):
@@ -46,7 +53,7 @@ class Profile():
         else:
             await ctx.channel.send(":atm: | **"+ str(ctx.author.name) +"** you have **{:,}** :euro:".format(self.bot.user_data[ctx.author.id]["money"]))
 
-    @commands.command(aliases=["daily"])
+    @commands.command(name="daily")
     async def claim(self, ctx):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day.
         
@@ -57,7 +64,9 @@ class Profile():
             self.bot.user_data[ctx.author.id]["money"] += 200
             self.bot.user_data[ctx.author.id]["daily"] = day
         else:
-            await ctx.channel.send(":negative_squared_cross_mark: | You have already claimed your daily today, come back tomorrow.")
+            timer = str(d.timedelta(seconds=self.midnight())).partition(".")[0].replace(":", "{}")
+            timer = timer.format("hours, ", "minutes and ") + "seconds"
+            await ctx.channel.send(":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{}**".format(timer))
 
     @commands.command()
     async def pay(self, ctx, payee : discord.User, amount : int):
@@ -140,22 +149,21 @@ class Profile():
                 user = ctx.author
 
             url = user.avatar_url_as(format="png").replace("?size=1024", "")
-            async with aiohttp.ClientSession() as cs:
-                async with cs.get(url) as r:
-                    filename = os.path.basename(url)
-                    with open(filename, 'wb') as f_handle:
-                        while True:
-                            chunk = await r.content.read(1024)
-                            if not chunk:
-                                break
-                            f_handle.write(chunk)
-                    await r.release()
+            async with self.bot.session.get(url) as r:
+                filename = os.path.basename(url)
+                with open(filename, 'wb') as f_handle:
+                    while True:
+                        chunk = await r.content.read(1024)
+                        if not chunk:
+                            break
+                        f_handle.write(chunk)
+                await r.release()
 
-            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,139))).resize((1024,512)).crop((60,29,964,482))
+            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,139))).resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
-            pfp = Image.open(filename).resize((150,150))
-            perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.guild.id])).resize((50,50))
+            pfp = Image.open(filename).resize((150,150)).convert("RGBA")
+            perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.guild.id])).resize((50,50)).convert("RGBA")
 
             im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
             im.paste(pfp, box=(75, 132, 225, 282), mask=pfp)
@@ -164,7 +172,7 @@ class Profile():
             for spot in self.bot.user_data[user.id]["places"]:
                 badge = self.bot.user_data[user.id]["places"][spot]
                 if badge != "":
-                    badge_img = Image.open("rings/utils/profile/badges/{}.png".format(badge))
+                    badge_img = Image.open("rings/utils/profile/badges/{}.png".format(badge)).convert("RGBA")
                     index = int(spot) - 1
                     im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
@@ -194,7 +202,7 @@ class Profile():
         if text == "":
             await ctx.channel.send(":white_check_mark: | Your title has been reset")
         elif len(text) <= 32:
-            await ctx.channel.send(":white_check_mark: | Great, your title is now **" + text + "**")
+            await ctx.channel.send(":white_check_mark: | Great, your title is now **{}**".format(text))
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({}/32)".format(len(text)))
             return
@@ -203,10 +211,30 @@ class Profile():
 
     @commands.group(invoke_without_command=True)
     async def badges(self, ctx):
-        await ctx.send("You have the following badges: {}".format(" - ".join(self.bot.user_data[ctx.author.id]["badges"])))
+        """The badge system allows you to buy badges and place them on profiles. Show the world what your favorite
+        games/movies/books/things are.
+
+        {usage}
+
+        __Examples__
+        `{pre}badges` - lists your badges and a link to the list of all badges
+        `{pre}badges buy edain` - buy the edain badge, price will appear once you run the command
+        `{pre}badges place` - open the menu to reset the badge on a specific grid location
+        `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location
+        `{pre}badges buy` - sends the link to view the rest of the badges"""
+        await ctx.send("You have the following badges: {}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>".format(" - ".join(self.bot.user_data[ctx.author.id]["badges"])))
 
     @badges.command("place")
     async def badges_place(self, ctx, badge : str = ""):
+        """Opens the grid menu to allow you to place a badge or reset a badge. Simply supply a badge name to the command to
+        place a badge or simply call the command with no bagde name to reset the grid location.
+
+        {usage}
+
+        __Examples__
+        `{pre}badges place` - open the menu to reset the badge on a specific grid location
+        `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location"""
+        badge = badge.lower()
         if badge not in self.bot.user_data[ctx.author.id]["badges"] and badge != "":
             await ctx.send(":negative_squared_cross_mark: | You do not posses this badge")
             return
@@ -235,16 +263,25 @@ class Profile():
             return
             
         spot = reply.content
-        if badge == "":
-            self.bot.user_data[ctx.author.id]["places"][spot] = ""
-            await ctx.send(":white_check_mark: | The badge for this spot has been reset")
-            return
-
-        await ctx.send(":white_check_mark: | Placed badge **{}** on position **{}**".format(badge, spot))
         self.bot.user_data[ctx.author.id]["places"][spot] = badge
+        await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, ctx.author.id, int(spot))
+
+        if badge == "":
+            await ctx.send(":white_check_mark: | The badge for position **{}** has been reset".format(spot))
+        else:
+            await ctx.send(":white_check_mark: | Placed badge **{}** on position **{}**".format(badge, spot))
 
     @badges.command("buy")
     async def badges_buy(self, ctx, badge : str = ""):
+        """Allows to buy the given badge or sends a link to access the list of all possible badges. That link can be used
+        to preview the badges.
+
+        {usage}
+
+        __Examples__
+        `{pre}badges buy edain` - buy the edain badge, price will appear once you run the command
+        `{pre}badges buy` - sends the link to view the rest of the badges"""
+        badge = badge.lower()
         if badge == "":
             await ctx.send("Click the link to see a list of badges: <https://github.com/ClementJ18/necrobot#badges>\nWant to suggest a new badge? Use n!report and include the link of an image with a 1:1 ratio.")
             return

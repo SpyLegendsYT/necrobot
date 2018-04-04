@@ -112,8 +112,8 @@ class Player(common.Player):
         return not self.stop
 
 
-class Casino():
-    """All the cards games that NecroBot includes, careful, they all require you to pay with with your NecroBot currency"""
+class Economy():
+    """All the economy commands that NecroBot includes, careful, they all require you to pay with with your NecroBot currency"""
     def __init__(self, bot):
         self.bot = bot
         self.IS_GAME = list()
@@ -263,9 +263,52 @@ class Casino():
         except ValueError:
             pass
 
+    @commands.command(aliases=["slots"], enabled=False)
+    async def slot(self, ctx):
+        """Enter 50 Necroins and roll to see if you win more
 
+        {usage}"""
+        symbol_list = [":black_joker:", ":white_flower:", ":diamond_shape_with_a_dot_inside:", ":fleur_de_lis:", ":trident:", ":cherry_blossom:", "<:onering:351442796420399119>", ":squid:"]
+        
+        l1 = random.sample(symbol_list, len(symbol_list))
+        l2 = random.sample(symbol_list, len(symbol_list))
+        l3 = random.sample(symbol_list, len(symbol_list))
 
+        msg = await ctx.send("{}|{}|{}\n{}|{}|{}\n{}|{}|{}".format(l1[0], l2[0], l3[0], l1[1], l2[1], l3[1], l1[2], l2[2], l3[2]))
+
+        for sym in range(len(symbol_list[2:-1])):
+            await msg.edit(content="{}|{}|{}\n{}|{}|{}\n{}|{}|{}".format(l1[sym-1], l2[sym-1], l3[sym-1], l1[sym], l2[sym], l3[sym], l1[sym+1], l2[sym+1], l3[sym+1]))
+            final = [l1[sym], l2[sym], l3[sym]]
+            await asyncio.sleep(1)
+
+        if len(set(final)) == 1:
+            final = final[0]
+        else:
+            await ctx.send(":negative_squared_cross_mark: | Better luck next time")
+            return
+
+        if final == "<:onering:351442796420399119>":
+            await ctx.send(":white_check_mark: | **Jackpot!** You won **2500** Necroins!")
+        else:
+            await ctx.send(final)
+
+    @commands.command()
+    async def ttt(self, ctx, enemy : discord.Member):
+        board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+
+        await ctx.send(":white_check_mark: | You have challenged **{}**, they must reply with `accept` within 5 minutes in order for the game to begin. If they type `reject`, the game will be cancelled.")
+
+        def check(msg):
+            return msg.channel.id == ctx.channel.id and msg.author.id == enemy.id and msg.content in ["accept", "reject"]
+        try:
+            msg = await bot.wait_for("message", timeout=300, check=check)
+        except asyncio.TimeoutError:
+            return
+
+        if msg.content == "reject":
+            await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play, maybe next time.")
+            return
 
 
 def setup(bot):
-    bot.add_cog(Casino(bot))
+    bot.add_cog(Economy(bot))

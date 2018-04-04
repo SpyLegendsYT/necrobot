@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands
 import dice
 import random
+import quantumrandom
+
 
 ball8List = ["It is certain"," It is decidedly so"," Without a doubt","Yes, definitely","You may rely on it","As I see it, yes"," Most likely","Outlook good","Yes","Signs point to yes","Reply hazy try again","Ask again later","Better not tell you now"," Cannot predict now","Concentrate and ask again","Don't count on it"," My reply is no","My sources say no","Outlook not so good","Very doubtful"]
 
@@ -27,7 +29,7 @@ class Decisions():
 
     @commands.command(aliases=["flip"])
     async def coin(self, ctx, choice : str = None, bet : int = None):
-        """Flips a coin and returns the result. Can also be used to bet money on the result (`h` for head and `t` for tail.
+        """Flips a coin and returns the result. Can also be used to bet money on the result (`h` for head and `t` for tail).
         
         {usage}
 
@@ -41,6 +43,12 @@ class Decisions():
 
         if bet is None:
             bet = 0
+        else:
+            bet = abs(bet)
+
+        if bet >  self.bot.user_data[ctx.author.id]["money"]:
+            await ctx.send(":negative_squared_cross_mark: | Not enough money", delete_after=5)
+            return
 
         if "head" in msg.content:
             if choice == "h":
@@ -59,14 +67,16 @@ class Decisions():
 
     @commands.command()
     async def roll(self, ctx, dices="1d6"):
-        """Rolls one or multiple x sided dices and returns the result. Structure of the argument: `[number of die]d[number of faces]` 
+        """Rolls one or multiple x sided dices and returns the result. 
+        Structure of the argument: `[number of die]d[number of faces]`. Uses the newest quantum number generator. 
         
         {usage}
         
         __Example__
         `{pre}roll 3d8` - roll three 8-sided die
         `{pre}roll` - roll one 6-sided die"""
-        await ctx.channel.send(":game_die: | {} rolled {}".format(ctx.message.author.display_name, dice.roll(dices)))
+        dice_list = dice.roll(dices)
+        await ctx.channel.send(":game_die: | **{}** rolled {} for a total of: **{}**".format(ctx.message.author.display_name, dice_list, sum(dice_list)))
 
     @commands.command(name="8ball")
     async def ball8(self, ctx, *, message):

@@ -4,13 +4,42 @@ from discord.ext import commands
 from simpleeval import simple_eval
 import inspect
 from rings.utils.utils import has_perms
-import json
+import datetime
 
+class GuildConverter(commands.IDConverter):
+    async def convert(self, ctx, argument):
+        result = None
+        bot = ctx.bot
+        guilds = bot.guilds
+
+        result = discord.utils.get(guilds, name=argument)
+
+        if not result is None:
+            return result
+
+        result = bot.get_guild(argument)
+
+        if not result is None:
+            return result
+
+        def check(g):
+            return g.owner.id == argument or g.owner.name == argument or g.owner.nick == argument or str(g.owner) == argument
+
+        result = discord.utils.find(check, guilds)
+
+        if not result is None:
+            return result
+
+        raise commands.BadArgument("Not a known guild")
 
 
 class Admin():
     def __init__(self, bot):
-        self.bot = bot
+        self.bot = bot    
+
+    @commands.command()
+    async def x(self, ctx, *, thing : GuildConverter):
+        await ctx.send(thing.name)
 
     @commands.command()
     @commands.is_owner()
@@ -30,7 +59,8 @@ class Admin():
     @commands.is_owner()
     async def a_perms(self, ctx, server : int, user : discord.Member, level : int):
         self.bot.user_data[user.id]["perms"][server] = level
-        await ctx.message.channel.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ str(level) + "** on server " + self.bot.get_guild(server).name)
+        await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server, user.id)
+        await ctx.message.channel.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ level + "** on server " + self.bot.get_guild(server).name)
 
 
     @commands.command()
@@ -45,7 +75,7 @@ class Admin():
         if user.id in self.bot.user_data:
             await ctx.message.channel.send("Stats already for user")
         else:
-            self.bot.default_stats(user, ctx.message.guild)
+            await self.bot.default_stats(user, ctx.message.guild)
             await ctx.message.channel.send("Stats set for user")
 
     @commands.command()
@@ -71,28 +101,6 @@ class Admin():
             await ctx.message.channel.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, self.bot.user_data[user.id]["money"]))
         except (NameError,SyntaxError):
             await ctx.message.channel.send(":negative_squared_cross_mark: | Operation not recognized.")
-
-    @commands.group()
-    @has_perms(6)
-    async def modify(self, ctx):
-        pass
-
-    @modify.command(name="server")
-    async def modify_server(self, ctx, guild, setting, *, value):
-        try:
-            self.bot.server_data[guild][setting] = value
-            await ctx.message.channel.send(":white_check_mark: | `{}` for this server will now be `{}`".format(setting, value))
-        except KeyError:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | Setting not found")
-
-    @modify.command(name="user")
-    async def modify_user(self, ctx, user:discord.Member, setting, *, value):
-        try:
-            self.bot.user_data[user.id][setting] = value
-            await ctx.message.channel.send(":white_check_mark: | `{}` for this user will now be `{}`".format(setting, value))
-        except KeyError:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | Setting not found")
-
 
     @commands.command()
     @has_perms(6)
@@ -193,7 +201,34 @@ class Admin():
             if inspect.isawaitable(result):
                 result = await result
         except Exception as e:
-            await ctx.message.channel.send(python.format(type(e).__name__ + ': ' + str(e)))
+            await ctx.send(python.format(type(e).__name__ + ': ' + e))
+            return
+
+    @commands.command()
+    @commands.is_owner()
+    async def edit(self, ctx, *, code : str):
+        code = code.strip('` ')
+        python = '```py\n{}\n```'
+        result = None
+
+        env = {
+            'bot': self.bot,
+            'ctx': ctx,
+            'message': ctx.message,
+            'server': ctx.message.guild,
+            'channel': ctx.message.channel,
+            'author': ctx.message.author,
+            'server_data' : self.bot.server_data,
+            'user_data ' : self.bot.user_data
+        }
+
+        env.update(globals())
+
+        try:
+            result = exec(code, env)
+            await ctx.send(":white_check_mark: | Don't forget to eval an SQL statement for permanent changes")
+        except Exception as e:
+            await ctx.send(python.format(type(e).__name__ + ': ' + e))
             return
 
     # *****************************************************************************************************************
@@ -208,7 +243,7 @@ class Admin():
         try:
             self.bot.load_extension("rings." + extension_name)
         except (AttributeError,ImportError) as e:
-            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, e))
             return
         await ctx.channel.send("{} loaded.".format(extension_name))
 
@@ -231,7 +266,7 @@ class Admin():
         try:
             self.bot.load_extension("rings." + extension_name)
         except (AttributeError,ImportError) as e:
-            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, str(e)))
+            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, e))
             return
         await ctx.channel.send("{} reloaded.".format(extension_name))
 
@@ -260,22 +295,30 @@ class Admin():
             await msg.delete()
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             await msg.delete()
+            await self.bot.change_presence(game=discord.Game(name="Bot shutting down...", type=0))
             channel = self.bot.get_channel(318465643420712962)
             msg = await channel.send("**Saving...**")
 
-            with open("rings/utils/data/server_data.json", "w") as out:
-                json.dump(self.bot.server_data, out)
-
-            await msg.edit(content="**Saved server data...**")
-
-            with open("rings/utils/data/user_data.json", "w") as out:
-                json.dump(self.bot.user_data, out)
-
-            await msg.edit(content="**Saved user data...**")
+            await self.bot._save()
 
             await msg.edit(content="**Saved**")
             await channel.send("**Bot Offline**")
             await self.bot.logout()
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def save(self, ctx):
+        await ctx.send(":white_check_mark: | Saving")
+        await self.bot._save()
+        await ctx.send(":white_check_mark: | Done saving")
+
+    @commands.command(hidden=True)
+    async def timer(self, ctx):
+        if not ctx.author.id in [241942232867799040, 271259290415792129]:
+            return
+
+        time_left = datetime.datetime(year=2018, month=4, day=13, hour=18, minute=35) - datetime.datetime.now()
+        await ctx.send("Time remaining to three weeks of non-stop fun: **{}**".format(time_left))
 
 def setup(bot):
     bot.add_cog(Admin(bot))

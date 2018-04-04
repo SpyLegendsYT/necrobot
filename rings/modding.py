@@ -23,13 +23,16 @@ class AsyncReader(Reader):
         return Mod(self.url, *self._general_parser(), *self._basic_mod_parser(), self._share_parser())
 
 class Modding():
-    """The modding commands that allow modders to showcase their work and users to interact with it. This is NecroBot's main purpose albeit one of his smallest feature now."""
+    """The modding commands that allow modders to showcase their work and users to interact with it. 
+    This is NecroBot's main purpose albeit one of his smallest feature now."""
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
     async def moddb(self, ctx, url : str):
-        """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of mod formats, embed appearances will vary but it should always return one as long as it is given a proper url starting with `http://www.moddb.com/mods/`
+        """This command takes in a mod url from ModDB and returns a rich embed of it. Due to the high variety of 
+        mod formats, embed appearances will vary but it should always return one as long as it is given a proper 
+        url starting with `http://www.moddb.com/mods/`
         
         {usage}
         

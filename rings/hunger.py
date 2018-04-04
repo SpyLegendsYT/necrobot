@@ -25,17 +25,20 @@ class Hunger():
 
     @commands.command()
     async def fight(self, ctx, *, tributes):
-        """Takes in a list of tributes separated by `|` and simulates a hunger games based on Bransteele's Hunger Game Simulator. More than 
+        """Takes in a list of tributes separated by `,` and simulates a hunger games based on Bransteele's Hunger Game Simulator. More than 
         one tribute needs to be supplied.
 
         {usage}
 
         __Example__
-        `{pre}fight john | bob | emilia the trap` - starts a battle between tributes john, bob and emilia the trap"""
-        tributes_list = set([x.strip() for x in tributes.split("|")])
+        `{pre}fight john , bob , emilia the trap` - starts a battle between tributes john, bob and emilia the trap"""
+        tributes_list = list(set([x.strip() for x in tributes.split(",")]))
         if len(tributes_list) <2:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | Please provide at least two names separated by `|`")
+            await ctx.send(":negative_squared_cross_mark: | Please provide at least two names separated by `,`")
             return
+
+        if len(tributes_list) > 32:
+            await ctx.send(":negative_squared_cross_mark: | Please provide no more than 32 characters separated by `,`.")
 
         dead_list = list()
 

@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 import random
 from bs4 import BeautifulSoup
-import aiohttp
 import asyncio
 
 class Social():
@@ -89,9 +88,8 @@ class Social():
         """Generates a rich embed containing a random pokefusion.
         
         {usage}"""
-        async with aiohttp.ClientSession() as session:
-            async with session.get("http://pokemon.alexonsager.net/") as resp:
-                soup = BeautifulSoup(await resp.text(), "html.parser")
+        async with self.bot.session.get("http://pokemon.alexonsager.net/") as resp:
+            soup = BeautifulSoup(await resp.text(), "html.parser")
 
         image = soup.find(id="pk_img")["src"]
         name = soup.find(id="pk_name").string
