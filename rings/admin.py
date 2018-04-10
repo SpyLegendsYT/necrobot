@@ -14,20 +14,21 @@ class GuildConverter(commands.IDConverter):
 
         result = discord.utils.get(guilds, name=argument)
 
-        if not result is None:
+        if result:
             return result
 
-        result = bot.get_guild(argument)
+        if argument.isdigit():
+            result = bot.get_guild(int(argument))
 
-        if not result is None:
-            return result
+            if result:
+                return result
 
         def check(g):
             return g.owner.id == argument or g.owner.name == argument or g.owner.nick == argument or str(g.owner) == argument
 
         result = discord.utils.find(check, guilds)
 
-        if not result is None:
+        if result:
             return result
 
         raise commands.BadArgument("Not a known guild")
@@ -35,11 +36,29 @@ class GuildConverter(commands.IDConverter):
 
 class Admin():
     def __init__(self, bot):
-        self.bot = bot    
+        self.bot = bot  
 
-    @commands.command()
-    async def x(self, ctx, *, thing : GuildConverter):
-        await ctx.send(thing.name)
+    # @commands.command()
+    # async def x(self, ctx):
+    #     thing, user = await self.bot.wait_for("both")
+
+    #     if isinstance(thing, discord.Reaction):
+    #         await ctx.send("User used reaction menu")
+    #     elif isinstance(thing, discord.Message):
+    #         await ctx.send("User used text menu")
+
+    # @commands.command()
+    # async def y(self, ctx):
+    #     self.bot.dispatch("both", ctx.message, ctx.message.author)
+
+    # @commands.command()
+    # async def z(self, ctx):
+    #     reaction, user = await self.bot.wait_for("reaction_add")
+    #     self.bot.dispatch("both", reaction, user)
+
+    # @commands.command()
+    # async def w(self, ctx, *, guild : GuildConverter):
+    #     await ctx.send(guild.name)
 
     @commands.command()
     @commands.is_owner()
@@ -51,16 +70,19 @@ class Admin():
             channel = guild.text_channels[1]
             await channel.send("I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
             await guild.leave()
-            await ctx.message.channel.send(":white_check_mark: | Okay Necro, I've left {}".format(guild.name))
+            await ctx.send(":white_check_mark: | Okay Necro, I've left {}".format(guild.name))
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | I'm not on that server")
+            await ctx.send(":negative_squared_cross_mark: | I'm not on that server")
 
     @commands.command(name="admin-perms")
     @commands.is_owner()
     async def a_perms(self, ctx, server : int, user : discord.Member, level : int):
+        """For when regular perms isn't enough.
+
+        {usage}"""
         self.bot.user_data[user.id]["perms"][server] = level
         await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server, user.id)
-        await ctx.message.channel.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ level + "** on server " + self.bot.get_guild(server).name)
+        await ctx.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ str(level) + "** on server " + self.bot.get_guild(server).name)
 
 
     @commands.command()
@@ -73,10 +95,10 @@ class Admin():
         __Example__
         `{pre}setstats @NecroBot` - sets the default stats for NecroBot"""
         if user.id in self.bot.user_data:
-            await ctx.message.channel.send("Stats already for user")
+            await ctx.send("Stats already set for user")
         else:
             await self.bot.default_stats(user, ctx.message.guild)
-            await ctx.message.channel.send("Stats set for user")
+            await ctx.send("Stats set for user")
 
     @commands.command()
     @has_perms(6)
@@ -98,9 +120,9 @@ class Admin():
         try:
             operation = simple_eval(s)
             self.bot.user_data[user.id]["money"] = abs(int(operation))
-            await ctx.message.channel.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, self.bot.user_data[user.id]["money"]))
+            await ctx.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, self.bot.user_data[user.id]["money"]))
         except (NameError,SyntaxError):
-            await ctx.message.channel.send(":negative_squared_cross_mark: | Operation not recognized.")
+            await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
 
     @commands.command()
     @has_perms(6)
@@ -114,7 +136,7 @@ class Admin():
         user = self.bot.get_user(id)
         if not user is None:
             send = await user.send(message + "\n*You have 5 minutes to reply to the message*")
-            to_edit = await ctx.message.channel.send(":white_check_mark: | **Message sent**")
+            to_edit = await ctx.send(":white_check_mark: | **Message sent**")
 
             def check(m):
                 return m.author == user and m.channel == send.channel
@@ -122,7 +144,7 @@ class Admin():
             msg = await self.bot.wait_for("message", check=check, timeout=300)
             await to_edit.edit(":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | No such user.")
+            await ctx.send(":negative_squared_cross_mark: | No such user.")
 
     @commands.command()
     @commands.is_owner()
@@ -134,25 +156,31 @@ class Admin():
         __Example__
         `{pre}test 345345334235345` - returns the user or server name with that id"""
         user = self.bot.get_user(id)
-        if not user is None:
-            await ctx.message.channel.send("User: **{}#{}**".format(user.name, user.discriminator))
+        if not user:
+            await ctx.send("User: **{}#{}**".format(user.name, user.discriminator))
             return
 
-        await ctx.message.channel.send("User with that ID not found.")
+        await ctx.send("User with that ID not found.")
 
         guild = self.bot.get_guild(id)
-        if not guild is None:
-            await ctx.message.channel.send("Server: **{}**".format(guild.name))
+        if not guild:
+            await ctx.send("Server: **{}**".format(guild.name))
             return
 
-        await ctx.message.channel.send("Server with that ID not found")
+        await ctx.send("Server with that ID not found")
 
         channel = self.bot.get_channel(id)
-        if not channel is None:
-            await ctx.message.channel.send("Channel: **{}** on **{}**".format(channel.name, channel.guild.name))
+        if not channel:
+            await ctx.send("Channel: **{}** on **{}**".format(channel.name, channel.guild.name))
             return
 
-        await ctx.message.channel.send("Channel with that ID not found")
+        await ctx.send("Channel with that ID not found")
+
+        role = discord.utils.get([x for x in y.roles for y in self.bot.guilds], id=id)
+        if not role:
+            await ctx.send("Role: **{}** on **{}**".format(role.name, role.guild.name))
+
+        await ctx.send("Role with that ID not found")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -162,13 +190,13 @@ class Admin():
         {usage}"""
         for guild in self.bot.guilds:
             try:
-                channel = guild.text_channels[1]
+                channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).create_instant_invite][1]
                 invite = await channel.create_invite(max_age=86400)
-                await ctx.message.author.send("Server: " + guild.name + "(" + str(guild.id) + ") - <" + invite.url + ">")
+                await ctx.send("Server: " + guild.name + "(" + str(guild.id) + ") - <" + invite.url + ">")
             except discord.errors.Forbidden:
-                await ctx.message.author.send("I don't have the necessary permissions on " + guild.name + "(" + str(guild.id) + "). That server is owned by " + guild.owner.name + "#" + str(guild.owner.discriminator) + " (" + str(guild.id) + ")")
+                await ctx.send("I don't have the necessary permissions on " + guild.name + "(" + str(guild.id) + "). That server is owned by " + guild.owner.name + "#" + str(guild.owner.discriminator) + " (" + str(guild.id) + ")")
             except IndexError:
-                await ctx.message.author.send("No text channels in " + guild.name + "(" + str(guild.id) + ")")
+                await ctx.send("No text channels in " + guild.name + "(" + str(guild.id) + ")")
 
     @commands.command()
     @commands.is_owner()

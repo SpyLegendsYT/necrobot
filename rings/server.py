@@ -64,7 +64,7 @@ class Server():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @has_perms(4)
     async def perms(self, ctx, user : discord.Member, level : int):
         """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. Permissions reset if you leave the server(Permission level required: 4+ (Server Admin))
@@ -83,6 +83,9 @@ class Server():
                     await self.bot.query_executer("UPDATE necrobot.Permissions SET level = 6 WHERE guild_id = $1 AND user_id = $2;", guild, user.id)
         else:
             await ctx.message.channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permission to grant this permission level")
+    @perms.command(name="help")
+    async def perms_help(self, ctx):
+        pass
 
     @commands.command()
     @has_perms(4)
@@ -178,7 +181,7 @@ class Server():
     @commands.group(aliases=["setting"], invoke_without_command=True)
     @has_perms(4)
     async def settings(self, ctx):
-        """Creates a rich embed of the server settings, also the gateway to the rest of the the rest of the commands
+        """Creates a rich embed of the server settings, also the gateway to the rest of the commands
 
         {usage}"""
         server = self.bot.server_data[ctx.message.guild.id]
@@ -246,7 +249,7 @@ class Server():
             await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
             await ctx.message.channel.send(":white_check_mark: | Okay, users will get their welcome/goodbye message in " + channel.mention + " from now on.")
 
-    @settings.command(name="automod")
+    @settings.command(name="automod-channel")
     @has_perms(4)
     async def settings_automod_channel(self, ctx, channel : discord.TextChannel = ""):
         """Sets the automoderation channel to [channel], [channel] argument should be a channel mention. All the 
@@ -255,8 +258,8 @@ class Server():
         {usage}
         
         __Example__
-        `{pre}settings automod #channel` - set the automoderation messages to be sent to channel 'channel'
-        `{pre}settings automod` - disables automoderation for the entire server"""
+        `{pre}settings automod-channel #channel` - set the automoderation messages to be sent to channel 'channel'
+        `{pre}settings automod-channel` - disables automoderation for the entire server"""
         if channel == "":
             self.bot.server_data[ctx.message.guild.id]["automod"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", ctx.guild.id)

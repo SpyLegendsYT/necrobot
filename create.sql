@@ -108,4 +108,13 @@ CREATE TABLE necrobot.Logs(
     message varchar(2000),
     time_used varchar(100),
     can_run char(4)
-)
+);
+
+CREATE TABLE necrobot.Warnings(
+    warn_id serial PRIMARY KEY,
+    user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    issuer_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    warning_content varchar(2000),
+    date_issued varchar(100)
+);

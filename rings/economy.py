@@ -294,20 +294,214 @@ class Economy():
 
     @commands.command()
     async def ttt(self, ctx, enemy : discord.Member):
-        board = [" ", " ", " ", " ", " ", " ", " ", " ", " "]
+        """Play a game of tic tac toe either against either a chosen enemy or against necrobot. 
 
-        await ctx.send(":white_check_mark: | You have challenged **{}**, they must reply with `accept` within 5 minutes in order for the game to begin. If they type `reject`, the game will be cancelled.")
+        {usage}
 
-        def check(msg):
-            return msg.channel.id == ctx.channel.id and msg.author.id == enemy.id and msg.content in ["accept", "reject"]
-        try:
-            msg = await bot.wait_for("message", timeout=300, check=check)
-        except asyncio.TimeoutError:
-            return
+        __Examples__
+        `{pre}ttt @NecroBot` - play a game against NecroBot (AI)
+        `{pre}ttt @ThatUser` - play a game against ThatUser, given that they agree"""
+        def check_win(b):
+            #horizontal check
+            if ((b[0][0] == "O" and b[0][1] == "O" and b[0][2] == "O") or (b[1][0] == "O" and b[1][1] == "O" and b[1][2] == "O")) or ((b[2][0] == "O" and b[2][1] == "O" and b[2][2] == "O") or (b[0][0] == "X" and b[0][1] == "X" and b[0][2] == "X") or (b[1][0] == "X" and b[1][1] == "X" and b[1][2] == "X") or (b[2][0] == "X" and b[2][1] == "X" and b[2][2] == "X")):
+                # print("horizontal check")
+                return True
 
-        if msg.content == "reject":
-            await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play, maybe next time.")
-            return
+            #vertical check
+            if ((b[0][0] == "O" and b[1][0] == "O" and b[2][0] == "O") or (b[0][1] == "O" and b[1][1] == "O" and b[2][1] == "O")) or ((b[0][2] == "O" and b[1][2] == "O" and b[2][2] == "O") or (b[0][0] == "X" and b[1][0] == "X" and b[2][0] == "X") or (b[0][1] == "X" and b[1][1] == "X" and b[2][1] == "X") or (b[0][2] == "X" and b[1][2] == "X" and b[2][2] == "X")):
+                # print("vertical check")
+                return True
+
+            #diagonal check
+            if ((b[0][0] == "O" and b[1][1] == "O" and b[2][2] == "O") or (b[0][2] == "O" and b[1][1] == "O" and b[2][0] == "O")) or ((b[0][0] == "X" and b[1][1] == "X" and b[2][2] == "X") or (b[0][2] == "X" and b[1][1] == "X" and b[2][0] == "X")):
+                # print("diagonal check")
+                return True
+
+            return False
+
+        def board_full(b):
+            board_list = []
+            for row in b:
+                board_list += row
+
+            return set(board_list) == {"O", "X"} or set(board_list) == {"X", "O"}
+
+        def print_board(b):
+            msg = []
+            for x in b:
+                msg.append(" {} | {} | {} \n".format(x[0], x[1], x[2]))
+
+            return "```\n"+ "------------\n".join(msg) + "\n```\nReply with the desired grid position. Won't work if not an intenger between 1 and 9 or from a place already taken."
+
+        def comp_move(b):
+            #check if any of our moves can win
+            for row in b:
+                for e in row:
+                    if e not in ["O", "X"]:
+                        num = int(e)
+                        copy_b = [x.copy() for x in b]
+                        copy_b[b.index(row)][row.index(e)] = "X"
+                        if check_win(copy_b):
+                            return num
+
+            #check if any of the enemy moves can win
+            for row in b:
+                for e in row:
+                    if e not in ["O", "X"]:
+                        num = int(e)
+                        copy_b = [x.copy() for x in b]
+                        copy_b[b.index(row)][row.index(e)] = "O"
+                        if check_win(copy_b):
+                            return num
+
+            #take the center
+            if not b[1][1] in ["X", "O"]:
+                return 5
+
+            #take a random corner
+            choices = []
+            for corner in [1, 3, 7, 9]:
+                if not b[int(corner//3.5)][(corner-1)%3] in ["X", "O"]:
+                    choices.append(corner)
+
+            if len(choices) > 0:
+                return random.choice(choices)
+
+            choice = []
+            #take a random side
+            for side in [2, 4, 6, 8]:
+                if not b[int(side//3.5)][(side-1)%3] in ["X", "O"]:
+                    choices.append(side)
+
+            if len(choices) > 0:
+                return random.choice(choices)
+
+
+        async def two_players():
+            while True:
+                await msg.edit(content=print_board(board))
+
+                def check(message):
+                    if not message.content.isdigit():
+                        return False
+
+                    return message.author == ctx.author and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
+                
+                try:
+                    await current_msg.edit(content="Awaiting response from player: **{}**".format(ctx.author.display_name))
+                    user1 = await self.bot.wait_for("message", check=check, timeout=300)
+                except asyncio.TimeoutError:
+                    return
+
+                await user1.delete()
+                user1 = int(user1.content)
+
+                board[int(user1//3.5)][(user1-1)%3] = "O"
+
+                if check_win(board):
+                    await ctx.send("{} wins".format(ctx.author.display_name))
+                    break
+
+                if board_full(board):
+                    await ctx.send("**Nobody wins**")
+                    break
+
+                await msg.edit(content=print_board(board))
+
+                def check(message):
+                    if not message.content.isdigit():
+                        return False
+
+                    return message.author == enemy and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
+                
+                try:
+                    await current_msg.edit(content="Awaiting response from player: **{}**".format(enemy.display_name))
+                    user2 = await self.bot.wait_for("message", check=check, timeout=300)
+                except asyncio.TimeoutError:
+                    return
+                
+                await user2.delete()
+                user2 = int(user2.content)
+
+                board[int(user2//3.5)][(user2-1)%3] = "X"
+
+                if check_win(board):
+                    await ctx.send("{} wins".format(enemy.display_name))
+                    break
+
+            await msg.edit(content=print_board(board))
+
+        async def against_ai():
+            while True:
+                await msg.edit(content=print_board(board))
+                
+                def check(message):
+                    if not message.content.isdigit():
+                        return False
+
+                    return message.author == ctx.author and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
+                
+                try:
+                    user1 = await self.bot.wait_for("message", check=check, timeout=300)
+                except asyncio.TimeoutError:
+                    pass
+                await user1.delete()
+                user1 = int(user1.content)
+
+                board[int(user1//3.5)][(user1-1)%3] = "O"
+
+                if check_win(board):
+                    await ctx.send("**You win**")
+                    break
+
+                if board_full(board):
+                    await ctx.send("**Nobody wins**")
+                    break
+                    
+                await msg.edit(content=print_board(board))
+                user2 = comp_move(board)
+                await ai_msg.edit(content="AI picks: {}".format(user2))
+                board[int(user2//3.5)][(user2-1)%3] = "X"
+
+                if check_win(board):
+                    await ctx.send("**Necrobot wins**")
+                    break
+
+            await msg.edit(content=print_board(board))
+
+        board = [
+                ["1", "2", "3"],
+                ["4", "5", "6"],
+                ["7", "8", "9"]
+                ]
+
+        if enemy == self.bot.user:
+            msg = await ctx.send(":white_check_mark: | NecroBot has accepted your challenge, be prepared to face him")
+            await asyncio.sleep(5)
+            ai_msg = await ctx.send("AI picks: ")
+            await against_ai()
+        else:
+            msg = await ctx.send(":white_check_mark: | You have challenged **{}**. {}, would you like to play? React with :white_check_mark: to play or with :negative_squared_cross_mark: to reject their challenge.".format(enemy.display_name, enemy.mention))
+            await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+            await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+
+            def check(reaction, user):
+                return user == enemy and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+            except asyncio.TimeoutError:
+                await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")
+                await msg.delete()
+
+            if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+                await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")
+                await msg.delete()
+            elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+                await msg.clear_reactions()
+                current_msg = await ctx.send("Awaiting response from player: ")
+                await two_players()
+
+            
 
 
 def setup(bot):

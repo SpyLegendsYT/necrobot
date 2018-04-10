@@ -5,9 +5,6 @@ import asyncio
 import re
 from rings.utils.utils import has_perms
 
-lockedList = list()
-
-
 class Moderation():
     """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. 
     All you need to keep your server clean and tidy"""
@@ -102,8 +99,12 @@ class Moderation():
         `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
         Necrobot's warning list and pm the warning message to him"""
         await ctx.message.channel.send(":white_check_mark: | Warning: **\"" + message + "\"** added to warning list of user " + user.display_name)
-        self.bot.user_data[user.id]["warnings"].append(message + " by " + str(ctx.message.author) + " on server " + ctx.message.guild.name)
-        await user.send("You have been warned on " + ctx.message.guild.name + ", the warning is: \n" + message)
+        self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
+        await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.message.created_at))
+        try:
+            await user.send("You have been warned on " + ctx.message.guild.name + ", the warning is: \n" + message)
+        except discord.Forbidden:
+            pass
 
     @warn.command(name="del")
     @has_perms(3)
@@ -115,8 +116,14 @@ class Moderation():
         
         __Example__
         `{pre}warn del @NecroBot 1` - delete the warning in first position of NecroBot's warning list"""
-        await ctx.message.channel.send(":white_check_mark: | Warning: **\"" + self.bot.user_data[user.id]["warnings"][position - 1] + "\"** removed from warning list of user " + user.display_name)
-        self.bot.user_data[user.id]["warnings"].pop(position - 1)
+        try:
+            message = self.bot.user_data[user.id]["warnings"][ctx.guild.id].pop(position - 1)
+        except IndexError:
+            await ctx.send(":negative_squared_cross_mark: | Not a valid warning position")
+            return
+            
+        await ctx.message.channel.send(":white_check_mark: | Warning: **\"" + message + "\"** removed from warning list of user " + user.display_name)
+        await self.bot.query_executer("DELETE FROM necrobot.Warnings WHERE user_id = $1 AND guild_id = $2 AND warning_content = $3;", user.id, ctx.guild.id, message)
 
     @commands.command()
     @has_perms(4)
@@ -204,6 +211,42 @@ class Moderation():
             disabled.remove(command)
             await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
             await ctx.send(":white_check_mark: | Command **{}** will no longer be ignored".format(command))
+
+    @commands.command()
+    @has_perms(3)
+    async def star(self, ctx, message_id : int = None):
+        """Allows to manually star a message that either has failed to be sent to starboard or doesn't have the amount of stars
+        required. If a message ID is given then the command **must** be called in the same channel as the message.
+
+        {usage}
+
+        __EXamples__
+        `{pre}star 427227137511129098` - gets the message by id and stars it.
+        `{pre}star` - initiates the interactive message picking sessions that allows you to react to a message to star it"""
+        if self.bot.server_data[ctx.guild.id]["starboard-channel"] == "":
+            await ctx.send(":negative_squared_cross_mark: | Please set a starboard first")
+            return
+
+        if message_id:
+            message = await ctx.channel.get_message(message_id)
+            await self.bot._star_message(message)
+        else:
+            def check(reaction, user):
+                print(user == ctx.message.author)
+                print(str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}")
+
+                return user == ctx.message.author and str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+
+            msg = await ctx.send("React to the message you wish to star with :white_check_mark:")
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+            except asyncio.TimeoutError:
+                return
+
+            await self.bot._star_message(reaction.message)
+            await msg.delete()
+
+
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

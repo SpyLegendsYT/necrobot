@@ -115,7 +115,7 @@ class Profile():
         __Example__
         `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
         `{pre}info` - returns your own NecroBot info"""
-        if user is None:
+        if not user:
             user = ctx.author
 
         server_id = ctx.guild.id
@@ -129,13 +129,13 @@ class Profile():
 
         embed.add_field(name="User Name", value=user.name + "#" + user.discriminator)
         embed.add_field(name="Top Role", value=user.top_role.name, inline=True)
-        embed.add_field(name="Warning List", value=self.bot.user_data[user.id]["warnings"])
+        embed.add_field(name="Warning List", value=self.bot.user_data[user.id]["warnings"][ctx.guild.id])
 
         await ctx.channel.send(embed=embed)
 
     @commands.command()
     @commands.guild_only()
-    async def profile(self, ctx, user : discord.Member = None):
+    async def profile(self, ctx, *, user : discord.Member = None):
         """Shows your profile information in a picture
 
         {usage}
@@ -145,7 +145,7 @@ class Profile():
         `{pre}info` - returns your own NecroBot info"""
         async with ctx.channel.typing():
 
-            if user is None:
+            if not user:
                 user = ctx.author
 
             url = user.avatar_url_as(format="png").replace("?size=1024", "")

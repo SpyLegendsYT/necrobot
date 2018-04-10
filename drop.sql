@@ -11,3 +11,4 @@ DROP TABLE necrobot.Gifts CASCADE;
 DROP TABLE necrobot.Waifus CASCADE;
 DROP TABLE necrobot.Waifu CASCADE;
 DROP TABLE necrobot.Logs CASCADE;
+DROP TABLE necrobot.Warnings CASCADE;
