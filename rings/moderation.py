@@ -30,11 +30,11 @@ class Moderation():
 
             try:
                 await user.edit(nick=nickname)
-                await ctx.message.channel.send(msg)
+                await ctx.send(msg)
             except discord.errors.Forbidden:
-                await ctx.message.channel.send(":negative_squared_cross_mark: | You cannot change the nickname of that user.")
+                await ctx.send(":negative_squared_cross_mark: | You cannot change the nickname of that user.")
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
+            await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
 
     @commands.command()
     @has_perms(2)
@@ -50,22 +50,22 @@ class Moderation():
         `{pre}mute @NecroBot 30` - mutes NecroBot for 30 seconds or until a user with the proper permission level does 
         `{pre}unmute @NecroBot`"""
         if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
-            await ctx.message.channel.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
+            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
 
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role not in user.roles:
             await user.add_roles(role)
-            await ctx.message.channel.send(":white_check_mark: | User: **{0}** has been muted".format(user.display_name))
+            await ctx.send(":white_check_mark: | User: **{0}** has been muted".format(user.display_name))
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | User: **{0}** is already muted".format(user.display_name))
+            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is already muted".format(user.display_name))
             return
 
         if seconds:
             await asyncio.sleep(seconds)
             if role in user.roles:
                 await user.remove_roles(role)
-                await ctx.message.channel.send(":white_check_mark: | User: **{0}** has been automatically unmuted".format(user.display_name))
+                await ctx.send(":white_check_mark: | User: **{0}** has been automatically unmuted".format(user.display_name))
 
     @commands.command()
     @has_perms(2)
@@ -78,15 +78,15 @@ class Moderation():
         __Example__
         `{pre}unmute @NecroBot` - unmutes NecroBot if he is muted"""
         if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
-            await ctx.message.channel.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
+            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
             return
             
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role in user.roles:
             await user.remove_roles(role)
-            await ctx.message.channel.send(":white_check_mark: | User: **{0}** has been unmuted".format(user.display_name))
+            await ctx.send(":white_check_mark: | User: **{0}** has been unmuted".format(user.display_name))
         else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | User: **{0}** is not muted".format(user.display_name))
+            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is not muted".format(user.display_name))
 
     @commands.group(invoke_without_command = True)
     @has_perms(1)
@@ -98,7 +98,7 @@ class Moderation():
         __Example__
         `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
         Necrobot's warning list and pm the warning message to him"""
-        await ctx.message.channel.send(":white_check_mark: | Warning: **\"" + message + "\"** added to warning list of user " + user.display_name)
+        await ctx.send(":white_check_mark: | Warning: **\"" + message + "\"** added to warning list of user " + user.display_name)
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
         await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.message.created_at))
         try:
@@ -122,7 +122,7 @@ class Moderation():
             await ctx.send(":negative_squared_cross_mark: | Not a valid warning position")
             return
             
-        await ctx.message.channel.send(":white_check_mark: | Warning: **\"" + message + "\"** removed from warning list of user " + user.display_name)
+        await ctx.send(":white_check_mark: | Warning: **\"" + message + "\"** removed from warning list of user " + user.display_name)
         await self.bot.query_executer("DELETE FROM necrobot.Warnings WHERE user_id = $1 AND guild_id = $2 AND warning_content = $3;", user.id, ctx.guild.id, message)
 
     @commands.command()
@@ -155,34 +155,21 @@ class Moderation():
         else:
             deleted = await ctx.message.channel.purge(limit=number)
 
-        await ctx.message.channel.send(":wastebasket: | **{}** messages purged.".format(len(deleted)-1), delete_after=5)
+        await ctx.send(":wastebasket: | **{}** messages purged.".format(len(deleted)-1), delete_after=5)
 
         self.bot.server_data[ctx.message.guild.id]["automod"] = channel
 
     @commands.command()
     @has_perms(3)
-    async def speak(self, ctx, channel, *, message : str):
-        """Send the given message to the channel mentioned either by id or by mention. 
-        Requires the correct permission level on both servers. (Permission level required: 3+ (Semi-Admin))
+    async def speak(self, ctx, channel : discord.TextChannel, *, message : str):
+        """Send the given message to the channel mentioned by mention. (Permission level required: 3+ (Semi-Admin))
         
         {usage}
         
         __Example__
-        `{pre}speak #general Hello` - sends hello to the mentionned #general channel
-        `{pre}speak 235426357468543 Hello` - sends hello to the channel with the given ID (if any)"""
-        try: 
-            channel = self.bot.all_mentions(ctx, [channel])[0]
-        except IndexError:
-            await ctx.message.channel.send("No channel with that name")
-            return
+        `{pre}speak #general Hello` - sends hello to the mentionned #general channel"""
+        await channel.send(":loudspeaker: | " + message)
         
-        if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 3 and self.bot.user_data[ctx.message.author.id]["perms"][channel.guild.id] >= 3:
-            await channel.send(":loudspeaker: | " + message)
-        elif self.bot.user_data[ctx.message.author.id]["perms"][channel.guild.id] < 4:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions on the server you're trying to send the message to.")
-        else:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.")
-
     @commands.command()
     @has_perms(4)
     async def disable(self, ctx, command):
@@ -240,8 +227,9 @@ class Moderation():
             msg = await ctx.send("React to the message you wish to star with :white_check_mark:")
             try:
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            except asyncio.TimeoutError:
-                return
+            except asyncio.TimeoutError as e:
+                await msg.delete()
+                self.bot.dispatch("command_error", ctx, e)
 
             await self.bot._star_message(reaction.message)
             await msg.delete()

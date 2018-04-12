@@ -4,6 +4,7 @@ from discord.ext import commands
 import traceback
 from datetime import timedelta
 import time as t
+import asyncio
 
 class NecroEvents():
     def __init__(self, bot):
@@ -24,7 +25,10 @@ class NecroEvents():
             pass
 
         if isinstance(error, commands.MissingRequiredArgument):
-            await channel.send(":negative_squared_cross_mark: | Missing required argument! Check help guide with `n!help {}`".format(ctx.command.name), delete_after=10)
+            await channel.send(":negative_squared_cross_mark: | Missing required argument: `{}`! Check help guide with `n!help {}`".format(error.param.name, ctx.command.qualified_name), delete_after=10)
+            # index = list(ctx.command.clean_params.keys()).index(error.param.name)
+            # missing = list(ctx.command.clean_params.values())[index:]
+            # print("missing folloing: {}".format(", ".join([x.name for x in missing])))
         elif isinstance(error, commands.CheckFailure):
             await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.", delete_after=10)
         elif isinstance(error, commands.CommandOnCooldown):
@@ -38,6 +42,8 @@ class NecroEvents():
             await channel.send(":negative_squared_cross_mark: | Following error with passed arguments: **{}**".format(error), delete_after=10)
         elif isinstance(error, discord.Forbidden):
             await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your guild.", delete_after=10)
+        elif isinstance(error, asyncio.TimeoutError):
+            await channel.send(":negative_squared_cross_mark: | You took too long to reply, please reply within 5 minutes next time")
         elif isinstance(error, commands.CommandInvokeError):
             channel = self.bot.get_channel(415169176693506048)
             the_traceback = "```py\n" + " ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=True)) + "\n```"
@@ -60,6 +66,10 @@ class NecroEvents():
         await channel.send(embed=embed)
 
     async def on_guild_join(self, guild):
+        if guild.id in self.bot.settings["blacklist"]:
+            await guild.leave()
+            return
+
         if guild.id not in self.bot.server_data:
             self.bot.server_data[guild.id] = self.bot._new_server()
             await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
@@ -135,7 +145,10 @@ class NecroEvents():
         if not self.bot.server_data[member.guild.id]["welcome-channel"] == "" and not member.bot and not self.bot.server_data[member.guild.id]["welcome"] == "":
             channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
             message = self.bot.server_data[member.guild.id]["welcome"]
-            await channel.send(message.format(member=member.mention, server=member.guild.name))
+            if member.id in self.bot.settings["blacklist"]:
+                await channel.send(":black_circle: | You are not welcome here, disturber of the peace")
+            else:
+                await channel.send(message.format(member=member.mention, server=member.guild.name))
 
         if not self.bot.server_data[member.guild.id]["auto-role"] == "":
             role = discord.utils.get(member.guild.roles, id=self.bot.server_data[member.guild.id]["auto-role"])
@@ -152,9 +165,15 @@ class NecroEvents():
         channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
         message = self.bot.server_data[member.guild.id]["goodbye"]
 
-        await channel.send(message.format(member=member.mention))
+        if member.id in self.bot.settings["blacklist"]:
+            await channel.send(":black_circle: | ...")
+        else:
+            await channel.send(message.format(member=member.mention))
 
     async def on_reaction_add(self, reaction, user):
+        if user.id in self.bot.settings["blacklist"]:
+            return
+            
         if isinstance(user, discord.User) and reaction.emoji == "\N{WASTEBASKET}" and reaction.message.author == self.bot.user:
             await reaction.message.delete()
             return            

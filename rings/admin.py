@@ -5,8 +5,9 @@ from simpleeval import simple_eval
 import inspect
 from rings.utils.utils import has_perms
 import datetime
+import re
 
-class GuildConverter(commands.IDConverter):
+class GuildUserConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
         result = None
         bot = ctx.bot
@@ -23,15 +24,30 @@ class GuildConverter(commands.IDConverter):
             if result:
                 return result
 
-        def check(g):
-            return g.owner.id == argument or g.owner.name == argument or g.owner.nick == argument or str(g.owner) == argument
+        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
+        state = ctx._state
 
-        result = discord.utils.find(check, guilds)
+        if match is not None:
+            user_id = int(match.group(1))
+            result = bot.get_user(user_id)
+        else:
+            arg = argument
+            # check for discriminator if it exists
+            if len(arg) > 5 and arg[-5] == '#':
+                discrim = arg[-4:]
+                name = arg[:-5]
+                predicate = lambda u: u.name == name and u.discriminator == discrim
+                result = discord.utils.find(predicate, state._users.values())
+                if result is not None:
+                    return result
+
+            predicate = lambda u: u.name == arg
+            result = discord.utils.find(predicate, state._users.values())
 
         if result:
             return result
 
-        raise commands.BadArgument("Not a known guild")
+        raise commands.BadArgument("Not a known guild/user")
 
 
 class Admin():
@@ -40,7 +56,16 @@ class Admin():
 
     # @commands.command()
     # async def x(self, ctx):
-    #     thing, user = await self.bot.wait_for("both")
+    #     def check(thing, author):
+    #         if isinstance(thing, discord.Message):
+    #             return "$" in thing.content
+
+    #         if isinstance(thing, discord.Reaction):
+    #             return str(thing.emoji) == "\N{WASTEBASKET}"
+
+    #         return False
+
+    #     thing, user = await self.bot.wait_for("both", check=check)
 
     #     if isinstance(thing, discord.Reaction):
     #         await ctx.send("User used reaction menu")
@@ -48,7 +73,7 @@ class Admin():
     #         await ctx.send("User used text menu")
 
     # @commands.command()
-    # async def y(self, ctx):
+    # async def y(self, ctx, content):
     #     self.bot.dispatch("both", ctx.message, ctx.message.author)
 
     # @commands.command()
@@ -56,19 +81,16 @@ class Admin():
     #     reaction, user = await self.bot.wait_for("reaction_add")
     #     self.bot.dispatch("both", reaction, user)
 
-    # @commands.command()
-    # async def w(self, ctx, *, guild : GuildConverter):
-    #     await ctx.send(guild.name)
-
     @commands.command()
     @commands.is_owner()
     async def leave(self, ctx, id : int, *, reason : str ="unspecified"):
         """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
         {usage}"""
         guild = self.bot.get_guild(id)
-        if not guild is None:
-            channel = guild.text_channels[1]
-            await channel.send("I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
+        if guild:
+            if reason != "unspecified":
+                channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).send_messages][0]
+                await channel.send("I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
             await guild.leave()
             await ctx.send(":white_check_mark: | Okay Necro, I've left {}".format(guild.name))
         else:
@@ -126,26 +148,22 @@ class Admin():
 
     @commands.command()
     @has_perms(6)
-    async def pm(self, ctx, id : int, *, message : str):
+    async def pm(self, ctx, user : discord.User, *, message : str):
         """Sends the given message to the user of the given id. It will then wait 5 minutes for an answer and print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))
         
         {usage}
         
         __Example__
         `{pre}pm 34536534253Z6 Hello, user` - sends 'Hello, user' to the given user id and waits for a reply"""
-        user = self.bot.get_user(id)
-        if not user is None:
-            send = await user.send(message + "\n*You have 5 minutes to reply to the message*")
-            to_edit = await ctx.send(":white_check_mark: | **Message sent**")
+        send = await user.send(message)
+        to_edit = await ctx.send(":white_check_mark: | **Message sent**")
 
-            def check(m):
-                return m.author == user and m.channel == send.channel
+        def check(m):
+            return m.author == user and m.channel == send.channel
 
-            msg = await self.bot.wait_for("message", check=check, timeout=300)
-            await to_edit.edit(":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
-        else:
-            await ctx.send(":negative_squared_cross_mark: | No such user.")
-
+        msg = await self.bot.wait_for("message", check=check)
+        await to_edit.edit(content=":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
+        
     @commands.command()
     @commands.is_owner()
     async def test(self, ctx, id : int):
@@ -190,7 +208,7 @@ class Admin():
         {usage}"""
         for guild in self.bot.guilds:
             try:
-                channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).create_instant_invite][1]
+                channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).create_instant_invite][0]
                 invite = await channel.create_invite(max_age=86400)
                 await ctx.send("Server: " + guild.name + "(" + str(guild.id) + ") - <" + invite.url + ">")
             except discord.errors.Forbidden:
@@ -229,12 +247,13 @@ class Admin():
             if inspect.isawaitable(result):
                 result = await result
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + ': ' + e))
+            await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
             return
 
     @commands.command()
     @commands.is_owner()
     async def edit(self, ctx, *, code : str):
+        """{usage}"""
         code = code.strip('` ')
         python = '```py\n{}\n```'
         result = None
@@ -256,8 +275,54 @@ class Admin():
             result = exec(code, env)
             await ctx.send(":white_check_mark: | Don't forget to eval an SQL statement for permanent changes")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + ': ' + e))
+            await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
             return
+
+    @commands.command()
+    @commands.is_owner()
+    async def sql(self, ctx, query : str, *args):
+        """{usage}"""
+        try:
+            self.bot.query_executer(query, *args)
+        except Exception as e:
+            await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
+            return
+
+    @commands.group(invoke_without_command=True)
+    @has_perms(6)
+    async def blacklist(self, ctx, *things : GuildUserConverter):
+        """{usage}"""
+        for thing in things:
+            if isinstance(thing, discord.User):
+                if thing.id in self.bot.settings["blacklist"]:
+                    self.bot.settings["blacklist"].remove(thing.id)
+                    await ctx.send(":white_check_mark: | User pardoned")
+                else:
+                    try:
+                        await thing.send(":negative_squared_cross_mark: | You have been banned from using NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
+                    except discord.Forbidden:
+                        pass
+
+                    self.bot.settings["blacklist"].append(thing.id)
+                    await ctx.send(":white_check_mark: | User blacklisted")
+            elif isinstance(thing, discord.Guild):
+                if thing.id in self.bot.settings["blacklist"]:
+                    self.bot.settings["blacklist"].remove(thing.id)
+                    await ctx.send(":white_check_mark: | Guild pardoned")
+                else:
+                    await thing.owner.send(":negative_squared_cross_mark: | Your server has been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
+                    await thing.leave()
+                    self.bot.settings["blacklist"].append(thing.id)
+                    await ctx.send(":white_check_mark: | Guild blacklisted")
+
+    @blacklist.command()
+    @has_perms(6)
+    async def blacklist_list(self, ctx):
+        if len(self.bot.settings["blacklist"]) < 1:
+            await ctx.send("List of blacklisted users/guilds: **None**")
+        else:
+            await ctx.send("List of blacklisted users/guilds: {}".format(" - ".join([GuildUserConverter().convert(ctx, x).name for x in self.bot.settings["blacklist"]])))
+
 
     # *****************************************************************************************************************
     #  Cogs Commands
@@ -271,9 +336,9 @@ class Admin():
         try:
             self.bot.load_extension("rings." + extension_name)
         except (AttributeError,ImportError) as e:
-            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, e))
+            await ctx.send("```py\n{}: {}\n```".format(type(e).__name__, e))
             return
-        await ctx.channel.send("{} loaded.".format(extension_name))
+        await ctx.send("{} loaded.".format(extension_name))
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -282,7 +347,7 @@ class Admin():
          
         {usage}"""
         self.bot.unload_extension("rings." + extension_name)
-        await ctx.channel.send("{} unloaded.".format(extension_name))
+        await ctx.send("{} unloaded.".format(extension_name))
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -294,9 +359,9 @@ class Admin():
         try:
             self.bot.load_extension("rings." + extension_name)
         except (AttributeError,ImportError) as e:
-            await ctx.channel.send("```py\n{}: {}\n```".format(type(e).__name__, e))
+            await ctx.send("```py\n{}: {}\n```".format(type(e).__name__, e))
             return
-        await ctx.channel.send("{} reloaded.".format(extension_name))
+        await ctx.send("{} reloaded.".format(extension_name))
 
     # *****************************************************************************************************************
     # Bot Smith Commands
@@ -304,7 +369,7 @@ class Admin():
     @commands.command(hidden=True)
     @commands.is_owner()
     async def off(self, ctx):
-        """Saves all the data and terminate the self. (Permission level required: 7+ (The Bot Smith))
+        """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
          
         {usage}"""
         msg = await ctx.send("Shut down?")
@@ -330,23 +395,19 @@ class Admin():
             await self.bot._save()
 
             await msg.edit(content="**Saved**")
-            await channel.send("**Bot Offline**")
+            await msg.edit(content="**Bot Offline**")
+            await self.bot.session.close()
             await self.bot.logout()
 
     @commands.command(hidden=True)
     @commands.is_owner()
     async def save(self, ctx):
+        """Save data but doesn't terminate the bot
+
+        {usage}"""
         await ctx.send(":white_check_mark: | Saving")
         await self.bot._save()
         await ctx.send(":white_check_mark: | Done saving")
-
-    @commands.command(hidden=True)
-    async def timer(self, ctx):
-        if not ctx.author.id in [241942232867799040, 271259290415792129]:
-            return
-
-        time_left = datetime.datetime(year=2018, month=4, day=13, hour=18, minute=35) - datetime.datetime.now()
-        await ctx.send("Time remaining to three weeks of non-stop fun: **{}**".format(time_left))
 
 def setup(bot):
     bot.add_cog(Admin(bot))

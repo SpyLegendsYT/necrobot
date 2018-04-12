@@ -49,9 +49,9 @@ class Profile():
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
         if user is not None:
-            await ctx.channel.send(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(self.bot.user_data[user.id]["money"]))
+            await ctx.send(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(self.bot.user_data[user.id]["money"]))
         else:
-            await ctx.channel.send(":atm: | **"+ str(ctx.author.name) +"** you have **{:,}** :euro:".format(self.bot.user_data[ctx.author.id]["money"]))
+            await ctx.send(":atm: | **"+ str(ctx.author.name) +"** you have **{:,}** :euro:".format(self.bot.user_data[ctx.author.id]["money"]))
 
     @commands.command(name="daily")
     async def claim(self, ctx):
@@ -60,13 +60,14 @@ class Profile():
         {usage}"""
         day = str(d.datetime.today().date())
         if day != self.bot.user_data[ctx.author.id]["daily"]:
-            await ctx.channel.send(":m: | You have received your daily **200** :euro:")
+            await ctx.send(":m: | You have received your daily **200** :euro:")
             self.bot.user_data[ctx.author.id]["money"] += 200
             self.bot.user_data[ctx.author.id]["daily"] = day
+            await self.bot.query_executer("UPDATE necrobot.Users SET daily=$1 WHERE user_id = $2;", day, ctx.author.id)
         else:
             timer = str(d.timedelta(seconds=self.midnight())).partition(".")[0].replace(":", "{}")
             timer = timer.format("hours, ", "minutes and ") + "seconds"
-            await ctx.channel.send(":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{}**".format(timer))
+            await ctx.send(":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{}**".format(timer))
 
     @commands.command()
     async def pay(self, ctx, payee : discord.User, amount : int):
@@ -79,7 +80,7 @@ class Profile():
         amount = abs(amount)
         payer = ctx.author
 
-        msg = await ctx.channel.send("Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(amount, payee.display_name))
+        msg = await ctx.send("Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(amount, payee.display_name))
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
@@ -89,14 +90,14 @@ class Profile():
         reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.channel.send(":white_check_mark: | **{}** cancelled the transaction.".format(payer.display_name))
+            await ctx.send(":white_check_mark: | **{}** cancelled the transaction.".format(payer.display_name))
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[payer.id]["money"] < amount:
-                await ctx.channel.send(":negative_squared_cross_mark: | You don't have enough money")
+                await ctx.send(":negative_squared_cross_mark: | You don't have enough money")
                 await msg.delete()
                 return
 
-            await ctx.channel.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
+            await ctx.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
             await payee.send(":euro: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
             
             self.bot.user_data[payer.id]["money"] -= amount
@@ -131,7 +132,7 @@ class Profile():
         embed.add_field(name="Top Role", value=user.top_role.name, inline=True)
         embed.add_field(name="Warning List", value=self.bot.user_data[user.id]["warnings"][ctx.guild.id])
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -159,7 +160,7 @@ class Profile():
                         f_handle.write(chunk)
                 await r.release()
 
-            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,139))).resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
+            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,147))).resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
             pfp = Image.open(filename).resize((150,150)).convert("RGBA")
@@ -200,16 +201,17 @@ class Profile():
         `{pre}settitle Cool Dood` - set your title to 'Cool Dood'
         `{pre}settitle` - resets your title"""
         if text == "":
-            await ctx.channel.send(":white_check_mark: | Your title has been reset")
+            await ctx.send(":white_check_mark: | Your title has been reset")
         elif len(text) <= 32:
-            await ctx.channel.send(":white_check_mark: | Great, your title is now **{}**".format(text))
+            await ctx.send(":white_check_mark: | Great, your title is now **{}**".format(text))
         else:
-            await ctx.channel.send(":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({}/32)".format(len(text)))
+            await ctx.send(":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({}/32)".format(len(text)))
             return
 
         self.bot.user_data[ctx.author.id]["title"] = text
+        await self.bot.query_executer("UPDATE necrobot.Users SET title=$1 WHERE user_id = $2;", text, ctx.author.id)
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(invoke_without_command=True, aliases=["badge"])
     async def badges(self, ctx):
         """The badge system allows you to buy badges and place them on profiles. Show the world what your favorite
         games/movies/books/things are.
@@ -294,7 +296,7 @@ class Profile():
             await ctx.send(":negative_squared_cross_mark: | You already posses that badge")
             return
 
-        msg = await ctx.channel.send("Are you sure you want to buy the **{}** badge for **{:,}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(badge, self.badges_d[badge]))
+        msg = await ctx.send("Are you sure you want to buy the **{}** badge for **{:,}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(badge, self.badges_d[badge]))
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
@@ -302,15 +304,17 @@ class Profile():
             return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
         
         try:
-            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
+            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=10)
+        except asyncio.TimeoutError as e:
+            await msg.delete()
+            self.bot.dispatch("command_error", ctx, e)
             return
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.channel.send(":white_check_mark: | **{}** cancelled the transaction.".format(ctx.author.display_name))
+            await ctx.send(":white_check_mark: | **{}** cancelled the transaction.".format(ctx.author.display_name))
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[ctx.author.id]["money"] < self.badges_d[badge]:
-                await ctx.channel.send(":negative_squared_cross_mark: | You don't have enough money")
+                await ctx.send(":negative_squared_cross_mark: | You don't have enough money")
                 await msg.delete()
                 return
 

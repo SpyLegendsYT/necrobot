@@ -19,7 +19,7 @@ class Animals():
         async with self.bot.session.get('http://aws.random.cat/meow') as r:
             try:
                 res = await r.json()
-                await ctx.channel.send(embed=discord.Embed().set_image(url=res['file']))
+                await ctx.send(embed=discord.Embed().set_image(url=res['file']))
                 self.bot.cat_cache.append(res["file"])
             except aiohttp.ClientResponseError:
                 if len(self.bot.cat_cache) > 0:
@@ -35,7 +35,7 @@ class Animals():
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
             async with cs.get('https://random.dog/woof.json') as r:
                 res = await r.json()
-                await ctx.channel.send(embed=discord.Embed().set_image(url=res['url']))
+                await ctx.send(embed=discord.Embed().set_image(url=res['url']))
 
 def setup(bot):
     bot.add_cog(Animals(bot))

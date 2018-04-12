@@ -139,26 +139,26 @@ class Economy():
             return "{4} \nEnd of the game \n**{5}'s** hand: {0} : {1} \n**Dealer's** hand: {2} : {3}. \nYou lose the game and the bet money placed.".format(player.hand, player.hand.value(), bank.hand, bank.hand.value(), msg, ctx.message.author.display_name)
 
         async def game_end():
-            await ctx.message.channel.send("**The Dealer** passes his turn too", delete_after=5)
+            await ctx.send("**The Dealer** passes his turn too", delete_after=5)
             if bank.hand.beats(player.hand):
-                await ctx.message.channel.send(lose("**The Dealer's** hand beats **your** hand."))
+                await ctx.send(lose("**The Dealer's** hand beats **your** hand."))
             elif player.hand.beats(bank.hand):
-                await ctx.message.channel.send(win("**Your** hand beats **the Dealer's** hand."))
+                await ctx.send(win("**Your** hand beats **the Dealer's** hand."))
             else:
-                await ctx.message.channel.send("Tie, everything is reset.")
+                await ctx.send("Tie, everything is reset.")
                 self.IS_GAME.remove(ctx.message.channel.id)
                 self.bot.user_data[ctx.message.author.id]["money"] += bet
             await status.delete()
             
 
         if ctx.message.channel.id in self.IS_GAME:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
+            await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
             return 
         else:
             self.IS_GAME.append(ctx.message.channel.id)
 
         if self.bot.user_data[ctx.message.author.id]["money"] >= bet and bet >= 10:
-            await ctx.message.channel.send(":white_check_mark: | Starting a game of Blackjack with **{0.display_name}** for {1} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ".format(ctx.message.author, bet))
+            await ctx.send(":white_check_mark: | Starting a game of Blackjack with **{0.display_name}** for {1} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ".format(ctx.message.author, bet))
             self.bot.user_data[ctx.message.author.id]["money"] -= bet
             name = ctx.message.author.display_name
             player = Player(name, 0)
@@ -175,79 +175,78 @@ class Economy():
 
 
             while not game.is_over():
-                status = await ctx.message.channel.send("**You** have {0} Total: {1} \n**The Dealer** has {2} Total: {3}".format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
+                status = await ctx.send("**You** have {0} Total: {1} \n**The Dealer** has {2} Total: {3}".format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
                 if player.hand.value() == 21:
-                    await ctx.message.channel.send(win("**BLACKJACK**"))
+                    await ctx.send(win("**BLACKJACK**"))
                     await status.delete()
                     return
                 elif bank.hand.value() == 21:
-                    await ctx.message.channel.send(lose("**BlackJack for the Bank**"))
+                    await ctx.send(lose("**BlackJack for the Bank**"))
                     await status.delete()
                     return
                 
-                msg = await ctx.message.channel.send("**Current bet** - {} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card".format(bet))
+                msg = await ctx.send("**Current bet** - {} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card".format(bet))
                 await msg.add_reaction("\N{PLAYING CARD BLACK JOKER}")
                 await msg.add_reaction("\N{BLACK SQUARE FOR STOP}")
                 await msg.add_reaction("\N{MONEY BAG}") 
                 try :
                     reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=120)
                 except asyncio.TimeoutError:
-                    await ctx.message.channel.send("Too slow, please decide within one minute next time. Your bet has been lost.")
+                    await ctx.send("Too slow, please decide within two minute next time. Your bet has been lost.")
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-
                     return
 
                 if reaction is not None:
                     await msg.delete()
                     if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
-                        await ctx.message.channel.send("**You** " + game.play(player), delete_after=5)
+                        await ctx.send("**You** " + game.play(player), delete_after=5)
                         if player.hand.busted:
-                            await ctx.message.channel.send(lose("**You** go bust."))
+                            await ctx.send(lose("**You** go bust."))
                             await status.delete()
                             return
                         else:
                             if bank.hand.is_passing(player):
-                                await ctx.message.channel.send("**The Dealer** passes his turn", delete_after=5)
+                                await ctx.send("**The Dealer** passes his turn", delete_after=5)
                             else:
-                                await ctx.message.channel.send("**The Dealer** " + game.play(bank), delete_after=5)
+                                await ctx.send("**The Dealer** " + game.play(bank), delete_after=5)
                                 if bank.hand.busted:
-                                    await ctx.message.channel.send(win("**The Dealer** goes bust."))
+                                    await ctx.send(win("**The Dealer** goes bust."))
                                     return
                                 elif player.hand.value() == 21:
-                                    await ctx.message.channel.send(win("**BLACKJACK**"))
+                                    await ctx.send(win("**BLACKJACK**"))
                                     await status.delete()
                                     return
                     elif reaction.emoji == "\N{MONEY BAG}":
                         if self.bot.user_data[ctx.message.author.id]["money"] >= bet * 2:
-                            await ctx.message.channel.send("**You double your bet and ** " + game.play(player), delete_after=5)
+                            await ctx.send("**You double your bet and ** " + game.play(player), delete_after=5)
                             self.bot.user_data[ctx.message.author.id]["money"] -= bet
                             bet *= 2
                             if player.hand.busted:
-                                await ctx.message.channel.send(lose("**You** go bust."))
+                                await ctx.send(lose("**You** go bust."))
                                 await status.delete()
                                 return
                             elif player.hand.value() == 21 and bank.hand.value() < 21:
-                                await ctx.message.channel.send(win("**BLACKJACK**"))
+                                await ctx.send(win("**BLACKJACK**"))
                                 await status.delete()
                                 return
                             else:
                                 while not bank.hand.is_passing(player):
-                                    await ctx.message.channel.send("**The Dealer** " + game.play(bank), delete_after=5)
+                                    await ctx.send("**The Dealer** " + game.play(bank), delete_after=5)
                                     if bank.hand.busted:
-                                        await ctx.message.channel.send(win("**The Dealer** goes bust."))
+                                        await ctx.send(win("**The Dealer** goes bust."))
                                         return
 
                                 return await game_end()
                         else:
-                            await ctx.message.channel.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
+                            await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
 
                     elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                        await ctx.message.channel.send("**You** pass your turn", delete_after=5)
+                        await ctx.send("**You** pass your turn", delete_after=5)
                         if not bank.hand.is_passing(player):
-                            await ctx.message.channel.send("**The Dealer** " + game.play(bank), delete_after=5)
+                            await ctx.send("**The Dealer** " + game.play(bank), delete_after=5)
                             if bank.hand.busted:
-                                await ctx.message.channel.send(win("**The Dealer** goes bust."))
+                                await ctx.send(win("**The Dealer** goes bust."))
                                 await status.delete()
                                 return
                         else:
@@ -256,7 +255,7 @@ class Economy():
                 await status.delete()
         else:
             self.IS_GAME.remove(ctx.message.channel.id)
-            await ctx.message.channel.send("You don't have enough money to do that, also, the minimum bet is 10 :euro:.")
+            await ctx.send("You don't have enough money to do that, also, the minimum bet is 10 :euro:.")
 
         try:
             self.IS_GAME.remove(ctx.message.channel.id)
@@ -391,6 +390,8 @@ class Economy():
                     await current_msg.edit(content="Awaiting response from player: **{}**".format(ctx.author.display_name))
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError:
+                    await current_msg.edit(content="Player **{}** took too long to reply.".format(ctx.author.display_name))
+                    await msg.delete()
                     return
 
                 await user1.delete()
@@ -418,6 +419,8 @@ class Economy():
                     await current_msg.edit(content="Awaiting response from player: **{}**".format(enemy.display_name))
                     user2 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError:
+                    await current_msg.edit(content="Player **{}** took too long to reply.".format(enemy.display_name))
+                    await msg.delete()
                     return
                 
                 await user2.delete()
@@ -444,7 +447,10 @@ class Economy():
                 try:
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError:
-                    pass
+                    await current_msg.edit(content="You took too long to reply.".format(ctx.author.display_name))
+                    await msg.delete()
+                    return
+
                 await user1.delete()
                 user1 = int(user1.content)
 
@@ -474,6 +480,10 @@ class Economy():
                 ["4", "5", "6"],
                 ["7", "8", "9"]
                 ]
+                
+        if enemy == ctx.author:
+            await ctx.send(":negative_squared_cross_mark: | You cannot play against yourself, pick a player or fight Necrobot.")
+            return
 
         if enemy == self.bot.user:
             msg = await ctx.send(":white_check_mark: | NecroBot has accepted your challenge, be prepared to face him")

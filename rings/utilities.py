@@ -12,7 +12,7 @@ import urbandictionary as ud
 import googletrans
 from PyDictionary import PyDictionary 
 from bs4 import BeautifulSoup
-from rings.utils.utils import has_perms
+from rings.utils.utils import has_perms, react_menu
 
 class NecroBotPyDict(PyDictionary):
     def __init__(self, *args):
@@ -81,9 +81,9 @@ class Utilities():
         """
         try:
             final = simple_eval(equation)
-            await ctx.channel.send(":1234: | **" + str(final) + "**")
+            await ctx.send(":1234: | **" + str(final) + "**")
         except NameError:
-            await ctx.channel.send(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
+            await ctx.send(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
 
     @commands.command(aliases=["pong"])
     async def ping(self, ctx):
@@ -91,7 +91,7 @@ class Utilities():
         
         {usage}"""
         pingtime = time.time()
-        pingms = await ctx.channel.send(" :clock1: | Pinging... {}'s location".format(ctx.message.author.display_name))
+        pingms = await ctx.send(" :clock1: | Pinging... {}'s location".format(ctx.message.author.display_name))
         ping = time.time() - pingtime
         await pingms.edit(content=":white_check_mark: | The ping time is `% .01f seconds`" % ping)
 
@@ -121,7 +121,7 @@ class Utilities():
         embed.add_field(name="**Channels**", value="{}: {}".format(len(channel_list), channels))
         embed.add_field(name="**Roles**", value="{}: {}".format(len(role_list), roles))
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def avatar(self, ctx,* , user : discord.Member=None):
@@ -134,7 +134,7 @@ class Utilities():
         if user is None:
             user = ctx.message.author
         avatar = user.avatar_url_as(format="png")
-        await ctx.channel.send(avatar)
+        await ctx.send(avatar)
 
     @commands.command()
     async def today(self, ctx, choice : str = None, date : str = None):
@@ -189,7 +189,7 @@ class Utilities():
             except AttributeError:
                 pass
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command(name="ud", aliases=["urbandictionary"])
     async def udict(self, ctx, *, word : str):
@@ -222,9 +222,9 @@ class Utilities():
         `{pre}translate ne Hello` - detects english and translates to dutch"""
         try:
             translated = translator.translate(sentence, dest=lang)
-            await ctx.message.channel.send("Translated `{0.origin}` from {0.src} to {0.dest}: **{0.text}**".format(translated))
+            await ctx.send("Translated `{0.origin}` from {0.src} to {0.dest}: **{0.text}**".format(translated))
         except ValueError:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")
+            await ctx.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")
     
     @translate.command(name="list")
     async def translate_list(self, ctx):
@@ -245,14 +245,14 @@ class Utilities():
         `{pre}define life` - defines the word life"""
         meaning = await dictionary.meaning(word)
         if meaning is None:
-            await ctx.message.channel.send(":negative_squared_cross_mark: | **No definition found for this word**")
+            await ctx.send(":negative_squared_cross_mark: | **No definition found for this word**")
             return
 
         embed = discord.Embed(title="__**{}**__".format(word.title()), url="https://en.oxforddictionaries.com/", colour=discord.Colour(0x277b0), description="Information on this word")
         for x in meaning:
             embed.add_field(name=x, value="-" + "\n-".join(meaning[x]))
 
-        await ctx.message.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def ow(self, ctx, username, region="eu", hero=None):
@@ -266,7 +266,7 @@ class Utilities():
         __Example__
         `{pre}ow FakeTag#1234 us` - generates an embed for user FakeTag#1234 in region us
         `{pre}ow FakeTag#0000 eu Winston` - generates an embed for user FakeTag#0000 in region eu starting at winston"""
-        def get_a_hero_stat():
+        def get_a_hero_stat(hero_int):
             prog_list = ["__**"+hero.title()+"**__" if hero_list.index(hero) == hero_int else hero.title() for hero in hero_list]
             prog = " - ".join(prog_list)
             embed = discord.Embed(title="**" + username.replace("-", "#") + "** in region: " + region.upper(), colour=discord.Colour(0x277b0), description=prog)
@@ -305,11 +305,14 @@ class Utilities():
             username = username.replace("#", "-")
             headers = {"User-Agent":"NecroBot"}
             async with self.bot.session.get("https://owapi.net/api/v3/u/{}/heroes".format(username), headers=headers) as r:
-                data = await r.json()
+                try:
+                    data = await r.json()
+                except Exception as e:
+                    print(await r.text())
 
             hero_list = list(data[region]["heroes"]["stats"]["quickplay"].keys())
 
-            if hero == None:
+            if not hero:
                 hero_int = 0
             else:
                 try:
@@ -317,39 +320,7 @@ class Utilities():
                 except:
                     hero_int = 0
 
-            msg = await ctx.message.channel.send(embed=get_a_hero_stat())
-
-        while True:
-            react_list = list()
-            if hero_int > 0:
-                react_list.append("\N{BLACK LEFT-POINTING TRIANGLE}")
-
-            react_list.append("\N{BLACK SQUARE FOR STOP}")
-
-            if hero_int < len(hero_list) - 1:
-                react_list.append("\N{BLACK RIGHT-POINTING TRIANGLE}")
-
-            for reaction in react_list:
-                await msg.add_reaction(reaction)
-
-            def check(reaction, user):
-                return user == ctx.message.author and str(reaction.emoji) in react_list and msg.id == reaction.message.id
-
-            try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            except asyncio.TimeoutError:
-                return
-
-            if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                await msg.clear_reactions()
-                break
-            elif reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
-                hero_int -= 1
-            elif reaction.emoji == "\N{BLACK RIGHT-POINTING TRIANGLE}":
-                hero_int += 1
-
-            await msg.clear_reactions()
-            await msg.edit(embed=get_a_hero_stat())
+        await react_menu(self.bot, ctx, len(hero_list)-1, get_a_hero_stat, hero_int)
 
     @commands.command(enabled=False)
     async def reminder(self, ctx, *, message):

@@ -2,8 +2,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
-from rings.utils.utils import has_perms
-import asyncio
+from rings.utils.utils import has_perms, react_menu
 
 class Waifu():
     """This is based off the Nadeko bot's waifu module. The reason I copied it was to be able to run it on the same
@@ -133,47 +132,15 @@ class Waifu():
         {usage}"""
         index = 0
 
-        def embed_maker():
-            keys = list(self.gifts_e.keys())[index:index+15]
+        def embed_maker(index):
+            keys = list(self.gifts_e.keys())[index*15:(index+1)*15]
             embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu gift shop")
             for key in keys:
                 embed.add_field(name="{} {}".format(self.gifts_e[key], key.title()), value=self.gifts_p[key])
 
             return embed
 
-        msg = await ctx.send(embed=embed_maker())
-
-        while True:
-            react_list = []
-            if index + 15 > len(list(self.gifts_e.keys())[index:]):
-                react_list.append("\N{BLACK LEFT-POINTING TRIANGLE}")
-
-            react_list.append("\N{BLACK SQUARE FOR STOP}")
-
-            if index - 15 < len(list(self.gifts_e.keys())[index:]):
-                react_list.append("\N{BLACK RIGHT-POINTING TRIANGLE}")
-
-            for reaction in react_list:
-                await msg.add_reaction(reaction)
-
-            def check(reaction, user):
-                return user == ctx.message.author and str(reaction.emoji) in react_list and msg.id == reaction.message.id
-
-            try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            except asyncio.TimeoutError:
-                return
-
-            if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                await msg.clear_reactions()
-                break
-            elif reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
-                index -= 15
-            elif reaction.emoji == "\N{BLACK RIGHT-POINTING TRIANGLE}":
-                index += 15
-
-            await msg.clear_reactions()
-            await msg.edit(embed=embed_maker())
+        await react_menu(self.bot, ctx, len(list(self.gifts_e.keys()))//15, embed_maker)
 
     @commands.command()
     async def gift(self, ctx, choice, member : discord.Member):
@@ -321,6 +288,7 @@ class Waifu():
         await ctx.send(embed=embed)
 
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["divorces"] += 1
+        await self.bot.query_executer("UPDATE necrobot.Waifu SET divorces = divorces + 1 WHERE user_id = $1 AND guild_id = $2;", ctx.author.id, ctx.guild.id)
 
     @divorce.command(name="admin")
     @has_perms(4)
@@ -399,7 +367,7 @@ class Waifu():
 
 
     @commands.command()
-    @has_perms(4)
+    @has_perms(3)
     async def award(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Award :cherry_blossom: currency to a user, admin command.
 
@@ -414,7 +382,7 @@ class Waifu():
             await ctx.send(":white_check_mark:  | Awarded **{}** :cherry_blossom: to **{}**".format(amount, member.name))
 
     @commands.command()
-    @has_perms(4)
+    @has_perms(3)
     async def take(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Take :cherry_blossom: currency from a user, admin command.
 
@@ -429,7 +397,7 @@ class Waifu():
             await ctx.send(":white_check_mark:  | Took **{}** :cherry_blossom: from **{}**".format(amount, member.name))
 
     @commands.command()
-    @has_perms(4)
+    @has_perms(3)
     async def flowerevent(self, ctx, amount : int):
         """Create a 24hr message, if reacted to, the use who reacted will be granted :cherry_blossom:
 

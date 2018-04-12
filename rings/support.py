@@ -26,7 +26,7 @@ class Support():
         uptime = str(timedelta(seconds=time.time() - self.bot.uptime_start)).partition(".")[0].replace(":", "{}")
         embed.add_field(name="Uptime", value=uptime.format("hours, ", "minutes and ") + "seconds")
         embed.add_field(name="Links", value="[Invite bot to your server]({}) - [Get help with the bot](https://discord.gg/Ape8bZt)".format(discord.utils.oauth_url(self.bot.user.id, discord.Permissions(permissions=134737095))), inline=False)
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def report(self, ctx, *, message):

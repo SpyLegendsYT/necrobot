@@ -17,6 +17,7 @@ import os
 import functools
 import psycopg2
 import asyncpg
+import json
 
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
@@ -61,7 +62,7 @@ class NecroBot(commands.Bot):
         self.ERROR_LOG = 351356683231952897
         self.version = 1.5
         self.prefixes = ["n!", "N!", "n@"]
-        self.new_commands = ["convert", "cat", "tutorial"]
+        self.new_commands = ["convert", "blacklist", "ttt", "star"]
 
         self.bg_task = self.loop.create_task(self.hourly_task())
         self.loop.create_task(self.load_cache())
@@ -79,6 +80,9 @@ class NecroBot(commands.Bot):
             return not (ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@")
                 
         self.add_check(disabled_check)
+
+        with open("rings/utils/data/settings.json", "rb") as infile:
+            self.settings = json.load(infile) 
 
         conn = psycopg2.connect(dbname="postgres", user="postgres", password=dbpass)
         cur = conn.cursor()
@@ -133,7 +137,7 @@ class NecroBot(commands.Bot):
                             "money": u[1],
                             "exp": u[2],
                             "daily": u[3],
-                            "badges": u[4].split(","),
+                            "badges": u[4].split(",") if u[4] != "" else [],
                             "title":u[5],
                             "perms":{},
                             "waifu":{},
@@ -267,13 +271,16 @@ class NecroBot(commands.Bot):
         cached_users = self.user_data
         for user in cached_users:
             u = cached_users[user]
-            await self.query_executer("UPDATE necrobot.Users SET necroins = $1, exp = $2 WHERE user_id = $3;",
-                            u["money"], u["exp"], user)
+            await self.query_executer("UPDATE necrobot.Users SET necroins = $1, exp = $2, badges = $4 WHERE user_id = $3;",
+                            u["money"], u["exp"], user, ",".join(u["badges"]))
 
             for guild in u["waifu"]:
                 w = u["waifu"][guild]
                 await self.query_executer("UPDATE necrobot.Waifu SET value = $1, flowers = $2 WHERE user_id = $3 AND guild_id = $4;", 
                                 w["waifu-value"], w["flowers"], user, guild)
+
+        with open("rings/utils/data/settings.json", "w") as outfile:
+            json.dump(self.settings, outfile)
                 
     async def hourly_task(self):
         await self.wait_until_ready()
@@ -323,8 +330,12 @@ class NecroBot(commands.Bot):
 
     async def query_executer(self, query, *args):
         conn = await self.pool.acquire()
+        result = []
         try:
-            await conn.execute(query, *args)
+            if query.startswith("SELECT"):
+                result = await conn.fetch(query, *args)
+            else:
+                await conn.execute(query, *args)
         except Exception as error:
             channel = self.get_channel(415169176693506048)
             the_traceback = "```py\n" + " ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=False)) + "\n```"
@@ -334,6 +345,7 @@ class NecroBot(commands.Bot):
             await channel.send(embed=embed)
         finally:
             await self.pool.release(conn)
+            return result
 
     # *****************************************************************************************************************
     #  Internal Checks
@@ -377,7 +389,7 @@ class NecroBot(commands.Bot):
         channel_id = message.channel.id
         regex_match = r"(https://modding-union\.com/index\.php/topic).\d*"
 
-        if message.author.bot:
+        if message.author.bot or message.author.id in self.settings["blacklist"]:
             return
 
         url = re.search(regex_match, message.content)

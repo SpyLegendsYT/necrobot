@@ -25,7 +25,7 @@ class Decisions():
         `{pre}choose Bob, John Smith, Mary` - choose between the names of Bob, John Smith, and Mary
         `{pre}choose 1, 2` - choose between 1 and 2 """
         choice_list = [x.strip() for x in choices.split(",")]
-        await ctx.channel.send("I choose **{}**".format(random.choice(choice_list)))
+        await ctx.send("I choose **{}**".format(random.choice(choice_list)))
 
     @commands.command(aliases=["flip"])
     async def coin(self, ctx, choice : str = None, bet : int = None):
@@ -36,7 +36,7 @@ class Decisions():
         __Example__
         `{pre}coin` - flips a coin
         `{pre}coin h 50` - bet 50 coins on the result being head"""
-        msg = await ctx.channel.send(random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"]))
+        msg = await ctx.send(random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"]))
 
         if choice is None and bet is None:
             return
@@ -76,14 +76,14 @@ class Decisions():
         `{pre}roll 3d8` - roll three 8-sided die
         `{pre}roll` - roll one 6-sided die"""
         dice_list = dice.roll(dices)
-        await ctx.channel.send(":game_die: | **{}** rolled {} for a total of: **{}**".format(ctx.message.author.display_name, dice_list, sum(dice_list)))
+        await ctx.send(":game_die: | **{}** rolled {} for a total of: **{}**".format(ctx.message.author.display_name, dice_list, sum(dice_list)))
 
     @commands.command(name="8ball")
     async def ball8(self, ctx, *, message):
         """Uses an 8ball system to reply to the user's question. 
         
         {usage}"""
-        await ctx.channel.send("{} \n:8ball: | {}".format(message, random.choice(ball8List)))
+        await ctx.send("{} \n:8ball: | {}".format(message, random.choice(ball8List)))
 
 def setup(bot):
     bot.add_cog(Decisions(bot))

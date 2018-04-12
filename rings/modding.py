@@ -3,9 +3,9 @@ from discord.ext import commands
 from moddb_reader import Reader
 from moddb_reader.moddb_objects import Mod
 import aiohttp
-import asyncio
 import difflib
 from bs4 import BeautifulSoup
+from rings.utils.utils import react_menu
 
 class AsyncReader(Reader):
     async def _soup_page(self):
@@ -45,7 +45,7 @@ class Modding():
             try:
                 search_return = difflib.get_close_matches(url, [x.string for x in soup.find("div", class_="table").findAll("h4")])[0]
             except IndexError:
-                await ctx.send(":nega:negative_squared_cross_mark: | No mod with that name found")
+                await ctx.send(":negative_squared_cross_mark: | No mod with that name found")
                 return
                 
             url = "http://www.moddb.com" + soup.find("div", class_="table").find("h4", string=search_return).a["href"]
@@ -76,44 +76,11 @@ class Modding():
 
             return embed
 
-        async with ctx.channel.typing():
-            reader = AsyncReader()
-            mod = await reader.parse_mod(url)
-            page = 0
+        reader = AsyncReader()
+        mod = await reader.parse_mod(url)
+        page = 0
+        await react_menu(self.bot, ctx, 2, _embed_generator)
 
-            msg = await ctx.channel.send(embed=_embed_generator(0))
-
-        while True:
-            react_list = list()
-            if page > 0:
-                react_list.append("\N{BLACK LEFT-POINTING TRIANGLE}")
-
-            react_list.append("\N{BLACK SQUARE FOR STOP}")
-
-            if page < 2:
-                react_list.append("\N{BLACK RIGHT-POINTING TRIANGLE}")
-
-            for reaction in react_list:
-                await msg.add_reaction(reaction)
-
-            def check(reaction, user):
-                return user == ctx.message.author and str(reaction.emoji) in react_list and msg.id == reaction.message.id
-
-            try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            except asyncio.TimeoutError:
-                return
-
-            if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                await msg.clear_reactions()
-                break
-            elif reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
-                page -= 1
-            elif reaction.emoji == "\N{BLACK RIGHT-POINTING TRIANGLE}":
-                page += 1
-
-            await msg.clear_reactions()
-            await msg.edit(embed=_embed_generator(page))
 
 def setup(bot):
     bot.add_cog(Modding(bot))
