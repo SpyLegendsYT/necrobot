@@ -110,7 +110,8 @@ class Admin():
     @commands.command()
     @has_perms(2)
     async def set(self, ctx, user : discord.Member):
-        """Allows server specific authorities to set the default stats for a user that might have slipped past the on_ready and on_member_join events (Permission level required: 2+ (Moderator))
+        """Allows server specific authorities to set the default stats for a user that might have slipped past the 
+        on_ready and on_member_join events (Permission level required: 2+ (Moderator))
          
         {usage}
         
@@ -149,64 +150,68 @@ class Admin():
     @commands.command()
     @has_perms(6)
     async def pm(self, ctx, user : discord.User, *, message : str):
-        """Sends the given message to the user of the given id. It will then wait 5 minutes for an answer and print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))
+        """Sends the given message to the user of the given id. It will then wait for an answer and 
+        print it to the channel it was called it. (Permission level required: 6+ (NecroBot Admin))
         
         {usage}
         
         __Example__
         `{pre}pm 34536534253Z6 Hello, user` - sends 'Hello, user' to the given user id and waits for a reply"""
-        send = await user.send(message)
+        await user.send(message)
         to_edit = await ctx.send(":white_check_mark: | **Message sent**")
 
         def check(m):
-            return m.author == user and m.channel == send.channel
+            return m.author == user and m.channel == user
 
         msg = await self.bot.wait_for("message", check=check)
         await to_edit.edit(content=":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
         
     @commands.command()
     @commands.is_owner()
-    async def test(self, ctx, id : int):
-        """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature. (Permission level required: 7+ (The Bot Smith))
+    async def get(self, ctx, id : int):
+        """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature. 
+        (Permission level required: 7+ (The Bot Smith))
         
         {usage}
         
         __Example__
-        `{pre}test 345345334235345` - returns the user or server name with that id"""
+        `{pre}get 345345334235345` - returns the user or server name with that id"""
+        msg = await ctx.send("Scanning...")
         user = self.bot.get_user(id)
         if not user:
-            await ctx.send("User: **{}#{}**".format(user.name, user.discriminator))
+            await msg.edit(content="User: **{}#{}**".format(user.name, user.discriminator))
             return
 
-        await ctx.send("User with that ID not found.")
+        await msg.edit(content="User with that ID not found.")
 
         guild = self.bot.get_guild(id)
         if not guild:
-            await ctx.send("Server: **{}**".format(guild.name))
+            await msg.edit(content="Server: **{}**".format(guild.name))
             return
 
-        await ctx.send("Server with that ID not found")
+        await msg.edit(content="Server with that ID not found")
 
         channel = self.bot.get_channel(id)
         if not channel:
-            await ctx.send("Channel: **{}** on **{}**".format(channel.name, channel.guild.name))
+            await msg.edit(content="Channel: **{}** on **{}**".format(channel.name, channel.guild.name))
             return
 
-        await ctx.send("Channel with that ID not found")
+        await msg.edit(content="Channel with that ID not found")
 
         role = discord.utils.get([x for x in y.roles for y in self.bot.guilds], id=id)
         if not role:
-            await ctx.send("Role: **{}** on **{}**".format(role.name, role.guild.name))
+            await msg.edit(content="Role: **{}** on **{}**".format(role.name, role.guild.name))
 
-        await ctx.send("Role with that ID not found")
+        await msg.edit(content="Role with that ID not found")
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def invites(self, ctx):
-        """Returns invites (if the bot has valid permissions) for each server the bot is on. (Permission level required: 7+ (The Bot Smith))
+    async def invites(self, ctx, *, guild : discord.Guild = None):
+        """Returns invites (if the bot has valid permissions) for each server the bot is on if no guild is specified. 
+        (Permission level required: 7+ (The Bot Smith))
         
         {usage}"""
-        for guild in self.bot.guilds:
+        async def get_invite(guild):
             try:
                 channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).create_instant_invite][0]
                 invite = await channel.create_invite(max_age=86400)
@@ -216,6 +221,12 @@ class Admin():
             except IndexError:
                 await ctx.send("No text channels in " + guild.name + "(" + str(guild.id) + ")")
 
+        if guild:
+            await get_invite(guild)
+        else:
+            for guild in self.bot.guilds:
+                await get_invite(guild)
+            
     @commands.command()
     @commands.is_owner()
     async def debug(self, ctx, *, code : str):
@@ -280,10 +291,10 @@ class Admin():
 
     @commands.command()
     @commands.is_owner()
-    async def sql(self, ctx, query : str, *args):
+    async def sql(self, ctx,*, query : str):
         """{usage}"""
         try:
-            self.bot.query_executer(query, *args)
+            self.bot.query_executer(query)
         except Exception as e:
             await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
             return
@@ -291,7 +302,10 @@ class Admin():
     @commands.group(invoke_without_command=True)
     @has_perms(6)
     async def blacklist(self, ctx, *things : GuildUserConverter):
-        """{usage}"""
+        """Blacklists a guild or user. If it is a guild, the bot will leave the guild. A user will simply be unable to 
+        use the bot commands and react. However, they will still be automoderated.
+
+        {usage}"""
         for thing in things:
             if isinstance(thing, discord.User):
                 if thing.id in self.bot.settings["blacklist"]:
@@ -318,6 +332,9 @@ class Admin():
     @blacklist.command()
     @has_perms(6)
     async def blacklist_list(self, ctx):
+        """Prints the list of all blacklisted users/guild
+
+        {usage}"""
         if len(self.bot.settings["blacklist"]) < 1:
             await ctx.send("List of blacklisted users/guilds: **None**")
         else:

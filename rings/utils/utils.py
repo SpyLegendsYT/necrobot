@@ -1,6 +1,8 @@
 from discord.ext import commands
 import discord
 
+import asyncio
+
 def has_perms(perms_level):
     def predicate(ctx): 
         if isinstance(ctx.message.channel, discord.DMChannel):

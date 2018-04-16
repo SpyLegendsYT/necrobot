@@ -16,7 +16,8 @@ class Wiki():
 
     @commands.command()
     async def edain(self, ctx, *, article : str):
-        """Performs a search on the Edain Mod Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
+        """Performs a search on the Edain Mod Wiki for the give article name. If an article is found then it will 
+        return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
         
         {usage}
         
@@ -35,7 +36,7 @@ class Wiki():
                 return
 
         url = article.url.replace(" ","_")
-        embed = discord.Embed(title="__**{}**__".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title="{}".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")
@@ -69,7 +70,8 @@ class Wiki():
 
     @commands.command()
     async def lotr(self, ctx, *, article_name : str):
-        """Performs a search on the Lord of the Rings Wiki for the give article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
+        """Performs a search on the Lord of the Rings Wiki for the give article name. If an article is found then it 
+        will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
         {usage}
 
@@ -92,7 +94,7 @@ class Wiki():
         raw_desc = re.sub('<[^<]+?>', '', article.text(section=0))
         
         description = unwiki.UnWiki(raw_desc).__str__()
-        embed = discord.Embed(title="__**{}**__".format(article.name), colour=discord.Colour(0x277b0), url=url, description=description[:2047])
+        embed = discord.Embed(title="{}".format(article.name), colour=discord.Colour(0x277b0), url=url, description=description[:2047])
 
         try:
             embed.set_thumbnail(url= list(article.images())[0].imageinfo["url"]+ "?size=400")
@@ -105,13 +107,15 @@ class Wiki():
 
     @commands.command()
     async def wiki(self, ctx, wiki : str, *, article_name : str):
-        """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
+        """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it 
+        will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
         {usage}
 
         __Example__
         `{pre}wiki disney Donald Duck` - creates a rich embed of the Donald Duck page
-        `{pre}wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a rich embed of the first one."""
+        `{pre}wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a
+         rich embed of the first one."""
         try:
             article = wikia.page(wiki, article_name)
         except wikia.wikia.WikiaError:
@@ -125,7 +129,7 @@ class Wiki():
 
         url = article.url.replace(" ","_")
 
-        embed = discord.Embed(title="__**{}**__".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title="{}".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")

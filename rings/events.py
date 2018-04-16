@@ -11,7 +11,8 @@ class NecroEvents():
         self.bot = bot
 
     async def on_resumed(self):
-        pass
+        channel = self.bot.get_channel(318465643420712962)
+        await channel.send("**Bot Resumed**")
 
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""

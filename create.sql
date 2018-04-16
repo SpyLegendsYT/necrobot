@@ -4,7 +4,8 @@ CREATE TABLE necrobot.Users (
     exp int,
     daily char(10),
     badges varchar(4000),
-    title varchar(40)
+    title varchar(40),
+    tutorial varchar(5) DEFAULT 'False'
 );
 
 CREATE TABLE necrobot.Guilds (

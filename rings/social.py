@@ -84,12 +84,29 @@ class Social():
         await ctx.send("<:onering:351442796420399119> | **Fact #{}**: {}".format(self.lotr_list.index(choice) + 1, choice))
 
     @commands.command()
-    async def pokefusion(self, ctx):
-        """Generates a rich embed containing a random pokefusion.
+    async def pokefusion(self, ctx, pokemon1 = None, pokemon2 = None):
+        """Generates a rich embed containing a pokefusion, this can either be a two random pokemons, one random pokemon and
+        one chosen pokemon or two chosen pokemons.
         
-        {usage}"""
-        async with self.bot.session.get("http://pokemon.alexonsager.net/") as resp:
-            soup = BeautifulSoup(await resp.text(), "html.parser")
+        {usage}
+
+        __Examples__
+        `{pre}pokefusion` - random pokefusion
+        `{pre}pokefusion raichu` - pokefusion of random pokemon and raichu
+        `{pre}pokefusion raichu arceus` - pokefusion of raichu and arceus"""
+        
+        if not pokemon1 and not pokemon2:
+            async with self.bot.session.get("http://pokemon.alexonsager.net/") as resp:
+                soup = BeautifulSoup(await resp.text(), "html.parser")
+
+        elif not pokemon1:
+            pass
+
+        elif not pokemon2:
+            pass
+
+        else:
+            pass
 
         image = soup.find(id="pk_img")["src"]
         name = soup.find(id="pk_name").string

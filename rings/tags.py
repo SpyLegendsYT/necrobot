@@ -33,10 +33,11 @@ class Tags():
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | This tag doesn't exist on this guild.")
 
-    @tag.command(pass_context = True, name="create",aliases=["add"])
+    @tag.command(name="create",aliases=["add"])
     @commands.guild_only()
     async def tag_create(self, ctx, tag, *, content):
-        """Assigns the [text] passed through to the tag named [name]. A few reserved keywords can be used to render the tag dynamic.
+        """Assigns the [text] passed through to the tag named [name]. A few reserved keywords can be used to render the 
+        tag dynamic.
         
         `{server.keyword}`
         Represents the server

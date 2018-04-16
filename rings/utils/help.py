@@ -86,7 +86,7 @@ class NecroBotHelpFormatter(HelpFormatter):
             valid = yield from predicate()
             if valid:
                 if name in self.context.bot.new_commands:
-                    command_list.append("*{0}*".format(name))
+                    command_list.append("***{0}***".format(name))
                 else:
                     command_list.append("`{0}`".format(name))
             else:

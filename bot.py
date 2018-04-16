@@ -21,8 +21,9 @@ import json
 
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
-        if bot.server_data[message.guild.id]["prefix"] != "":
-            return [bot.server_data[message.guild.id]["prefix"], "n@"]
+        guild_pre = bot.server_data[message.guild.id]["prefix"]
+        if guild_pre != "":
+            return [guild_pre, "n@"]
 
     return bot.prefixes
 
@@ -42,7 +43,8 @@ extensions = [
     "decisions",
     "economy",
     "events",
-    "waifu"
+    "waifu",
+    "gamestats"
 ]
 
 replyList = [
@@ -62,7 +64,8 @@ class NecroBot(commands.Bot):
         self.ERROR_LOG = 351356683231952897
         self.version = 1.5
         self.prefixes = ["n!", "N!", "n@"]
-        self.new_commands = ["convert", "blacklist", "ttt", "star"]
+        self.admin_prefixes = ["n@", "N@"]
+        self.new_commands = ["convert", "blacklist", "ttt", "star", "game"]
 
         self.bg_task = self.loop.create_task(self.hourly_task())
         self.loop.create_task(self.load_cache())
@@ -139,6 +142,7 @@ class NecroBot(commands.Bot):
                             "daily": u[3],
                             "badges": u[4].split(",") if u[4] != "" else [],
                             "title":u[5],
+                            "tutorial": u[6] == 'True',
                             "perms":{},
                             "waifu":{},
                             "places":{},
@@ -326,7 +330,7 @@ class NecroBot(commands.Bot):
         await msg.edit(content="All members checked")
         await msg.edit(content="**Bot Online**")
 
-        await self.change_presence(game=discord.Game(name="n!help for help", type=0))
+        await self.change_presence(activity=discord.Game(name="n!help for help"))
 
     async def query_executer(self, query, *args):
         conn = await self.pool.acquire()
@@ -352,8 +356,8 @@ class NecroBot(commands.Bot):
     # *****************************************************************************************************************
     async def default_stats(self, member, guild):
         if member.id not in self.user_data:
-            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, "warnings": {}, 'places':{"1":"", "2":"", "3":"", "4":"", "5":"", "6":"", "7":"", "8":""}}
-            await self.query_executer("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '');", member.id)
+            self.user_data[int(member.id)] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, "warnings": {}, 'places':{"1":"", "2":"", "3":"", "4":"", "5":"", "6":"", "7":"", "8":""}, "tutorial": False}
+            await self.query_executer("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '', 'False');", member.id)
             await self.query_executer("""INSERT INTO necrobot.Badges VALUES ($1, 1, ''), ($1, 2, ''), ($1, 3, ''),
                                                                             ($1, 4, ''), ($1, 5, ''), ($1, 6, ''),
                                                                             ($1, 7, ''), ($1, 8, '');""", member.id)
@@ -410,6 +414,11 @@ class NecroBot(commands.Bot):
 
             if message.content.startswith(self.user.mention):
                 await message.channel.send(random.choice(replyList))
+        else:
+            if not self.user_data[message.author.id]["tutorial"]:
+                self.user_data[message.author.id]["tutorial"] = True
+                await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:? Give it a shot, react to this message with :wastebasket: .")
+                await self.query_executer("UPDATE necrobot.Users SET tutorial = 'True' WHERE user_id = $1", message.author.id)
 
         await self.process_commands(message)
 

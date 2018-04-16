@@ -28,11 +28,8 @@ class Moderation():
             else:
                 msg = ":white_check_mark: | User **{0.display_name}** renamed to **{1}**".format(user, nickname)
 
-            try:
-                await user.edit(nick=nickname)
-                await ctx.send(msg)
-            except discord.errors.Forbidden:
-                await ctx.send(":negative_squared_cross_mark: | You cannot change the nickname of that user.")
+            await user.edit(nick=nickname)
+            await ctx.send(msg)
         else:
             await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
 
