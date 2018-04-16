@@ -1,13 +1,5 @@
-
-*.jpg
-*.pyc
-rings/botdata/Profile.png
-rewrite/config.py
-*.json
-*.txt
-
 config.py
-*.log
 archive/
 *.pyc
-*.pyc
+*.jpg
+*.json
