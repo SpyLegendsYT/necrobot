@@ -331,22 +331,54 @@ class Server():
 
     @settings.command(name="auto-role")
     @has_perms(4)
-    async def settings_auto_role(self, ctx, role : discord.Role = None):
+    async def settings_auto_role(self, ctx, role : discord.Role = None, time : str = "0s"):
         """Sets the auto-role for this server to the given role. Auto-role will assign the role to the member when they join.
+        The following times can be used: days (d), hours (h), minutes (m), seconds (s).
 
         {usage}
 
         __Example__
-        stuff"""
+        `{pre}auto-role Newcomer 10m` - gives the role "Newcomer" to users to arrive on the server for 10 minutes
+        `{pre}auto-role Newcomer 2d10m` - same but the roles stays for 2 days and 10 minutes
+        `{pre}auto-role Newcomer 4h45m56s` - same but the role stays for 4 hours, 45 minutes and 56 seconds
+        `{pre}auto-role Newcomer` - gives the role "Newcomer" with no timer to users who join the server.
+        `{pre}auto-role` - resets and disables the autorole system. """
+
+        def converter(time):
+            days = time.rpartition("d")[0]
+            if days == "":
+                days = 0
+
+            time = time.rpartition("d")[2]
+
+            hours = time.rpartition("h")[0]
+            if hours == "":
+                hours = 0
+
+            time = time.rpartition("h")[2]
+
+            minutes = time.rpartition("m")[0]
+            if minutes == "":
+                minutes = 0
+
+            time = time.rpartition("m")[2]
+
+            seconds = time.rpartition("s")[0]
+            if seconds == "":
+                seconds = 0
+
+            return int(seconds) + (int(minutes) * 60) + (int(hours) * 3600) + (int(days) * 86400)
 
         if role is None:
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-Role disabled")
         else:
+            time_c = converter(time)
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = role.id
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1 WHERE guild_id = $2;", role.id, ctx.guild.id)
-            await ctx.send(":white_check_mark: | Joining members will now automatically be assigned the role **{}**".format(role.name))
+            self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_time = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
+            await ctx.send(":white_check_mark: | Joining members will now automatically be assigned the role **{}** for: {}".format(role.name, time))
 
     @commands.group(name="broadcast", invoke_without_command=True)
     @has_perms(4)

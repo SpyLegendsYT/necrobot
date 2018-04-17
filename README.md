@@ -21,7 +21,7 @@ __Moderation Features__
 * **Message Edition Tracking** - tracks edits made to messages and prints the before and after in a separate channel
 * **User Welcome** - welcome new users with a message and assigns them their own username as their server nickname
 
-All commands can be seen on the discord provided below. This bot uses the rewrite branch of the d.py library written by Danny.
+All commands can be seen on the discord provided below. This bot uses the rewrite branch of the d.py library written by Rapptz. This repo is presented here as a way to provide a makeshift website page for the bot's badges. In addition, the source is provided mostly as backup, running your own instance of the bot is forbidden. 
 
 Join to see in action: https://discord.gg/sce7jmB <br>
 Tell them GitHub sent you!
