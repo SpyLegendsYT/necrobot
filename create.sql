@@ -21,7 +21,8 @@ CREATE TABLE necrobot.Guilds (
     broadcast_time int,
     starboard_channel bigint,
     starboard_limit int,
-    auto_role bigint
+    auto_role bigint,
+    auto_role_timer int
 );
 
 CREATE TABLE necrobot.Disabled (

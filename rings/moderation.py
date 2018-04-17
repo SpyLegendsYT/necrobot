@@ -33,21 +33,24 @@ class Moderation():
         else:
             await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
 
-    @commands.command()
+    @commands.group(invoke_without_command = True)
     @has_perms(2)
-    async def mute(self, ctx, user : discord.Member, *,seconds : int=False):
+    async def mute(self, ctx, user : discord.Member, *, time : str = None):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
         mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely 
-        if no amount is given. (Permission level required: 2+ (Moderator))
+        if no amount is given. The following times can be used: days (d), hours (h), minutes (m), seconds (s).
+        (Permission level required: 2+ (Moderator))
         
         {usage}
 
         __Example__
         `{pre}mute @NecroBot` - mute NecroBot until a user with the proper permission level does `{pre}unmute @NecroBot`
-        `{pre}mute @NecroBot 30` - mutes NecroBot for 30 seconds or until a user with the proper permission level does 
-        `{pre}unmute @NecroBot`"""
+        `{pre}mute @NecroBot 30s` - mutes NecroBot for 30 seconds or until a user with the proper permission level does
+        `{pre}mute @NecroBot 2m` - mutes NecroBot for 2 minutes
+        `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes
+        `{pre}unmute @NecroBot` - unmutes necrobot."""
         if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
-            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
+            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
             return
 
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
@@ -55,14 +58,41 @@ class Moderation():
             await user.add_roles(role)
             await ctx.send(":white_check_mark: | User: **{0}** has been muted".format(user.display_name))
         else:
-            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is already muted".format(user.display_name))
+            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is already muted".format(user.display_name), delete_after=5)
             return
 
-        if seconds:
-            await asyncio.sleep(seconds)
+        if time:
+            time = self.bot.convert(time)
+            await asyncio.sleep(time)
             if role in user.roles:
                 await user.remove_roles(role)
                 await ctx.send(":white_check_mark: | User: **{0}** has been automatically unmuted".format(user.display_name))
+
+    @mute.command(name="role")
+    @has_perms(4)
+    async def mute_role(self, ctx, *, role : discord.Role = ""):
+        """Sets the mute role for this server to [role], this is used for the `mute` command, it is the role assigned by 
+        the command to the user. Make sure to spell the role correctly, the role name is case sensitive. It is up to the server 
+        authorities to set up the proper permissions for the chosen mute role. Once the role is set up it can be renamed and 
+        edited as seen needed, NecroBot keeps the id saved. Unexpect behavior can happen if multiple roles have the same name when
+        setting the role.
+        (Permission level required: 5+ (Server Owner))
+         
+        {usage}
+        
+        __Example__
+        `{pre}mute mute Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
+        `{pre}mute mute` - resets the mute role and disables the `mute` command."""
+        if role == "":
+            self.bot.server_data[ctx.message.guild.id]["mute"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", ctx.guild.id)
+            await ctx.send(":white_check_mark: | Reset mute role")
+            return
+
+        await ctx.send(":white_check_mark: | Okay, the mute role for your server will be " + role.mention)
+        self.bot.server_data[ctx.message.guild.id]["mute"] = role.id
+        await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = $1 WHERE guild_id = $2;", role.id, ctx.guild.id)
+
 
     @commands.command()
     @has_perms(2)
@@ -75,7 +105,7 @@ class Moderation():
         __Example__
         `{pre}unmute @NecroBot` - unmutes NecroBot if he is muted"""
         if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
-            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!settings mute [rolename]` first.")
+            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
             return
             
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
@@ -83,7 +113,7 @@ class Moderation():
             await user.remove_roles(role)
             await ctx.send(":white_check_mark: | User: **{0}** has been unmuted".format(user.display_name))
         else:
-            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is not muted".format(user.display_name))
+            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is not muted".format(user.display_name), delete_after=5)
 
     @commands.group(invoke_without_command = True)
     @has_perms(1)

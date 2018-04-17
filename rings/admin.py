@@ -310,26 +310,26 @@ class Admin():
             if isinstance(thing, discord.User):
                 if thing.id in self.bot.settings["blacklist"]:
                     self.bot.settings["blacklist"].remove(thing.id)
-                    await ctx.send(":white_check_mark: | User pardoned")
+                    await ctx.send(":white_check_mark: | User **{}** pardoned".format(thing.name))
                 else:
                     try:
-                        await thing.send(":negative_squared_cross_mark: | You have been banned from using NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
+                        await thing.send(":negative_squared_cross_mark: | You have been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
                     except discord.Forbidden:
                         pass
 
                     self.bot.settings["blacklist"].append(thing.id)
-                    await ctx.send(":white_check_mark: | User blacklisted")
+                    await ctx.send(":white_check_mark: | User **{}** blacklisted".format(thing.name))
             elif isinstance(thing, discord.Guild):
                 if thing.id in self.bot.settings["blacklist"]:
                     self.bot.settings["blacklist"].remove(thing.id)
-                    await ctx.send(":white_check_mark: | Guild pardoned")
+                    await ctx.send(":white_check_mark: | Guild **{}** pardoned".format(thing.name))
                 else:
                     await thing.owner.send(":negative_squared_cross_mark: | Your server has been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
                     await thing.leave()
                     self.bot.settings["blacklist"].append(thing.id)
-                    await ctx.send(":white_check_mark: | Guild blacklisted")
+                    await ctx.send(":white_check_mark: | Guild **{}** blacklisted".format(thing.name))
 
-    @blacklist.command()
+    @blacklist.command(name="list")
     @has_perms(6)
     async def blacklist_list(self, ctx):
         """Prints the list of all blacklisted users/guild
@@ -338,7 +338,7 @@ class Admin():
         if len(self.bot.settings["blacklist"]) < 1:
             await ctx.send("List of blacklisted users/guilds: **None**")
         else:
-            await ctx.send("List of blacklisted users/guilds: {}".format(" - ".join([GuildUserConverter().convert(ctx, x).name for x in self.bot.settings["blacklist"]])))
+            await ctx.send("List of blacklisted users/guilds: {}".format(" - ".join([(await GuildUserConverter().convert(ctx, str(x))).name for x in self.bot.settings["blacklist"]])))
 
 
     # *****************************************************************************************************************
@@ -405,7 +405,7 @@ class Admin():
             await msg.delete()
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             await msg.delete()
-            await self.bot.change_presence(game=discord.Game(name="Bot shutting down...", type=0))
+            await self.bot.change_presence(activity=discord.Game(name="Bot shutting down...", type=0))
             channel = self.bot.get_channel(318465643420712962)
             msg = await channel.send("**Saving...**")
 

@@ -11,7 +11,7 @@ def get_users():
         print(user_query.format(user, users["money"], users["exp"], users["daily"], ",".join(users["badges"]), users["title"]))
 
 def get_guilds():
-    guild_query = """INSERT INTO necrobot.Guilds VALUES ({}, {}, {}, {}, '{}','{}', '{}', {}, '{}', {}, {}, {}, {});"""
+    guild_query = """INSERT INTO necrobot.Guilds VALUES ({}, {}, {}, {}, '{}','{}', '{}', {}, '{}', {}, {}, {}, {}, 0);"""
 
     for guild in raw_server_data:
         if guild != "starred-messages":

@@ -106,6 +106,7 @@ class NecroBot(commands.Bot):
                             "starboard-channel":g[10] if g[10] != 0 else "",
                             "starboard-limit":g[11],
                             "auto-role":g[12] if g[12] != 0 else "",
+                            "auto-role-timer":g[13],
                             "self-roles":[],
                             "ignore-command":[],
                             "ignore-automod":[],
@@ -266,6 +267,32 @@ class NecroBot(commands.Bot):
         
         await self.get_channel(self.server_data[message.guild.id]["starboard-channel"]).send(content="In {}".format(message.channel.mention), embed=embed)
         self.starred.append(message.id)
+
+    def converter(self, time):
+        days = time.rpartition("d")[0]
+        if days == "":
+            days = 0
+
+        time = time.rpartition("d")[2]
+
+        hours = time.rpartition("h")[0]
+        if hours == "":
+            hours = 0
+
+        time = time.rpartition("h")[2]
+
+        minutes = time.rpartition("m")[0]
+        if minutes == "":
+            minutes = 0
+
+        time = time.rpartition("m")[2]
+
+        seconds = time.rpartition("s")[0]
+        if seconds == "":
+            seconds = 0
+
+        return int(seconds) + (int(minutes) * 60) + (int(hours) * 3600) + (int(days) * 86400)
+
 
     # *****************************************************************************************************************
     #  Background Tasks

@@ -63,7 +63,24 @@ class Server():
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group(invoke_without_command=True)
+    def all_lists(self, ctx, key):
+        myList = []
+        for x in self.bot.server_data[ctx.message.guild.id][key]:
+            try:
+                myList.append("C: "+self.bot.get_channel(x).name)
+            except AttributeError:
+                try:
+                    myList.append("U: "+self.bot.get_member(x).name)
+                except AttributeError:
+                    try:
+                        role = discord.utils.get(ctx.message.guild.roles, id=x)
+                        myList.append("R: " + role.name)
+                    except AttributeError:
+                        pass
+
+        return myList
+
+    @commands.command()
     @has_perms(4)
     async def perms(self, ctx, user : discord.Member, level : int):
         """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. Permissions reset if you leave the server(Permission level required: 4+ (Server Admin))
@@ -82,11 +99,8 @@ class Server():
                     await self.bot.query_executer("UPDATE necrobot.Permissions SET level = 6 WHERE guild_id = $1 AND user_id = $2;", guild, user.id)
         else:
             await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permission to grant this permission level")
-    @perms.command(name="help")
-    async def perms_help(self, ctx):
-        pass
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     @has_perms(4)
     async def automod(self, ctx, *mentions : NecroConverter):
         """Used to manage the list of channels and user ignored by the bot's automoderation system. If no mentions are 
@@ -102,24 +116,11 @@ class Server():
         `{pre}automod @Necro #general` - adds user Necro and channel general to list of users/channels ignored by the necrobot's automoderation
         `{pre}automod @NecroBot #general` - adds user Necrobot to the list of users ignored by the automoderation and removes channel #general 
         from it (since we added it above)
+        `{pre}automod @ARole` - adds role ARole to the list of roles ignored by automodeartion
         """
 
         if len(mentions) < 1:
-            myList = []
-            for x in self.bot.server_data[ctx.message.guild.id]["ignore-automod"]:
-                try:
-                    myList.append("C: "+self.bot.get_channel(x).name)
-                except AttributeError:
-                    try:
-                        myList.append("U: "+self.bot.get_member(x).name)
-                    except AttributeError:
-                        try:
-                            role = discord.utils.get(ctx.message.guild.roles, id=x)
-                            myList.append("R: " + role.name)
-                        except AttributeError:
-                            pass
-
-            await ctx.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` "+str(myList)+" ```")
+            await ctx.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` "+str(self.all_lists(ctx, "ignore-automod"))+" ```")
             return
 
         for x in mentions:
@@ -131,6 +132,26 @@ class Server():
                 self.bot.server_data[ctx.message.guild.id]["ignore-automod"].remove(x.id)
                 await ctx.send(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot's automoderation.")
                 await self.bot.query_executer("DELETE FROM necrobot.IgnoreAutomod WHERE guild_id = $1 AND id = $2;", ctx.guild.id, x.id)
+
+    @automod.command(name="channel")
+    @has_perms(4)
+    async def automod_channel(self, ctx, channel : discord.TextChannel = ""):
+        """Sets the automoderation channel to [channel], [channel] argument should be a channel mention. All the 
+        auto-moderation related messages will be sent there. (Permission level required: 5+ (Server Owner))
+         
+        {usage}
+        
+        __Example__
+        `{pre}automod channel #channel` - set the automoderation messages to be sent to channel 'channel'
+        `{pre}automod channel` - disables automoderation for the entire server"""
+        if channel == "":
+            self.bot.server_data[ctx.message.guild.id]["automod"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
+            await ctx.send(":white_check_mark: | Auto-moderation **disabled**")
+        else:
+            self.bot.server_data[ctx.message.guild.id]["automod"] = channel.id
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = $2 WHERE guild_id = $1;", ctx.guild.id, channel.id)
+            await ctx.send(":white_check_mark: | Okay, all automoderation messages will be posted in " + channel.mention + " from now on.")
 
     @commands.command()
     @has_perms(4)
@@ -147,24 +168,11 @@ class Server():
         `{pre}ignore @Necro #general` - adds user Necro and channel general to list of users/channels ignored by the necrobot
         `{pre}ignore @NecroBot #general` - adds user Necrobot to the list of users ignored by the bot and removes channel #general 
         from it (since we added it above)
+        `{pre}ignore @ARole` - adds role ARole to the list of roles ignored by the bot
         """
 
         if len(mentions) < 1:
-            myList = []
-            for x in self.bot.server_data[ctx.message.guild.id]["ignore-command"]:
-                try:
-                    myList.append("C: "+self.bot.get_channel(x).name)
-                except AttributeError:
-                    try:
-                        myList.append("U: "+self.bot.get_member(x).name)
-                    except AttributeError:
-                        try:
-                            role = discord.utils.get(ctx.message.guild.roles, id=x)
-                            myList.append("R: " + role.name)
-                        except AttributeError:
-                            pass
-
-            await ctx.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` "+str(myList)+" ```")
+            await ctx.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` "+str(self.all_lists(ctx, "ignore-command"))+" ```")
             return
         
         for x in mentions:
@@ -189,14 +197,15 @@ class Server():
         embed = discord.Embed(title="__**Server Settings**__", colour=discord.Colour(0x277b0), description="Info on the NecroBot settings for this server")
         embed.add_field(name="Automod Channel", value=self.bot.get_channel(server["automod"]).mention if server["automod"] != "" else "Disabled")
         embed.add_field(name="Welcome Channel", value=self.bot.get_channel(server["welcome-channel"]).mention if server["welcome-channel"] != "" else "Disabled")
-        embed.add_field(name="Welcome Message", value=server["welcome"] if server["welcome"] != "" else "None", inline=False)
-        embed.add_field(name="Goodbye Message", value=server["goodbye"] if server["goodbye"] != "" else "None", inline=False)
+        embed.add_field(name="Welcome Message", value=server["welcome"][:1024] if server["welcome"] != "" else "None", inline=False)
+        embed.add_field(name="Goodbye Message", value=server["goodbye"][:1024] if server["goodbye"] != "" else "None", inline=False)
         embed.add_field(name="Mute Role", value=role_obj.mention if server["mute"] != "" else "Disabled")
         embed.add_field(name="Prefix", value="`" + server["prefix"] + "`" if server["prefix"] != "" else "`n!`")
         embed.add_field(name="Broadcast Message", value=server["broadcast"] if server["broadcast"] != "" else "None", inline=False)
         embed.add_field(name="Broadcast Channel", value=self.bot.get_channel(server["broadcast-channel"]).mention if server["broadcast-channel"] != "" else "None")
         embed.add_field(name="Broadcast Frequency", value="Every " + str(server["broadcast-time"]) + " hour(s)" if server["broadcast-time"] != "" else "None")
         embed.add_field(name="Auto Role", value= role_obj2.mention if server["auto-role"] != "" else "None", inline=False)
+        embed.add_field(name="Auto Role Time Limit", value= server["auto-role-timer"] if server["auto-role-timer"] > 0 else "Permanent")
         embed.add_field(name="Starboard", value = self.bot.get_channel(server["starboard-channel"]).mention if server["starboard-channel"] != "" else "Disabled")
         embed.add_field(name="Starboard Limit", value=server["starboard-limit"])
 
@@ -204,80 +213,17 @@ class Server():
 
         await ctx.send(embed=embed)
 
-    @settings.command(name="mute")
+    @commands.group(invoke_without_command=True)
     @has_perms(4)
-    async def settings_mute(self, ctx, *, role : discord.Role = ""):
-        """Sets the mute role for this server to [role], this is used for the `mute` command, it is the role assigned by 
-        the command to the user. Make sure to spell the role correctly, the role name is case sensitive. It is up to the server 
-        authorities to set up the proper permissions for the chosen mute role. Once the role is set up it can be renamed and 
-        edited as seen needed, NecroBot keeps the id saved. Unexpect behavior can happen if multiple roles have the same name.
-        (Permission level required: 5+ (Server Owner))
+    async def welcome(self, ctx, *, message=""):
+        """Sets the welcome message (aka the message sent to the welcome channel when a new user joins), you can 
+        format the message to mention the user and server. `{member}` will be replaced by a mention of the member 
+        and `{server}` will be replaced by the server name.  (Permission level required: 4+ (Server Owner))
          
         {usage}
         
         __Example__
-        `{pre}settings mute Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
-        `{pre}settings mute` - resets the mute role and disables the `mute` command."""
-        if role == "":
-            self.bot.server_data[ctx.message.guild.id]["mute"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", ctx.guild.id)
-            await ctx.send(":white_check_mark: | Reset mute role")
-            return
-
-        await ctx.send(":white_check_mark: | Okay, the mute role for your server will be " + role.mention)
-        self.bot.server_data[ctx.message.guild.id]["mute"] = role.id
-        await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = $1 WHERE guild_id = $2;", role.id, ctx.guild.id)
-
-    @settings.command(name="welcome-channel")
-    @has_perms(4)
-    async def settings_welcome_channel(self, ctx, channel : discord.TextChannel = ""):
-        """Sets the welcome channel to [channel], the [channel] argument should be a channel mention. The welcome 
-        message for users will be sent there. (Permission level required: 5+ (Server Owner))
-         
-        {usage}
-        
-        __Example__
-        `{pre}settings welcome-channel #channel` - set the welcome messages to be sent to 'channel'
-        `{pre}settings welcome-channel` - disables welcome messages"""
-        if channel == "":
-            self.bot.server_data[ctx.message.guild.id]["welcome-channel"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
-            await ctx.send(":white_check_mark: | Welcome/Goodbye messages **disabled**")
-        else:
-            self.bot.server_data[ctx.message.guild.id]["welcome-channel"] = channel.id
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
-            await ctx.send(":white_check_mark: | Okay, users will get their welcome/goodbye message in " + channel.mention + " from now on.")
-
-    @settings.command(name="automod-channel")
-    @has_perms(4)
-    async def settings_automod_channel(self, ctx, channel : discord.TextChannel = ""):
-        """Sets the automoderation channel to [channel], [channel] argument should be a channel mention. All the 
-        auto-moderation related messages will be sent there. (Permission level required: 5+ (Server Owner))
-         
-        {usage}
-        
-        __Example__
-        `{pre}settings automod-channel #channel` - set the automoderation messages to be sent to channel 'channel'
-        `{pre}settings automod-channel` - disables automoderation for the entire server"""
-        if channel == "":
-            self.bot.server_data[ctx.message.guild.id]["automod"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
-            await ctx.send(":white_check_mark: | Auto-moderation **disabled**")
-        else:
-            self.bot.server_data[ctx.message.guild.id]["automod"] = channel.id
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = $2 WHERE guild_id = $1;", ctx.guild.id, channel.id)
-            await ctx.send(":white_check_mark: | Okay, all automoderation messages will be posted in " + channel.mention + " from now on.")
-
-    @settings.command(name="welcome")
-    @has_perms(4)
-    async def settings_welcome(self, ctx, *, message=""):
-        r"""Sets the welcome message (aka the message sent to the welcome channel when a new user joins), you can 
-        format the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` will be replaced by the server name. To add emojis you need to add a backslash `\` before every semi-colon `:` (e.g `\:smiley_face\:`) (Permission level required: 5+ (Server Owner))
-         
-        {usage}
-        
-        __Example__
-        `{pre}settings welcome Hello {member} \:wave\:` - sets the welcome message to be 'Hello {member} :wave:' with 
+        `{pre}welcome Hello {member} :wave:` - sets the welcome message to be 'Hello {member} :wave:' with 
         `{member}` being replaced by the new member's name"""
         self.bot.server_data[ctx.message.guild.id]["welcome"] = message
         await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
@@ -288,17 +234,19 @@ class Server():
             message = message.replace("\\","")
             await ctx.send(":white_check_mark: | Your server's welcome message will be: \n" + message)
 
-    @settings.command(name="goodbye")
+    @commands.group(invoke_without_command=True)
     @has_perms(4)
-    async def settings_goodbye(self, ctx, *, message):
+    async def goodbye(self, ctx, *, message= ""):
         r"""Sets the goodbye message (aka the message sent to the welcome channel when a user leaves), you can format 
-        the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` will be replaced by the server name. To add emojis you need to add a backslash `\` before every semi-colon `:` (e.g `\:smiley_face\:`) (Permission level required: 5+ (Server Owner))
+        the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` 
+        will be replaced by the server name.  (Permission level required: 4+ (Server Owner))
          
         {usage}
         
         __Example__
-        `{pre}settings goodbye Goodbye {member} \:wave\:` - sets the goodbye message to be 'Goodbye {member} :wave:' 
+        `{pre}goodbye Goodbye {member} :wave:` - sets the goodbye message to be 'Goodbye {member} :wave:' 
         with `{member}` being replaced by the new member's name"""
+
         self.bot.server_data[ctx.message.guild.id]["goodbye"] = message
         await self.bot.query_executer("UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
 
@@ -308,18 +256,62 @@ class Server():
             message = message.replace("\\","")
             await ctx.send(":white_check_mark: | Your server's goodbye message will be: \n" + message)
 
-    @settings.command(name="prefix")
+    async def channel_set(self, ctx, channel):
+        if channel == "":
+            self.bot.server_data[ctx.message.guild.id]["welcome-channel"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
+            await ctx.send(":white_check_mark: | Welcome/Goodbye messages **disabled**")
+        else:
+            self.bot.server_data[ctx.message.guild.id]["welcome-channel"] = channel.id
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
+            await ctx.send(":white_check_mark: | Okay, users will get their welcome/goodbye message in " + channel.mention + " from now on.")
+
+    @welcome.command(name="channel")
     @has_perms(4)
-    async def settings_prefix(self, ctx, *, prefix=""):
+    async def welcome_channel(self, ctx, channel : discord.TextChannel = ""):
+        """Sets the welcome channel to [channel], the [channel] argument should be a channel mention. The welcome 
+        message for users will be sent there. Can be called with either goodbye or welcome, regardless both will use
+        the same channel, calling the command with both parent commands but different channel will not make
+        messages send to two channels.
+        (Permission level required: 5+ (Server Owner))
+         
+        {usage}
+        
+        __Example__
+        `{pre}welcome channel #channel` - set the welcome messages to be sent to 'channel'
+        `{pre}welcome channel` - disables welcome messages"""
+
+        await self.channel_set(ctx, channel)
+
+    @goodbye.command(name="channel")
+    @has_perms(4)
+    async def goodbye_channel(self, ctx, channel : discord.TextChannel = ""):
+        """Sets the welcome channel to [channel], the [channel] argument should be a channel mention. The welcome 
+        message for users will be sent there. Can be called with either goodbye or welcome, regardless both will use
+        the same channel, calling the command with both parent commands but different channel will not make
+        messages send to two channels.
+        (Permission level required: 5+ (Server Owner))
+         
+        {usage}
+        
+        __Example__
+        `{pre}goodbye channel #channel` - set the welcome messages to be sent to 'channel'
+        `{pre}goodbye channel` - disables welcome messages"""
+
+        await self.channel_set(ctx, channel)
+
+    @commands.command(name="prefix")
+    @has_perms(4)
+    async def prefix(self, ctx, *, prefix=""):
         """Sets the bot to only respond to the given prefix. If no prefix is given it will reset it to NecroBot's deafult 
         list of prefixes: `{pre}`, `N!` or `@NecroBot `
 
         {usage}
 
         __Example__
-        `{pre}settings prefix bob! potato` - sets the prefix to be `bob! potato ` so a command like `{pre}cat` will now be 
+        `{pre}prefix bob! potato` - sets the prefix to be `bob! potato ` so a command like `{pre}cat` will now be 
         summoned like this `bob! potato cat`
-        `{pre}settings prefix` - resets the prefix to NecroBot's default list"""
+        `{pre}prefix` - resets the prefix to NecroBot's default list"""
         self.bot.server_data[ctx.message.guild.id]["prefix"] = prefix
         await self.bot.query_executer("UPDATE necrobot.Guilds SET prefix = $1 WHERE guild_id = $2;", prefix, ctx.guild.id)
 
@@ -329,9 +321,9 @@ class Server():
         else:
             await ctx.send(":white_check_mark: | Server prefix is now **{}**".format(prefix))
 
-    @settings.command(name="auto-role")
+    @commands.command(name="auto-role")
     @has_perms(4)
-    async def settings_auto_role(self, ctx, role : discord.Role = None, time : str = "0s"):
+    async def auto_role(self, ctx, role : discord.Role = None, time : str = "0s"):
         """Sets the auto-role for this server to the given role. Auto-role will assign the role to the member when they join.
         The following times can be used: days (d), hours (h), minutes (m), seconds (s).
 
@@ -344,37 +336,12 @@ class Server():
         `{pre}auto-role Newcomer` - gives the role "Newcomer" with no timer to users who join the server.
         `{pre}auto-role` - resets and disables the autorole system. """
 
-        def converter(time):
-            days = time.rpartition("d")[0]
-            if days == "":
-                days = 0
-
-            time = time.rpartition("d")[2]
-
-            hours = time.rpartition("h")[0]
-            if hours == "":
-                hours = 0
-
-            time = time.rpartition("h")[2]
-
-            minutes = time.rpartition("m")[0]
-            if minutes == "":
-                minutes = 0
-
-            time = time.rpartition("m")[2]
-
-            seconds = time.rpartition("s")[0]
-            if seconds == "":
-                seconds = 0
-
-            return int(seconds) + (int(minutes) * 60) + (int(hours) * 3600) + (int(days) * 86400)
-
         if role is None:
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-Role disabled")
         else:
-            time_c = converter(time)
+            time_c = self.bot.converter(time)
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = role.id
             self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_time = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
@@ -558,16 +525,6 @@ class Server():
         self.bot.server_data[ctx.guild.id]["starboard-limit"] = limit
         await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_limit = $1 WHERE guild_id = $2;", limit, ctx.guild.id)
         await ctx.send(":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{}** stars".format(limit))
-
-    # @starboard.command(name="reaction")
-    # async def starboard_reaction(self, ctx, reaction = ""):
-    #     if reaction == "":
-    #         self.bot.server_data[ctx.guild.id]["starboard-reacton"] = ""
-    #         await ctx.send(":white_check_mark: | Starboard reaction reset to :star:.")
-    #         return
-
-    #     self.bot.server_data[ctx.guild.id]["starboard-reacton"] = reaction.id
-    #     await ctx.send(":white_check_mark: | Messages will now only be counted as \"starred\" if they have the required number of {}".format(reaction))
-
+        
 def setup(bot):
     bot.add_cog(Server(bot))
