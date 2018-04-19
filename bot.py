@@ -65,7 +65,7 @@ class NecroBot(commands.Bot):
         self.version = 1.5
         self.prefixes = ["n!", "N!", "n@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["convert", "blacklist", "ttt", "star", "game"]
+        self.new_commands = ["convert", "blacklist", "ttt", "star", "game", "tutorial", "news"]
 
         self.bg_task = self.loop.create_task(self.hourly_task())
         self.loop.create_task(self.load_cache())
