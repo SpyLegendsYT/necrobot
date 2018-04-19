@@ -25,7 +25,7 @@ class Wiki():
         `{pre}edain Castellans` - print a rich embed of the Castellans page
         `{pre}edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
         try:
-            article = wikia.page("Edain", article)
+            article = wikia.page("edain", article)
         except wikia.wikia.WikiaError:
             try:
                 search_list = wikia.search("edain", article)
@@ -36,7 +36,7 @@ class Wiki():
                 return
 
         url = article.url.replace(" ","_")
-        embed = discord.Embed(title="{}".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title=article.title, colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")
@@ -116,6 +116,11 @@ class Wiki():
         `{pre}wiki disney Donald Duck` - creates a rich embed of the Donald Duck page
         `{pre}wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a
          rich embed of the first one."""
+        if wiki.lower() == "edain":
+            await ctx.send(":negative_squared_cross_mark: | ffs, use `n!edain`")
+        elif wiki.lower() == "lotr":
+            await ctx.send(":negative_squared_cross_mark: | ffs, user `n!lotr`")
+            
         try:
             article = wikia.page(wiki, article_name)
         except wikia.wikia.WikiaError:

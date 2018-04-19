@@ -191,11 +191,11 @@ class Economy():
                 await msg.add_reaction("\N{MONEY BAG}") 
                 try :
                     reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=120)
-                except asyncio.TimeoutError:
-                    await ctx.send("Too slow, please decide within two minute next time. Your bet has been lost.")
+                except asyncio.TimeoutError as e:
+                    e.timer = 120
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return
+                    return bot.dispatch("command_error", ctx, e)
 
                 if reaction is not None:
                     await msg.delete()
@@ -389,10 +389,11 @@ class Economy():
                 try:
                     await current_msg.edit(content="Awaiting response from player: **{}**".format(ctx.author.display_name))
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
-                except asyncio.TimeoutError:
-                    await current_msg.edit(content="Player **{}** took too long to reply.".format(ctx.author.display_name))
+                except asyncio.TimeoutError as e:
+                    e.timer = 120
+                    self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return
+                    return bot.dispatch("command_error", ctx, e)
 
                 await user1.delete()
                 user1 = int(user1.content)
@@ -418,10 +419,11 @@ class Economy():
                 try:
                     await current_msg.edit(content="Awaiting response from player: **{}**".format(enemy.display_name))
                     user2 = await self.bot.wait_for("message", check=check, timeout=300)
-                except asyncio.TimeoutError:
-                    await current_msg.edit(content="Player **{}** took too long to reply.".format(enemy.display_name))
+                except asyncio.TimeoutError as e:
+                    e.timer = 120
+                    self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return
+                    return bot.dispatch("command_error", ctx, e)
                 
                 await user2.delete()
                 user2 = int(user2.content)
@@ -446,10 +448,11 @@ class Economy():
                 
                 try:
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
-                except asyncio.TimeoutError:
-                    await current_msg.edit(content="You took too long to reply.".format(ctx.author.display_name))
+                except asyncio.TimeoutError as e:
+                    e.timer = 120
+                    self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return
+                    return bot.dispatch("command_error", ctx, e)
 
                 await user1.delete()
                 user1 = int(user1.content)
@@ -499,9 +502,11 @@ class Economy():
                 return user == enemy and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
             try:
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            except asyncio.TimeoutError:
-                await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")
-                await msg.delete()
+            except asyncio.TimeoutError as e:
+                    e.timer = 120
+                    self.IS_GAME.remove(ctx.message.channel.id)
+                    await msg.delete()
+                    return bot.dispatch("command_error", ctx, e)
 
             if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
                 await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")

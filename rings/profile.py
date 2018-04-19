@@ -256,9 +256,10 @@ class Profile():
         
         try:
             reply = await self.bot.wait_for("message", check=check, timeout=300)
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as e:
             await msg.delete()
-            return
+            e.timer = 300
+            return bot.dispatch("command_error", ctx, e)
 
         if reply.content == "exit":
             await msg.delete()

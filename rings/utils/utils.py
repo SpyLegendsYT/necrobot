@@ -29,12 +29,14 @@ async def react_menu(bot, ctx, max, page_generator, page=0):
             await msg.add_reaction(reaction)
 
         def check(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) in react_list and msg.id == reaction.message.id
+            return user == ctx.message.author and reaction.emoji in react_list and msg.id == reaction.message.id
 
         try:
             reaction, user = await bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
-            return
+        except asyncio.TimeoutError as e:
+            await msg.clear_reactions()
+            e.timer = 300
+            return bot.dispatch("command_error", ctx, e)
 
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
             await msg.clear_reactions()

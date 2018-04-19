@@ -398,8 +398,10 @@ class Admin():
         
         try:
             reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
-            return
+        except asyncio.TimeoutError as e:
+            msg.clear_reactions()
+            e.timer = 300
+            return bot.dispatch("command_error", ctx, e)
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await msg.delete()

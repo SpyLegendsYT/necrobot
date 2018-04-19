@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands
 import time
 from datetime import timedelta
+from rings.utils.utils import has_perms, react_menu
+import ast
 
 
 class Support():
@@ -30,7 +32,7 @@ class Support():
 
     @commands.command()
     async def report(self, ctx, *, message):
-        """Report a bug with the bot. Please be a specific as you can and check `{pre}faq` before.
+        """Report a bug with the bot or send a suggestion . Please be a specific as you can and check `{pre}faq` before.
 
         {usage}
 
@@ -45,6 +47,87 @@ class Support():
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         embed.add_field(name="Helpful Info", value="User: {} \nServer: {} \nServer ID: {}".format(ctx.author.mention, ctx.guild.name, ctx.guild.id))
         await self.feed.send(embed=embed)
+
+    @commands.group(invoke_without_command=True)
+    async def news(self, ctx, index : int = 0):
+        """See the latest necrobot news
+
+        {usage}
+
+        __Examples__
+        `{pre}news` - get the news starting from the latest
+        `{pre}news 3` - get the news starting from the fourth item
+        `{pre}news 0` - get the news starting from the first item"""
+        news = self.bot.settings["news"]
+
+        if len(news) == 0:
+            await ctx.send(":negative_squared_cross_mark: | No news available")
+            return
+
+        if not 0 <= index < len(news):
+            await ctx.send(":negative_squared_cross_mark: | Not a valid index")
+            return
+        
+        def _embed_generator(page):
+            return discord.Embed.from_data(news[page])
+
+        await react_menu(self.bot, ctx, len(news) - 1, _embed_generator, index)
+
+    @news.command("add")
+    @has_perms(6)
+    async def news_add(self, ctx, *, news : str):
+        """Add a new news item
+
+        {usage}"""
+        news = ast.literal_eval(news)
+        embed = discord.Embed.from_data(news)
+        msg = await ctx.send(embed=embed)
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+        def check(reaction, user):
+            return user == ctx.message.author and reaction.emoji in ["\N{NEGATIVE SQUARED CROSS MARK}", "\N{WHITE HEAVY CHECK MARK}"] and msg.id == reaction.message.id
+
+        reaction, user = await self.bot.wait_for("reaction_add", check=check)
+
+        if reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            self.bot.settings["news"].append(news)
+            await ctx.send(":white_check_mark: | Added **{}** news".format(news["title"]))
+
+        await msg.clear_reactions()
+
+
+    @news.command("del")
+    @has_perms(6)
+    async def news_del(self, ctx, index : int):
+        """Remove a news item
+
+        {usage}"""
+        news = self.bot.settings["news"].pop(index)
+        await ctx.send(":white_check_mark: | News **{}** removed".format(news["title"]))
+
+    @news.command("raw")
+    @has_perms(6)
+    async def news_raw(self, ctx, index : int):
+        """Get the raw dict form of the news
+
+        {usage}"""
+        await ctx.send(self.bot.settings["news"][index])
+
+    @news.command("template")
+    @has_perms(6)
+    async def news_template(self, ctx):
+        """Prints the template for news
+
+        {usage}"""
+        await ctx.send('{"author": {"name": "", "url": "", "icon_url": ""}, "fields": [{"inline": False, "name": "", "value": ""}], "color": 161712, "type": "rich", "description": "", "title": ""}')
+
+    @commands.command()
+    async def tutorial(self, ctx):
+        """Sends an embed with helpful information on Necrobot's features, be warned, it is quite a dense text blob
+
+        {usage}"""
+        await ctx.send(embed=self.bot.tutorial_e)
 
 def setup(bot):
     bot.add_cog(Support(bot))

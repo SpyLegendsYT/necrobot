@@ -81,8 +81,8 @@ class Moderation():
         {usage}
         
         __Example__
-        `{pre}mute mute Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
-        `{pre}mute mute` - resets the mute role and disables the `mute` command."""
+        `{pre}mute role Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
+        `{pre}mute role` - resets the mute role and disables the `mute` command."""
         if role == "":
             self.bot.server_data[ctx.message.guild.id]["mute"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", ctx.guild.id)
@@ -256,7 +256,8 @@ class Moderation():
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
             except asyncio.TimeoutError as e:
                 await msg.delete()
-                self.bot.dispatch("command_error", ctx, e)
+                e.timer = 300
+                return self.bot.dispatch("command_error", ctx, e)
 
             await self.bot._star_message(reaction.message)
             await msg.delete()
