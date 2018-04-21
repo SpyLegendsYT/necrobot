@@ -3,3 +3,6 @@ archive/
 *.pyc
 *.jpg
 *.json
+guild_insert.sql
+user_insert.sql
+self_roles.json
