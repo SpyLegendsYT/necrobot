@@ -92,7 +92,7 @@ class Modding():
     async def game(self, ctx, *, game : str):
         """This command takes in a game name from ModDB and returns a rich embed of it. Due to the high variety of 
         game formats, embed appearances will vary but it should always return one as long as it is given the name of
-        an existing game`
+        an existing game
         
         {usage}
         
@@ -124,7 +124,7 @@ class Modding():
                     embed.add_field(name=article.title, value="{0}... [Link]({1})\nPublished {2}".format(article.desc, article.url, article.date))
             elif page == 1:
                 embed.add_field(name="\u200b", value=" ".join(["[#{0}]({1})".format(tag.name, tag.url) for tag in game.tags]))
-                embed.add_field(name="Misc: ", value="{0} \n{1}\n{2}\n{5}\n**[Comment]({3})**  -  **[Follow]({4})**".format(game.rating, game.publishers, game.release_date, game.comment, game.follow, game.engine_name))
+                embed.add_field(name="Misc: ", value="{0} \n{1}\n{2}\n{5}\n**[Comment]({3})**  -  **[Follow]({4})**".format(game.rating, game.publishers, game.release_date, game.comment, game.follow, game.engine))
                 embed.add_field(name="Style", value= "\n".join([game.style.genre, game.style.theme, game.style.players]), inline=True)
                 embed.add_field(name="Stats", value= "\n".join(["Rank: " + game.rank, "Visits: " + game.count.visits, "Files: " + game.count.files, "Articles: " + game.count.articles, "Reviews: " + game.count.reviews, "Last Update: " + game.last_update]))
             elif page == 2:

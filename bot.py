@@ -18,6 +18,7 @@ import functools
 import psycopg2
 import asyncpg
 import json
+import copy
 
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
@@ -307,7 +308,7 @@ class NecroBot(commands.Bot):
     # *****************************************************************************************************************
     async def _save(self):
         #upload user cache
-        cached_users = self.user_data
+        cached_users = copy.deepcopy(self.user_data)
         for user in cached_users:
             u = cached_users[user]
             await self.query_executer("UPDATE necrobot.Users SET necroins = $1, exp = $2, badges = $4 WHERE user_id = $3;",
@@ -351,7 +352,6 @@ class NecroBot(commands.Bot):
         self.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         channel = self.get_channel(318465643420712962)
         msg = await channel.send("**Initiating Bot**")
-
         for guild in self.guilds:
             if guild.id not in self.server_data:
                     self.server_data[guild.id] = self._new_server()

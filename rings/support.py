@@ -12,6 +12,7 @@ class Support():
     def __init__(self, bot):
         self.bot = bot
         self.feed = bot.get_channel(398894681901236236)
+        self.base_d = {"author": {"name": "Necrobot's Anchorman", "url": "https://discord.gg/Ape8bZt", "icon_url": "https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128"}, "color": 161712, "type": "rich"}
 
         
     @commands.command()
@@ -65,7 +66,7 @@ class Support():
             return
 
         if not 0 <= index < len(news):
-            await ctx.send(":negative_squared_cross_mark: | Not a valid index")
+            await ctx.send(":negative_squared_cross_mark: | Not a valid index, pick a number from 0 to {}".format(len(news) - 1))
             return
         
         def _embed_generator(page):
@@ -79,8 +80,14 @@ class Support():
         """Add a new news item
 
         {usage}"""
-        news = ast.literal_eval(news)
-        embed = discord.Embed.from_data(news)
+        try:
+            news = ast.literal_eval(news)
+        except ValueError as e:
+            await ctx.send(str(e))
+            return
+
+        news_e = {**news , **self.base_d}
+        embed = discord.Embed.from_data(news_e)
         msg = await ctx.send(embed=embed)
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
@@ -91,8 +98,10 @@ class Support():
         reaction, user = await self.bot.wait_for("reaction_add", check=check)
 
         if reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
-            self.bot.settings["news"].append(news)
+            self.bot.settings["news"] = [news] + self.bot.settings["news"]
             await ctx.send(":white_check_mark: | Added **{}** news".format(news["title"]))
+            channel = self.bot.get_channel(436595183010709514)
+            await channel.send(embed=embed)
 
         await msg.clear_reactions()
 
@@ -103,6 +112,14 @@ class Support():
         """Remove a news item
 
         {usage}"""
+        if len(self.bot.settings["news"]) == 0:
+            await ctx.send(":negative_squared_cross_mark: | No news available")
+            return
+
+        if not 0 <= index < len(self.bot.settings["news"]):
+            await ctx.send(":negative_squared_cross_mark: | Not a valid index, pick a number from 0 to {}".format(len(self.bot.settings["news"]) - 1))
+            return
+
         news = self.bot.settings["news"].pop(index)
         await ctx.send(":white_check_mark: | News **{}** removed".format(news["title"]))
 
@@ -120,7 +137,7 @@ class Support():
         """Prints the template for news
 
         {usage}"""
-        await ctx.send('{"author": {"name": "", "url": "", "icon_url": ""}, "fields": [{"inline": False, "name": "", "value": ""}], "color": 161712, "type": "rich", "description": "", "title": ""}')
+        await ctx.send('{ "fields": [{"inline": False, "name": "Why is good 1", "value": "Because"}], "description": "", "title": ""}')
 
     @commands.command()
     async def tutorial(self, ctx):

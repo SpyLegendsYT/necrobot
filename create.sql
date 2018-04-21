@@ -109,7 +109,7 @@ CREATE TABLE necrobot.Logs(
     guildname varchar(40),
     message varchar(2000),
     time_used varchar(100),
-    can_run char(4)
+    can_run varchar(5)
 );
 
 CREATE TABLE necrobot.Warnings(

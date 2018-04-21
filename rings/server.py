@@ -525,6 +525,6 @@ class Server():
         self.bot.server_data[ctx.guild.id]["starboard-limit"] = limit
         await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_limit = $1 WHERE guild_id = $2;", limit, ctx.guild.id)
         await ctx.send(":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{}** stars".format(limit))
-        
+
 def setup(bot):
     bot.add_cog(Server(bot))

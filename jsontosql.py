@@ -2,13 +2,17 @@ import json
 
 raw_user_data = json.load(open("rings/utils/data/user_data.json", "r"))
 raw_server_data = json.load(open("rings/utils/data/server_data.json", "r"))
+raw_roles_data = json.load(open("self_roles.json", "r"))
 
 def get_users():
     user_query = """INSERT INTO necrobot.Users VALUES ({}, {}, {}, '{}', '{}', '{}', 'False');"""
 
     for user in raw_user_data:
         users = raw_user_data[user]
-        print(user_query.format(user, users["money"], users["exp"], users["daily"], ",".join(users["badges"]), users["title"]))
+        try:
+            print(user_query.format(user, users["money"], users["exp"], users["daily"], ",".join(users["badges"]), users["title"]))
+        except KeyError:
+            print(user_query.format(user, users["money"], users["exp"], users["daily"], "", users["title"]))
 
 def get_guilds():
     guild_query = """INSERT INTO necrobot.Guilds VALUES ({}, {}, {}, {}, '{}','{}', '{}', {}, '{}', {}, {}, {}, {}, 0);"""
@@ -16,7 +20,7 @@ def get_guilds():
     for guild in raw_server_data:
         if guild != "starred-messages":
             guilds = raw_server_data[guild]
-            print(guild_query.format(guild, guilds["mute"] if guilds["mute"] != "" else 0 , guilds["automod"] if guilds["automod"] != "" else 0, guilds["welcome-channel"] if guilds["welcome-channel"] != "" else 0, guilds["welcome"].replace("'", "''"), guilds["goodbye"].replace("'", "''"), guilds["prefix"].replace("'", "''"), guilds["broadcast-channel"] if guilds["broadcast-channel"] != "" else 0, guilds["broadcast"].replace("'", "''"), guilds["broadcast-time"], guilds["starboard-channel"], guilds["starboard-limit"], guilds["auto-role"] if guilds["auto-role"] != "" else 0))
+            print(guild_query.format(guild, guilds["mute"] if guilds["mute"] != "" else 0 , guilds["automod"] if guilds["automod"] != "" else 0, guilds["welcome-channel"] if guilds["welcome-channel"] != "" else 0, guilds["welcome"].replace("'", "''"), guilds["goodbye"].replace("'", "''"), guilds["prefix"].replace("'", "''"), guilds["broadcast-channel"] if guilds["broadcast-channel"] != "" else 0, guilds["broadcast"].replace("'", "''"), guilds["broadcast-time"] if guilds["broadcast-time"] != "" else 0, guilds["starboard-channel"] if guilds["starboard-channel"] != "" else 0, guilds["starboard-limit"], guilds["auto-role"] if guilds["auto-role"] != "" else 0))
 
 def get_disabled():
     disabled_query = """INSERT INTO necrobot.Disabled VALUES ({},'{}');"""
@@ -44,12 +48,14 @@ def get_ignore_command():
                     print(command_query.format(guild, id))
 
 def get_self_roles():
-    self_query = """INSERT INTO necrobot.SelfRoles VALUES ({},{});"""
+    # self_query = """INSERT INTO necrobot.SelfRoles VALUES ({},{});"""
 
-    for guild in raw_server_data:
-            if guild != "starred-messages":
-                for id in raw_server_data[guild]["selfRoles"]:
-                    print(self_query.format(guild, id))
+    # for guild in raw_server_data:
+    #         if guild != "starred-messages":
+    #             for id in raw_server_data[guild]["selfRoles"]:
+    #                 print(self_query.format(guild, id))
+    for x in raw_roles_data:
+        print(x)
 
 def get_tags():
     tags_query = """INSERT INTO necrobot.Tags VALUES ({}, '{}', '{}', {}, {}, '{}');"""
@@ -70,8 +76,12 @@ def get_badges():
     badge_query = """INSERT INTO necrobot.Badges VALUES ({}, {}, '{}');"""
 
     for user in raw_user_data:
-        for place in raw_user_data[user]["places"]:
-            print(badge_query.format(user, place,raw_user_data[user]["places"][place] ))
+        try:
+            for place in raw_user_data[user]["places"]:
+                print(badge_query.format(user, place,raw_user_data[user]["places"][place]))
+        except KeyError:
+            for place in range(1,9):
+                print(badge_query.format(user, place,""))
 
 def get_gifts():
     gift_query = """INSERT INTO necrobot.Gifts VALUES ({}, {}, '{}', {});"""
@@ -102,7 +112,7 @@ def get_waifu():
         for guild in raw_user_data[user]:
             if guild.isdigit():
                 waifu = raw_user_data[user][guild]
-                print(waifu_query.format(user, guild, waifu["waifu-value"], waifu["waifu-claimer"], waifu["affinity"], waifu["heart-changes"], waifu["divorces"], waifu["flowers"]))
+                print(waifu_query.format(user, guild, waifu["waifu-value"], waifu["waifu-claimer"] if waifu["waifu-claimer"] != "" else 0, waifu["affinity"] if waifu["affinity"] != "" else 0, waifu["heart-changes"], waifu["divorces"], waifu["flowers"]))
 
 #guilds
 get_guilds()
@@ -114,8 +124,8 @@ get_tags()
 get_perms()
 
 #users    
-get_users()
-get_badges()
-get_gifts()
-get_waifus()
-get_waifu()
+# get_users()
+# get_badges()
+# get_gifts()
+# get_waifus()
+# get_waifu()

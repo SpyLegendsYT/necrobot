@@ -12,6 +12,7 @@ from PIL import ImageColor
 import os
 import random
 import asyncio
+from io import BytesIO
 
 #/usr/share/fonts/
 
@@ -151,19 +152,12 @@ class Profile():
 
             url = user.avatar_url_as(format="png").replace("?size=1024", "")
             async with self.bot.session.get(url) as r:
-                filename = os.path.basename(url)
-                with open(filename, 'wb') as f_handle:
-                    while True:
-                        chunk = await r.content.read(1024)
-                        if not chunk:
-                            break
-                        f_handle.write(chunk)
-                await r.release()
+                image_bytes = await r.read()
 
             im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,147))).resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
-            pfp = Image.open(filename).resize((150,150)).convert("RGBA")
+            pfp = Image.open(BytesIO(image_bytes)).resize((150,150)).convert("RGBA")
             perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.guild.id])).resize((50,50)).convert("RGBA")
 
             im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
@@ -185,11 +179,12 @@ class Profile():
             draw.text((43,356), self.bot.user_data[user.id]["title"], (0,0,0), font=self.font21)
             draw.line((52,346,468,346),fill=(0,0,0), width=2)
 
-            im.save('{}.png'.format(user.id))
-            ifile = discord.File('{}.png'.format(user.id))
+            
+            output_buffer = BytesIO()
+            im.save(output_buffer, "png")
+            output_buffer.seek(0)
+            ifile = discord.File(output_buffer, filename="{}.png".format(user.id))
             await ctx.send(file=ifile)
-            os.remove("{}.png".format(user.id))
-            os.remove(filename)
 
     @commands.command()
     async def settitle(self, ctx, *, text : str = ""):
