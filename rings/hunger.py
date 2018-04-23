@@ -53,7 +53,6 @@ class Hunger():
                         dead_list.append(tribute)
 
                 format_dict = dict()
-                print(tributes)
                 for tribute in tributes:
                     format_dict["p"+str(tributes.index(tribute)+1)] = tribute
                 try:

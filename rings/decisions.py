@@ -75,7 +75,12 @@ class Decisions():
         `{pre}roll 3d8` - roll three 8-sided die
         `{pre}roll` - roll one 6-sided die"""
         dice_list = dice.roll(dices)
-        await ctx.send(":game_die: | **{}** rolled {} for a total of: **{}**".format(ctx.message.author.display_name, dice_list, sum(dice_list)))
+        try:
+            t = sum(dice_list)
+        except TypeError:
+            t = dice_list
+
+        await ctx.send(":game_die: | **{}** rolled {} for a total of: **{}**".format(ctx.message.author.display_name, dice_list, t))
 
     @commands.command(name="8ball")
     async def ball8(self, ctx, *, message):

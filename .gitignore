@@ -6,3 +6,4 @@ archive/
 guild_insert.sql
 user_insert.sql
 self_roles.json
+rings/utils/tamagochi.py
