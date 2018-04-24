@@ -422,6 +422,7 @@ class Waifu():
         amount = abs(amount)
         if self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] < amount:
             await ctx.send(":negative_squared_cross_mark: | You don't have enough :cherry_blossom:")
+            return
 
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] -= amount
         self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"] += amount

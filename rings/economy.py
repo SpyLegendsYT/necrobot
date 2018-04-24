@@ -195,7 +195,7 @@ class Economy():
                     e.timer = 120
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return bot.dispatch("command_error", ctx, e)
+                    return self.bot.dispatch("command_error", ctx, e)
 
                 if reaction is not None:
                     await msg.delete()
@@ -393,7 +393,7 @@ class Economy():
                     e.timer = 120
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return bot.dispatch("command_error", ctx, e)
+                    return self.bot.dispatch("command_error", ctx, e)
 
                 await user1.delete()
                 user1 = int(user1.content)
@@ -423,7 +423,7 @@ class Economy():
                     e.timer = 120
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return bot.dispatch("command_error", ctx, e)
+                    return self.bot.dispatch("command_error", ctx, e)
                 
                 await user2.delete()
                 user2 = int(user2.content)
@@ -452,7 +452,7 @@ class Economy():
                     e.timer = 120
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return bot.dispatch("command_error", ctx, e)
+                    return self.bot.dispatch("command_error", ctx, e)
 
                 await user1.delete()
                 user1 = int(user1.content)
@@ -506,7 +506,7 @@ class Economy():
                     e.timer = 120
                     self.IS_GAME.remove(ctx.message.channel.id)
                     await msg.delete()
-                    return bot.dispatch("command_error", ctx, e)
+                    return self.bot.dispatch("command_error", ctx, e)
 
             if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
                 await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")
