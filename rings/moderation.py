@@ -10,6 +10,7 @@ class Moderation():
     All you need to keep your server clean and tidy"""
     def __init__(self, bot):
         self.bot = bot
+        self.obligatory = ("Moderation", "Server", "Support", "Admin", "Events", "disable")
 
     @commands.command(aliases=["rename","name"])
     @has_perms(1)
@@ -200,31 +201,35 @@ class Moderation():
     @commands.command()
     @has_perms(4)
     async def disable(self, ctx, command):
-        """Disables a command. Once a command is disabled only admins can use it with the special n@ prefix. To re-enable a command
+        """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ prefix. To re-enable a command or cog
         call disable on it again.
 
         {usage}
 
         __Examples__
         `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
-        `{pre}disable cat` - reenables the cat command."""
+        `{pre}disable cat` - reenables the cat command.
+        `{pre}disable Animals` - disable the Animals cog"""
         disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
-        if self.bot.get_command(command) is None:
-            await ctx.send(":negative_squared_cross_mark: | No such command.", delete_after=5)
-            return
+        if command not in self.bot.cogs:
+            command_obj = self.bot.get_command(command)
 
-        if command == "disable":
-            await ctx.send(":negative_squared_cross_mark: | ... Really?", delete_after=5)
+            if command_obj is None:
+                await ctx.send(":negative_squared_cross_mark: | No such command/cog.", delete_after=5)
+                return
+
+        if command in self.obligatory:
+            await ctx.send(":negative_squared_cross_mark: | You cannot disable this command/cog", delete_after=5)
             return
 
         if command not in disabled:
             disabled.append(command)
             await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
-            await ctx.send(":white_check_mark: | Command **{}** will now be ignored".format(command))
+            await ctx.send(":white_check_mark: | Command/cog **{}** will now be ignored".format(command))
         else:
             disabled.remove(command)
             await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
-            await ctx.send(":white_check_mark: | Command **{}** will no longer be ignored".format(command))
+            await ctx.send(":white_check_mark: | Command/cog **{}** will no longer be ignored".format(command))
 
     @commands.command()
     @has_perms(3)

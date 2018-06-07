@@ -1,6 +1,7 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 import dice
 import random
 
@@ -27,6 +28,7 @@ class Decisions():
         await ctx.send("I choose **{}**".format(random.choice(choice_list)))
 
     @commands.command(aliases=["flip"])
+    @commands.cooldown(3, 5, BucketType.user)
     async def coin(self, ctx, choice : str = None, bet : int = None):
         """Flips a coin and returns the result. Can also be used to bet money on the result (`h` for head and `t` for tail).
         
@@ -40,10 +42,7 @@ class Decisions():
         if choice is None and bet is None:
             return
 
-        if bet is None:
-            bet = 0
-        else:
-            bet = abs(bet)
+        bet = abs(bet)
 
         if bet >  self.bot.user_data[ctx.author.id]["money"]:
             await ctx.send(":negative_squared_cross_mark: | Not enough money", delete_after=5)
@@ -63,6 +62,8 @@ class Decisions():
             elif choice == "h":
                 await ctx.send("Better luck next time")
                 self.bot.user_data[ctx.author.id]["money"] -= bet
+
+        await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
 
     @commands.command()
     async def roll(self, ctx, dices="1d6"):

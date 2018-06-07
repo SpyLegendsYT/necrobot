@@ -30,9 +30,9 @@ class NecroEvents():
             await channel.send(":negative_squared_cross_mark: | Missing required argument: `{}`! Check help guide with `n!help {}`".format(error.param.name, ctx.command.qualified_name), delete_after=10)
             # index = list(ctx.command.clean_params.keys()).index(error.param.name)
             # missing = list(ctx.command.clean_params.values())[index:]
-            # print("missing folloing: {}".format(", ".join([x.name for x in missing])))
+            # print("missing following: {}".format(", ".join([x.name for x in missing])))
         elif isinstance(error, commands.CheckFailure):
-            await channel.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to use this command.", delete_after=10)
+            await channel.send(":negative_squared_cross_mark: | **{}**".format(error), delete_after=10)
         elif isinstance(error, commands.CommandOnCooldown):
             retry_after = str(timedelta(seconds=error.retry_after)).partition(".")[0].replace(":", "{}")
             await channel.send(":negative_squared_cross_mark: | This command is on cooldown, retry after **{}**".format(retry_after.format("hours, ", "minutes and ") + "seconds"), delete_after=10)
@@ -63,7 +63,7 @@ class NecroEvents():
                 traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             
             if ctx.guild.id != 311630847969198082:
-                await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server: <https://discord.gg/Ape8bZt>")
+                await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server: <https://discord.gg/Ape8bZt>", delete_after=10)
                 
     async def on_guild_join(self, guild):
         if guild.id in self.bot.settings["blacklist"]:
@@ -72,7 +72,7 @@ class NecroEvents():
 
         if guild.id not in self.bot.server_data:
             self.bot.server_data[guild.id] = self.bot._new_server()
-            await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
+            await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0, 0);", guild.id)
 
         for member in guild.members:
             await self.bot.default_stats(member, guild)
@@ -150,7 +150,7 @@ class NecroEvents():
             role = discord.utils.get(member.guild.roles, id=self.bot.server_data[member.guild.id]["auto-role"])
             await member.add_roles(role)
 
-            if self.bot.server_data[member.guild.id]["auto-role"] > 0:
+            if self.bot.server_data[member.guild.id]["auto-role-timer"] > 0:
                 await asyncio.sleep(self.bot.server_data[member.guild.id]["auto-role-timer"])
                 try:
                     await member.remove_roles(role)

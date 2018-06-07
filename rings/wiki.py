@@ -84,10 +84,12 @@ class Wiki():
         if site.pages[article_name].text() != "":
             article = site.pages[article_name]
         else:
-            search_list = [x for x in site.raw_api("opensearch", search=article_name)[1] if not x.text().startswith(("#REDIRECT"))]
-            if len(search_list) > 0:
+            search_list = [x for x in site.raw_api("opensearch", search=article_name)[1]]
+            if len(search_list) == 1:
+                article = site.pages[search_list[0]]
+            elif len(search_list) > 0:
                 msg = "Article: **{}** not found, returning first search result and the following search list: {}".format(article_name, search_list[1:])
-                article = site.pages[difflib.get_close_matches(article_name, search_list, 1)[0]]
+                article = site.pages[difflib.get_close_matches(article_name, search_list, 1, 0.5)[0]]
             else:
                 await ctx.send(":negative_squared_cross_mark: | Article not found, and search didn't return any result. Please try again with different terms.")
                 return           
@@ -120,9 +122,10 @@ class Wiki():
          rich embed of the first one."""
         msg = ""
         if wiki.lower() == "edain":
-            await ctx.send(":negative_squared_cross_mark: | ffs, use `n!edain`")
+            await ctx.send(":negative_squared_cross_mark: | No. Use `n!edain`")
+            return
         elif wiki.lower() == "lotr":
-            await ctx.send(":negative_squared_cross_mark: | ffs, user `n!lotr`")
+            await ctx.send(":negative_squared_cross_mark: | No. Use `n!lotr`")
             
         try:
             article = wikia.page(wiki, article_name)

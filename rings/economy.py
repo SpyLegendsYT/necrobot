@@ -128,9 +128,10 @@ class Economy():
         `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
         `{pre}blackjack` - bet the default 10 :euro:"""
 
-        def win(msg):
+        async def win(msg):
             self.IS_GAME.remove(ctx.message.channel.id)
             self.bot.user_data[ctx.message.author.id]["money"] += bet * 2
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             return "{4} \nEnd of the game \n**{6}'s** hand: {0} : {1} \n**Dealer's** hand: {2} : {3} \nYour bet money is doubled, you win {5} :euro:".format(player.hand, player.hand.value(), bank.hand, bank.hand.value(), msg, bet * 2, ctx.message.author.display_name)
      
 
@@ -148,6 +149,7 @@ class Economy():
                 await ctx.send("Tie, everything is reset.")
                 self.IS_GAME.remove(ctx.message.channel.id)
                 self.bot.user_data[ctx.message.author.id]["money"] += bet
+                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             await status.delete()
             
 
@@ -160,6 +162,7 @@ class Economy():
         if self.bot.user_data[ctx.message.author.id]["money"] >= bet and bet >= 10:
             await ctx.send(":white_check_mark: | Starting a game of Blackjack with **{0.display_name}** for {1} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ".format(ctx.message.author, bet))
             self.bot.user_data[ctx.message.author.id]["money"] -= bet
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             name = ctx.message.author.display_name
             player = Player(name, 0)
             bank = Player("Bank", 0)
@@ -177,7 +180,7 @@ class Economy():
             while not game.is_over():
                 status = await ctx.send("**You** have {0} Total: {1} \n**The Dealer** has {2} Total: {3}".format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
                 if player.hand.value() == 21:
-                    await ctx.send(win("**BLACKJACK**"))
+                    await ctx.send(await win("**BLACKJACK**"))
                     await status.delete()
                     return
                 elif bank.hand.value() == 21:
@@ -211,10 +214,10 @@ class Economy():
                             else:
                                 await ctx.send("**The Dealer** " + game.play(bank), delete_after=5)
                                 if bank.hand.busted:
-                                    await ctx.send(win("**The Dealer** goes bust."))
+                                    await ctx.send(await win("**The Dealer** goes bust."))
                                     return
                                 elif player.hand.value() == 21:
-                                    await ctx.send(win("**BLACKJACK**"))
+                                    await ctx.send(await win("**BLACKJACK**"))
                                     await status.delete()
                                     return
                     elif reaction.emoji == "\N{MONEY BAG}":
@@ -227,14 +230,14 @@ class Economy():
                                 await status.delete()
                                 return
                             elif player.hand.value() == 21 and bank.hand.value() < 21:
-                                await ctx.send(win("**BLACKJACK**"))
+                                await ctx.send(await win("**BLACKJACK**"))
                                 await status.delete()
                                 return
                             else:
                                 while not bank.hand.is_passing(player):
                                     await ctx.send("**The Dealer** " + game.play(bank), delete_after=5)
                                     if bank.hand.busted:
-                                        await ctx.send(win("**The Dealer** goes bust."))
+                                        await ctx.send(await win("**The Dealer** goes bust."))
                                         return
 
                                 return await game_end()
@@ -246,7 +249,7 @@ class Economy():
                         if not bank.hand.is_passing(player):
                             await ctx.send("**The Dealer** " + game.play(bank), delete_after=5)
                             if bank.hand.busted:
-                                await ctx.send(win("**The Dealer** goes bust."))
+                                await ctx.send(await win("**The Dealer** goes bust."))
                                 await status.delete()
                                 return
                         else:

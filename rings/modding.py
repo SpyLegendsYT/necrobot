@@ -98,7 +98,7 @@ class Modding():
         
         __Example__
         `{pre}game battle for middle earth` - creates a rich embed of the BFME ModDB page"""
-        async with self.bot.session.get("http://www.moddb.com/games?filter=t&kw={}&released=&genre=&theme=&players=&timeframe=&game=&sort=visitstotal-desc".format(game.replace(" ", "+"))) as resp:
+        async with self.bot.session.get("https://www.moddb.com/games?filter=t&kw={}&released=&genre=&theme=&indie=&players=&timeframe=".format(game.replace(" ", "+"))) as resp:
             soup = BeautifulSoup(await resp.text(), "lxml")
             
         try:

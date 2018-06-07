@@ -54,33 +54,6 @@ class Admin():
     def __init__(self, bot):
         self.bot = bot  
 
-    # @commands.command()
-    # async def x(self, ctx):
-    #     def check(thing, author):
-    #         if isinstance(thing, discord.Message):
-    #             return "$" in thing.content
-
-    #         if isinstance(thing, discord.Reaction):
-    #             return str(thing.emoji) == "\N{WASTEBASKET}"
-
-    #         return False
-
-    #     thing, user = await self.bot.wait_for("both", check=check)
-
-    #     if isinstance(thing, discord.Reaction):
-    #         await ctx.send("User used reaction menu")
-    #     elif isinstance(thing, discord.Message):
-    #         await ctx.send("User used text menu")
-
-    # @commands.command()
-    # async def y(self, ctx, content):
-    #     self.bot.dispatch("both", ctx.message, ctx.message.author)
-
-    # @commands.command()
-    # async def z(self, ctx):
-    #     reaction, user = await self.bot.wait_for("reaction_add")
-    #     self.bot.dispatch("both", reaction, user)
-
     @commands.command()
     @commands.is_owner()
     async def leave(self, ctx, id : int, *, reason : str ="unspecified"):
@@ -142,7 +115,8 @@ class Admin():
         s = str(self.bot.user_data[user.id]["money"]) + equation
         try:
             operation = simple_eval(s)
-            self.bot.user_data[user.id]["money"] = abs(int(operation))
+            self.bot.user_data[user.id]["money"] = int(operation)
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2;", self.bot.user_data[user.id]["money"], user.id)
             await ctx.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, self.bot.user_data[user.id]["money"]))
         except (NameError,SyntaxError):
             await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
@@ -178,28 +152,28 @@ class Admin():
         `{pre}get 345345334235345` - returns the user or server name with that id"""
         msg = await ctx.send("Scanning...")
         user = self.bot.get_user(id)
-        if not user:
+        if user:
             await msg.edit(content="User: **{}#{}**".format(user.name, user.discriminator))
             return
 
         await msg.edit(content="User with that ID not found.")
 
         guild = self.bot.get_guild(id)
-        if not guild:
+        if guild:
             await msg.edit(content="Server: **{}**".format(guild.name))
             return
 
         await msg.edit(content="Server with that ID not found")
 
         channel = self.bot.get_channel(id)
-        if not channel:
+        if channel:
             await msg.edit(content="Channel: **{}** on **{}**".format(channel.name, channel.guild.name))
             return
 
         await msg.edit(content="Channel with that ID not found")
 
         role = discord.utils.get([x for x in y.roles for y in self.bot.guilds], id=id)
-        if not role:
+        if role:
             await msg.edit(content="Role: **{}** on **{}**".format(role.name, role.guild.name))
 
         await msg.edit(content="Role with that ID not found")
@@ -257,6 +231,7 @@ class Admin():
             result = eval(code, env)
             if inspect.isawaitable(result):
                 result = await result
+            await ctx.send("{}".format(result))
         except Exception as e:
             await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
             return
@@ -295,6 +270,7 @@ class Admin():
         """{usage}"""
         try:
             self.bot.query_executer(query)
+            await ctx.send(":thumbsup:")
         except Exception as e:
             await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
             return
@@ -408,13 +384,12 @@ class Admin():
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             await msg.delete()
             await self.bot.change_presence(activity=discord.Game(name="Bot shutting down...", type=0))
+            
+            with open("rings/utils/data/settings.json", "w") as outfile:
+                json.dump(self.bot.settings, outfile)
+            
             channel = self.bot.get_channel(318465643420712962)
-            msg = await channel.send("**Saving...**")
-
-            await self.bot._save()
-
-            await msg.edit(content="**Saved**")
-            await msg.edit(content="**Bot Offline**")
+            await channel.send("**Bot Offline**")
             await self.bot.session.close()
             await self.bot.logout()
 
@@ -425,7 +400,10 @@ class Admin():
 
         {usage}"""
         await ctx.send(":white_check_mark: | Saving")
-        await self.bot._save()
+        
+        with open("rings/utils/data/settings.json", "w") as outfile:
+                json.dump(self.bot.settings, outfile)
+        
         await ctx.send(":white_check_mark: | Done saving")
 
 def setup(bot):

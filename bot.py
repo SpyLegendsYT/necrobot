@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 
 from rings.utils.help import NecroBotHelpFormatter
-from config import token, dbpass
+from rings.utils.config import token, dbpass
+from rings.utils.db import db_gen
 
 import random
 import sys
@@ -19,6 +20,7 @@ import psycopg2
 import asyncpg
 import json
 import copy
+import io
 
 async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
@@ -59,8 +61,7 @@ class NecroBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=get_pre, description="A bot for moderation and LOTR", formatter=NecroBotHelpFormatter(), case_insensitive=True, owner_id=241942232867799040, activity=discord.Game(name="Bot booting...", type=0))
         self.uptime_start = t.time()
-        self.user_data = dict()
-        self.server_data = dict()
+        self.user_data, self.server_data = db_gen()
 
         self.ERROR_LOG = 351356683231952897
         self.version = 1.5
@@ -68,8 +69,8 @@ class NecroBot(commands.Bot):
         self.admin_prefixes = ["n@", "N@"]
         self.new_commands = ["convert", "blacklist", "ttt", "star", "game", "tutorial", "news"]
 
-        self.bg_task = self.loop.create_task(self.hourly_task())
-        self.loop.create_task(self.load_cache())
+        # self.bg_task = self.loop.create_task(self.hourly_task())
+        self.broadcast_task = self.loop.create_task(self.broadcast())
         self.session = aiohttp.ClientSession(loop=self.loop)
         
         self.cat_cache = []
@@ -78,10 +79,14 @@ class NecroBot(commands.Bot):
 
         @self.check
         def disabled_check(ctx):
+            disabled = self.server_data[ctx.message.guild.id]["disabled"]
             if ctx.guild is None:
                 return True
 
-            return not (ctx.command.name in self.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@")
+            if ((ctx.command.name in disabled or ctx.command.cog_name in disabled) and ctx.prefix != "n@"):
+                raise commands.CheckFailure("This command/cog has been disabled")
+
+            return True
                 
         self.add_check(disabled_check)
 
@@ -96,109 +101,12 @@ class NecroBot(commands.Bot):
         embed.add_field(name="Feedback & Suggestions", value="Necro's always looking to improve his bot and has therefore created several ways to communicate feedback. You can join the official support server and drop your suggestion there (do `n!about` to get an invite link). You can also use the `report` command, just use it anywhere and add your message after the command, it'll be sent directly to the server. Finally, you can also contact Necro#6714 with your ideas. All spam/nsfw will be deleted and offenders will be blocked from the bot.")
         self.tutorial_e = embed
 
-        conn = psycopg2.connect(dbname="postgres", user="postgres", password=dbpass)
-        cur = conn.cursor()
-
-        #create server cache
-        cur.execute("SELECT * FROM necrobot.Guilds;")
-        for g in cur.fetchall():
-            self.server_data[g[0]] = {
-                            "mute": g[1] if g[1] != 0 else "", 
-                            "automod":g[2] if g[2] != 0 else "", 
-                            "welcome-channel":g[3] if g[3] != 0 else "", 
-                            "welcome":g[4], 
-                            "goodbye":g[5], 
-                            "prefix":g[6],
-                            "broadcast-channel":g[7] if g[7] != 0 else "",
-                            "broadcast":g[8],
-                            "broadcast-time":g[9],
-                            "starboard-channel":g[10] if g[10] != 0 else "",
-                            "starboard-limit":g[11],
-                            "auto-role":g[12] if g[12] != 0 else "",
-                            "auto-role-timer":g[13],
-                            "self-roles":[],
-                            "ignore-command":[],
-                            "ignore-automod":[],
-                            "tags":{},
-                            "disabled":[]
-                        }
-
-        cur.execute("SELECT * FROM necrobot.SelfRoles;")
-        for g in cur.fetchall():
-            self.server_data[g[0]]["self-roles"].append(g[1])
-
-        cur.execute("SELECT * FROM necrobot.Disabled;")
-        for g in cur.fetchall():
-            self.server_data[g[0]]["disabled"].append(g[1])
-
-        cur.execute("SELECT * FROM necrobot.IgnoreAutomod;")
-        for g in cur.fetchall():
-            self.server_data[g[0]]["ignore-automod"].append(g[1])
-
-        cur.execute("SELECT * FROM necrobot.IgnoreCommand;")
-        for g in cur.fetchall():
-            self.server_data[g[0]]["ignore-command"].append(g[1])
-
-        cur.execute("SELECT * FROM necrobot.Tags;")
-        for g in cur.fetchall():
-            self.server_data[g[0]]["tags"][g[1]] = {"content":g[2], "owner":g[3], "counter":g[4], "created":g[5]}
-
-        #create user cache
-        cur.execute("SELECT * FROM necrobot.Users;")
-        for u in cur.fetchall():
-            self.user_data[u[0]] = {
-                            "money": u[1],
-                            "exp": u[2],
-                            "daily": u[3],
-                            "badges": u[4].split(",") if u[4] != "" else [],
-                            "title":u[5],
-                            "tutorial": u[6] == 'True',
-                            "perms":{},
-                            "waifu":{},
-                            "places":{},
-                            "warnings":{}
-                        }
-
-        cur.execute("SELECT * FROM necrobot.Permissions;")
-        for u in cur.fetchall():
-            self.user_data[u[1]]["perms"][u[0]] = u[2]
-            self.user_data[u[1]]["warnings"][u[0]] = []
-
-        cur.execute("SELECT * FROM necrobot.Warnings;")
-        for u in cur.fetchall():
-            self.user_data[u[1]]["warnings"][u[3]].append(u[4])
-
-        cur.execute("SELECT * FROM necrobot.Badges;")
-        for u in cur.fetchall():
-            self.user_data[u[0]]["places"][u[1]] = u[2]
-
-        cur.execute("SELECT * FROM necrobot.Waifu;")
-        for u in cur.fetchall():
-            self.user_data[u[0]]["waifu"][u[1]] = {
-                            "waifu-value":u[2],
-                            "waifu-claimer": u[3] if u[3] != 0 else "",
-                            "affinity": u[4] if u[4] != 0 else "",
-                            "heart-changes":u[5],
-                            "divorces":u[6],
-                            "flowers":u[7],
-                            "waifus":[],
-                            "gifts":{}
-                        }
-
-        cur.execute("SELECT * FROM necrobot.Waifus;")
-        for u in cur.fetchall():
-            self.user_data[u[0]]["waifu"][u[1]]["waifus"].append(u[2])
-
-        cur.execute("SELECT * FROM necrobot.Gifts;")
-        for u in cur.fetchall():
-            self.user_data[u[0]]["waifu"][u[1]]["gifts"][u[2]] = u[3]
-
 
     # *****************************************************************************************************************
     #  Internal Function
     # *****************************************************************************************************************
     def _new_server(self):
-        return {"mute":"","automod":"","welcome-channel":"", "self-roles":[],"ignore-command":[],"ignore-automod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "starboard-channel":"", "starboard-limit":5} 
+        return {"mute":"","automod":"","welcome-channel":"", "self-roles":[],"ignore-command":[],"ignore-automod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "auto-role-timer": 0, "starboard-channel":"", "starboard-limit":5} 
     
     def _startswith_prefix(self, message):
         if self.server_data[message.guild.id]["prefix"] != "" and message.content.startswith(self.server_data[message.guild.id]["prefix"]):
@@ -248,15 +156,16 @@ class NecroBot(commands.Bot):
 
     async def _bmp_converter(self, message):
         attachment = message.attachments[0]
-        await attachment.save(attachment.filename)
+        f = io.BytesIO()
+        await attachment.save(f)
 
-        im = Image.open(attachment.filename)
-        im.save('{}.png'.format(attachment.filename))
-        ifile = discord.File('{}.png'.format(attachment.filename))
+        with Image.open(f) as im:
+            output_buffer = io.BytesIO()
+            im.save(output_buffer, "png")
+            output_buffer.seek(0)
+            ifile = discord.File(filename="converted.png", fp=output_buffer)
+        
         await message.channel.send(file=ifile)
-
-        os.remove("{}.png".format(attachment.filename))
-        os.remove(attachment.filename)
 
     async def _star_message(self, message):
         embed = discord.Embed(colour=discord.Colour(0x277b0), description = message.content)
@@ -325,30 +234,37 @@ class NecroBot(commands.Bot):
     async def hourly_task(self):
         await self.wait_until_ready()
         log = bot.get_channel(self.ERROR_LOG)
-        counter = 0
-        while not self.is_closed():
-            if counter >= 24:
-                counter = 0
-                
+        while not self.is_closed():                
             await asyncio.sleep(3600) # task runs every hour
-            counter += 1
             
             #hourly save
             await log.send("Initiating hourly save")
             await self._save()
             await log.send("Hourly save at {}".format(t.asctime(t.localtime(t.time()))))
 
-            # background tasks
-            for guild in self.server_data:
-                hour_mod = counter % self.server_data[guild]["broadcast-time"]
-                if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "" and hour_mod == 0:
-                    channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
-                    await channel.send(self.server_data[guild]["broadcast"])
+    async def broadcast(self):
+        await self.wait_until_ready()
+        channel = self.get_channel(318465643420712962)
+        await channel.send("Initiating Broadcast")
+        counter = 0
+        try:
+            while not self.is_closed():
+                if counter >= 24:
+                    counter = 0
+
+                await asyncio.sleep(3600) # task runs every hour
+                counter += 1
+
+                for guild in self.server_data:
+                    hour_mod = counter % self.server_data[guild]["broadcast-time"]
+                    if self.server_data[guild]["broadcast"] != "" and self.server_data[guild]["broadcast-channel"] != "" and hour_mod == 0:
+                        channel = self.get_channel(self.server_data[guild]["broadcast-channel"])
+                        await channel.send(self.server_data[guild]["broadcast"])
+        except Exception as e:
+            self.dispatch("error")
+
 
     async def load_cache(self):
-        await self.wait_until_ready()
-        await asyncio.sleep(1)
-
         self.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         channel = self.get_channel(318465643420712962)
         msg = await channel.send("**Initiating Bot**")
@@ -376,12 +292,24 @@ class NecroBot(commands.Bot):
             else:
                 await conn.execute(query, *args)
         except Exception as error:
+            print(error.as_dict())
+            if isinstance(error, asyncpg.exceptions.ForeignKeyViolationError):
+                if "fkey" in error.constraint_name and error.column_name == "user_id":
+                    try:
+                        await conn.execute("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '', 'False');", member.id)
+                        await conn.execute(query, *args)
+                    except Exception as error:
+                        pass
+
             channel = self.get_channel(415169176693506048)
             the_traceback = "```py\n" + " ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=False)) + "\n```"
             embed = discord.Embed(title="DB Error", description=the_traceback, colour=discord.Colour(0x277b0))
             embed.add_field(name='Event', value=error)
+            embed.add_field(name="Query", value=query)
+            embed.add_field(name="Arguments", value=args)
             embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
             await channel.send(embed=embed)
+            
         finally:
             await self.pool.release(conn)
             return result
@@ -396,6 +324,9 @@ class NecroBot(commands.Bot):
             await self.query_executer("""INSERT INTO necrobot.Badges VALUES ($1, 1, ''), ($1, 2, ''), ($1, 3, ''),
                                                                             ($1, 4, ''), ($1, 5, ''), ($1, 6, ''),
                                                                             ($1, 7, ''), ($1, 8, '');""", member.id)
+
+        if isinstance(member, discord.User):
+            member = guild.get_member(member.id)
 
         if guild.id not in self.user_data[member.id]["perms"]:
             if any(self.user_data[member.id]["perms"][x] == 7 for x in self.user_data[member.id]["perms"]):
@@ -419,6 +350,7 @@ class NecroBot(commands.Bot):
     # Events
     # *****************************************************************************************************************
     async def on_ready(self):
+        await self.load_cache()
         print(self.server_data)
         print('------')
         print("Logged in as {0.user}".format(self))
@@ -436,16 +368,18 @@ class NecroBot(commands.Bot):
                         #missing key in the server data
                         self.server_data[error.args[0]] = self._new_server()
                         await self.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", event.args[0])
+                        await channel.send("Key Error detected and handled for data of guild **{0}**, {0.id}".format(guild))
                     else:
                         #missing permission key in user data
                         for member in guild.members:
                             await self.default_stats(member, guild)
+                        await channel.send("Key Error detected and handled for permissions of guild **{0}**, {0.id}".format(guild))
                 elif user:
                     #missing key in user data
                     guilds = [x for x in self.guilds if user in x.members]
                     for guild in guilds:
                         await self.default_stats(user, guild)
-            await channel.send("Key Error detected and handled")
+                    await channel.send("Key Error detected and handled for user {}".format(user.mention))
             return
 
         the_traceback = "```py\n{}\n```".format(traceback.format_exc())
@@ -455,8 +389,7 @@ class NecroBot(commands.Bot):
         try:
             await channel.send(embed=embed)
         except discord.HTTPException:
-            print('Bot: Ignoring exception in {}'.format(event), file=sys.stderr)
-            traceback.print_exc()
+            await channel.send('Bot: Ignoring exception in {}'.format(event))
 
 
     async def on_message(self, message):
@@ -466,6 +399,9 @@ class NecroBot(commands.Bot):
 
         if message.author.bot or message.author.id in self.settings["blacklist"]:
             return
+
+        if message.author.id not in self.user_data and message.guild:
+            await self.default_stats(message.author, message.guild)
 
         url = re.search(regex_match, message.content)
         if not url is None:

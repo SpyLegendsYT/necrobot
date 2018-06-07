@@ -144,7 +144,10 @@ class Support():
         """Sends an embed with helpful information on Necrobot's features, be warned, it is quite a dense text blob
 
         {usage}"""
-        await ctx.send(embed=self.bot.tutorial_e)
+        try:
+            await ctx.author.send(embed=self.bot.tutorial_e)
+        except discord.errors.Forbidden:
+            await ctx.send(":negative_squared_cross_mark: | Looks like you have private messages disabled")
 
 def setup(bot):
     bot.add_cog(Support(bot))

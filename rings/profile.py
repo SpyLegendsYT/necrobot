@@ -63,6 +63,7 @@ class Profile():
         if day != self.bot.user_data[ctx.author.id]["daily"]:
             await ctx.send(":m: | You have received your daily **200** :euro:")
             self.bot.user_data[ctx.author.id]["money"] += 200
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             self.bot.user_data[ctx.author.id]["daily"] = day
             await self.bot.query_executer("UPDATE necrobot.Users SET daily=$1 WHERE user_id = $2;", day, ctx.author.id)
         else:
@@ -102,7 +103,9 @@ class Profile():
             await payee.send(":euro: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
             
             self.bot.user_data[payer.id]["money"] -= amount
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[payer.id]["money"], payer.id)
             self.bot.user_data[payee.id]["money"] += amount
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[payee.id]["money"], payee.id)
             
         await msg.delete()
 
@@ -316,6 +319,7 @@ class Profile():
 
             self.bot.user_data[ctx.author.id]["money"] -= self.badges_d[badge]
             self.bot.user_data[ctx.author.id]["badges"].append(badge)
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1, badges = $3 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id, ",".join(self.bot.user_data[ctx.author.id]["badges"]))
             await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badges place [badge]`")
 
             

@@ -8,7 +8,10 @@ def has_perms(perms_level):
         if isinstance(ctx.message.channel, discord.DMChannel):
             return False
 
-        return ctx.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level
+        if not ctx.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level:
+            raise commands.CheckFailure("You do not have the required NecroBot permissions")
+        else:
+            return True
 
     return commands.check(predicate)
 
