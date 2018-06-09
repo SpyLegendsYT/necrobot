@@ -63,9 +63,9 @@ class Admin():
         if guild:
             if reason != "unspecified":
                 channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).send_messages][0]
-                await channel.send("I'm sorry, Necro#6714 has decided I should leave this server, because: {}".format(reason))
+                await channel.send(f"I'm sorry, Necro#6714 has decided I should leave this server, because: {reason}")
             await guild.leave()
-            await ctx.send(":white_check_mark: | Okay Necro, I've left {}".format(guild.name))
+            await ctx.send(f":white_check_mark: | Okay Necro, I've left {guild.name}")
         else:
             await ctx.send(":negative_squared_cross_mark: | I'm not on that server")
 
@@ -138,7 +138,7 @@ class Admin():
             return m.author == user and m.channel == user
 
         msg = await self.bot.wait_for("message", check=check)
-        await to_edit.edit(content=":speech_left: | **User: {0.author}** said :**{0.content}**".format(msg))
+        await to_edit.edit(content=f":speech_left: | **User: {msg.author}** said :**{msg.content}**")
         
     @commands.command()
     @commands.is_owner()
@@ -153,28 +153,28 @@ class Admin():
         msg = await ctx.send("Scanning...")
         user = self.bot.get_user(id)
         if user:
-            await msg.edit(content="User: **{}#{}**".format(user.name, user.discriminator))
+            await msg.edit(content=f"User: **{user}**")
             return
 
         await msg.edit(content="User with that ID not found.")
 
         guild = self.bot.get_guild(id)
         if guild:
-            await msg.edit(content="Server: **{}**".format(guild.name))
+            await msg.edit(content=f"Server: **{guild}**")
             return
 
         await msg.edit(content="Server with that ID not found")
 
         channel = self.bot.get_channel(id)
         if channel:
-            await msg.edit(content="Channel: **{}** on **{}**".format(channel.name, channel.guild.name))
+            await msg.edit(content=f"Channel: **{channel.name}** on **{channel.guild.name}**")
             return
 
         await msg.edit(content="Channel with that ID not found")
 
         role = discord.utils.get([x for x in y.roles for y in self.bot.guilds], id=id)
         if role:
-            await msg.edit(content="Role: **{}** on **{}**".format(role.name, role.guild.name))
+            await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}**")
 
         await msg.edit(content="Role with that ID not found")
 
@@ -231,9 +231,9 @@ class Admin():
             result = eval(code, env)
             if inspect.isawaitable(result):
                 result = await result
-            await ctx.send("{}".format(result))
+            await ctx.send(f"{result}")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
+            await ctx.send(python.format(type(e).__name__ + f': {e}'))
             return
 
     @commands.command()
@@ -261,7 +261,7 @@ class Admin():
             result = exec(code, env)
             await ctx.send(":white_check_mark: | Don't forget to eval an SQL statement for permanent changes")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
+            await ctx.send(python.format(type(e).__name__ + f': {e}'))
             return
 
     @commands.command()
@@ -272,7 +272,7 @@ class Admin():
             self.bot.query_executer(query)
             await ctx.send(":thumbsup:")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + ': {}'.format(e)))
+            await ctx.send(python.format(type(e).__name__ + f': {e}'))
             return
 
     @commands.group(invoke_without_command=True)
@@ -286,7 +286,7 @@ class Admin():
             if isinstance(thing, discord.User):
                 if thing.id in self.bot.settings["blacklist"]:
                     self.bot.settings["blacklist"].remove(thing.id)
-                    await ctx.send(":white_check_mark: | User **{}** pardoned".format(thing.name))
+                    await ctx.send(f":white_check_mark: | User **{thing.name}** pardoned")
                 else:
                     try:
                         await thing.send(":negative_squared_cross_mark: | You have been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
@@ -294,16 +294,16 @@ class Admin():
                         pass
 
                     self.bot.settings["blacklist"].append(thing.id)
-                    await ctx.send(":white_check_mark: | User **{}** blacklisted".format(thing.name))
+                    await ctx.send(f":white_check_mark: | User **{thing.name}** blacklisted")
             elif isinstance(thing, discord.Guild):
                 if thing.id in self.bot.settings["blacklist"]:
                     self.bot.settings["blacklist"].remove(thing.id)
-                    await ctx.send(":white_check_mark: | Guild **{}** pardoned".format(thing.name))
+                    await ctx.send(f":white_check_mark: | Guild **{thing.name}** pardoned")
                 else:
                     await thing.owner.send(":negative_squared_cross_mark: | Your server has been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
                     await thing.leave()
                     self.bot.settings["blacklist"].append(thing.id)
-                    await ctx.send(":white_check_mark: | Guild **{}** blacklisted".format(thing.name))
+                    await ctx.send(f":white_check_mark: | Guild **{thing.name}** blacklisted")
 
     @blacklist.command(name="list")
     @has_perms(6)
@@ -329,9 +329,9 @@ class Admin():
         try:
             self.bot.load_extension("rings." + extension_name)
         except (AttributeError,ImportError) as e:
-            await ctx.send("```py\n{}: {}\n```".format(type(e).__name__, e))
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
-        await ctx.send("{} loaded.".format(extension_name))
+        await ctx.send(f"{extension_name} loaded.")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -340,7 +340,7 @@ class Admin():
          
         {usage}"""
         self.bot.unload_extension("rings." + extension_name)
-        await ctx.send("{} unloaded.".format(extension_name))
+        await ctx.send(f"{extension_name} unloaded.")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -352,9 +352,9 @@ class Admin():
         try:
             self.bot.load_extension("rings." + extension_name)
         except (AttributeError,ImportError) as e:
-            await ctx.send("```py\n{}: {}\n```".format(type(e).__name__, e))
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
-        await ctx.send("{} reloaded.".format(extension_name))
+        await ctx.send(f"{extension_name} reloaded.")
 
     # *****************************************************************************************************************
     # Bot Smith Commands

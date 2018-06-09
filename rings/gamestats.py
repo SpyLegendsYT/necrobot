@@ -59,7 +59,7 @@ class GameStats:
         async with ctx.message.channel.typing():
             username = username.replace("#", "-")
             headers = {"User-Agent":"NecroBot"}
-            async with self.bot.session.get("https://owapi.net/api/v3/u/{}/heroes".format(username), headers=headers) as r:
+            async with self.bot.session.get(f"https://owapi.net/api/v3/u/{username}/heroes", headers=headers) as r:
                 try:
                     data = await r.json()
                 except Exception as e:

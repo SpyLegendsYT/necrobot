@@ -25,9 +25,9 @@ class Moderation():
         `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
         if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > self.bot.user_data[user.id]["perms"][ctx.message.guild.id]:
             if nickname is None:
-                msg = ":white_check_mark: | User **{0.display_name}**'s nickname reset".format(user)
+                msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
             else:
-                msg = ":white_check_mark: | User **{0.display_name}** renamed to **{1}**".format(user, nickname)
+                msg = f":white_check_mark: | User **{user.display_name}** renamed to **{nickname}**"
 
             await user.edit(nick=nickname)
             await ctx.send(msg)
@@ -57,9 +57,9 @@ class Moderation():
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role not in user.roles:
             await user.add_roles(role)
-            await ctx.send(":white_check_mark: | User: **{0}** has been muted".format(user.display_name))
+            await ctx.send(f":white_check_mark: | User: **{user.display_name}** has been muted")
         else:
-            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is already muted".format(user.display_name), delete_after=5)
+            await ctx.send(f":negative_squared_cross_mark: | User: **{user.display_name}** is already muted", delete_after=5)
             return
 
         if time:
@@ -67,7 +67,7 @@ class Moderation():
             await asyncio.sleep(time)
             if role in user.roles:
                 await user.remove_roles(role)
-                await ctx.send(":white_check_mark: | User: **{0}** has been automatically unmuted".format(user.display_name))
+                await ctx.send(f":white_check_mark: | User: **{user.display_name}** has been automatically unmuted")
 
     @mute.command(name="role")
     @has_perms(4)
@@ -90,7 +90,7 @@ class Moderation():
             await ctx.send(":white_check_mark: | Reset mute role")
             return
 
-        await ctx.send(":white_check_mark: | Okay, the mute role for your server will be " + role.mention)
+        await ctx.send(f":white_check_mark: | Okay, the mute role for your server will be {role.mention}")
         self.bot.server_data[ctx.message.guild.id]["mute"] = role.id
         await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = $1 WHERE guild_id = $2;", role.id, ctx.guild.id)
 
@@ -112,9 +112,9 @@ class Moderation():
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role in user.roles:
             await user.remove_roles(role)
-            await ctx.send(":white_check_mark: | User: **{0}** has been unmuted".format(user.display_name))
+            await ctx.send(f":white_check_mark: | User: **{user.display_name}** has been unmuted")
         else:
-            await ctx.send(":negative_squared_cross_mark: | User: **{0}** is not muted".format(user.display_name), delete_after=5)
+            await ctx.send(f":negative_squared_cross_mark: | User: **{user.display_name}** is not muted", delete_after=5)
 
     @commands.group(invoke_without_command = True)
     @has_perms(1)
@@ -126,7 +126,7 @@ class Moderation():
         __Example__
         `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
         Necrobot's warning list and pm the warning message to him"""
-        await ctx.send(":white_check_mark: | Warning: **\"" + message + "\"** added to warning list of user " + user.display_name)
+        await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** added to warning list of user {user.display_name}")
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
         await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.message.created_at))
         try:
@@ -150,7 +150,7 @@ class Moderation():
             await ctx.send(":negative_squared_cross_mark: | Not a valid warning position")
             return
             
-        await ctx.send(":white_check_mark: | Warning: **\"" + message + "\"** removed from warning list of user " + user.display_name)
+        await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** removed from warning list of user {user.display_name}")
         await self.bot.query_executer("DELETE FROM necrobot.Warnings WHERE user_id = $1 AND guild_id = $2 AND warning_content = $3;", user.id, ctx.guild.id, message)
 
     @commands.command()
@@ -183,7 +183,7 @@ class Moderation():
         else:
             deleted = await ctx.message.channel.purge(limit=number)
 
-        await ctx.send(":wastebasket: | **{}** messages purged.".format(len(deleted)-1), delete_after=5)
+        await ctx.send(f":wastebasket: | **{len(deleted)-1}** messages purged.", delete_after=5)
 
         self.bot.server_data[ctx.message.guild.id]["automod"] = channel
 
@@ -196,7 +196,7 @@ class Moderation():
         
         __Example__
         `{pre}speak #general Hello` - sends hello to the mentionned #general channel"""
-        await channel.send(":loudspeaker: | " + message)
+        await channel.send(f":loudspeaker: | {message}")
         
     @commands.command()
     @has_perms(4)
@@ -225,11 +225,11 @@ class Moderation():
         if command not in disabled:
             disabled.append(command)
             await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
-            await ctx.send(":white_check_mark: | Command/cog **{}** will now be ignored".format(command))
+            await ctx.send(f":white_check_mark: | Command/cog **{command}** will now be ignored")
         else:
             disabled.remove(command)
             await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
-            await ctx.send(":white_check_mark: | Command/cog **{}** will no longer be ignored".format(command))
+            await ctx.send(f":white_check_mark: | Command/cog **{command}** will no longer be ignored")
 
     @commands.command()
     @has_perms(3)

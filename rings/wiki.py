@@ -30,7 +30,7 @@ class Wiki():
         except wikia.wikia.WikiaError:
             try:
                 search_list = wikia.search("edain", article)
-                msg = "Article: **{}** not found, returning first search result and the following search list: {}".format(article, search_list[1:])
+                msg = f"Article: **{article}** not found, returning first search result and the following search list: {search_list[1:]}"
                 article = wikia.page("Edain", search_list[0])
             except ValueError:
                 await ctx.send(":negative_squared_cross_mark: | Article not found, and search didn't return any results. Please try again with different terms.")
@@ -88,7 +88,7 @@ class Wiki():
             if len(search_list) == 1:
                 article = site.pages[search_list[0]]
             elif len(search_list) > 0:
-                msg = "Article: **{}** not found, returning first search result and the following search list: {}".format(article_name, search_list[1:])
+                msg = f"Article: **{article_name}** not found, returning first search result and the following search list: {search_list[1:]}"
                 article = site.pages[difflib.get_close_matches(article_name, search_list, 1, 0.5)[0]]
             else:
                 await ctx.send(":negative_squared_cross_mark: | Article not found, and search didn't return any result. Please try again with different terms.")
@@ -98,7 +98,7 @@ class Wiki():
         raw_desc = re.sub('<[^<]+?>', '', article.text(section=0))
         
         description = unwiki.UnWiki(raw_desc).__str__()
-        embed = discord.Embed(title="{}".format(article.name), colour=discord.Colour(0x277b0), url=url, description=description[:2047])
+        embed = discord.Embed(title=article.name, colour=discord.Colour(0x277b0), url=url, description=description[:2047])
 
         try:
             embed.set_thumbnail(url= list(article.images())[0].imageinfo["url"]+ "?size=400")
@@ -132,7 +132,7 @@ class Wiki():
         except wikia.wikia.WikiaError:
             try:
                 search_list = wikia.search(wiki, article_name)
-                msg = "Article: **{}** not found, returning first search result and the following search list: {}".format(article_name, search_list[1:])
+                msg = f"Article: **{article.name}** not found, returning first search result and the following search list: {search_list[1:]}"
                 article = wikia.page(wiki, search_list[0])
             except ValueError:
                 await ctx.send(":negative_squared_cross_mark: | Article not found or wiki not recognized, and search didn't return any result. Please try again with different terms.")
@@ -140,7 +140,7 @@ class Wiki():
 
         url = article.url.replace(" ","_")
 
-        embed = discord.Embed(title="{}".format(article.title), colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
+        embed = discord.Embed(title=article.title, colour=discord.Colour(0x277b0), url=url, description=article.section(article.sections[0]))
 
         try:
             embed.set_thumbnail(url=article.images[0]+"?size=400")

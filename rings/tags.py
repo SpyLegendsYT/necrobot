@@ -29,7 +29,7 @@ class Tags():
                 self.bot.server_data[ctx.message.guild.id]["tags"][tag]["counter"] += 1
                 await self.bot.query_executer("UPDATE necrobot.Tags SET uses = uses + 1 WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
             except KeyError as e:
-                await ctx.channel.send("Expecting the following argument: {}".format(e.args[0]))
+                await ctx.channel.send(f"Expecting the following argument: {e.args[0]}")
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | This tag doesn't exist on this guild.")
 

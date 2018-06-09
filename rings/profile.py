@@ -69,7 +69,7 @@ class Profile():
         else:
             timer = str(d.timedelta(seconds=self.midnight())).partition(".")[0].replace(":", "{}")
             timer = timer.format("hours, ", "minutes and ") + "seconds"
-            await ctx.send(":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{}**".format(timer))
+            await ctx.send(f":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{timer}**")
 
     @commands.command()
     async def pay(self, ctx, payee : discord.User, amount : int):
@@ -82,7 +82,7 @@ class Profile():
         amount = abs(amount)
         payer = ctx.author
 
-        msg = await ctx.send("Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(amount, payee.display_name))
+        msg = await ctx.send(f"Are you sure you want to pay **{amount}** to user **{payee.display_name}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.")
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
@@ -92,15 +92,15 @@ class Profile():
         reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.send(":white_check_mark: | **{}** cancelled the transaction.".format(payer.display_name))
+            await ctx.send(f":white_check_mark: | **{payer.display_name}** cancelled the transaction.")
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[payer.id]["money"] < amount:
                 await ctx.send(":negative_squared_cross_mark: | You don't have enough money")
                 await msg.delete()
                 return
 
-            await ctx.send(":white_check_mark: | **{}** approved the transaction.".format(payer.display_name))
-            await payee.send(":euro: | **{}** has transferred **{}$** to your profile".format(payer.display_name, amount))
+            await ctx.send(f":white_check_mark: | **{payer.display_name}** approved the transaction.")
+            await payee.send(f":euro: | **{payer.display_name}** has transferred **{amount}$** to your profile")
             
             self.bot.user_data[payer.id]["money"] -= amount
             await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[payer.id]["money"], payer.id)
@@ -157,11 +157,11 @@ class Profile():
             async with self.bot.session.get(url) as r:
                 image_bytes = await r.read()
 
-            im = Image.open("rings/utils/profile/backgrounds/{}.jpg".format(random.randint(1,147))).resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
+            im = Image.open(f"rings/utils/profile/backgrounds/{random.randint(1,147)}.jpg").resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
             pfp = Image.open(BytesIO(image_bytes)).resize((150,150)).convert("RGBA")
-            perms_level = Image.open("rings/utils/profile/perms_level/{}.png".format(self.bot.user_data[user.id]["perms"][ctx.guild.id])).resize((50,50)).convert("RGBA")
+            perms_level = Image.open(f"rings/utils/profile/perms_level/{self.bot.user_data[user.id]['perms'][ctx.guild.id]}.png") .resize((50,50)).convert("RGBA")
 
             im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
             im.paste(pfp, box=(75, 132, 225, 282), mask=pfp)
@@ -170,7 +170,7 @@ class Profile():
             for spot in self.bot.user_data[user.id]["places"]:
                 badge = self.bot.user_data[user.id]["places"][spot]
                 if badge != "":
-                    badge_img = Image.open("rings/utils/profile/badges/{}.png".format(badge)).convert("RGBA")
+                    badge_img = Image.open(f"rings/utils/profile/badges/{badge}.png").convert("RGBA")
                     index = int(spot) - 1
                     im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
@@ -186,7 +186,7 @@ class Profile():
             output_buffer = BytesIO()
             im.save(output_buffer, "png")
             output_buffer.seek(0)
-            ifile = discord.File(output_buffer, filename="{}.png".format(user.id))
+            ifile = discord.File(output_buffer, filename=f"{user.id}.png")
             await ctx.send(file=ifile)
 
     @commands.command()
@@ -201,9 +201,9 @@ class Profile():
         if text == "":
             await ctx.send(":white_check_mark: | Your title has been reset")
         elif len(text) <= 32:
-            await ctx.send(":white_check_mark: | Great, your title is now **{}**".format(text))
+            await ctx.send(f":white_check_mark: | Great, your title is now **{text}**")
         else:
-            await ctx.send(":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({}/32)".format(len(text)))
+            await ctx.send(f":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({len(text)}/32)")
             return
 
         self.bot.user_data[ctx.author.id]["title"] = text
@@ -222,7 +222,7 @@ class Profile():
         `{pre}badges place` - open the menu to reset the badge on a specific grid location
         `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location
         `{pre}badges buy` - sends the link to view the rest of the badges"""
-        await ctx.send("You have the following badges: {}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>".format(" - ".join(self.bot.user_data[ctx.author.id]["badges"])))
+        await ctx.send(f"You have the following badges: {' - '.join(self.bot.user_data[ctx.author.id]['badges'])}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>")
 
     @badges.command("place")
     async def badges_place(self, ctx, badge : str = ""):
@@ -268,9 +268,9 @@ class Profile():
         await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, ctx.author.id, int(spot))
 
         if badge == "":
-            await ctx.send(":white_check_mark: | The badge for position **{}** has been reset".format(spot))
+            await ctx.send(f":white_check_mark: | The badge for position **{spot}** has been reset")
         else:
-            await ctx.send(":white_check_mark: | Placed badge **{}** on position **{}**".format(badge, spot))
+            await ctx.send(f":white_check_mark: | Placed badge **{badge}** on position **{spot}**")
 
     @badges.command("buy")
     async def badges_buy(self, ctx, badge : str = ""):
@@ -310,7 +310,7 @@ class Profile():
             return
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.send(":white_check_mark: | **{}** cancelled the transaction.".format(ctx.author.display_name))
+            await ctx.send(f":white_check_mark: | **{ctx.author.display_name}** cancelled the transaction.")
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[ctx.author.id]["money"] < self.badges_d[badge]:
                 await ctx.send(":negative_squared_cross_mark: | You don't have enough money")

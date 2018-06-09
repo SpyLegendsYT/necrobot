@@ -25,7 +25,7 @@ class Decisions():
         `{pre}choose Bob, John Smith, Mary` - choose between the names of Bob, John Smith, and Mary
         `{pre}choose 1, 2` - choose between 1 and 2 """
         choice_list = [x.strip() for x in choices.split(",")]
-        await ctx.send("I choose **{}**".format(random.choice(choice_list)))
+        await ctx.send(f"I choose **{random.choice(choice_list)}**")
 
     @commands.command(aliases=["flip"])
     @commands.cooldown(3, 5, BucketType.user)
@@ -81,14 +81,14 @@ class Decisions():
         except TypeError:
             t = dice_list
 
-        await ctx.send(":game_die: | **{}** rolled {} for a total of: **{}**".format(ctx.message.author.display_name, dice_list, t))
+        await ctx.send(f":game_die: | **{ctx.message.author.display_name}** rolled {dice_list} for a total of: **{t}**")
 
     @commands.command(name="8ball")
     async def ball8(self, ctx, *, message):
         """Uses an 8ball system to reply to the user's question. 
         
         {usage}"""
-        await ctx.send("{} \n:8ball: | {}".format(message, random.choice(ball8List)))
+        await ctx.send(f"{message} \n:8ball: | {random.choice(ball8List)}")
 
 def setup(bot):
     bot.add_cog(Decisions(bot))

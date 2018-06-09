@@ -319,7 +319,7 @@ class Server():
         if prefix == "":
             await ctx.send(":white_check_mark: | Custom prefix reset")
         else:
-            await ctx.send(":white_check_mark: | Server prefix is now **{}**".format(prefix))
+            await ctx.send(f":white_check_mark: | Server prefix is now **{prefix}**")
 
     @commands.command(name="auto-role")
     @has_perms(4)
@@ -345,7 +345,7 @@ class Server():
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = role.id
             self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_time = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
-            await ctx.send(":white_check_mark: | Joining members will now automatically be assigned the role **{}** for: {}".format(role.name, time))
+            await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** for: {time}")
 
     @commands.group(name="broadcast", invoke_without_command=True)
     @has_perms(4)
@@ -383,7 +383,7 @@ class Server():
  
         self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = channel.id
         await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
-        await ctx.send(":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in {}".format(channel.mention))        
+        await ctx.send(f":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in {channel.mention}")        
 
     @broadcast.command(name="message")
     @has_perms(4)
@@ -402,7 +402,7 @@ class Server():
             await ctx.send(":white_check_mark: | Broadcast messages disabled")
             return
 
-        await ctx.send(":white_check_mark: | Okay, the following messqge will be broadcasted in the channel you set using `n!broadcast channel` \n {}".format(message))        
+        await ctx.send(f":white_check_mark: | Okay, the following messqge will be broadcasted in the channel you set using `n!broadcast channel` \n {message}")        
 
     @broadcast.command(name="time")
     @has_perms(4)
@@ -416,7 +416,7 @@ class Server():
         if hours > 0 and hours <= 24:
             self.bot.server_data[ctx.message.guild.id]["broadcast-time"] = hours
             await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_time = $1 WHERE guild_id = $2;", hours, ctx.guild.id)
-            await ctx.send(":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{}` hour(s)".format(hours))        
+            await ctx.send(f":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{hours}` hour(s)")        
 
 
     @commands.group(invoke_without_command = True)
@@ -439,10 +439,10 @@ class Server():
         if role.id in self.bot.server_data[ctx.message.guild.id]["self-roles"]:
             if role not in ctx.author.roles:
                 await ctx.message.author.add_roles(role)
-                await ctx.send(":white_check_mark: | Role " + role.name + " added.")
+                await ctx.send(f":white_check_mark: | Role {role.name} added.")
             else:
                 await ctx.message.author.remove_roles(role)
-                await ctx.send(":white_check_mark: | Role " + role.name + " removed.")
+                await ctx.send(f":white_check_mark: | Role {role.name} removed.")
 
         else:
             await ctx.send(":negative_squared_cross_mark: | Role not self assignable")
@@ -462,7 +462,7 @@ class Server():
 
         await self.bot.query_executer("INSERT INTO necrobot.SelfRoles VALUES ($1, $2);", ctx.guild.id, role.id)
         self.bot.server_data[ctx.message.guild.id]["self-roles"].append(role.id)
-        await ctx.send(":white_check_mark: | Added role **{}** to list of self assignable roles.".format(role.name))
+        await ctx.send(f":white_check_mark: | Added role **{role.name}** to list of self assignable roles.")
 
     @giveme.command(name="del")
     @has_perms(4)
@@ -479,7 +479,7 @@ class Server():
 
         await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", ctx.guild.id, role.id)
         self.bot.server_data[ctx.message.guild.id]["self-roles"].remove(role.id)
-        await ctx.send(":white_check_mark: | Role **{}** removed from self assignable roles".format(role.name))
+        await ctx.send(f":white_check_mark: | Role **{role.name}** removed from self assignable roles")
             
 
     @commands.group()
@@ -508,7 +508,7 @@ class Server():
 
         self.bot.server_data[ctx.guild.id]["starboard-channel"] = channel.id
         await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
-        await ctx.send(":white_check_mark: | Starboard messages will now be sent to {}".format(channel.mention))
+        await ctx.send(f":white_check_mark: | Starboard messages will now be sent to {channel.mention}")
 
     @starboard.command(name="limit")
     async def starboard_limit(self, ctx, limit : int):
@@ -524,7 +524,7 @@ class Server():
 
         self.bot.server_data[ctx.guild.id]["starboard-limit"] = limit
         await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_limit = $1 WHERE guild_id = $2;", limit, ctx.guild.id)
-        await ctx.send(":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{}** stars".format(limit))
+        await ctx.send(f":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{limit}** stars")
 
 def setup(bot):
     bot.add_cog(Server(bot))

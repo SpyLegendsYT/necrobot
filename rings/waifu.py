@@ -33,7 +33,7 @@ class Waifu():
         await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] += coins
         await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"], ctx.author.id, ctx.guild.id)
-        await ctx.send(":white_check_mark: | You exchanged **{}** Necroins for **{}** :cherry_blossom: on this server".format(coins, coins))
+        await ctx.send(f":white_check_mark: | You exchanged **{coins}** Necroins for **{coins}** :cherry_blossom: on this server")
 
     @commands.command(name="$")
     async def balance(self, ctx, user: discord.Member = None):
@@ -49,7 +49,7 @@ class Waifu():
         if user is None:
             user = ctx.author
 
-        embed = discord.Embed(color=discord.Colour(0x277b0), description="{} has **{}** :cherry_blossom:".format(user.name, self.bot.user_data[user.id]["waifu"][ctx.guild.id]["flowers"]))
+        embed = discord.Embed(color=discord.Colour(0x277b0), description=f"{user.name} has **{self.bot.user_data[user.id]['waifu'][ctx.guild.id]['flowers']}** :cherry_blossom:")
         await ctx.send(embed=embed)
 
     @commands.command(aliases = ["winfo"])
@@ -113,17 +113,17 @@ class Waifu():
             title_a = "Harem God"
 
 
-        embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu {} - {}".format(user.name, title_a))
+        embed = discord.Embed(color=discord.Colour(0x277b0), title=f"Waifu {user.name} - {title_a}")
         embed.add_field(name="Price", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifu-value"])
         embed.add_field(name="Claimed by", value=self.bot.get_user(self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifu-claimer"]).name if self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifu-claimer"] != "" else "None")
         embed.add_field(name="Likes", value=self.bot.get_user(self.bot.user_data[user.id]["waifu"][ctx.guild.id]["affinity"]).name if self.bot.user_data[user.id]["waifu"][ctx.guild.id]["affinity"] != "" else "None")
-        embed.add_field(name="Changes of heart", value="{} the {}".format(self.bot.user_data[user.id]["waifu"][ctx.guild.id]["heart-changes"], title))
+        embed.add_field(name="Changes of heart", value=f"{self.bot.user_data[user.id]['waifu'][ctx.guild.id]['heart-changes']} the {title}")
         embed.add_field(name="Divorces", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["divorces"])
         gifts = self.bot.user_data[user.id]["waifu"][ctx.guild.id]["gifts"]
-        gift_str = "\n".join(["{}x{}".format(self.gifts_e[x.lower()], gifts[x]) for x in gifts if gifts[x] > 0])
+        gift_str = "\n".join([f"{self.gifts_e[x.lower()]}x{gifts[x]}" for x in gifts if gifts[x] > 0])
         embed.add_field(name="Gifts", value=gift_str if gift_str != "" else "None", inline=False)
         waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"]])
-        embed.add_field(name="Waifus ({})".format(len(self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"])), value=waifus if waifus != "" else "None", inline=False)
+        embed.add_field(name=f"Waifus ({len(self.bot.user_data[user.id]['waifu'][ctx.guild.id]['waifus'])})", value=waifus if waifus != "" else "None", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -138,7 +138,7 @@ class Waifu():
             keys = list(self.gifts_e.keys())[index*15:(index+1)*15]
             embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu gift shop")
             for key in keys:
-                embed.add_field(name="{} {}".format(self.gifts_e[key], key.title()), value=self.gifts_p[key])
+                embed.add_field(name=f"{self.gifts_e[key]} {key.title()}", value=self.gifts_p[key])
 
             return embed
 
@@ -177,7 +177,7 @@ class Waifu():
             self.bot.user_data[member.id]["waifu"][ctx.guild.id]["gifts"][choice] = 1
             await self.bot.query_executer("INSERT INTO necrobot.Gifts VALUES ($1, $2, $3, 1);", member.id, ctx.guild.id, choice)
 
-        embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="{} gifted **{}** {} to {}".format(ctx.author.display_name, choice, emoji, member.display_name))
+        embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description=f"{ctx.author.display_name} gifted **{choice}** {emoji} to {member.display_name}")
 
         await ctx.send(embed=embed)
 
@@ -203,7 +203,7 @@ class Waifu():
         else:
             self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["affinity"] = member.id
             affinity_id = member.id
-            await ctx.send(":white_check_mark: | Your affinity has been set to {}".format(member.display_name))
+            await ctx.send(f":white_check_mark: | Your affinity has been set to {member.display_name}")
 
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["heart-changes"] += 1
 
@@ -258,9 +258,9 @@ class Waifu():
             self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"] = price
             await self.query_executer("UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3;", self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"])
 
-            await ctx.send(":white_check_mark: | You've claimed **{}** as your waifu".format(member.display_name))
+            await ctx.send(f":white_check_mark: | You've claimed **{member.display_name}** as your waifu")
         elif price <= value:
-            await ctx.send(":negative_squared_cross_mark: | You must pay more than {} :cherry_blossom: to claim this waifu".format(value))
+            await ctx.send(f":negative_squared_cross_mark: | You must pay more than {value} :cherry_blossom: to claim this waifu")
         else:
             await ctx.send(":negative_squared_cross_mark: | You don't have enough :cherry_blossom:")
 
@@ -289,7 +289,7 @@ class Waifu():
         await self.bot.query_executer("UPDATE necrobot.Waifu SET claimer_id = 0 WHERE user_id = $1 AND guild_id = $2;", member.id, ctx.guild.id)
 
         if money_back:
-            embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="You have divorced a waifu who doesn't like you. You received {} :cherry_blossom: back.".format(money_back))
+            embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description=f"You have divorced a waifu who doesn't like you. You received {money_back} :cherry_blossom: back.")
         else:
             embed = discord.Embed(color=discord.Colour(0x277b0), title=" ", description="You have divorced a waifu")
 
@@ -338,7 +338,7 @@ class Waifu():
             return
 
         if self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] < round(self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"] * 0.10):
-            await ctx.send(":negative_squared_cross_mark: | You must have at least {} :cherry_blossom: to transfer this waifu".format(round(self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"] * 0.10)))
+            await ctx.send(f":negative_squared_cross_mark: | You must have at least {round(self.bot.user_data[waifu.id]['waifu'][ctx.guild.id]['waifu-value'] * 0.10)} :cherry_blossom: to transfer this waifu")
             return
 
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["waifus"].remove(waifu.id)
@@ -349,7 +349,7 @@ class Waifu():
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] -= round(self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"] * 0.10)
         await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"], ctx.author.id, ctx.guild.id)
 
-        embed = discord.Embed(color=discord.Colour(0x277b0),title=" ", description="You have transfered waifu **{}** to **{}**".format(waifu.name, member.name))
+        embed = discord.Embed(color=discord.Colour(0x277b0),title=" ", description=f"You have transfered waifu **{waifu.name}** to **{member.name}**")
         await ctx.send(embed=embed)
 
     @transfer.command(name="admin")
@@ -371,7 +371,7 @@ class Waifu():
         self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-claimer"] = member.id
         await self.bot.query_executer("UPDATE necrobot.Waifu SET claimer_id = $1 WHERE user_id = $2 AND guild_id = $3;", member.id, waifu.id, ctx.guild.id)
 
-        embed = discord.Embed(color=discord.Colour(0x277b0),title=" ", description="**ADMIN**: You have transfered waifu **{}** to **{}**".format(waifu.name, member.name))
+        embed = discord.Embed(color=discord.Colour(0x277b0),title=" ", description=f"**ADMIN**: You have transfered waifu **{waifu.name}** to **{member.name}**")
         await ctx.send(embed=embed)
 
 
@@ -386,9 +386,9 @@ class Waifu():
         `{pre}award 1000 @APerson` - awards 1000 :cherry_blossom: to user APerson"""
         self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"] += amount
         if reason != "": 
-            await ctx.send(":white_check_mark: | Awarded **{}** :cherry_blossom: to **{}** for **{}**".format(amount, member.name), reason)
+            await ctx.send(f":white_check_mark: | Awarded **{amount}** :cherry_blossom: to **{member.name}** for **{reason}**")
         else:
-            await ctx.send(":white_check_mark:  | Awarded **{}** :cherry_blossom: to **{}**".format(amount, member.name))
+            await ctx.send(f":white_check_mark:  | Awarded **{amount}** :cherry_blossom: to **{member.name}**")
 
         await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"], member.id, ctx.guild.id)
 
@@ -403,9 +403,9 @@ class Waifu():
         `{pre}take 1000 @APerson` - takes 1000 :cherry_blossom: from user APerson"""
         self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"] -= amount
         if reason != "": 
-            await ctx.send(":white_check_mark: | Took **{}** :cherry_blossom: from **{}** for **{}**".format(amount, member.name), reason)
+            await ctx.send(f":white_check_mark: | Took **{amount}** :cherry_blossom: from **{member.name}** for **{reason}**")
         else:
-            await ctx.send(":white_check_mark:  | Took **{}** :cherry_blossom: from **{}**".format(amount, member.name))
+            await ctx.send(f":white_check_mark:  | Took **{amount}** :cherry_blossom: from **{member.name}**")
 
         await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"], member.id, ctx.guild.id)
 
@@ -418,7 +418,7 @@ class Waifu():
 
         __Examples__
         `{pre}flowerevent 1500` - creates a 24hr event that awards 1500 on reaction."""
-        embed = discord.Embed(color=discord.Colour(0x277b0), title="Flower Event", description="React with :cherry_blossom: to gain **{}** :cherry_blossom: This event will last 24hr".format(amount))
+        embed = discord.Embed(color=discord.Colour(0x277b0), title="Flower Event", description=f"React with :cherry_blossom: to gain **{amount}** :cherry_blossom: This event will last 24hr")
         msg = await ctx.send(embed=embed, delete_after=86400)
         await msg.add_reaction("\N{CHERRY BLOSSOM}")
         self.bot.events[msg.id] = {"users":[], "amount":amount}
@@ -441,7 +441,7 @@ class Waifu():
         await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"], ctx.author.id, ctx.guild.id)
         self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"] += amount
         await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"], member.id, ctx.guild.id)
-        await ctx.send(":white_check_mark: | **{}** has gifted **{}** :cherry_blossom: to **{}**".format(ctx.author.name, amount, member.name))
+        await ctx.send(f":white_check_mark: | **{ctx.author.name}** has gifted **{amount}** :cherry_blossom: to **{member.name}**")
 
     @commands.command(name="reset")
     @has_perms(4)
@@ -456,7 +456,7 @@ class Waifu():
 
         self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"] = amount
         await self.query_executer("UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3;", self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"])
-        await ctx.send(":white_check_mark: | Value of waifu {} reset to {}".format(waifu.name, amount))
+        await ctx.send(f":white_check_mark: | Value of waifu {waifu.name} reset to {amount}")
 
 
 def setup(bot):
