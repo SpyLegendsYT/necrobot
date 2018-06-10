@@ -133,7 +133,7 @@ class Utilities():
             user = ctx.author
 
         avatar = user.avatar_url_as(format="png")
-        await ctx.send(embed=discord.Embed().set_image(avatar))
+        await ctx.send(embed=discord.Embed().set_image(url=avatar))
 
     @commands.command()
     async def today(self, ctx, choice : str = None, date : str = None):
