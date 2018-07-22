@@ -232,7 +232,7 @@ class Server():
             await ctx.send(":white_check_mark: | Welcome message reset and disabled")
         else:
             message = message.replace("\\","")
-            await ctx.send(":white_check_mark: | Your server's welcome message will be: \n" + message)
+            await ctx.send(":white_check_mark: | Your server's welcome message will be: \n" + message.format(member=ctx.author))
 
     @commands.group(invoke_without_command=True)
     @has_perms(4)
@@ -254,7 +254,7 @@ class Server():
             await ctx.send(":white_check_mark: | Goodbye message reset and disabled")
         else:
             message = message.replace("\\","")
-            await ctx.send(":white_check_mark: | Your server's goodbye message will be: \n" + message)
+            await ctx.send(":white_check_mark: | Your server's goodbye message will be: \n" + message.format(member=ctx.author))
 
     async def channel_set(self, ctx, channel):
         if channel == "":
@@ -421,6 +421,7 @@ class Server():
 
     @commands.group(invoke_without_command = True)
     @commands.guild_only()
+    @commands.bot_has_permissions(manage_roles=True)
     async def giveme(self, ctx, *, role : discord.Role = ""):
         """Gives the user the role if it is part of this Server's list of self assignable roles. If the user already 
         has the role it will remove it. **Roles names are case sensitive** If no role name is given then it will list

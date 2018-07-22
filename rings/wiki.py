@@ -24,7 +24,7 @@ class Wiki():
         __Example__
         `{pre}edain Castellans` - print a rich embed of the Castellans page
         `{pre}edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
-        msg = ""
+        msg = None
         try:
             article = wikia.page("edain", article)
         except wikia.wikia.WikiaError:
@@ -122,10 +122,11 @@ class Wiki():
          rich embed of the first one."""
         msg = ""
         if wiki.lower() == "edain":
-            await ctx.send(":negative_squared_cross_mark: | No. Use `n!edain`")
+            await ctx.send(":negative_squared_cross_mark: | No. Use the `edain` command")
             return
         elif wiki.lower() == "lotr":
-            await ctx.send(":negative_squared_cross_mark: | No. Use `n!lotr`")
+            await ctx.send(":negative_squared_cross_mark: | No. Use the `lotr` command")
+            return
             
         try:
             article = wikia.page(wiki, article_name)

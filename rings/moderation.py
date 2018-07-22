@@ -14,6 +14,7 @@ class Moderation():
 
     @commands.command(aliases=["rename","name"])
     @has_perms(1)
+    @commands.bot_has_permissions(manage_nicknames=True)
     async def nick(self, ctx, user : discord.Member, *, nickname=None):
         """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return 
         an error message if the user cannot be renamed due to permission issues. (Permission level required: 1+ (Helper))
@@ -24,7 +25,7 @@ class Moderation():
         `{pre}nick @NecroBot Lord of All Bots` - renames NecroBot to 'Lord of All Bots'
         `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
         if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > self.bot.user_data[user.id]["perms"][ctx.message.guild.id]:
-            if nickname is None:
+            if not nickname:
                 msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
             else:
                 msg = f":white_check_mark: | User **{user.display_name}** renamed to **{nickname}**"
@@ -36,6 +37,7 @@ class Moderation():
 
     @commands.group(invoke_without_command = True)
     @has_perms(2)
+    @commands.bot_has_permissions(manage_roles=True)
     async def mute(self, ctx, user : discord.Member, *, time : str = None):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
         mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely 
@@ -63,7 +65,7 @@ class Moderation():
             return
 
         if time:
-            time = self.bot.convert(time)
+            time = self.bot.converter(time)
             await asyncio.sleep(time)
             if role in user.roles:
                 await user.remove_roles(role)
@@ -97,6 +99,7 @@ class Moderation():
 
     @commands.command()
     @has_perms(2)
+    @commands.bot_has_permissions(manage_roles=True)
     async def unmute(self, ctx, user : discord.Member):
         """Unmutes a user by removing the mute role, allowing them once again to write in text channels. 
         (Permission level required: 2+ (Moderator))
@@ -130,7 +133,7 @@ class Moderation():
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
         await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.message.created_at))
         try:
-            await user.send("You have been warned on " + ctx.message.guild.name + ", the warning is: \n" + message)
+            await user.send(f"You have been warned on {ctx.message.guild.name}, the warning is: \n {message}")
         except discord.Forbidden:
             pass
 
@@ -155,6 +158,7 @@ class Moderation():
 
     @commands.command()
     @has_perms(4)
+    @commands.bot_has_permissions(manage_messages=True)
     async def purge(self, ctx, number : int = 1, check="", extra=""):
         """Removes number of messages from the channel it is called in. That's all it does at the moment 
         but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ 
@@ -190,7 +194,8 @@ class Moderation():
     @commands.command()
     @has_perms(3)
     async def speak(self, ctx, channel : discord.TextChannel, *, message : str):
-        """Send the given message to the channel mentioned by mention. (Permission level required: 3+ (Semi-Admin))
+        """Send the given message to the channel mentioned by mention or name. Cannot send to other servers. 
+        (Permission level required: 3+ (Semi-Admin))
         
         {usage}
         
@@ -200,36 +205,60 @@ class Moderation():
         
     @commands.command()
     @has_perms(4)
-    async def disable(self, ctx, command):
-        """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ prefix. To re-enable a command or cog
-        call disable on it again.
+    async def disable(self, ctx, command=None):
+        """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ 
+        prefix. To re-enable a command or cog call disable on it again. Disabling cogs works as a sort of "select all" button
+        which means that all commands will be disabled and individual commands can then be enabled separatly for
+        fine tuning. To disable a cog at least one command in that cog must be enabled, else it will enable them all. To enable
+        a cog all commands must be disabled, else it will disable them all.
 
         {usage}
 
         __Examples__
+        `{pre}disable` - print the list of disabled cogs and commands
         `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
         `{pre}disable cat` - reenables the cat command.
         `{pre}disable Animals` - disable the Animals cog"""
-        disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
-        if command not in self.bot.cogs:
-            command_obj = self.bot.get_command(command)
-
-            if command_obj is None:
-                await ctx.send(":negative_squared_cross_mark: | No such command/cog.", delete_after=5)
-                return
+        if not command:
+            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
+            return
 
         if command in self.obligatory:
             await ctx.send(":negative_squared_cross_mark: | You cannot disable this command/cog", delete_after=5)
             return
 
-        if command not in disabled:
-            disabled.append(command)
-            await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
-            await ctx.send(f":white_check_mark: | Command/cog **{command}** will now be ignored")
+        disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
+        if command not in self.bot.cogs:
+            command_obj = self.bot.get_command(command)
+
+            if not command_obj:
+                await ctx.send(":negative_squared_cross_mark: | No such command/cog.", delete_after=5)
+                return
+
+            if command in disabled:
+                disabled.remove(command)
+                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
+                await ctx.send(f":white_check_mark: | Command **{command}** is now enabled")
+            else:
+                disabled.append(command)
+                await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
+                await ctx.send(f":white_check_mark: | Command **{command}** is now disabled")
+
         else:
-            disabled.remove(command)
-            await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
-            await ctx.send(f":white_check_mark: | Command/cog **{command}** will no longer be ignored")
+            all_commands = [x.name for x in bot.commands if x.cog_name == command]
+            if all(x in disabled for x in all_commands):
+                for _command in all_commands:
+                    disabled.remove(_command)
+                    await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, _command)
+                await ctx.send(f":white_check_mark: | Cog **{command}** is now enabled")
+
+            else:
+                for _command in all_commands:
+                    if _command in disabled:
+                        pass
+                    disabled.append(_command)
+                    await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, _command)
+                await ctx.send(f":white_check_mark: | Cog **{command}** is no disabled")            
 
     @commands.command()
     @has_perms(3)
@@ -251,9 +280,6 @@ class Moderation():
             await self.bot._star_message(message)
         else:
             def check(reaction, user):
-                print(user == ctx.message.author)
-                print(str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}")
-
                 return user == ctx.message.author and str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
             msg = await ctx.send("React to the message you wish to star with :white_check_mark:")

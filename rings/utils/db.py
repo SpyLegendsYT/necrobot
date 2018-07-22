@@ -23,7 +23,7 @@ def db_gen():
                         "starboard-channel":g[10] if g[10] != 0 else "",
                         "starboard-limit":g[11],
                         "auto-role":g[12] if g[12] != 0 else "",
-                        "auto-role-timer":g[13],
+                        "auto-role-timer":g[13] if g[13] != None else 0,
                         "self-roles":[],
                         "ignore-command":[],
                         "ignore-automod":[],
@@ -101,5 +101,8 @@ def db_gen():
     for u in cur.fetchall():
         user_data[u[0]]["waifu"][u[1]]["gifts"][u[2]] = u[3]
 
+    cur.execute("SELECT * FROM necrobot.Starred;")
+    starred = [x[0] for x in cur.fetchall()]
 
-    return user_data, server_data
+
+    return user_data, server_data, starred

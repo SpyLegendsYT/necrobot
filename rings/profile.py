@@ -50,9 +50,9 @@ class Profile():
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
         if user is not None:
-            await ctx.send(":atm: | **"+ str(user.name) +"** has **{:,}** :euro:".format(self.bot.user_data[user.id]["money"]))
+            await ctx.send(f":atm: | **{user.name}** has **{'{:,}'.format(self.bot.user_data[user.id]['money'])}** :euro:")
         else:
-            await ctx.send(":atm: | **"+ str(ctx.author.name) +"** you have **{:,}** :euro:".format(self.bot.user_data[ctx.author.id]["money"]))
+            await ctx.send(f":atm: | **{ctx.author.name}** you have **{'{:,}'.format(self.bot.user_data[ctx.author.id]['money'])}** :euro:")
 
     @commands.command(name="daily")
     async def claim(self, ctx):
@@ -212,7 +212,7 @@ class Profile():
     @commands.group(invoke_without_command=True, aliases=["badge"])
     async def badges(self, ctx):
         """The badge system allows you to buy badges and place them on profiles. Show the world what your favorite
-        games/movies/books/things are.
+        games/movies/books/things are. You can see all the badges here: <https://github.com/ClementJ18/necrobot#badges>
 
         {usage}
 

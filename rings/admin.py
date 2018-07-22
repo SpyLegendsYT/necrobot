@@ -6,6 +6,7 @@ import inspect
 from rings.utils.utils import has_perms
 import datetime
 import re
+import json
 
 class GuildUserConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
@@ -138,9 +139,9 @@ class Admin():
             return m.author == user and m.channel == user
 
         msg = await self.bot.wait_for("message", check=check)
-        await to_edit.edit(content=f":speech_left: | **User: {msg.author}** said :**{msg.content}**")
+        await to_edit.edit(content=f":speech_left: | **User: {msg.author}** said :**{msg.content[1950:]}**")
         
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def get(self, ctx, id : int):
         """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature. 
@@ -167,21 +168,21 @@ class Admin():
 
         channel = self.bot.get_channel(id)
         if channel:
-            await msg.edit(content=f"Channel: **{channel.name}** on **{channel.guild.name}**")
+            await msg.edit(content=f"Channel: **{channel.name}** on **{channel.guild.name}**({channel.guild.id})")
             return
 
         await msg.edit(content="Channel with that ID not found")
 
         role = discord.utils.get([x for x in y.roles for y in self.bot.guilds], id=id)
         if role:
-            await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}**")
+            await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}**({role.guild.id})")
 
         await msg.edit(content="Role with that ID not found")
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def invites(self, ctx, *, guild : discord.Guild = None):
-        """Returns invites (if the bot has valid permissions) for each server the bot is on if no guild is specified. 
+    async def invites(self, ctx, *, guild : int = None):
+        """Returns invites (if the bot has valid permissions) for each server the bot is on if no guild id is specified. 
         (Permission level required: 7+ (The Bot Smith))
         
         {usage}"""
@@ -189,11 +190,11 @@ class Admin():
             try:
                 channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).create_instant_invite][0]
                 invite = await channel.create_invite(max_age=86400)
-                await ctx.send("Server: " + guild.name + "(" + str(guild.id) + ") - <" + invite.url + ">")
+                await ctx.send(f"Server: {guild.name}({guild.id}) - <{invite.url}>")
             except discord.errors.Forbidden:
-                await ctx.send("I don't have the necessary permissions on " + guild.name + "(" + str(guild.id) + "). That server is owned by " + guild.owner.name + "#" + str(guild.owner.discriminator) + " (" + str(guild.id) + ")")
+                await ctx.send(f"I don't have the necessary permissions on {guild.name}({guild.id}). That server is owned by {guild.owner}({guild.id})")
             except IndexError:
-                await ctx.send("No text channels in " + guild.name + "(" + str(guild.id) + ")")
+                await ctx.send(f"No text channels in {guild.name}({guild.id})")
 
         if guild:
             await get_invite(guild)
@@ -201,7 +202,7 @@ class Admin():
             for guild in self.bot.guilds:
                 await get_invite(guild)
             
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def debug(self, ctx, *, code : str):
         """Evaluates code. All credits to Danny for creating a safe eval command (Permission level required: 7+ (The Bot Smith)) 
@@ -236,10 +237,12 @@ class Admin():
             await ctx.send(python.format(type(e).__name__ + f': {e}'))
             return
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def edit(self, ctx, *, code : str):
-        """{usage}"""
+        """Edits the cached user data
+
+        {usage}"""
         code = code.strip('` ')
         python = '```py\n{}\n```'
         result = None
@@ -264,12 +267,14 @@ class Admin():
             await ctx.send(python.format(type(e).__name__ + f': {e}'))
             return
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def sql(self, ctx,*, query : str):
-        """{usage}"""
+        """Edits the user data in the database
+
+        {usage}"""
         try:
-            self.bot.query_executer(query)
+            await self.bot.query_executer(query)
             await ctx.send(":thumbsup:")
         except Exception as e:
             await ctx.send(python.format(type(e).__name__ + f': {e}'))
@@ -390,6 +395,8 @@ class Admin():
             
             channel = self.bot.get_channel(318465643420712962)
             await channel.send("**Bot Offline**")
+            self.bot.broadcast_task.cancel()
+            self.bot.status_task.cancel()
             await self.bot.session.close()
             await self.bot.logout()
 

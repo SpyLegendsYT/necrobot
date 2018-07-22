@@ -7,7 +7,11 @@ from rings.utils.utils import has_perms, react_menu
 class Waifu():
     """This is based off the Nadeko bot's waifu module. The reason I copied it was to be able to run it on the same
     system as this bot and to be able to modify and customize. For the newcomers, the waifu system is kind of like a
-    wedding system, where users can \"marry \" each other. Just don't take it too seriously and have fun """
+    wedding system, where users can \"marry \" each other. Just don't take it too seriously and have fun 
+
+    Since the authorities of the server have complete control of the waifu currency, it is possible to disable most of
+    the waifu commands and just retain a few in order to use the currency as an in-server currency that can be used to
+    purchase stuff like fancy roles or special nicknames."""
     def __init__(self, bot):
         self.bot = bot
         self.gifts_e = {"cookie" : ":cookie:", "lollipop":":lollipop:", "rose": ":rose:", "beer":":beer:", "loveletter":":love_letter:", "milk":":milk:", "pizza":":pizza:", "icecream":":icecream:", "chocolate":":chocolate_bar:", "sushi":":sushi:", "rice":":rice:", "movieticket":":tickets:", "book":":notebook_with_decorative_cover:", "dog":":dog:", "cat":":cat:", "lipstick":":lipstick:", "purse":":purse:", "phone":":iphone:", "laptop":":computer:", "violin":":violin:", "piano":":musical_keyboard:", "car":":red_car:", "ring":":ring:", "yacht":":cruise_ship:", "house":":house:", "helicopter":":helicopter:", "spaceship":":rocket:"}

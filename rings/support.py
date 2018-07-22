@@ -15,7 +15,7 @@ class Support():
         self.base_d = {"author": {"name": "Necrobot's Anchorman", "url": "https://discord.gg/Ape8bZt", "icon_url": "https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128"}, "color": 161712, "type": "rich"}
 
         
-    @commands.command()
+    @commands.command(aliases=["support"])
     async def about(self, ctx):
         """Creates a rich embed of the bot's details Also contains link for inviting and support server.
 
@@ -28,7 +28,7 @@ class Support():
         embed.add_field(name="About", value=f"I'm currently in {len(list(self.bot.guilds))} guilds and I can see {len(list(self.bot.users))} members. I was created using Python and the d.py library. ")
         uptime = str(timedelta(seconds=time.time() - self.bot.uptime_start)).partition(".")[0].replace(":", "{}")
         embed.add_field(name="Uptime", value=uptime.format("hours, ", "minutes and ") + "seconds")
-        embed.add_field(name="Links", value=f"[Invite bot to your server]({discord.utils.oauth_url(self.bot.user.id, discord.Permissions(permissions=134737095))}) - [Get help with the bot](https://discord.gg/Ape8bZt)", inline=False)
+        embed.add_field(name="Links", value=f"[Invite bot to your server]({discord.utils.oauth_url(self.bot.user.id, discord.Permissions(permissions=403172599))}) - [Get help with the bot](https://discord.gg/Ape8bZt)", inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()

@@ -14,46 +14,6 @@ from PyDictionary import PyDictionary
 from bs4 import BeautifulSoup
 from rings.utils.utils import has_perms, react_menu
 
-class NecroBotPyDict(PyDictionary):
-    def __init__(self, *args):
-        try:
-            if isinstance(args[0], list):
-                self.args = args[0]
-            else:
-                self.args = args
-        except:
-            self.args = args
-
-    @staticmethod
-    async def meaning(term):
-        if len(term.split()) > 1:
-            return None
-        else:
-            try:
-                async with self.bot.session.get(f"http://wordnetweb.princeton.edu/perl/webwn?s={term}") as resp:
-                    html = BeautifulSoup(await resp.text(), "html.parser")
-                types = html.findAll("h3")
-                length = len(types)
-                lists = html.findAll("ul")
-                out = {}
-                for a in types:
-                    reg = str(lists[types.index(a)])
-                    meanings = []
-                    for x in re.findall(r'\((.*?)\)', reg):
-                        if 'often followed by' in x:
-                            pass
-                        elif len(x) > 5 or ' ' in str(x):
-                            meanings.append(x)
-                    name = a.text
-                    out[name] = meanings
-                return out
-            except Exception as e:
-                return None
-
-dictionary = NecroBotPyDict() 
-translator = googletrans.Translator()
-
-
 class Utilities():
     """A bunch of useful commands to do various tasks."""
     def __init__(self, bot):
@@ -193,69 +153,6 @@ class Utilities():
         random.shuffle(res["data"][choice])
         await react_menu(self.bot, ctx, len(res["data"][choice])//5, _embed_generator)
 
-    @commands.command(name="ud", aliases=["urbandictionary"])
-    async def udict(self, ctx, *, word : str):
-        """Searches for the given word on urban dictionnary
-
-        {usage}
-
-        __Example__
-        `{pre}ud pimp` - searches for pimp on Urban dictionnary"""
-        try:
-            defs = ud.define(word)
-            definition = defs[0]
-        except IndexError:
-            await ctx.send(":negative_squared_cross_mark: | Sorry, I didn't find a definition for this word.")
-            return
-
-        embed = discord.Embed(title=word.title(), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition.definition)
-        embed.add_field(name="__Examples__", value=definition.example)
-
-        await ctx.send(embed=embed)
-
-    @commands.group(invoke_without_command=True)
-    async def translate(self, ctx, lang : str, *, sentence : str):
-        """Auto detects the language of the sentence you input and translates it to the desired language.
-
-        {usage}
-
-        __Example__
-        `{pre}translate en Bonjour` - detects french and translates to english
-        `{pre}translate ne Hello` - detects english and translates to dutch"""
-        try:
-            translated = translator.translate(sentence, dest=lang)
-            await ctx.send(f"Translated `{translated.origin}` from {translated.src} to {translated.dest}: **{translated.text}**")
-        except ValueError:
-            await ctx.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")
-    
-    @translate.command(name="list")
-    async def translate_list(self, ctx):
-        """Use to display all possible languages to translate from
-
-        {usage}"""
-        text = ", ".join([f"**{googletrans.LANGUAGES[lang]}**: {lang}" for lang in googletrans.LANGUAGES])
-        await ctx.send(text[:-2])
-
-    @commands.command()
-    async def define(self, ctx, word : str):
-        """Defines the given word
-
-        {usage}
-
-        __Example__
-        `{pre}define sand` - defines the word sand
-        `{pre}define life` - defines the word life"""
-        meaning = await dictionary.meaning(word)
-        if meaning is None:
-            await ctx.send(":negative_squared_cross_mark: | **No definition found for this word**")
-            return
-
-        embed = discord.Embed(title=word.title(), url="https://en.oxforddictionaries.com/", colour=discord.Colour(0x277b0), description="Information on this word")
-        for x in meaning:
-            embed.add_field(name=x, value="-" + "\n-".join(meaning[x]))
-
-        await ctx.send(embed=embed)
-
     @commands.command(enabled=False)
     async def reminder(self, ctx, *, message):
         """Creates a reminder in seconds. Doesn't work at the moment.
@@ -368,27 +265,24 @@ class Utilities():
         `{pre}convert 5 km in`  - convert 5 kilometers to inches"""
         def m_to_i(measure, symbol, conversion):
             index = m_values.index(symbol)
-            for value in range(0, index+1):
-                measure = measure * 10
+            measure *= (100**(index)) #convert to milimiters
+            measure /= 25.4 #convert to inches
 
-            measure = measure / 25.4
-
+            #convert to requested imperial
             index = i_values.index(conversion)
             for value in i_conver[index:]:
-                measure = measure / value
+                measure /= value
 
             return measure
 
         def i_to_m(measure, symbol, conversion):
             index = i_values.index(symbol)
             for value in i_conver[index:]:
-                measure = measure * value
+                measure *= value
 
-            measure = measure * 25.4
-
+            measure *= 25.4 # converter to milimiters
             index = m_values.index(conversion)
-            for value in range(0, index+1):
-                measure = measure / 10
+            measure /= (100**(index))#convert to requested metric
 
             return measure
 
@@ -400,25 +294,23 @@ class Utilities():
                 return (f - 32) * 5/9
 
         def mass_i_to_m(measure, symbol, conversion):
+            #convert to oz
             index = mass_i_values.index(symbol)
             for value in mass_i_conver[index:]:
                 measure = measure * value
 
-            measure = measure * 28349.5
-
+            measure = measure * 28349.5 #convert to miligrams
             index = mass_m_values.index(conversion)
-            for value in range(0, index):
-                measure = measure / 10
+            measure /= (100**(index+1)) #convert to requested imperial
 
             return measure
 
         def mass_m_to_i(measure, symbol, conversion):
             index = mass_m_values.index(symbol)
-            for value in range(0, index):
-                measure = measure * 10
+            measure *= (100**(index+1)) # convert to miligrams
+            measure = measure / 28349.5 #convert to oz
 
-            measure = measure / 28349.5
-
+            #convert to requested imperial
             index = mass_i_values.index(conversion)
             for value in mass_i_conver[index:]:
                 measure = measure / value
