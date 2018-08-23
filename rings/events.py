@@ -10,6 +10,8 @@ import sys
 from bs4 import BeautifulSoup
 import aiohttp
 from PIL import Image
+import asyncpg
+from rings.utils.config import *
 
 class NecroEvents():
     def __init__(self, bot):
@@ -19,8 +21,6 @@ class NecroEvents():
         self.bot._bmp_converter = self._bmp_converter
         self.bot._star_message = self._star_message
         self.bot.converter = self.converter
-        self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
-        self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
         self.bot.query_executer = self.query_executer
         self.bot.default_stats = self.default_stats
         self.bot.load_cache = self.load_cache
@@ -154,6 +154,9 @@ class NecroEvents():
             self.bot.dispatch("error", e)
 
     async def load_cache(self):
+        self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
+        self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
+        
         self.bot.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         channel = self.bot.get_channel(318465643420712962)
         msg = await channel.send("**Initiating Bot**")
@@ -385,33 +388,39 @@ class NecroEvents():
         else:
             await channel.send(message.format(member=member))
 
-    async def on_reaction_add(self, reaction, user):
-        if user.id in self.bot.settings["blacklist"]:
+    async def on_raw_reaction_add(self, payload):
+        if payload.user_id in self.bot.settings["blacklist"]:
             return
-            
-        if isinstance(user, discord.User) and reaction.emoji == "\N{WASTEBASKET}" and reaction.message.author == self.bot.user:
-            await reaction.message.delete()
-            return            
 
-        if reaction.emoji == "\N{CHERRY BLOSSOM}" and reaction.message.id in self.bot.events:
-            if user.id in self.bot.events[reaction.message.id]["users"]:
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.get_message(payload.message_id)
+
+        if payload.guild_id:
+            #waifu events
+            if payload.emoji.name == "\N{CHERRY BLOSSOM}" and message.id in self.bot.events:
+                if payload.user_id in self.bot.events[payload.message_id]["users"]:
+                    return
+
+                self.bot.events[payload.message_id]["users"].append(payload.user_id)
+                self.bot.user_data[payload.user_id]["waifu"][payload.guild_id]["flowers"] += self.bot.events[payload.message_id]["amount"]
+
+            if self.bot.server_data[payload.guild_id]["starboard-channel"] == "":
                 return
 
-            self.bot.events[reaction.message.id]["users"].append(user.id)
-            self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
+            if payload.channel_id == self.bot.server_data[payload.guild_id]["starboard-channel"]:
+                return
 
+            reaction = discord.utils.get(message.reactions, emoji="\N{WHITE MEDIUM STAR}")
+            if message.id in self.bot.starred or not reaction:
+                return
 
-        if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
-            return
+            if payload.emoji.name == "\N{WHITE MEDIUM STAR}" and reaction.count >= self.bot.server_data[payload.guild_id]["starboard-limit"]:
+                await self.bot._star_message(message)
 
-        if reaction.message.channel.id == self.bot.server_data[user.guild.id]["starboard-channel"]:
-            return
-
-        if reaction.message.id in self.bot.starred:
-            return
-
-        if reaction.emoji == "\N{WHITE MEDIUM STAR}" and reaction.count >= self.bot.server_data[user.guild.id]["starboard-limit"]:
-            await self.bot._star_message(reaction.message)
+        else:
+            #self message cleanup
+            if message.author == self.bot.user and payload.emoji.name == "\N{WASTEBASKET}":
+                await message.delete()            
 
 def setup(bot):
     bot.add_cog(NecroEvents(bot))
