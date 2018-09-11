@@ -8,3 +8,4 @@ user_insert.sql
 self_roles.json
 rings/utils/tamagochi.py
 api.py
+rings/bfme.py

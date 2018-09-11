@@ -256,8 +256,7 @@ class Profile():
             reply = await self.bot.wait_for("message", check=check, timeout=300)
         except asyncio.TimeoutError as e:
             await msg.delete()
-            e.timer = 300
-            return bot.dispatch("command_error", ctx, e)
+            return
 
         if reply.content == "exit":
             await msg.delete()
@@ -303,10 +302,9 @@ class Profile():
             return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
         
         try:
-            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=10)
+            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
         except asyncio.TimeoutError as e:
             await msg.delete()
-            self.bot.dispatch("command_error", ctx, e)
             return
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":

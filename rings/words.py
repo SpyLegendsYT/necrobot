@@ -28,15 +28,18 @@ class Literature():
 
         __Example__
         `{pre}ud pimp` - searches for pimp on Urban dictionnary"""
+        async with self.bot.session.get(f"http://api.urbandictionary.com/v0/define?term={word.lower()}") as r:
+            definitions = await r.json()            
+
+
         try:
-            defs = ud.define(word)
-            definition = defs[0]
+            definition = random.choice(definitions["list"])
         except IndexError:
             await ctx.send(":negative_squared_cross_mark: | Sorry, I didn't find a definition for this word.")
             return
 
-        embed = discord.Embed(title=word.title(), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition.definition)
-        embed.add_field(name="__Examples__", value=definition.example)
+        embed = discord.Embed(title=word.title(), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition["definition"][:2048].replace("[", "").replace("]", ""))
+        embed.add_field(name="__Examples__", value=definition["example"][:2048].replace("[", "").replace("]", ""))
 
         await ctx.send(embed=embed)
 
@@ -101,6 +104,24 @@ class Literature():
             return embed
 
         await react_menu(self.bot, ctx, len(definition["results"][0]["lexicalEntries"][0]["entries"])-1, _embed_maker)
+
+    @commands.command()
+    async def shuffle(self, ctx, *sentence):
+        """Shuffles every word in a sentence
+
+        {usage}
+
+        __Examples__
+        """
+        new_sentence = []
+        for word in sentence:
+            new_word = list(word)
+            random.shuffle(new_word)
+            new_sentence.append("".join(new_word))
+
+
+        await ctx.send(" ".join(new_sentence))
+
 
 def setup(bot):
     bot.add_cog(Literature(bot))

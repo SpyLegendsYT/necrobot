@@ -24,6 +24,8 @@ class NecroEvents():
         self.bot.query_executer = self.query_executer
         self.bot.default_stats = self.default_stats
         self.bot.load_cache = self.load_cache
+        self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
+        self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
 
     def _new_server(self):
         return {"mute":"","automod":"","welcome-channel":"", "self-roles":[],"ignore-command":[],"ignore-automod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "auto-role-timer": 0, "starboard-channel":"", "starboard-limit":5} 
@@ -149,14 +151,11 @@ class NecroEvents():
                 status = self.bot.statuses[0]
                 self.bot.statuses.remove(status)
                 self.bot.statuses.append(status)
-                await self.bot.change_presence(activity=discord.Game(name=status.format(guild=len(self.bot.guilds), members=len(bot.users))))
+                await self.bot.change_presence(activity=discord.Game(name=status.format(guild=len(self.bot.guilds), members=len(self.bot.users))))
         except Exception as e:
             self.bot.dispatch("error", e)
 
-    async def load_cache(self):
-        self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
-        self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
-        
+    async def load_cache(self):        
         self.bot.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         channel = self.bot.get_channel(318465643420712962)
         msg = await channel.send("**Initiating Bot**")
@@ -257,6 +256,9 @@ class NecroEvents():
         elif isinstance(error, commands.BadArgument):
             await channel.send(f":negative_squared_cross_mark: | Following error with passed arguments: **{error}**", delete_after=10)            
         elif isinstance(error, asyncio.TimeoutError):
+            if not hasattr(error, "timer"):
+                return
+
             retry_after = str(timedelta(seconds=error.timer)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
             await channel.send(f":negative_squared_cross_mark: | You took too long to reply, please reply within {retry_after}seconds next time", delete_after=10)
         elif isinstance(error, commands.CommandInvokeError):
@@ -393,7 +395,17 @@ class NecroEvents():
             return
 
         channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.get_message(payload.message_id)
+        if not isinstance(channel, discord.TextChannel):
+            return
+
+        user = self.bot.get_user(payload.user_id)
+        if user is None or user.bot:
+            return
+            
+        try:
+            message = await channel.get_message(payload.message_id)
+        except:
+            return
 
         if payload.guild_id:
             #waifu events

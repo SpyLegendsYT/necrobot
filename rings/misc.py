@@ -8,6 +8,9 @@ import random
 import asyncio
 import json
 
+def tag_converter():
+    pass
+
 class Misc():
     """A cog for all bunch commands that don't have a specific category they can stick to."""
     def __init__(self, bot):

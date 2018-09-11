@@ -237,7 +237,7 @@ class Moderation():
 
             if command in disabled:
                 disabled.remove(command)
-                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, command)
+                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = $2)", ctx.guild.id, command)
                 await ctx.send(f":white_check_mark: | Command **{command}** is now enabled")
             else:
                 disabled.append(command)
@@ -249,7 +249,7 @@ class Moderation():
             if all(x in disabled for x in all_commands):
                 for _command in all_commands:
                     disabled.remove(_command)
-                    await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2)", ctx.guild.id, _command)
+                    await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2", ctx.guild.id, _command)
                 await ctx.send(f":white_check_mark: | Cog **{command}** is now enabled")
 
             else:
