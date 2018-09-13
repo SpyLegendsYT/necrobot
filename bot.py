@@ -65,7 +65,7 @@ class NecroBot(commands.Bot):
         self.version = 2.2
         self.prefixes = ["n!", "N!", "n@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["convert", "blacklist", "ttt", "star", "game", "tutorial", "news"]
+        self.new_commands = ["convert", "blacklist", "ttt", "star", "game", "tutorial", "news", "got"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members"]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
