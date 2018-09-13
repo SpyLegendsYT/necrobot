@@ -27,7 +27,7 @@
     {"quote": "The man is as useless as nipples on a breastplate.", "character": "Cersei Lannister"},
     {"quote": "I've seen wet sh*ts I liked better than Walder Frey.", "character": "Brynden Tully"},
     {"quote": "Born amidst salt and smoke... is he a ham?", "character": "Renly Baratheon"},
-    {"quote": "The whores are walking bowlegged.", "character": "Littlefinger"},
+    {"quote": "The whores are walking bowlegged.", "character": "Littlefinger Petyr Baelish"},
     {"quote": "Do you lie awake at night fearing my gash?", "character": "Varys"},
     {"quote": "'It's all fallen on me..', 'As has Jaime repeatedly, according to Stannis Baratheon.'", "character": "Cersei and Tyrion"},
     {"quote": "Grand Maester Pycelle made that same joke. You must be proud to be as funny as a man whose balls brush his knees.", "character": "Tyrion"},
@@ -55,7 +55,18 @@
     {"quote": "That's what I do. I drink and I know things.", "character": "Tyrion"},
     {"quote": "It is rare to meet a Lannister who shares my enthusiasm for dead Lannisters.", "character": "Oberyn Martell"},
     {"quote": "Then everyone is missing half the world's pleasure. The gods made that, and it delights me. The gods made this... and it delights me. When it comes to war I fight for Dorne. When it comes to love, I don't choose sides.", "character": "Oberyn Martell"},
-    {"quote": "Money buys a man's silence for a time. A bolt in the heart buys it forever.", "character": "Littlefinger"},
+    {"quote": "Money buys a man's silence for a time. A bolt in the heart buys it forever.", "character": "Littlefinger Petyr Baelish"},
     {"quote": "A lion doesn't concern himself with the opinions of a sheep", "character": "Tywin Lannister"},
-    {"quote": "You know nothing Jon Snow", "character": "Ygritte"}
+    {"quote": "You know nothing Jon Snow", "character": "Ygritte"},
+    {"quote": "I never asked for this, no more than I asked to be king. Yet dare I disregard her? We do not choose our destinies. Yet we must ... we must do our duty, no? Great or small, we must do our duty.", "character": "Stannis Baratheon"},
+    {"quote": "Demons made of snow and ice and cold. The ancient enemy. The only enemy that matters.", "character": "Stannis Baratheon"},
+    {"quote": "-Hundreds will die!\n-Thousands", "character": "Stannis Baratheon"},
+    {"quote": "Chaos isn't a pit. Chaos is a ladder", "character": "Littlefinger Petyr Baelish"},
+    {"quote": "Sacrifice is never easy Davos. Or it is no true sacrifice", "character": "Stannis Baratheon"},
+    {"quote": "I know the cost! Last night, gazing into that hearth, I saw things in the flames as well. I saw a king, a crown of fire on his brows, burning… burning, Davos. His own crown consumed his flesh and turned him into ash. Do you think I need Melisandre to tell me what that means? Or you?", "character": "Stannis Baratheon"},
+    {"quote": "Lord Seaworth is a man of humble birth, but he reminded me of my duty, when all I could think of was my rights. I had the cart before the horse, Davos said. I was trying to win the throne to save the kingdom, when I should have been trying to save the kingdom to win the throne.", "character": "Stannis Baratheon"},
+    {"quote": "There is no creature on earth half so terrifying as a truly just man.", "character": "Varys"},
+    {"quote": "Always keep your foes confused. If they are never certain who you are or what you want, they cannot know what you are like to do next. Sometimes the best way to baffle them is to make moves that have no purpose, or even seem to work against you. Remember that, Sansa, when you come to play the game.", "character": "Littlefinger Petyr Baelish"},
+    {"quote": "Which is more dangerous, the dagger brandished by an enemy, or the hidden one pressed to your back by someone you never even see?", "character": "Stannis Baratheon"}
+
 ]

@@ -95,9 +95,10 @@ class Literature():
                 message = ""
                 try:
                     for entry_b in entry["entries"][index]["senses"]:
+                        print(0)
                         message += f'{entry["entries"][index]["senses"].index(entry_b) + 1}. {entry_b["definitions"][0]}\n - *{entry_b["examples"][0]["text"]}*\n'
                     embed.add_field(name=form, value=message)
-                except IndexError:
+                except (IndexError, KeyError):
                     pass
 
 

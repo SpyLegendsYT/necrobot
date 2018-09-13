@@ -55,15 +55,28 @@ class Profile():
             await ctx.send(f":atm: | **{ctx.author.name}** you have **{'{:,}'.format(self.bot.user_data[ctx.author.id]['money'])}** :euro:")
 
     @commands.command(name="daily")
-    async def claim(self, ctx):
-        """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day.
+    async def claim(self, ctx, member : discord.Member = None):
+        """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day. Can
+        also be gifted to a user for some extra cash. 
         
-        {usage}"""
+        {usage}
+
+        __Example__
+        `{pre}daily` - claim your daily for 200 Necroins
+        `{pre}daily @NecroBot` - give your daily to Necrobot and they will received 200 + a random bonus
+
+        """
         day = str(d.datetime.today().date())
         if day != self.bot.user_data[ctx.author.id]["daily"]:
-            await ctx.send(":m: | You have received your daily **200** :euro:")
-            self.bot.user_data[ctx.author.id]["money"] += 200
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+            if member:
+                money = random.choice(range(235, 450))
+                await ctx.send(f":m: | {member.mention}, **{ctx.author.display_name}** has given you their daily of **{money}** :euro:")
+                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[member.id]["money"], member.id)
+            else:
+                await ctx.send(":m: | You have received your daily **200** :euro:")
+                self.bot.user_data[ctx.author.id]["money"] += 200
+                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+            
             self.bot.user_data[ctx.author.id]["daily"] = day
             await self.bot.query_executer("UPDATE necrobot.Users SET daily=$1 WHERE user_id = $2;", day, ctx.author.id)
         else:
