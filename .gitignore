@@ -2,10 +2,11 @@ config.py
 archive/
 *.pyc
 *.jpg
-*.json
 guild_insert.sql
 user_insert.sql
 self_roles.json
+settings.json
+hunger_games_events.json
 rings/utils/tamagochi.py
 api.py
 rings/bfme.py
