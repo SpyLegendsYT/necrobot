@@ -29,8 +29,10 @@ class Literature():
         __Example__
         `{pre}ud pimp` - searches for pimp on Urban dictionnary"""
         async with self.bot.session.get(f"http://api.urbandictionary.com/v0/define?term={word.lower()}") as r:
-            definitions = await r.json()            
-
+            try:
+                definitions = await r.json()   
+            except asyncio.TimeoutError:
+                return         
 
         try:
             definition = random.choice(definitions["list"])

@@ -28,7 +28,27 @@ class NecroEvents():
         self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
 
     def _new_server(self):
-        return {"mute":"","automod":"","welcome-channel":"", "self-roles":[],"ignore-command":[],"ignore-automod":[],"welcome":"Welcome {member} to {server}!","goodbye":"Leaving so soon? We\'ll miss you, {member}!","tags":{}, "prefix" : "", "broadcast-channel": "", "broadcast": "", "broadcast-time": 1, "disabled": [], "auto-role": "", "auto-role-timer": 0, "starboard-channel":"", "starboard-limit":5} 
+        return {
+            "mute":"",
+            "automod":"",
+            "welcome-channel":"",
+            "self-roles":[],
+            "ignore-command":[],
+            "ignore-automod":[],
+            "welcome":"Welcome {member} to {server}!",
+            "goodbye":"Leaving so soon? We\'ll miss you, {member}!",
+            "tags":{},
+            "prefix" :"",
+            "broadcast-channel": "",
+            "broadcast": "",
+            "broadcast-time": 1,
+            "disabled": [],
+            "auto-role": "",
+            "auto-role-timer": 0,
+            "starboard-channel":"",
+            "starboard-limit":5,
+            "aliases":{}
+        } 
 
     async def _mu_auto_embed(self, url, message):
         async with self.bot.session.get(url) as resp:
@@ -115,41 +135,42 @@ class NecroEvents():
                
     async def broadcast(self):
         await self.bot.wait_until_ready()
-        counter = 0
         time = 3600
-        try:
-            while not self.bot.is_closed():
-                if counter >= 24:
-                    counter = 0
+        while not self.bot.is_closed():
+            if self.bot.counter >= 24:
+                self.bot.counter = 0
 
-                await asyncio.sleep(time) # task runs every hour
-                start = t.time()
-                counter += 1
+            await asyncio.sleep(time) # task runs every hour
+            start = t.time()
+            self.bot.counter += 1
 
-                def guild_check(guild):
-                    if self.bot.server_data[guild]["broadcast-time"] < 1:
-                        return False
-                        
-                    return self.bot.server_data[guild]["broadcast"] != "" and self.bot.server_data[guild]["broadcast-channel"] != "" and (counter % self.bot.server_data[guild]["broadcast-time"]) == 0
+            def guild_check(guild):
+                if self.bot.server_data[guild]["broadcast-time"] < 1:
+                    return False
 
-                broadcast_guilds = [guild for guild in self.bot.server_data if guild_check(guild)]
+                if self.bot.get_guild(guild) is None:
+                    return False
+                    
+                return self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"]) is not None and self.bot.server_data[guild]["broadcast"] != "" and (self.bot.counter % self.bot.server_data[guild]["broadcast-time"]) == 0
 
-                for guild in broadcast_guilds:
+            broadcast_guilds = [guild for guild in self.bot.server_data if guild_check(guild)]
+
+            for guild in broadcast_guilds:
+                try:
                     channel = self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"])
                     await channel.send(self.bot.server_data[guild]["broadcast"])
+                except Exception as e:
+                    raise Exception(f"Broadcast error with guild {guild}")
 
-                time = 3600 - round(t.time() - start)
+            time = 3600 - round(t.time() - start)
 
-        except Exception as e:
-            self.bot.dispatch("error", e)
 
     async def rotation_status(self):
         await self.bot.wait_until_ready()
         try:
             while not self.bot.is_closed():
                 await asyncio.sleep(3600)
-                status = self.bot.statuses[0]
-                self.bot.statuses.remove(status)
+                status = self.bot.statuses.pop(0)
                 self.bot.statuses.append(status)
                 await self.bot.change_presence(activity=discord.Game(name=status.format(guild=len(self.bot.guilds), members=len(self.bot.users))))
         except Exception as e:

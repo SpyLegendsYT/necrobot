@@ -118,6 +118,7 @@ class Economy():
         self.bot = bot
         self.IS_GAME = list()
 
+
     @commands.command(aliases=["bj"])
     async def blackjack(self, ctx, bet : int = 10):
         """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
@@ -127,9 +128,26 @@ class Economy():
         __Example__
         `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
         `{pre}blackjack` - bet the default 10 :euro:"""
+        if ctx.message.channel.id in self.IS_GAME:
+            await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
+            return 
+        
+        if self.bot.user_data[ctx.message.author.id]["money"] < bet :
+            await ctx.send(":negative_squared_cross_mark: | You don't have enough money", delete_after = 5)
+            return
 
+        if bet < 10:
+            await ctx.send(":negative_squared_cross_mark: | Please bet at least 10 necroins.", delete_after=5)
+            return
+
+
+        self.IS_GAME.append(ctx.message.channel.id)
+        await self.blackjack_game(ctx, bet)
+        self.IS_GAME.remove(ctx.message.channel.id)
+
+
+    async def blackjack_game(self, ctx, bet):
         async def win(msg):
-            self.IS_GAME.remove(ctx.message.channel.id)
             self.bot.user_data[ctx.message.author.id]["money"] += bet * 2
             await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             return f"{msg} \nEnd of the game \n**{ctx.message.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:"
@@ -147,123 +165,105 @@ class Economy():
                 await ctx.send(win("**Your** hand beats **the Dealer's** hand."))
             else:
                 await ctx.send("Tie, everything is reset.")
-                self.IS_GAME.remove(ctx.message.channel.id)
                 self.bot.user_data[ctx.message.author.id]["money"] += bet
-                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2", self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             await status.delete()
+        
+        await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.message.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
+        self.bot.user_data[ctx.message.author.id]["money"] -= bet
+        await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+        player = Player(ctx.message.author.display_name, 0)
+        bank = Player("Bank", 0)
+        players = (player,bank)
+        game = Game(players)
+        game.start()
+        for x in players:
+            game.play(x)
+            game.play(x)
+
+        def check(reaction, user):
+            return user == ctx.message.author and str(reaction.emoji) in ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"] and msg.id == reaction.message.id
+
+
+        while not game.is_over():
+            status = await ctx.send(f"**You** have {player.hand} Total: {player.hand.value()} \n**The Dealer** has {bank.hand} Total: {bank.hand.value()}")
+            if player.hand.value() == 21:
+                await ctx.send(await win("**BLACKJACK**"))
+                await status.delete()
+                return
+            elif bank.hand.value() == 21:
+                await ctx.send(lose("**BlackJack for the Bank**"))
+                await status.delete()
+                return
             
+            msg = await ctx.send(f"**Current bet** - {bet} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card")
+            await msg.add_reaction("\N{PLAYING CARD BLACK JOKER}")
+            await msg.add_reaction("\N{BLACK SQUARE FOR STOP}")
+            await msg.add_reaction("\N{MONEY BAG}") 
+            try :
+                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+            except asyncio.TimeoutError as e:
+                e.timer = 120
+                self.IS_GAME.remove(ctx.message.channel.id)
+                await msg.delete()
+                return self.bot.dispatch("command_error", ctx, e)
 
-        if ctx.message.channel.id in self.IS_GAME:
-            await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
-            return 
-        else:
-            self.IS_GAME.append(ctx.message.channel.id)
-
-        if self.bot.user_data[ctx.message.author.id]["money"] >= bet and bet >= 10:
-            await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.message.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
-            self.bot.user_data[ctx.message.author.id]["money"] -= bet
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            name = ctx.message.author.display_name
-            player = Player(name, 0)
-            bank = Player("Bank", 0)
-            players = (player,bank)
-            game = Game(players)
-            game.start()
-            for x in players:
-                game.play(x)
-                game.play(x)
-
-            def check(reaction, user):
-                return user == ctx.message.author and str(reaction.emoji) in ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"] and msg.id == reaction.message.id
-
-
-            while not game.is_over():
-                status = await ctx.send(f"**You** have {player.hand} Total: {player.hand.value()} \n**The Dealer** has {bank.hand} Total: {bank.hand.value()}")
-                if player.hand.value() == 21:
-                    await ctx.send(await win("**BLACKJACK**"))
-                    await status.delete()
-                    return
-                elif bank.hand.value() == 21:
-                    await ctx.send(lose("**BlackJack for the Bank**"))
-                    await status.delete()
-                    return
-                
-                msg = await ctx.send(f"**Current bet** - {bet} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card")
-                await msg.add_reaction("\N{PLAYING CARD BLACK JOKER}")
-                await msg.add_reaction("\N{BLACK SQUARE FOR STOP}")
-                await msg.add_reaction("\N{MONEY BAG}") 
-                try :
-                    reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=120)
-                except asyncio.TimeoutError as e:
-                    e.timer = 120
-                    self.IS_GAME.remove(ctx.message.channel.id)
-                    await msg.delete()
-                    return self.bot.dispatch("command_error", ctx, e)
-
-                if reaction is not None:
-                    await msg.delete()
-                    if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
-                        await ctx.send(f"**You** {game.play(player)}", delete_after=5)
+            if reaction is not None:
+                await msg.delete()
+                if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
+                    await ctx.send(f"**You** {game.play(player)}", delete_after=5)
+                    if player.hand.busted:
+                        await ctx.send(lose("**You** go bust."))
+                        await status.delete()
+                        return
+                    else:
+                        if bank.hand.is_passing(player):
+                            await ctx.send("**The Dealer** passes his turn", delete_after=5)
+                        else:
+                            await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+                            if bank.hand.busted:
+                                await ctx.send(await win("**The Dealer** goes bust."))
+                                return
+                            elif player.hand.value() == 21:
+                                await ctx.send(await win("**BLACKJACK**"))
+                                await status.delete()
+                                return
+                elif reaction.emoji == "\N{MONEY BAG}":
+                    if self.bot.user_data[ctx.message.author.id]["money"] >= bet * 2:
+                        await ctx.send(f"**You double your bet and ** {game.play(player)}", delete_after=5)
+                        self.bot.user_data[ctx.message.author.id]["money"] -= bet
+                        bet *= 2
                         if player.hand.busted:
                             await ctx.send(lose("**You** go bust."))
                             await status.delete()
                             return
+                        elif player.hand.value() == 21 and bank.hand.value() < 21:
+                            await ctx.send(await win("**BLACKJACK**"))
+                            await status.delete()
+                            return
                         else:
-                            if bank.hand.is_passing(player):
-                                await ctx.send("**The Dealer** passes his turn", delete_after=5)
-                            else:
+                            while not bank.hand.is_passing(player):
                                 await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
                                 if bank.hand.busted:
                                     await ctx.send(await win("**The Dealer** goes bust."))
                                     return
-                                elif player.hand.value() == 21:
-                                    await ctx.send(await win("**BLACKJACK**"))
-                                    await status.delete()
-                                    return
-                    elif reaction.emoji == "\N{MONEY BAG}":
-                        if self.bot.user_data[ctx.message.author.id]["money"] >= bet * 2:
-                            await ctx.send(f"**You double your bet and ** {game.play(player)}", delete_after=5)
-                            self.bot.user_data[ctx.message.author.id]["money"] -= bet
-                            bet *= 2
-                            if player.hand.busted:
-                                await ctx.send(lose("**You** go bust."))
-                                await status.delete()
-                                return
-                            elif player.hand.value() == 21 and bank.hand.value() < 21:
-                                await ctx.send(await win("**BLACKJACK**"))
-                                await status.delete()
-                                return
-                            else:
-                                while not bank.hand.is_passing(player):
-                                    await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-                                    if bank.hand.busted:
-                                        await ctx.send(await win("**The Dealer** goes bust."))
-                                        return
 
-                                return await game_end()
-                        else:
-                            await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
+                            return await game_end()
+                    else:
+                        await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
 
-                    elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                        await ctx.send("**You** pass your turn", delete_after=5)
-                        if not bank.hand.is_passing(player):
-                            await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-                            if bank.hand.busted:
-                                await ctx.send(await win("**The Dealer** goes bust."))
-                                await status.delete()
-                                return
-                        else:
-                            return await game_end()                    
+                elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
+                    await ctx.send("**You** pass your turn", delete_after=5)
+                    if not bank.hand.is_passing(player):
+                        await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+                        if bank.hand.busted:
+                            await ctx.send(await win("**The Dealer** goes bust."))
+                            await status.delete()
+                            return
+                    else:
+                        return await game_end()                    
 
-                await status.delete()
-        else:
-            self.IS_GAME.remove(ctx.message.channel.id)
-            await ctx.send("You don't have enough money to do that, also, the minimum bet is 10 :euro:.")
-
-        try:
-            self.IS_GAME.remove(ctx.message.channel.id)
-        except ValueError:
-            pass
+            await status.delete()
 
     @commands.command(aliases=["slots"], enabled=False)
     async def slot(self, ctx):

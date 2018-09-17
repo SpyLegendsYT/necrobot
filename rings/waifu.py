@@ -330,6 +330,7 @@ class Waifu():
 
 
     @commands.group(invoke_without_command=True)
+    @commands.guild_only()
     async def transfer(self, ctx, member : discord.Member, waifu : discord.Member):
         """Transfer a waifu to another user, you must be able to pay 10% of the waifu's price in order to tranfer them.
         
@@ -429,6 +430,7 @@ class Waifu():
 
 
     @commands.command()
+    @commands.guild_only()
     async def give(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Transfer :cherry_blossom: from one user to another.
 

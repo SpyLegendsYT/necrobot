@@ -57,7 +57,7 @@ class NecroConverter(commands.IDConverter):
         if not result is None:
             return result
 
-        raise commands.BadArgument("Not role/channel/member")    
+        raise commands.BadArgument("Not an existing role/channel/member")    
 
 class Server():
     def __init__(self, bot):
@@ -417,7 +417,8 @@ class Server():
             self.bot.server_data[ctx.message.guild.id]["broadcast-time"] = hours
             await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_time = $1 WHERE guild_id = $2;", hours, ctx.guild.id)
             await ctx.send(f":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{hours}` hour(s)")        
-
+        else:
+            await ctx.send(":white_check_mark: |  Please input a number between 1 and 24")
 
     @commands.group(invoke_without_command = True)
     @commands.guild_only()

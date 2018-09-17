@@ -1,3 +1,4 @@
+
 import discord
 from discord.ext import commands
 
@@ -40,7 +41,8 @@ extensions = [
     "events",
     "waifu",
     "words",
-    "misc"
+    "misc",
+    "tags"
 ]
 
 replyList = [
@@ -73,6 +75,7 @@ class NecroBot(commands.Bot):
         self.cat_cache = []
         self.events = {}
         self.ready = False
+        self.counter = 0
 
         @self.check
         def disabled_check(ctx):

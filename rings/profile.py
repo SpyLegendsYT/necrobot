@@ -70,6 +70,7 @@ class Profile():
         if day != self.bot.user_data[ctx.author.id]["daily"]:
             if member:
                 money = random.choice(range(235, 450))
+                self.bot.user_data[ctx.author.id]["money"] += money
                 await ctx.send(f":m: | {member.mention}, **{ctx.author.display_name}** has given you their daily of **{money}** :euro:")
                 await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[member.id]["money"], member.id)
             else:

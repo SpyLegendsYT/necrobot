@@ -7,6 +7,7 @@ from rings.utils.utils import has_perms
 import datetime
 import re
 import json
+from typing import Union
 
 class GuildUserConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
@@ -282,7 +283,7 @@ class Admin():
 
     @commands.group(invoke_without_command=True)
     @has_perms(6)
-    async def blacklist(self, ctx, *things : GuildUserConverter):
+    async def blacklist(self, ctx, *things : Union[discord.Guild, discord.User]):
         """Blacklists a guild or user. If it is a guild, the bot will leave the guild. A user will simply be unable to 
         use the bot commands and react. However, they will still be automoderated.
 

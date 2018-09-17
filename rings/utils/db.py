@@ -28,7 +28,8 @@ def db_gen():
                         "ignore-command":[],
                         "ignore-automod":[],
                         "tags":{},
-                        "disabled":[]
+                        "disabled":[],
+                        "aliases":{}
                     }
 
     cur.execute("SELECT * FROM necrobot.SelfRoles;")
@@ -103,6 +104,11 @@ def db_gen():
 
     cur.execute("SELECT * FROM necrobot.Starred;")
     starred = [x[0] for x in cur.fetchall()]
+
+    cur.execute("SELECT * FROM necrobot.Aliases;")
+    for t in cur.fetchall():
+        server_data[t[2]]["aliases"][t[0]] = t[1]
+
 
 
     return user_data, server_data, starred

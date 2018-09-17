@@ -25,6 +25,12 @@ class BFME():
             ]
         }
 
+        self.headers = {
+            "Authorization" : "Bearer b836b21474d346f4a26798790096d8fb",
+            "Content-Type" : "application/json",
+            "Accept": "application/json"
+        }
+
     @commands.command(name="helpme")
     async def tech_support(self, ctx):
         """A simple embed to list the most common errors
@@ -75,6 +81,17 @@ class BFME():
         embed.add_field(name="Patches", value="**BFME**\n-[All in one installer](http://server.cnc-online.net/downloads/patch/T3AOnlineBFME1_Patch1.06_AIO.exe)\n**BFME2**\n-1.06: [Link](http://www.gamereplays.org/battleformiddleearth21.08/portals.php?show=page&name=official-106-downloads) (this is required to play ROTWK)\n-1.09: [Link](https://www.gamereplays.org/battleformiddleearth2/portals.php?show=page&name=bfme2-patch-1.09) (This is a fan made patch and is not compatible with ROTWK, you must disable it when you want to play ROTWK)\n**ROTWK**\n-2.01: [Link](http://www.gamereplays.org/riseofthewitchking/portals.php?show=page&name=official-201-download) (Last official patch)\n-2.02: [Link](http://www.gamereplays.org/riseofthewitchking/portals.php?show=page&name=unofficial-patch-202-download-page) (A wildely popular unofficial balance patch required by some mods)")
         embed.add_field(name="Popular Mods", value="**[Edain](https://www.moddb.com/mods/edain-mod)**: Total conversion mod that brings back the BFME1 buildplots system in addition to numerous additions.\n**[AOTR](https://www.moddb.com/mods/the-horse-lords-a-total-modification-for-bfme)**: A mod with dozens of new heroes, units, spells and abilities aiming to create a diverse, engaging and balanced RTS faithful to Tolkien's mythos.\n**[BOTTA](https://www.moddb.com/mods/battles-of-the-third-age)**: A mod focused on realism, lore of the books and movies with improved balance focused more on a defensive playstyle.")
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def live(self, ctx, *, sentence):
+        async with self.bot.session.post(f"https://api.dialogflow.com/v1/query", 
+            headers=self.headers, 
+            params={"v":"20170712"}, 
+            json={"query": sentence, "sessionId": "botsession", "lang":"en"}
+        ) as resp:
+            r = await resp.json()
+
+        await ctx.send(r["result"]["fulfillment"]["speech"])
 
 def setup(bot):
     bot.add_cog(BFME(bot))
