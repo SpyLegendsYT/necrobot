@@ -3,16 +3,12 @@
 
 import discord
 from discord.ext import commands
-from simpleeval import simple_eval
-import time
-import random
-import re
-import asyncio
-import urbandictionary as ud
-import googletrans
-from PyDictionary import PyDictionary 
-from bs4 import BeautifulSoup
+
 from rings.utils.utils import has_perms, react_menu
+
+import random
+import asyncio
+from simpleeval import simple_eval
 
 class Utilities():
     """A bunch of useful commands to do various tasks."""

@@ -10,3 +10,4 @@ hunger_games_events.json
 rings/utils/tamagochi.py
 api.py
 rings/bfme.py
+rings/_bfme.py

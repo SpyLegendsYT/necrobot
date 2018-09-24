@@ -1,10 +1,12 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
+
+from rings.utils.utils import has_perms, react_menu
+
+import ast
 import time
 from datetime import timedelta
-from rings.utils.utils import has_perms, react_menu
-import ast
 
 
 class Support():

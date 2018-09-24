@@ -1,10 +1,11 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-import random
-from bs4 import BeautifulSoup
-import asyncio
+
 import json
+import random
+import asyncio
+from bs4 import BeautifulSoup
 
 class Social():
     """All of NecroBot's fun commands to keep a user active and entertained"""

@@ -66,7 +66,7 @@ class NecroBotHelpFormatter(HelpFormatter):
     def get_ending_note_command(self):
         command_name = self.context.invoked_with
         return "Type {0}{1} [command] [subcommand] for more info on a command's subcommand.\n" \
-               "Example: `{0}help settings welcome hannel` - display help on the channel subcommand of the welcome command \n".format(self.clean_prefix, command_name)
+               "Example: `{0}help settings welcome channel` - display help on the channel subcommand of the welcome command \n".format(self.clean_prefix, command_name)
 
     @asyncio.coroutine
     def _add_commands_to_page(self, max_width, commands):

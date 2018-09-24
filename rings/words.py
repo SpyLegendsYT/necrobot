@@ -1,17 +1,16 @@
 import discord
 from discord.ext import commands
-from simpleeval import simple_eval
-import time
-import random
-import re
-import asyncio
-import urbandictionary as ud
-import googletrans
-from bs4 import BeautifulSoup
 from discord.ext.commands.cooldowns import BucketType
+
 from rings.utils.utils import react_menu
 from rings.utils.config import define_headers
+
+import re
+import random
 import aiohttp
+import asyncio
+import googletrans
+import urbandictionary as ud
 
 translator = googletrans.Translator()
 
@@ -97,12 +96,10 @@ class Literature():
                 message = ""
                 try:
                     for entry_b in entry["entries"][index]["senses"]:
-                        print(0)
                         message += f'{entry["entries"][index]["senses"].index(entry_b) + 1}. {entry_b["definitions"][0]}\n - *{entry_b["examples"][0]["text"]}*\n'
                     embed.add_field(name=form, value=message)
                 except (IndexError, KeyError):
                     pass
-
 
             return embed
 

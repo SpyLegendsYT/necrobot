@@ -1,60 +1,18 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-from simpleeval import simple_eval
-import inspect
-from rings.utils.utils import has_perms
-import datetime
+
+from rings.utils.utils import has_perms, GuildConverter
+
 import re
 import json
+import inspect
 from typing import Union
-
-class GuildUserConverter(commands.IDConverter):
-    async def convert(self, ctx, argument):
-        result = None
-        bot = ctx.bot
-        guilds = bot.guilds
-
-        result = discord.utils.get(guilds, name=argument)
-
-        if result:
-            return result
-
-        if argument.isdigit():
-            result = bot.get_guild(int(argument))
-
-            if result:
-                return result
-
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
-        state = ctx._state
-
-        if match is not None:
-            user_id = int(match.group(1))
-            result = bot.get_user(user_id)
-        else:
-            arg = argument
-            # check for discriminator if it exists
-            if len(arg) > 5 and arg[-5] == '#':
-                discrim = arg[-4:]
-                name = arg[:-5]
-                predicate = lambda u: u.name == name and u.discriminator == discrim
-                result = discord.utils.find(predicate, state._users.values())
-                if result is not None:
-                    return result
-
-            predicate = lambda u: u.name == arg
-            result = discord.utils.find(predicate, state._users.values())
-
-        if result:
-            return result
-
-        raise commands.BadArgument("Not a known guild/user")
-
+from simpleeval import simple_eval
 
 class Admin():
     def __init__(self, bot):
-        self.bot = bot  
+        self.bot = bot
 
     @commands.command()
     @commands.is_owner()
@@ -283,12 +241,30 @@ class Admin():
 
     @commands.group(invoke_without_command=True)
     @has_perms(6)
-    async def blacklist(self, ctx, *things : Union[discord.Guild, discord.User]):
+    async def blacklist(self, ctx, *, thing : Union[GuildConverter, discord.User] = None):
         """Blacklists a guild or user. If it is a guild, the bot will leave the guild. A user will simply be unable to 
-        use the bot commands and react. However, they will still be automoderated.
+        use the bot commands and react. However, they will still be automoderated. Can also be used to print out all the
+        blacklisted users and guilds.
 
-        {usage}"""
-        for thing in things:
+        {usage}"
+
+        __Example__
+        `{pre}blacklist` - print all blacklisted users
+        `{pre}blacklist @Necrobot` - blacklist user Necrobot
+        `{pre}blacklist Bad Guild` - blacklist the guild Bad Guild
+        """
+        if not thing:
+            if len(self.bot.settings["blacklist"]) < 1:
+                await ctx.send("**List of blacklisted users/guilds**: **None**")
+            else:
+                blacklist = []
+                for thing in self.bot.settings["blacklist"]:
+                    thing = self.bot.get_guild(thing) or self.bot.get_user(thing)
+                    blacklist.append(thing.name)
+
+                await ctx.send("**List of blacklisted users/guilds**: {}".format(" - ".join(blacklist)))
+
+        else:
             if isinstance(thing, discord.User):
                 if thing.id in self.bot.settings["blacklist"]:
                     self.bot.settings["blacklist"].remove(thing.id)
@@ -311,21 +287,7 @@ class Admin():
                     self.bot.settings["blacklist"].append(thing.id)
                     await ctx.send(f":white_check_mark: | Guild **{thing.name}** blacklisted")
 
-    @blacklist.command(name="list")
-    @has_perms(6)
-    async def blacklist_list(self, ctx):
-        """Prints the list of all blacklisted users/guild
 
-        {usage}"""
-        if len(self.bot.settings["blacklist"]) < 1:
-            await ctx.send("List of blacklisted users/guilds: **None**")
-        else:
-            await ctx.send("List of blacklisted users/guilds: {}".format(" - ".join([(await GuildUserConverter().convert(ctx, str(x))).name for x in self.bot.settings["blacklist"]])))
-
-
-    # *****************************************************************************************************************
-    #  Cogs Commands
-    # *****************************************************************************************************************
     @commands.command(hidden=True)
     @commands.is_owner()
     async def load(self, ctx, extension_name : str):
@@ -362,9 +324,6 @@ class Admin():
             return
         await ctx.send(f"{extension_name} reloaded.")
 
-    # *****************************************************************************************************************
-    # Bot Smith Commands
-    # *****************************************************************************************************************
     @commands.command(hidden=True)
     @commands.is_owner()
     async def off(self, ctx):

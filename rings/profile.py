@@ -2,17 +2,18 @@
 import discord
 from discord.ext import commands
 
-from simpleeval import simple_eval
-import datetime as d
+import os
+import random
+import asyncio
+import functools
 import time as t
+import datetime as d
+from io import BytesIO
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw 
 from PIL import ImageColor 
-import os
-import random
-import asyncio
-from io import BytesIO
+from simpleeval import simple_eval
 
 #/usr/share/fonts/
 
@@ -162,15 +163,7 @@ class Profile():
         __Example__
         `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
         `{pre}info` - returns your own NecroBot info"""
-        async with ctx.channel.typing():
-
-            if not user:
-                user = ctx.author
-
-            url = user.avatar_url_as(format="png").replace("?size=1024", "")
-            async with self.bot.session.get(url) as r:
-                image_bytes = await r.read()
-
+        def profile_maker():
             im = Image.open(f"rings/utils/profile/backgrounds/{random.randint(1,147)}.jpg").resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
@@ -201,6 +194,21 @@ class Profile():
             im.save(output_buffer, "png")
             output_buffer.seek(0)
             ifile = discord.File(output_buffer, filename=f"{user.id}.png")
+
+            return ifile
+
+        async with ctx.channel.typing():
+
+            if not user:
+                user = ctx.author
+
+            url = user.avatar_url_as(format="png").replace("?size=1024", "")
+            async with self.bot.session.get(url) as r:
+                image_bytes = await r.read()
+
+            syncer = functools.partial(profile_maker)
+            ifile = await self.bot.loop.run_in_executor(None, syncer)
+
             await ctx.send(file=ifile)
 
     @commands.command()

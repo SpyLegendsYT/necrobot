@@ -1,9 +1,11 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
-import asyncio
-import re
+
 from rings.utils.utils import has_perms
+
+import re
+import asyncio
 
 class Moderation():
     """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. 

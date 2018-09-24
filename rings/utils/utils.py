@@ -52,3 +52,22 @@ async def react_menu(bot, ctx, max, page_generator, page=0):
         await msg.clear_reactions()
         await msg.edit(embed=page_generator(page))
 
+class GuildConverter(commands.IDConverter):
+    async def convert(self, ctx, argument):
+        result = None
+        bot = ctx.bot
+        guilds = bot.guilds
+
+        result = discord.utils.get(guilds, name=argument)
+
+        if result:
+            return result
+
+        if argument.isdigit():
+            result = bot.get_guild(int(argument))
+
+            if result:
+                return result
+
+        raise commands.BadArgument("Not a known guild")
+

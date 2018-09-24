@@ -1,11 +1,13 @@
 import discord
 from discord.ext import commands
-from moddb_reader import Reader
-from moddb_reader.moddb_objects import Mod, Game
+
+from rings.utils.utils import react_menu
+
 import aiohttp
 import difflib
 from bs4 import BeautifulSoup
-from rings.utils.utils import react_menu
+from moddb_reader import Reader
+from moddb_reader.moddb_objects import Mod, Game
 
 class AsyncReader(Reader):
     async def _soup_page(self):

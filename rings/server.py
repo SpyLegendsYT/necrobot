@@ -1,84 +1,32 @@
 #!/usr/bin/python3.6
 import discord
 from discord.ext import commands
+
 from rings.utils.utils import has_perms
+
 import re
-
-class NecroConverter(commands.IDConverter):
-
-    async def convert(self, ctx, argument):
-        message = ctx.message
-        bot = ctx.bot
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
-        guild = ctx.guild
-        result = None
-        if match is None:
-            # not a mention...
-            if guild:
-                result = guild.get_member_named(argument)
-            else:
-                result = _get_from_guilds(bot, 'get_member_named', argument)
-        else:
-            user_id = int(match.group(1))
-            if guild:
-                result = guild.get_member(user_id)
-            else:
-                result = _get_from_guilds(bot, 'get_member', user_id)
-
-        if not result is None:
-            return result
-
-        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
-
-        if match is None:
-            # not a mention
-            if guild:
-                result = discord.utils.get(guild.text_channels, name=argument)
-            else:
-                def check(c):
-                    return isinstance(c, discord.TextChannel) and c.name == argument
-                result = discord.utils.find(check, bot.get_all_channels())
-        else:
-            channel_id = int(match.group(1))
-            if guild:
-                result = guild.get_channel(channel_id)
-            else:
-                result = _get_from_guilds(bot, 'get_channel', channel_id)   
-
-        if not result is None:
-            return result 
-
-        if not guild:
-            raise NoPrivateMessage()
-
-        match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
-        params = dict(id=int(match.group(1))) if match else dict(name=argument)
-        result = discord.utils.get(guild.roles, **params)
-        if not result is None:
-            return result
-
-        raise commands.BadArgument("Not an existing role/channel/member")    
+from typing import Union
 
 class Server():
     def __init__(self, bot):
         self.bot = bot
 
     def all_lists(self, ctx, key):
-        myList = []
+        l = []
         for x in self.bot.server_data[ctx.message.guild.id][key]:
-            try:
-                myList.append("C: "+self.bot.get_channel(x).name)
-            except AttributeError:
-                try:
-                    myList.append("U: "+self.bot.get_member(x).name)
-                except AttributeError:
-                    try:
-                        role = discord.utils.get(ctx.message.guild.roles, id=x)
-                        myList.append("R: " + role.name)
-                    except AttributeError:
-                        pass
+            channel = self.bot.get_channel(x)
+            if channel:
+                l.append(f"C: {channel.name}")
 
-        return myList
+            member = self.bot.get_member(x)
+            if member:
+                l.append(f"U: {member.name}")
+
+            role = discord.utils.get(ctx.message.guild.roles, id=x)
+            if role:
+                l.append(f"R: {role.name}")
+
+        return l
 
     @commands.command()
     @has_perms(4)
@@ -102,7 +50,7 @@ class Server():
 
     @commands.group(invoke_without_command=True)
     @has_perms(4)
-    async def automod(self, ctx, *mentions : NecroConverter):
+    async def automod(self, ctx, *mentions : Union[discord.Member, discord.TextChannel, discord.Role]):
         """Used to manage the list of channels and user ignored by the bot's automoderation system. If no mentions are 
         given it will print out the list of ignored Users (**U**) and the list of ignored Channels (**C**). The automoderation 
         feature tracks the edits made by users to their own messages and the deleted messages, printing them in the server's automod 
@@ -155,7 +103,7 @@ class Server():
 
     @commands.command()
     @has_perms(4)
-    async def ignore(self, ctx, *mentions : NecroConverter):
+    async def ignore(self, ctx, *mentions : Union[discord.Member, discord.TextChannel, discord.Role]):
         """Used to manage the list of channels and user ignored by the bot's command system. If no mentions are 
         given it will print out the list of ignored Users (**U**) and the list of ignored Channels (**C**). Being ignored
         by the command system means that user cannot use any of the bot commands on the server. If mentions are given then 
@@ -336,7 +284,7 @@ class Server():
         `{pre}auto-role Newcomer` - gives the role "Newcomer" with no timer to users who join the server.
         `{pre}auto-role` - resets and disables the autorole system. """
 
-        if role is None:
+        if not role:
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-Role disabled")
@@ -402,7 +350,7 @@ class Server():
             await ctx.send(":white_check_mark: | Broadcast messages disabled")
             return
 
-        await ctx.send(f":white_check_mark: | Okay, the following messqge will be broadcasted in the channel you set using `n!broadcast channel` \n {message}")        
+        await ctx.send(f":white_check_mark: | Okay, the following message will be broadcasted in the channel you set using `n!broadcast channel` \n {message}")        
 
     @broadcast.command(name="time")
     @has_perms(4)

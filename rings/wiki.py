@@ -2,11 +2,11 @@
 import discord
 from discord.ext import commands
 
+import re
 import wikia
-from mwclient import Site
 import unwiki
 import difflib
-import re
+from mwclient import Site
 
 class Wiki():
     """A series of wikia-related commands. Used to search the biggest fan-made database of 
@@ -71,7 +71,7 @@ class Wiki():
 
     @commands.command()
     async def lotr(self, ctx, *, article_name : str):
-        """Performs a search on the Lord of the Rings Wiki for the give article name. If an article is found then it 
+        """Performs a search on the Tolkien Gateway for the give article name. If an article is found then it 
         will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
         {usage}

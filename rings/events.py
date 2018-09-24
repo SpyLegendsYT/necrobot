@@ -2,16 +2,18 @@
 import discord
 from discord.ext import commands
 
-import traceback
-from datetime import timedelta
-import time as t
-import asyncio
-import sys
-from bs4 import BeautifulSoup
-import aiohttp
-from PIL import Image
-import asyncpg
 from rings.utils.config import *
+
+import io
+import sys
+import aiohttp
+import asyncio
+import asyncpg
+import traceback
+import time as t
+from PIL import Image
+from bs4 import BeautifulSoup
+from datetime import timedelta
 
 class NecroEvents():
     def __init__(self, bot):
@@ -103,10 +105,12 @@ class NecroEvents():
                 embed.set_image(url=file.url)
             else:
                 embed.add_field(name='Attachment', value=f'[{file.filename}]({file.url})', inline=False)
-        
+
         msg = await self.bot.get_channel(self.bot.server_data[message.guild.id]["starboard-channel"]).send(content=f"In {message.channel.mention}", embed=embed)
-        self.bot.starred.append(message.id)
-        self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3);", message.id, msg.id, msg.guild.id)
+        
+        if message.id not in self.bot.starred:
+            self.bot.starred.append(message.id)
+            self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3);", message.id, msg.id, msg.guild.id)
 
     def converter(self, time):
         days = time.rpartition("d")[0]
@@ -149,6 +153,9 @@ class NecroEvents():
                     return False
 
                 if self.bot.get_guild(guild) is None:
+                    return False
+
+                if self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"]) is None:
                     return False
                     
                 return self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"]) is not None and self.bot.server_data[guild]["broadcast"] != "" and (self.bot.counter % self.bot.server_data[guild]["broadcast-time"]) == 0
@@ -302,7 +309,7 @@ class NecroEvents():
                 traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             
             if ctx.guild.id != 311630847969198082:
-                await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server: <https://discord.gg/Ape8bZt>", delete_after=10)
+                await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server, the invite is in the `about` command.", delete_after=10)
                 
     async def on_guild_join(self, guild):
         if guild.id in self.bot.settings["blacklist"]:
@@ -411,49 +418,33 @@ class NecroEvents():
         else:
             await channel.send(message.format(member=member))
 
-    async def on_raw_reaction_add(self, payload):
-        if payload.user_id in self.bot.settings["blacklist"]:
-            return
-
-        channel = self.bot.get_channel(payload.channel_id)
-        if not isinstance(channel, discord.TextChannel):
-            return
-
-        user = self.bot.get_user(payload.user_id)
-        if user is None or user.bot:
+    async def on_reaction_add(self, reaction, user):
+        if user.id in self.bot.settings["blacklist"]:
             return
             
-        try:
-            message = await channel.get_message(payload.message_id)
-        except:
+        if isinstance(user, discord.User) and reaction.emoji == "\N{WASTEBASKET}" and reaction.message.author == self.bot.user:
+            await reaction.message.delete()
+            return            
+
+        if reaction.emoji == "\N{CHERRY BLOSSOM}" and reaction.message.id in self.bot.events:
+            if user.id in self.bot.events[reaction.message.id]["users"]:
+                return
+
+            self.bot.events[reaction.message.id]["users"].append(user.id)
+            self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
+
+
+        if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
             return
 
-        if payload.guild_id:
-            #waifu events
-            if payload.emoji.name == "\N{CHERRY BLOSSOM}" and message.id in self.bot.events:
-                if payload.user_id in self.bot.events[payload.message_id]["users"]:
-                    return
+        if reaction.message.channel.id == self.bot.server_data[user.guild.id]["starboard-channel"]:
+            return
 
-                self.bot.events[payload.message_id]["users"].append(payload.user_id)
-                self.bot.user_data[payload.user_id]["waifu"][payload.guild_id]["flowers"] += self.bot.events[payload.message_id]["amount"]
+        if reaction.message.id in self.bot.starred:
+            return
 
-            if self.bot.server_data[payload.guild_id]["starboard-channel"] == "":
-                return
-
-            if payload.channel_id == self.bot.server_data[payload.guild_id]["starboard-channel"]:
-                return
-
-            reaction = discord.utils.get(message.reactions, emoji="\N{WHITE MEDIUM STAR}")
-            if message.id in self.bot.starred or not reaction:
-                return
-
-            if payload.emoji.name == "\N{WHITE MEDIUM STAR}" and reaction.count >= self.bot.server_data[payload.guild_id]["starboard-limit"]:
-                await self.bot._star_message(message)
-
-        else:
-            #self message cleanup
-            if message.author == self.bot.user and payload.emoji.name == "\N{WASTEBASKET}":
-                await message.delete()            
+        if reaction.emoji == "\N{WHITE MEDIUM STAR}" and reaction.count >= self.bot.server_data[user.guild.id]["starboard-limit"]:
+            await self.bot._star_message(reaction.message)        
 
 def setup(bot):
     bot.add_cog(NecroEvents(bot))
