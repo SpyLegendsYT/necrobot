@@ -113,7 +113,7 @@ class Player(common.Player):
 
 
 class Economy():
-    """All the economy commands that NecroBot includes, careful, they all require you to pay with with your NecroBot currency"""
+    """All the economy commands that NecroBot includes, careful, they all require you to pay with with your Necroins"""
     def __init__(self, bot):
         self.bot = bot
         self.IS_GAME = list()
@@ -121,7 +121,9 @@ class Economy():
 
     @commands.command(aliases=["bj"])
     async def blackjack(self, ctx, bet : int = 10):
-        """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
+        """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: 
+        or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you 
+        placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
          
         {usage}
         
@@ -132,7 +134,7 @@ class Economy():
             await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
             return 
         
-        if self.bot.user_data[ctx.message.author.id]["money"] < bet :
+        if self.bot.user_data[ctx.author.id]["money"] < bet :
             await ctx.send(":negative_squared_cross_mark: | You don't have enough money", delete_after = 5)
             return
 
@@ -148,121 +150,109 @@ class Economy():
 
     async def blackjack_game(self, ctx, bet):
         async def win(msg):
-            self.bot.user_data[ctx.message.author.id]["money"] += bet * 2
+            self.bot.user_data[ctx.author.id]["money"] += bet
             await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            return f"{msg} \nEnd of the game \n**{ctx.message.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:"
+            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:")
      
 
-        def lose(msg):
-            self.IS_GAME.remove(ctx.message.channel.id)
-            return f"{msg} \nEnd of the game \n**{ctx.message.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}. \nYou lose the game and the bet money placed."
+        async def lose(msg):
+            self.bot.user_data[ctx.author.id]["money"] -= bet
+            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}. \nYou lose the game and the bet money placed.")
 
         async def game_end():
-            await ctx.send("**The Dealer** passes his turn too", delete_after=5)
-            if bank.hand.beats(player.hand):
-                await ctx.send(lose("**The Dealer's** hand beats **your** hand."))
+            if player.hand.value == 21:
+                await win("**BLACKJACK**")
+            elif bank.hand.value == 21:
+                await lose("**BlackJack for the Dealer**")
+            elif player.hand.value > 21:
+                await lose("**You** go bust.")
+            elif bank.hand.value > 21:
+                await win("**The Dealer** goes bust.")
+            elif bank.hand.beats(player.hand):
+                await lose("**The Dealer's** hand beats **your** hand.")
             elif player.hand.beats(bank.hand):
-                await ctx.send(win("**Your** hand beats **the Dealer's** hand."))
-            else:
+                await win("**Your** hand beats **the Dealer's** hand.")
+            else: #tie
                 await ctx.send("Tie, everything is reset.")
-                self.bot.user_data[ctx.message.author.id]["money"] += bet
-                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2", self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+
             await status.delete()
+
         
-        await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.message.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
-        self.bot.user_data[ctx.message.author.id]["money"] -= bet
-        await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-        player = Player(ctx.message.author.display_name, 0)
+        await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
+        reaction_list = ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"]
+        player = Player(ctx.author.display_name, 0)
         bank = Player("Bank", 0)
-        players = (player,bank)
-        game = Game(players)
+        game = Game((bank, player))
         game.start()
-        for x in players:
-            game.play(x)
-            game.play(x)
+        for player in game.players:
+            game.play(player)
+            game.play(player)
 
         def check(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) in ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"] and msg.id == reaction.message.id
-
+            return user == ctx.author and str(reaction.emoji) in reaction_list and msg.id == reaction.message.id
 
         while not game.is_over():
             status = await ctx.send(f"**You** have {player.hand} Total: {player.hand.value()} \n**The Dealer** has {bank.hand} Total: {bank.hand.value()}")
             if player.hand.value() == 21:
-                await ctx.send(await win("**BLACKJACK**"))
-                await status.delete()
-                return
+                break
             elif bank.hand.value() == 21:
-                await ctx.send(lose("**BlackJack for the Bank**"))
-                await status.delete()
-                return
+                break
             
             msg = await ctx.send(f"**Current bet** - {bet} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card")
-            await msg.add_reaction("\N{PLAYING CARD BLACK JOKER}")
-            await msg.add_reaction("\N{BLACK SQUARE FOR STOP}")
-            await msg.add_reaction("\N{MONEY BAG}") 
+            for reaction in reaction_list:
+                await msg.add_reaction(reaction)
+
             try :
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=120)
-            except asyncio.TimeoutError as e:
-                e.timer = 120
-                self.IS_GAME.remove(ctx.message.channel.id)
+            except asyncio.TimeoutError:
+                await ctx.send("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
+                self.bot.user_data[ctx.author.id]["money"] -= bet
+                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
                 await msg.delete()
-                return self.bot.dispatch("command_error", ctx, e)
+                return     
 
-            if reaction is not None:
-                await msg.delete()
-                if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
-                    await ctx.send(f"**You** {game.play(player)}", delete_after=5)
-                    if player.hand.busted:
-                        await ctx.send(lose("**You** go bust."))
-                        await status.delete()
-                        return
+            await msg.delete()
+            if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
+                await ctx.send(f"**You** {game.play(player)}", delete_after=5)
+                if player.hand.busted:
+                    break
+                else:
+                    if bank.hand.is_passing(player):
+                        await ctx.send("**The Dealer** passes his turn", delete_after=5)
                     else:
-                        if bank.hand.is_passing(player):
-                            await ctx.send("**The Dealer** passes his turn", delete_after=5)
-                        else:
-                            await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-                            if bank.hand.busted:
-                                await ctx.send(await win("**The Dealer** goes bust."))
-                                return
-                            elif player.hand.value() == 21:
-                                await ctx.send(await win("**BLACKJACK**"))
-                                await status.delete()
-                                return
-                elif reaction.emoji == "\N{MONEY BAG}":
-                    if self.bot.user_data[ctx.message.author.id]["money"] >= bet * 2:
-                        await ctx.send(f"**You double your bet and ** {game.play(player)}", delete_after=5)
-                        self.bot.user_data[ctx.message.author.id]["money"] -= bet
-                        bet *= 2
-                        if player.hand.busted:
-                            await ctx.send(lose("**You** go bust."))
-                            await status.delete()
-                            return
-                        elif player.hand.value() == 21 and bank.hand.value() < 21:
-                            await ctx.send(await win("**BLACKJACK**"))
-                            await status.delete()
-                            return
-                        else:
-                            while not bank.hand.is_passing(player):
-                                await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-                                if bank.hand.busted:
-                                    await ctx.send(await win("**The Dealer** goes bust."))
-                                    return
-
-                            return await game_end()
-                    else:
-                        await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
-
-                elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                    await ctx.send("**You** pass your turn", delete_after=5)
-                    if not bank.hand.is_passing(player):
                         await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
                         if bank.hand.busted:
-                            await ctx.send(await win("**The Dealer** goes bust."))
-                            await status.delete()
-                            return
-                    else:
-                        return await game_end()                    
+                            break
+                        elif player.hand.value() == 21:
+                            break
 
+            elif reaction.emoji == "\N{MONEY BAG}":
+                if self.bot.user_data[ctx.author.id]["money"] >= bet * 2:
+                    await ctx.send(f"**You** double your bet and {game.play(player)}", delete_after=5)
+                    bet *= 2
+                    if player.hand.busted:
+                        break
+                    elif player.hand.value() == 21 and bank.hand.value() < 21:
+                        break
+                    else:
+                        while not bank.hand.is_passing(player) and not bank.hand.busted:
+                            await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+
+                        break
+                else:
+                    await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
+
+            elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
+                await ctx.send("**You** pass your turn", delete_after=5)
+                if not bank.hand.is_passing(player):
+                    await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+                    if bank.hand.busted:
+                        break
+                else:
+                    break                  
+
+            await game_end()
             await status.delete()
 
     @commands.command(aliases=["slots"], enabled=False)
@@ -304,19 +294,22 @@ class Economy():
         `{pre}ttt @NecroBot` - play a game against NecroBot (AI)
         `{pre}ttt @ThatUser` - play a game against ThatUser, given that they agree"""
         def check_win(b):
-            #horizontal check
-            if ((b[0][0] == "O" and b[0][1] == "O" and b[0][2] == "O") or (b[1][0] == "O" and b[1][1] == "O" and b[1][2] == "O")) or ((b[2][0] == "O" and b[2][1] == "O" and b[2][2] == "O") or (b[0][0] == "X" and b[0][1] == "X" and b[0][2] == "X") or (b[1][0] == "X" and b[1][1] == "X" and b[1][2] == "X") or (b[2][0] == "X" and b[2][1] == "X" and b[2][2] == "X")):
-                # print("horizontal check")
+            #horizontal check 2.0
+            if any(len(set(row)) == 1 for row in b):
+                return True
+
+            #vertical check 2.0
+            c = list(map(list, zip(*b))) #transpose
+            if any(len(set(row)) == 1 for row in c):
+                return True
+
+            #diagonal check 2.0
+            if len(set([b[x][x] for x in range(3)])) == 1 or len(set([b[2 - x][x] for x in range(3)])) == 1:
                 return True
 
             #vertical check
             if ((b[0][0] == "O" and b[1][0] == "O" and b[2][0] == "O") or (b[0][1] == "O" and b[1][1] == "O" and b[2][1] == "O")) or ((b[0][2] == "O" and b[1][2] == "O" and b[2][2] == "O") or (b[0][0] == "X" and b[1][0] == "X" and b[2][0] == "X") or (b[0][1] == "X" and b[1][1] == "X" and b[2][1] == "X") or (b[0][2] == "X" and b[1][2] == "X" and b[2][2] == "X")):
                 # print("vertical check")
-                return True
-
-            #diagonal check
-            if ((b[0][0] == "O" and b[1][1] == "O" and b[2][2] == "O") or (b[0][2] == "O" and b[1][1] == "O" and b[2][0] == "O")) or ((b[0][0] == "X" and b[1][1] == "X" and b[2][2] == "X") or (b[0][2] == "X" and b[1][1] == "X" and b[2][0] == "X")):
-                # print("diagonal check")
                 return True
 
             return False
@@ -326,7 +319,7 @@ class Economy():
             for row in b:
                 board_list += row
 
-            return set(board_list) == {"O", "X"} or set(board_list) == {"X", "O"}
+            return len(set(board_list)) == 2
 
         def print_board(b):
             msg = []
@@ -493,7 +486,7 @@ class Economy():
 
         if enemy == self.bot.user:
             msg = await ctx.send(":white_check_mark: | NecroBot has accepted your challenge, be prepared to face him")
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
             ai_msg = await ctx.send("AI picks: ")
             await against_ai()
         else:

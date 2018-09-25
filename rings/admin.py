@@ -16,28 +16,29 @@ class Admin():
 
     @commands.command()
     @commands.is_owner()
-    async def leave(self, ctx, id : int, *, reason : str ="unspecified"):
+    async def leave(self, ctx, guild : GuildConverter, *, reason : str ="unspecified"):
         """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
         {usage}"""
-        guild = self.bot.get_guild(id)
-        if guild:
-            if reason != "unspecified":
-                channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).send_messages][0]
-                await channel.send(f"I'm sorry, Necro#6714 has decided I should leave this server, because: {reason}")
-            await guild.leave()
-            await ctx.send(f":white_check_mark: | Okay Necro, I've left {guild.name}")
-        else:
-            await ctx.send(":negative_squared_cross_mark: | I'm not on that server")
+        if reason != "unspecified":
+            channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).send_messages][0]
+            await channel.send(f"I'm sorry, Necro#6714 has decided I should leave this server, because: {reason}")
+        await guild.leave()
+        await ctx.send(f":white_check_mark: | Okay Necro, I've left {guild.name}")
+
 
     @commands.command(name="admin-perms")
     @commands.is_owner()
-    async def a_perms(self, ctx, server : int, user : discord.Member, level : int):
+    async def a_perms(self, ctx, server : int, user : int, level : int):
         """For when regular perms isn't enough.
 
         {usage}"""
+        user_name = self.bot.get_member(user)
+        guild_name = self.bot.get_guild(server)
+
         self.bot.user_data[user.id]["perms"][server] = level
-        await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server, user.id)
-        await ctx.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ str(level) + "** on server " + self.bot.get_guild(server).name)
+        await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server, user)
+
+        await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}** on server {guild_name}" )
 
 
     @commands.command()
@@ -193,7 +194,7 @@ class Admin():
                 result = await result
             await ctx.send(f"{result}")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + f': {e}'))
+            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
             return
 
     @commands.command(hidden=True)
@@ -223,7 +224,7 @@ class Admin():
             result = exec(code, env)
             await ctx.send(":white_check_mark: | Don't forget to eval an SQL statement for permanent changes")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + f': {e}'))
+            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
             return
 
     @commands.command(hidden=True)
@@ -236,7 +237,7 @@ class Admin():
             await self.bot.query_executer(query)
             await ctx.send(":thumbsup:")
         except Exception as e:
-            await ctx.send(python.format(type(e).__name__ + f': {e}'))
+            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
             return
 
     @commands.group(invoke_without_command=True)
@@ -295,7 +296,7 @@ class Admin():
         
         {usage}"""
         try:
-            self.bot.load_extension("rings." + extension_name)
+            self.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
@@ -307,7 +308,7 @@ class Admin():
         """Unloads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        self.bot.unload_extension("rings." + extension_name)
+        self.bot.unload_extension(f"rings.{extension_name}")
         await ctx.send(f"{extension_name} unloaded.")
 
     @commands.command(hidden=True)
@@ -316,9 +317,9 @@ class Admin():
         """Unload and loads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        self.bot.unload_extension("rings." + extension_name)
+        self.bot.unload_extension(f"rings.{extension_name}")
         try:
-            self.bot.load_extension("rings." + extension_name)
+            self.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
