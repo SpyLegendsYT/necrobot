@@ -307,11 +307,6 @@ class Economy():
             if len(set([b[x][x] for x in range(3)])) == 1 or len(set([b[2 - x][x] for x in range(3)])) == 1:
                 return True
 
-            #vertical check
-            if ((b[0][0] == "O" and b[1][0] == "O" and b[2][0] == "O") or (b[0][1] == "O" and b[1][1] == "O" and b[2][1] == "O")) or ((b[0][2] == "O" and b[1][2] == "O" and b[2][2] == "O") or (b[0][0] == "X" and b[1][0] == "X" and b[2][0] == "X") or (b[0][1] == "X" and b[1][1] == "X" and b[2][1] == "X") or (b[0][2] == "X" and b[1][2] == "X" and b[2][2] == "X")):
-                # print("vertical check")
-                return True
-
             return False
 
         def board_full(b):
