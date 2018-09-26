@@ -260,7 +260,7 @@ class NecroEvents():
         """Catches error and sends a message to the user that caused the error with a helpful message."""
         channel = ctx.message.channel
         try:
-            if ctx.command.name in self.bot.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix != "n@":
+            if ctx.command.name in self.bot.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix not in self.bot.admin_prefixes:
                 await ctx.send(f":negative_squared_cross_mark: | Command {ctx.command.name} cannot be used on this server.", delete_after=10)
                 await ctx.message.delete()
                 return
@@ -269,6 +269,7 @@ class NecroEvents():
 
         if isinstance(error, commands.MissingRequiredArgument):
             await channel.send(f":negative_squared_cross_mark: | Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`", delete_after=10)
+            #this can be used to print *all* the missing arguments (bit hacky tho)
             # index = list(ctx.command.clean_params.keys()).index(error.param.name)
             # missing = list(ctx.command.clean_params.values())[index:]
             # print(f"missing following: {", ".join([x.name for x in missing])}")
@@ -281,8 +282,8 @@ class NecroEvents():
             await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.", delete_after=10)
         elif isinstance(error, commands.DisabledCommand):
             await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
-        elif isinstance(error, commands.BadArgument):
-            await channel.send(f":negative_squared_cross_mark: | Following error with passed arguments: **{error}**", delete_after=10)            
+        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.BadUnionArgument):
+            await channel.send(f":negative_squared_cross_mark: | Following error with passed arguments: **{error}**", delete_after=10)
         elif isinstance(error, asyncio.TimeoutError):
             if not hasattr(error, "timer"):
                 return
@@ -416,7 +417,7 @@ class NecroEvents():
         if member.id in self.bot.settings["blacklist"]:
             await channel.send(":eight_pointed_black_star: | **...**")
         else:
-            await channel.send(message.format(member=member))
+            await channel.send(message.format(member=member, server=member.guild.name))
 
     async def on_reaction_add(self, reaction, user):
         if user.id in self.bot.settings["blacklist"]:
@@ -432,7 +433,7 @@ class NecroEvents():
 
             self.bot.events[reaction.message.id]["users"].append(user.id)
             self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
-
+            await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"], user.id, reaction.message.guild.id)
 
         if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
             return

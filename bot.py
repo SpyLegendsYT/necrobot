@@ -18,9 +18,10 @@ async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
         guild_pre = bot.server_data[message.guild.id]["prefix"]
         if guild_pre != "":
-            return [guild_pre, "n@"]
+            prefixes = [guild_pre, *bot.admin_prefixes]
+            return commands.when_mentionned_or(*prefixes)(bot, message)
 
-    return bot.prefixes
+    return commands.when_mentionned_or(*bot.prefixes)(bot, message)
 
 extensions = [
     "social",
@@ -61,9 +62,9 @@ class NecroBot(commands.Bot):
         self.user_data, self.server_data, self.starred = db_gen()
 
         self.version = 2.3
-        self.prefixes = ["n!", "N!", "n@"]
+        self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["convert", "blacklist", "ttt", "star", "game", "tutorial", "got"]
+        self.new_commands = ["got"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members"]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -80,7 +81,7 @@ class NecroBot(commands.Bot):
 
             disabled = self.server_data[ctx.message.guild.id]["disabled"]
 
-            if ctx.command.name in disabled and ctx.prefix != "n@":
+            if ctx.command.name in disabled and ctx.prefix not in self.admin_prefixes:
                 raise commands.CheckFailure("This command has been disabled")
 
             return True
@@ -96,7 +97,7 @@ class NecroBot(commands.Bot):
             user_id = ctx.author.id
             guild_id = ctx.guild.id
 
-            if self.user_data[user_id]["perms"][guild_id] >= 4 and ctx.prefix == "n@":
+            if self.user_data[user_id]["perms"][guild_id] >= 4 and ctx.prefix in self.admin_prefixes:
                 return True
 
             if user_id in self.server_data[guild_id]["ignore-command"]:

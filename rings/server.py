@@ -173,19 +173,22 @@ class Server():
         __Example__
         `{pre}welcome Hello {member} :wave:` - sets the welcome message to be 'Hello {member} :wave:' with 
         `{member}` being replaced by the new member's name"""
-        self.bot.server_data[ctx.message.guild.id]["welcome"] = message
-        await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
-
         if message == "":
             await ctx.send(":white_check_mark: | Welcome message reset and disabled")
         else:
-            message = message.replace("\\","")
-            await ctx.send(":white_check_mark: | Your server's welcome message will be: \n" + message.format(member=ctx.author))
+            try:
+                await ctx.send(f":white_check_mark: | Your server's welcome message will be: \n{message.format(member=ctx.author, server=ctx.guild.name)}")
+            except KeyError as e:
+                await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
+                return
+
+        self.bot.server_data[ctx.message.guild.id]["welcome"] = message
+        await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
 
     @commands.group(invoke_without_command=True)
     @has_perms(4)
     async def goodbye(self, ctx, *, message= ""):
-        r"""Sets the goodbye message (aka the message sent to the welcome channel when a user leaves), you can format 
+        """Sets the goodbye message (aka the message sent to the welcome channel when a user leaves), you can format 
         the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` 
         will be replaced by the server name.  (Permission level required: 4+ (Server Owner))
          
@@ -194,15 +197,17 @@ class Server():
         __Example__
         `{pre}goodbye Goodbye {member} :wave:` - sets the goodbye message to be 'Goodbye {member} :wave:' 
         with `{member}` being replaced by the new member's name"""
-
-        self.bot.server_data[ctx.message.guild.id]["goodbye"] = message
-        await self.bot.query_executer("UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
-
         if message == "":
             await ctx.send(":white_check_mark: | Goodbye message reset and disabled")
         else:
-            message = message.replace("\\","")
-            await ctx.send(":white_check_mark: | Your server's goodbye message will be: \n" + message.format(member=ctx.author))
+            try:
+                await ctx.send(":white_check_mark: | Your server's goodbye message will be: \n" + message.format(member=ctx.author, server=ctx.guild))
+            except KeyError as e:
+                await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
+                return
+
+        self.bot.server_data[ctx.message.guild.id]["goodbye"] = message
+        await self.bot.query_executer("UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
 
     async def channel_set(self, ctx, channel):
         if channel == "":
@@ -252,7 +257,7 @@ class Server():
     @has_perms(4)
     async def prefix(self, ctx, *, prefix=""):
         """Sets the bot to only respond to the given prefix. If no prefix is given it will reset it to NecroBot's deafult 
-        list of prefixes: `{pre}`, `N!` or `@NecroBot `
+        list of prefixes: `n!`, `N!` or `@NecroBot `. The prefix can't be longer than 15 characters.
 
         {usage}
 
@@ -260,6 +265,10 @@ class Server():
         `{pre}prefix bob! potato` - sets the prefix to be `bob! potato ` so a command like `{pre}cat` will now be 
         summoned like this `bob! potato cat`
         `{pre}prefix` - resets the prefix to NecroBot's default list"""
+        if len(prefix) > 15:
+            await ctx.send(f":negative_squared_cross_mark: | Prefix can't be more than 15 characters. {len(prefix)}/15")
+            return
+
         self.bot.server_data[ctx.message.guild.id]["prefix"] = prefix
         await self.bot.query_executer("UPDATE necrobot.Guilds SET prefix = $1 WHERE guild_id = $2;", prefix, ctx.guild.id)
 
@@ -292,8 +301,8 @@ class Server():
             time_c = self.bot.converter(time)
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = role.id
             self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_time = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
-            await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** for: {time}")
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_timer = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
+            await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** for: {time} ({time_c} seconds)")
 
     @commands.group(name="broadcast", invoke_without_command=True)
     @has_perms(4)
@@ -414,15 +423,15 @@ class Server():
         self.bot.server_data[ctx.message.guild.id]["self-roles"].append(role.id)
         await ctx.send(f":white_check_mark: | Added role **{role.name}** to list of self assignable roles.")
 
-    @giveme.command(name="del")
+    @giveme.command(name="delete")
     @has_perms(4)
-    async def giveme_del(self, ctx, *, role : discord.Role):
+    async def giveme_delete(self, ctx, *, role : discord.Role):
         """Removes [role] from the list of the server's self assignable roles. (Permission level required: 4+ (Server Admin)
         
         {usage}
         
         __Example__
-        `{pre}giveme del Good` - removes the role 'Good' from the list of self assignable roles"""
+        `{pre}giveme delete Good` - removes the role 'Good' from the list of self assignable roles"""
         if role.id not in self.bot.server_data[ctx.message.guild.id]["self-roles"]:
             await ctx.send(":negative_squared_cross_mark: | Role not in self assignable list")
             return

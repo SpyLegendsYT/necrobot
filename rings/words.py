@@ -44,7 +44,7 @@ class Literature():
 
         await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command=True)
+    @commands.group(invoke_without_command=True, enable=False)
     async def translate(self, ctx, lang : str, *, sentence : str):
         """Auto detects the language of the sentence you input and translates it to the desired language.
 
