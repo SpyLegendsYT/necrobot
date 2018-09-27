@@ -14,10 +14,10 @@ class Moderation():
         self.bot = bot
         self.obligatory = ("Moderation", "Server", "Support", "Admin", "Events", "disable")
 
-    @commands.command(aliases=["rename","name"])
+    @commands.command()
     @has_perms(1)
     @commands.bot_has_permissions(manage_nicknames=True)
-    async def nick(self, ctx, user : discord.Member, *, nickname=None):
+    async def rename(self, ctx, user : discord.Member, *, nickname=None):
         """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return 
         an error message if the user cannot be renamed due to permission issues. (Permission level required: 1+ (Helper))
         
@@ -139,16 +139,16 @@ class Moderation():
         except discord.Forbidden:
             pass
 
-    @warn.command(name="del")
+    @warn.command(name="delete")
     @has_perms(3)
-    async def warn_del(self, ctx, user : discord.Member, position : int):
+    async def warn_delete(self, ctx, user : discord.Member, position : int):
         """Removes the warning from the user's NecroBot system based on the given warning position. 
         (Permission level required: 3+ (Server Semi-Admin)) 
         
         {usage}
         
         __Example__
-        `{pre}warn del @NecroBot 1` - delete the warning in first position of NecroBot's warning list"""
+        `{pre}warn delete @NecroBot 1` - delete the warning in first position of NecroBot's warning list"""
         try:
             message = self.bot.user_data[user.id]["warnings"][ctx.guild.id].pop(position - 1)
         except IndexError:
@@ -208,19 +208,17 @@ class Moderation():
     @commands.command()
     @has_perms(4)
     async def disable(self, ctx, command=None):
-        """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ 
-        prefix. To re-enable a command or cog call disable on it again. Disabling cogs works as a sort of "select all" button
-        which means that all commands will be disabled and individual commands can then be enabled separatly for
-        fine tuning. To disable a cog at least one command in that cog must be enabled, else it will enable them all. To enable
-        a cog all commands must be disabled, else it will disable them all.
+        """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ or N@
+        prefix. To re-enable a command or cog call the `enable` comannd on it. Disabling cogs works as a sort of "select all" 
+        button which means that all commands will be disabled and individual commands can then be enabled separatly for
+        fine tuning.
 
         {usage}
 
         __Examples__
         `{pre}disable` - print the list of disabled cogs and commands
         `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
-        `{pre}disable cat` - reenables the cat command.
-        `{pre}disable Animals` - disable the Animals cog"""
+        `{pre}disable Animals` - disables every command in the the Animals cog"""
         if not command:
             await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
             return
@@ -238,29 +236,58 @@ class Moderation():
                 return
 
             if command in disabled:
-                disabled.remove(command)
-                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = $2)", ctx.guild.id, command)
-                await ctx.send(f":white_check_mark: | Command **{command}** is now enabled")
+                await ctx.send(":negative_squared_cross_mark: | This command is already disabled.")
             else:
                 disabled.append(command)
                 await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
                 await ctx.send(f":white_check_mark: | Command **{command}** is now disabled")
 
         else:
-            all_commands = [x.name for x in bot.commands if x.cog_name == command]
-            if all(x in disabled for x in all_commands):
-                for _command in all_commands:
-                    disabled.remove(_command)
-                    await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2", ctx.guild.id, _command)
-                await ctx.send(f":white_check_mark: | Cog **{command}** is now enabled")
+            all_commands = [x.name for x in bot.commands if x.cog_name == command and x.name not in disabled]
+            for _command in all_commands:
+                disabled.append(_command)
+                await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, _command)
+            await ctx.send(f":white_check_mark: | All commands in cog **{command}** are now disabled") 
 
+    @commands.command()
+    @has_perms(4)
+    async def enable(self, ctx, command=None):
+        """Enable a command or cog. Once a command or cog is enabled everybody can use it given no other restrictions such 
+        as blacklisted or ignored. To disable a command or cog call the `disable` comannd on it. Enabling cogs works as a 
+        sort of "select all" button which means that all commands will be enabled and individual commands can then be disabled
+        separatly for fine tuning.
+
+        {usage}
+
+        __Examples__
+        `{pre}enable` - print the list of disabled cogs and commands
+        `{pre}enabled cat` - enable the cat command, after that everybody can use it again freely.
+        `{pre}enable Animals` - enables every command in the the Animals cog"""
+        if not command:
+            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
+            return
+
+        disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
+        if command not in self.bot.cogs:
+            command_obj = self.bot.get_command(command)
+
+            if not command_obj:
+                await ctx.send(":negative_squared_cross_mark: | No such command/cog.", delete_after=5)
+                return
+
+            if command in disabled:
+                disabled.remove(command)
+                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = $2)", ctx.guild.id, command)
+                await ctx.send(f":white_check_mark: | Command **{command}** is now enabled")
             else:
-                for _command in all_commands:
-                    if _command in disabled:
-                        pass
-                    disabled.append(_command)
-                    await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, _command)
-                await ctx.send(f":white_check_mark: | Cog **{command}** is no disabled")            
+                await ctx.send(":negative_squared_cross_mark: | This command is already enabled.")
+        else:
+            all_commands = [x.name for x in bot.commands if x.cog_name == command and x.name in disabled]
+            for _command in all_commands:
+                disabled.remove(_command)
+                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2", ctx.guild.id, _command)
+            await ctx.send(f":white_check_mark: | All commands in cog **{command}** are now enabled")
+
 
     @commands.command()
     @has_perms(3)

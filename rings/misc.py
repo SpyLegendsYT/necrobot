@@ -188,7 +188,7 @@ class Misc():
                 try:
                     data = await r.json()
                 except Exception as e:
-                    print(await r.text())
+                    return
 
             hero_list = list(data[region]["heroes"]["stats"]["quickplay"].keys())
 

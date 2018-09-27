@@ -69,7 +69,7 @@ class Decisions():
     @commands.command()
     async def roll(self, ctx, dices="1d6"):
         """Rolls one or multiple x sided dices and returns the result. 
-        Structure of the argument: `[number of die]d[number of faces]`. Uses the newest quantum number generator. 
+        Structure of the argument: `[number of die]d[number of faces]`. 
         
         {usage}
         

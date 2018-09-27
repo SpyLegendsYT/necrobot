@@ -52,15 +52,15 @@ class Support():
         await self.feed.send(embed=embed)
 
     @commands.group(invoke_without_command=True)
-    async def news(self, ctx, index : int = 0):
+    async def news(self, ctx, index : int = 1):
         """See the latest necrobot news
 
         {usage}
 
         __Examples__
         `{pre}news` - get the news starting from the latest
-        `{pre}news 3` - get the news starting from the fourth item
-        `{pre}news 0` - get the news starting from the first item"""
+        `{pre}news 4` - get the news starting from the fourth item
+        `{pre}news 1` - get the news starting from the first item"""
         news = self.bot.settings["news"]
 
         if len(news) == 0:
@@ -74,7 +74,7 @@ class Support():
         def _embed_generator(page):
             return discord.Embed.from_data(news[page])
 
-        await react_menu(self.bot, ctx, len(news) - 1, _embed_generator, index)
+        await react_menu(self.bot, ctx, len(news) - 1, _embed_generator, index-1)
 
     @news.command("add")
     @has_perms(6)
@@ -100,7 +100,7 @@ class Support():
         reaction, user = await self.bot.wait_for("reaction_add", check=check)
 
         if reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
-            self.bot.settings["news"] = [news] + self.bot.settings["news"]
+            self.bot.settings["news"] = [news, *self.bot.settings["news"]]
             await ctx.send(f":white_check_mark: | Added **{news['title']}** news")
             channel = self.bot.get_channel(436595183010709514)
             await channel.send(embed=embed)
@@ -108,9 +108,9 @@ class Support():
         await msg.clear_reactions()
 
 
-    @news.command("del")
+    @news.command("delete")
     @has_perms(6)
-    async def news_del(self, ctx, index : int):
+    async def news_delete(self, ctx, index : int):
         """Remove a news item
 
         {usage}"""

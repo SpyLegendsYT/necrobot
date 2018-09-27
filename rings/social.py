@@ -103,17 +103,13 @@ class Social():
 
         if not pokemon1:
             pokemon1 = random.choice(self.dex)
-            print(pokemon1)
 
         if not pokemon2:
             pokemon2 = random.choice(self.dex)
-            print(pokemon2)
          
         try:
             dex_1 = self.dex.index(pokemon1.lower()) + 1
             dex_2 = self.dex.index(pokemon2.lower()) + 1
-            print(dex_1)
-            print(dex_2)
         except ValueError:
             if dex_1:
                 await ctx.send(":negative_squared_cross_mark: | Second pokemon does not exist.")
@@ -121,7 +117,6 @@ class Social():
                 await ctx.send(":negative_squared_cross_mark: | First pokemon does not exist.")
             return
 
-        print(f"http://pokemon.alexonsager.net/{dex_1}/{dex_2}")
         async with self.bot.session.get(f"http://pokemon.alexonsager.net/{dex_1}/{dex_2}") as resp:
             soup = BeautifulSoup(await resp.text(), "html.parser")
 
