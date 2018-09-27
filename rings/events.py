@@ -327,6 +327,10 @@ class NecroEvents():
         await guild.owner.send(embed=self.bot.tutorial_e)
 
     async def on_message_delete(self, message):
+        if message.id in self.bot.ignored_messages:
+            self.bot.ignored_messages.remove(message.id)
+            return
+            
         if isinstance(message.channel, discord.DMChannel) or self.bot.server_data[message.guild.id]["automod"] == "" or message.author.bot:
             return
 

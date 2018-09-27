@@ -19,9 +19,9 @@ async def get_pre(bot, message):
         guild_pre = bot.server_data[message.guild.id]["prefix"]
         if guild_pre != "":
             prefixes = [guild_pre, *bot.admin_prefixes]
-            return commands.when_mentionned_or(*prefixes)(bot, message)
+            return commands.when_mentioned_or(*prefixes)(bot, message)
 
-    return commands.when_mentionned_or(*bot.prefixes)(bot, message)
+    return commands.when_mentioned_or(*bot.prefixes)(bot, message)
 
 extensions = [
     "social",
@@ -71,6 +71,7 @@ class NecroBot(commands.Bot):
         
         self.cat_cache = []
         self.events = {}
+        self.ignored_messages = []
         self.ready = False
         self.counter = 0
 

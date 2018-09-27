@@ -142,7 +142,6 @@ class Economy():
             await ctx.send(":negative_squared_cross_mark: | Please bet at least 10 necroins.", delete_after=5)
             return
 
-
         self.IS_GAME.append(ctx.message.channel.id)
         await self.blackjack_game(ctx, bet)
         self.IS_GAME.remove(ctx.message.channel.id)
@@ -152,8 +151,7 @@ class Economy():
         async def win(msg):
             self.bot.user_data[ctx.author.id]["money"] += bet
             await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:")
-     
+            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:")    
 
         async def lose(msg):
             self.bot.user_data[ctx.author.id]["money"] -= bet
@@ -161,13 +159,13 @@ class Economy():
             await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}. \nYou lose the game and the bet money placed.")
 
         async def game_end():
-            if player.hand.value == 21:
+            if player.hand.value() == 21:
                 await win("**BLACKJACK**")
-            elif bank.hand.value == 21:
+            elif bank.hand.value() == 21:
                 await lose("**BlackJack for the Dealer**")
-            elif player.hand.value > 21:
+            elif player.hand.value() > 21:
                 await lose("**You** go bust.")
-            elif bank.hand.value > 21:
+            elif bank.hand.value() > 21:
                 await win("**The Dealer** goes bust.")
             elif bank.hand.beats(player.hand):
                 await lose("**The Dealer's** hand beats **your** hand.")
@@ -175,9 +173,6 @@ class Economy():
                 await win("**Your** hand beats **the Dealer's** hand.")
             else: #tie
                 await ctx.send("Tie, everything is reset.")
-
-            await status.delete()
-
         
         await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
         reaction_list = ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"]
@@ -226,6 +221,7 @@ class Economy():
                             break
                         elif player.hand.value() == 21:
                             break
+                await status.delete()
 
             elif reaction.emoji == "\N{MONEY BAG}":
                 if self.bot.user_data[ctx.author.id]["money"] >= bet * 2:
@@ -243,6 +239,8 @@ class Economy():
                 else:
                     await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
 
+                await status.delete()
+
             elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
                 await ctx.send("**You** pass your turn", delete_after=5)
                 if not bank.hand.is_passing(player):
@@ -250,10 +248,12 @@ class Economy():
                     if bank.hand.busted:
                         break
                 else:
-                    break                  
+                    break   
 
-            await game_end()
-            await status.delete()
+                await status.delete()               
+
+        await game_end()
+        await status.delete()
 
     @commands.command(aliases=["slots"], enabled=False)
     async def slot(self, ctx):
@@ -386,6 +386,7 @@ class Economy():
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
 
+                self.bot.ignored_messages.append(user1.id)
                 await user1.delete()
                 user1 = int(user1.content)
 
@@ -416,6 +417,7 @@ class Economy():
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
                 
+                self.bot.ignored_messages.append(user2.id)
                 await user2.delete()
                 user2 = int(user2.content)
 
@@ -445,6 +447,7 @@ class Economy():
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
 
+                self.bot.ignored_messages.append(user1.id)
                 await user1.delete()
                 user1 = int(user1.content)
 
@@ -457,10 +460,9 @@ class Economy():
                 if board_full(board):
                     await ctx.send("**Nobody wins**")
                     break
-                    
-                await msg.edit(content=print_board(board))
+
                 user2 = comp_move(board)
-                await ai_msg.edit(content=f"AI picks: {user2}")
+                await msg.edit(content=f"{print_board(board)}\nAI picks: {user2}")
                 board[int(user2//3.5)][(user2-1)%3] = "X"
 
                 if check_win(board):

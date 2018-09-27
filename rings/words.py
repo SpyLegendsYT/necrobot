@@ -44,7 +44,7 @@ class Literature():
 
         await ctx.send(embed=embed)
 
-    @commands.group(invoke_without_command=True, enable=False)
+    @commands.group(invoke_without_command=True)
     async def translate(self, ctx, lang : str, *, sentence : str):
         """Auto detects the language of the sentence you input and translates it to the desired language.
 
@@ -112,6 +112,7 @@ class Literature():
         {usage}
 
         __Examples__
+        `{pre}shuffle Fun time` - uFn imet
         """
         new_sentence = []
         for word in sentence:
