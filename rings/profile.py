@@ -69,7 +69,7 @@ class Profile():
         """
         day = str(d.datetime.today().date())
         if day != self.bot.user_data[ctx.author.id]["daily"]:
-            if member:
+            if member != ctx.author:
                 money = random.choice(range(235, 450))
                 self.bot.user_data[ctx.author.id]["money"] += money
                 await ctx.send(f":m: | {member.mention}, **{ctx.author.display_name}** has given you their daily of **{money}** :euro:")
