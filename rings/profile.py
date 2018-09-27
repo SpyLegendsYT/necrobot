@@ -181,7 +181,6 @@ class Profile():
                     index = int(spot) - 1
                     im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
-
             draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
             draw.text((260,125), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=self.font30)
             draw.text((260,230), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=self.font30)
@@ -247,22 +246,25 @@ class Profile():
         await ctx.send(f"You have the following badges: {' - '.join(self.bot.user_data[ctx.author.id]['badges'])}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>")
 
     @badges.command("place")
-    async def badges_place(self, ctx, badge : str = ""):
+    async def badges_place(self, ctx, badge : str = "none", spot : int = None):
         """Opens the grid menu to allow you to place a badge or reset a badge. Simply supply a badge name to the command to
-        place a badge or simply call the command with no bagde name to reset the grid location.
+        place a badge or supply "none" to reset the grid location.
 
         {usage}
 
         __Examples__
-        `{pre}badges place` - open the menu to reset the badge on a specific grid location
-        `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location"""
-        badge = badge.lower()
+        `{pre}badges place none` - open the menu to reset the badge on a specific grid location
+        `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location
+        `{pre}badges place edain 4` - instantly place the edain badge on the 4th spot
+        `{pre}badles place none 2` - instanty reset the 4th badge place
+        """
+        badge = badge.lower() if badge.lower() != "none" else ""
         if badge not in self.bot.user_data[ctx.author.id]["badges"] and badge != "":
             await ctx.send(":negative_squared_cross_mark: | You do not posses this badge")
             return
 
         def check(message):
-            if ctx.author.id != message.author.id:
+            if ctx.author != message.author:
                 return False
 
             if message.content == "exit":
@@ -271,21 +273,27 @@ class Profile():
             if message.content.isdigit():
                 return int(message.content) > 0 and int(message.content) < 9
 
+            return False
 
-        msg = await ctx.send("Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge. Or type `exit` to exit the menu.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```")
-        
-        try:
-            reply = await self.bot.wait_for("message", check=check, timeout=300)
-        except asyncio.TimeoutError as e:
-            await msg.delete()
-            return
-
-        if reply.content == "exit":
-            await msg.delete()
-            return
+        if spot is None:
+            msg = await ctx.send("Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge. Or type `exit` to exit the menu.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```")
             
-        spot = reply.content
-        self.bot.user_data[ctx.author.id]["places"][spot] = badge
+            try:
+                reply = await self.bot.wait_for("message", check=check, timeout=300)
+            except asyncio.TimeoutError as e:
+                await msg.delete()
+                return
+
+            if reply.content == "exit":
+                await msg.delete()
+                return
+                
+            spot = reply.content
+        elif spot > 8 and spot < 1:
+            await ctx.send(":negative_squared_cross_mark: | Please select a spot between 1 and 8")
+            return
+
+        self.bot.user_data[ctx.author.id]["places"][spot] = badge 
         await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, ctx.author.id, int(spot))
 
         if badge == "":
@@ -341,8 +349,7 @@ class Profile():
             self.bot.user_data[ctx.author.id]["badges"].append(badge)
             await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1, badges = $3 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id, ",".join(self.bot.user_data[ctx.author.id]["badges"]))
             await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badges place [badge]`")
-
-            
+         
         await msg.delete()
 
 
