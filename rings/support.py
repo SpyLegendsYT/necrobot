@@ -67,8 +67,8 @@ class Support():
             await ctx.send(":negative_squared_cross_mark: | No news available")
             return
 
-        if not 0 <= index < len(news):
-            await ctx.send(f":negative_squared_cross_mark: | Not a valid index, pick a number from 0 to {len(news) - 1}")
+        if not 0 < index <= len(news):
+            await ctx.send(f":negative_squared_cross_mark: | Not a valid index, pick a number from 1 to {len(news)}")
             return
         
         def _embed_generator(page):
@@ -119,7 +119,7 @@ class Support():
             return
 
         if not 0 <= index < len(self.bot.settings["news"]):
-            await ctx.send(f":negative_squared_cross_mark: | Not a valid index, pick a number from 0 to {len(self.bot.settings['news']) - 1}")
+            await ctx.send(f":negative_squared_cross_mark: | Not a valid index, pick a number between 1 and {len(self.bot.settings['news'])}")
             return
 
         news = self.bot.settings["news"].pop(index)

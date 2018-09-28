@@ -175,7 +175,6 @@ class Moderation():
         `{pre}purge 35 bot` - purges all messages sent by the bot from the previous 35 messages"""
         channel = self.bot.server_data[ctx.message.guild.id]["automod"]
         self.bot.server_data[ctx.message.guild.id]["automod"] = ""
-        ctx.message.delete()
         number += 1
 
         if check == "link":
