@@ -55,16 +55,17 @@ class NecroBot(commands.Bot):
                          formatter=NecroBotHelpFormatter(), 
                          case_insensitive=True, 
                          owner_id=241942232867799040, 
-                         activity=discord.Game(name="Bot booting...", type=0))
+                         activity=discord.Game(name="Bot booting...", type=0),
+                         max_messages=25000)
 
         self.uptime_start = t.time()
         self.user_data, self.server_data, self.starred = db_gen()
 
-        self.version = 2.3
+        self.version = 2.4
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
         self.new_commands = ["got"]
-        self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members"]
+        self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", ""]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
         
@@ -104,10 +105,11 @@ class NecroBot(commands.Bot):
                 raise commands.CheckFailure("You are being ignored by the bot")
 
             if ctx.channel.id in self.server_data[guild_id]["ignore-command"]:
-                raise commands.CheckFailure("Commands not allowed in the channel.")
+                raise commands.CheckFailure("Commands not allowed in this channel.")
 
             if any(x in roles for x in self.server_data[guild_id]["ignore-command"]):
-                raise commands.CheckFailure("One of your roles isn't allowed to use commands.")
+                roles = [f"**{x.name}**" for x in ctx.author.roles if x.id in self.server_data[guild_id]["ignore-command"]]
+                raise commands.CheckFailure(f"Roles {', '.join(roles)} aren't allowed to use commands.")
 
             return True
 

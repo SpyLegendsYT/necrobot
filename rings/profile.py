@@ -164,7 +164,7 @@ class Profile():
         `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
         `{pre}info` - returns your own NecroBot info"""
         def profile_maker():
-            im = Image.open(f"rings/utils/profile/backgrounds/{random.randint(1,148)}.jpg").resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
+            im = Image.open(f"rings/utils/profile/backgrounds/{random.randint(1,147)}.jpg").resize((1024,512)).crop((60,29,964,482)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
             pfp = Image.open(BytesIO(image_bytes)).resize((150,150)).convert("RGBA")

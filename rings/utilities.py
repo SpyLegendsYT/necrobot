@@ -46,7 +46,7 @@ class Utilities():
         """Pings the user and returns the time it took. 
         
         {usage}"""
-        await resp.edit(content=f'Pong! That took {self.bot.latency * 1000} seconds.')
+        await ctx.send(f'Pong! That took {self.bot.latency * 1000} seconds.')
 
     @commands.command()
     async def serverinfo(self, ctx):

@@ -46,7 +46,7 @@ class Social():
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=30)
         except asyncio.TimeoutError:
-            msg = None
+            return
 
         if riddle[1] in msg.content.lower():
             await ctx.send("Well played, that was the correct answer.")

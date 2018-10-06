@@ -58,7 +58,9 @@ class Literature():
             await ctx.send(f"Translated `{translated.origin}` from {translated.src} to {translated.dest}: **{translated.text}**")
         except ValueError:
             await ctx.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")
-    
+        except AttributeError:
+            await ctx.send(":negative_squared_cross_mark: | Goolge API being mean again, please wait for another fix to be patched through.")
+
     @translate.command(name="list")
     async def translate_list(self, ctx):
         """Use to display all possible languages to translate from

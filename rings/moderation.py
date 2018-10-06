@@ -242,7 +242,7 @@ class Moderation():
                 await ctx.send(f":white_check_mark: | Command **{command}** is now disabled")
 
         else:
-            all_commands = [x.name for x in bot.commands if x.cog_name == command and x.name not in disabled]
+            all_commands = [x.name for x in self.bot.commands if x.cog_name == command and x.name not in disabled]
             for _command in all_commands:
                 disabled.append(_command)
                 await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, _command)
@@ -276,12 +276,12 @@ class Moderation():
 
             if command in disabled:
                 disabled.remove(command)
-                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = $2)", ctx.guild.id, command)
+                await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = $2", ctx.guild.id, command)
                 await ctx.send(f":white_check_mark: | Command **{command}** is now enabled")
             else:
                 await ctx.send(":negative_squared_cross_mark: | This command is already enabled.")
         else:
-            all_commands = [x.name for x in bot.commands if x.cog_name == command and x.name in disabled]
+            all_commands = [x.name for x in self.bot.commands if x.cog_name == command and x.name in disabled]
             for _command in all_commands:
                 disabled.remove(_command)
                 await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2", ctx.guild.id, _command)
@@ -304,7 +304,12 @@ class Moderation():
             return
 
         if message_id:
-            message = await ctx.channel.get_message(message_id)
+            try:
+                message = await ctx.channel.get_message(message_id)
+            except commands.CommandInvokeError:
+                await ctx.send(":negative_squared_cross_mark: | Message not found, make sure you are in the channel with the message.")
+                return
+
             await self.bot._star_message(message)
         else:
             def check(reaction, user):

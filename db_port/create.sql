@@ -108,7 +108,7 @@ CREATE TABLE necrobot.Logs(
     guild_id bigint,
     guildname varchar(40),
     message varchar(2000),
-    time_used varchar(100),
+    time_used timestamp DEFAULT localtimestamp,
     can_run varchar(5)
 );
 

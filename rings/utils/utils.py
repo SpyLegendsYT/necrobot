@@ -3,6 +3,19 @@ import discord
 
 import asyncio
 
+def has_welcome(ctx):
+    if ctx.guild is None:
+        return False
+
+    return ctx.bot.server_data[ctx.guild.id]["welcome-channel"] != "" and ctx.bot.server_data[ctx.guild.id]["welcome"] != ""
+
+def has_goodbye(ctx):
+    if ctx.guild is None:
+        return False
+
+    return ctx.bot.server_data[ctx.guild.id]["welcome-channel"] != "" and ctx.bot.server_data[ctx.guild.id]["goodbye"] != ""
+
+
 def has_perms(perms_level):
     def predicate(ctx): 
         if isinstance(ctx.message.channel, discord.DMChannel):
@@ -19,7 +32,7 @@ def has_perms(perms_level):
 async def react_menu(bot, ctx, max, page_generator, page=0):
     msg = await ctx.send(embed=page_generator(page))
     while True:
-        react_list = list()
+        react_list = []
         if page > 0:
             react_list.append("\N{BLACK LEFT-POINTING TRIANGLE}")
 
@@ -38,10 +51,11 @@ async def react_menu(bot, ctx, max, page_generator, page=0):
             reaction, user = await bot.wait_for("reaction_add", check=check, timeout=300)
         except asyncio.TimeoutError as e:
             await msg.clear_reactions()
+            return
 
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
             await msg.clear_reactions()
-            break
+            return
         elif reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
             page -= 1
         elif reaction.emoji == "\N{BLACK RIGHT-POINTING TRIANGLE}":

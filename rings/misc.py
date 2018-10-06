@@ -8,6 +8,7 @@ from rings.utils.utils import react_menu
 import json
 import random
 import asyncio
+import aiohttp
 import datetime as d
 
 class Misc():

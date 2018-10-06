@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 
 from rings.utils.config import *
+from rings.utils.utils import has_goodbye, has_welcome
 
 import io
 import sys
@@ -28,6 +29,10 @@ class NecroEvents():
         self.bot.load_cache = self.load_cache
         self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
         self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
+
+    def __unload(self):
+        self.bot.broadcast_task.cancel()
+        self.bot.status_task.cancel()
 
     def _new_server(self):
         return {
@@ -110,7 +115,7 @@ class NecroEvents():
         
         if message.id not in self.bot.starred:
             self.bot.starred.append(message.id)
-            self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3);", message.id, msg.id, msg.guild.id)
+            await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3);", message.id, msg.id, msg.guild.id)
 
     def converter(self, time):
         days = time.rpartition("d")[0]
@@ -167,7 +172,7 @@ class NecroEvents():
                     channel = self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"])
                     await channel.send(self.bot.server_data[guild]["broadcast"])
                 except Exception as e:
-                    raise Exception(f"Broadcast error with guild {guild}")
+                    raise Exception(f"Broadcast error with guild {guild}\n{e}")
 
             time = 3600 - round(t.time() - start)
 
@@ -368,7 +373,6 @@ class NecroEvents():
             await channel.send(embed=embed)
 
     async def on_command(self, ctx):
-        localtime = t.asctime(t.localtime(t.time()))
         try:
             can_run = str(await ctx.command.can_run(ctx))
         except:
@@ -381,7 +385,7 @@ class NecroEvents():
             guildname = ctx.guild.name
             guildid = ctx.guild.id
 
-        await self.bot.query_executer("INSERT INTO necrobot.Logs (user_id, username, command, guild_id, guildname, message, time_used, can_run) VALUES($1,$2,$3,$4,$5,$6,$7,$8);", ctx.author.id, ctx.author.name, ctx.command.name, guildid, guildname, ctx.message.content, localtime, can_run)
+        await self.bot.query_executer("INSERT INTO necrobot.Logs (user_id, username, command, guild_id, guildname, message, can_run) VALUES($1,$2,$3,$4,$5,$6,$7);", ctx.author.id, ctx.author.name, ctx.command.name, guildid, guildname, ctx.message.content, can_run)
 
     async def on_member_join(self, member):
         await self.bot.default_stats(member, member.guild)
@@ -389,7 +393,7 @@ class NecroEvents():
         if member.bot:
             return
 
-        if not self.bot.server_data[member.guild.id]["welcome-channel"] == "" and not self.bot.server_data[member.guild.id]["welcome"] == "":
+        if has_welcome(ctx):
             channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
             message = self.bot.server_data[member.guild.id]["welcome"]
             if member.id in self.bot.settings["blacklist"]:
@@ -410,18 +414,17 @@ class NecroEvents():
 
     async def on_member_remove(self, member):
         if self.bot.user_data[member.id]["perms"][member.guild.id] < 6:
-            self.bot.user_data[member.id]["perms"][member.guild.id] = 0
+            del self.bot.user_data[member.id]["perms"][member.guild.id]
+            await self.bot.query_executer("DELETE FROM necrobot.Permissions SET level = 0 WHERE guild_id = $2 AND user_id = $3;", member.guild.id, member.id)
 
-        if self.bot.server_data[member.guild.id]["welcome-channel"] == "" or member.bot or self.bot.server_data[member.guild.id]["goodbye"] == "":
-            return
+        if has_goodbye(ctx):
+            channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
+            message = self.bot.server_data[member.guild.id]["goodbye"]
 
-        channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
-        message = self.bot.server_data[member.guild.id]["goodbye"]
-
-        if member.id in self.bot.settings["blacklist"]:
-            await channel.send(":eight_pointed_black_star: | **...**")
-        else:
-            await channel.send(message.format(member=member, server=member.guild.name))
+            if member.id in self.bot.settings["blacklist"]:
+                await channel.send(":eight_pointed_black_star: | **...**")
+            else:
+                await channel.send(message.format(member=member, server=member.guild.name))
 
     async def on_reaction_add(self, reaction, user):
         if user.id in self.bot.settings["blacklist"]:
@@ -449,7 +452,14 @@ class NecroEvents():
             return
 
         if reaction.emoji == "\N{WHITE MEDIUM STAR}" and reaction.count >= self.bot.server_data[user.guild.id]["starboard-limit"]:
-            await self.bot._star_message(reaction.message)        
+            users = await reaction.users().flatten()
+            try:
+                users.remove(reaction.message.author)
+            except ValueError:
+                pass
+
+            if len(users) >=  self.bot.server_data[user.guild.id]["starboard-limit"]:
+                await self.bot._star_message(reaction.message)        
 
 def setup(bot):
     bot.add_cog(NecroEvents(bot))
