@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
+from rings.utils.utils import UPDATE_NECROINS
+
 import dice
 import random
 
@@ -64,7 +66,7 @@ class Decisions():
                 await ctx.send("Better luck next time")
                 self.bot.user_data[ctx.author.id]["money"] -= bet
 
-        await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+        await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
 
     @commands.command()
     async def roll(self, ctx, dices="1d6"):

@@ -65,7 +65,7 @@ class NecroBot(commands.Bot):
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
         self.new_commands = ["got"]
-        self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", ""]
+        self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
         
@@ -169,6 +169,9 @@ class NecroBot(commands.Bot):
 
             if message.content.startswith(self.user.mention):
                 await message.channel.send(random.choice(replyList))
+
+            if self.user_data[user_id]["perms"][message.guild.id] < 3:
+                message.content = message.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
         else:
             if not self.user_data[user_id]["tutorial"]:
                 self.user_data[user_id]["tutorial"] = True

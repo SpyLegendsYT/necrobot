@@ -2,6 +2,8 @@
 import discord
 from discord.ext import commands
 
+from rings.utils.utils import UPDATE_NECROINS
+
 import random
 import asyncio
 
@@ -150,12 +152,12 @@ class Economy():
     async def blackjack_game(self, ctx, bet):
         async def win(msg):
             self.bot.user_data[ctx.author.id]["money"] += bet
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+            await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:")    
 
         async def lose(msg):
             self.bot.user_data[ctx.author.id]["money"] -= bet
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+            await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}. \nYou lose the game and the bet money placed.")
 
         async def game_end():
@@ -180,9 +182,9 @@ class Economy():
         bank = Player("Bank", 0)
         game = Game((bank, player))
         game.start()
-        for player in game.players:
-            game.play(player)
-            game.play(player)
+        for _player in game.players:
+            game.play(_player)
+            game.play(_player)
 
         def check(reaction, user):
             return user == ctx.author and str(reaction.emoji) in reaction_list and msg.id == reaction.message.id
@@ -203,7 +205,7 @@ class Economy():
             except asyncio.TimeoutError:
                 await ctx.send("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
                 self.bot.user_data[ctx.author.id]["money"] -= bet
-                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+                await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
                 await msg.delete()
                 return     
 
@@ -221,7 +223,6 @@ class Economy():
                             break
                         elif player.hand.value() == 21:
                             break
-                await status.delete()
 
             elif reaction.emoji == "\N{MONEY BAG}":
                 if self.bot.user_data[ctx.author.id]["money"] >= bet * 2:
@@ -239,8 +240,6 @@ class Economy():
                 else:
                     await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
 
-                await status.delete()
-
             elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
                 await ctx.send("**You** pass your turn", delete_after=5)
                 if not bank.hand.is_passing(player):
@@ -250,7 +249,8 @@ class Economy():
                 else:
                     break   
 
-                await status.delete()               
+            
+            await status.delete()               
 
         await game_end()
         await status.delete()
@@ -279,7 +279,7 @@ class Economy():
             await ctx.send(":negative_squared_cross_mark: | Better luck next time")
             return
 
-        if final == "<:onering:351442796420399119>":
+        if final == ":onering:":
             await ctx.send(":white_check_mark: | **Jackpot!** You won **2500** Necroins!")
         else:
             await ctx.send(final)
@@ -357,7 +357,7 @@ class Economy():
             if len(choices) > 0:
                 return random.choice(choices)
 
-            choice = []
+            choices = []
             #take a random side
             for side in [2, 4, 6, 8]:
                 if not b[int(side//3.5)][(side-1)%3] in ["X", "O"]:
@@ -471,6 +471,7 @@ class Economy():
 
             await msg.edit(content=print_board(board))
 
+        #command code
         board = [
                 ["1", "2", "3"],
                 ["4", "5", "6"],

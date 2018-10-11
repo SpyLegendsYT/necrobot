@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 
 from rings.utils.config import *
-from rings.utils.utils import has_goodbye, has_welcome
+from rings.utils.utils import has_goodbye, has_welcome, UPDATE_PERMS, UPDATE_FLOWERS
 
 import io
 import sys
@@ -393,7 +393,7 @@ class NecroEvents():
         if member.bot:
             return
 
-        if has_welcome(ctx):
+        if has_welcome(self.bot, member):
             channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
             message = self.bot.server_data[member.guild.id]["welcome"]
             if member.id in self.bot.settings["blacklist"]:
@@ -414,10 +414,10 @@ class NecroEvents():
 
     async def on_member_remove(self, member):
         if self.bot.user_data[member.id]["perms"][member.guild.id] < 6:
-            del self.bot.user_data[member.id]["perms"][member.guild.id]
-            await self.bot.query_executer("DELETE FROM necrobot.Permissions SET level = 0 WHERE guild_id = $2 AND user_id = $3;", member.guild.id, member.id)
+            self.bot.user_data[member.id]["perms"][member.guild.id] = 0
+            await self.bot.query_executer(UPDATE_PERMS, member.guild.id, member.id)
 
-        if has_goodbye(ctx):
+        if has_goodbye(self.bot, member):
             channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
             message = self.bot.server_data[member.guild.id]["goodbye"]
 
@@ -440,7 +440,7 @@ class NecroEvents():
 
             self.bot.events[reaction.message.id]["users"].append(user.id)
             self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
-            await self.bot.query_executer("UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3",self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"], user.id, reaction.message.guild.id)
+            await self.bot.query_executer(UPDATE_FLOWERS, self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"], user.id, reaction.message.guild.id)
 
         if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
             return

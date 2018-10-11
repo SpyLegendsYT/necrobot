@@ -92,14 +92,14 @@ class Tags():
         if tag in self.restricted:
             await ctx.send(":negative_squared_cross_mark: | Tag not created, tag name is a reserved keyword")
         elif tag not in self.bot.server_data[ctx.message.guild.id]["tags"]:
-            sanitized = content.replace("'", "\'").replace('"', '\"').replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
+            sanitized = content
             self.bot.server_data[ctx.message.guild.id]["tags"][tag] = {'content':sanitized,'owner':ctx.message.author.id, 'created':d.datetime.today().strftime("%d - %B - %Y %H:%M"), 'counter':0}
             await self.bot.query_executer("INSERT INTO necrobot.Tags VALUES ($1, $2, $3, $4, 0, $5);", ctx.guild.id, tag, content, ctx.author.id, d.datetime.today().strftime("%d - %B - %Y %H:%M"))
             await ctx.channel.send(":white_check_mark: | Tag " + tag + " added")
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | A tag with this name already exists")
 
-    @tag.command(name="delete")
+    @tag.group(name="delete")
     @commands.guild_only()
     async def tag_del(self, ctx, tag : Tag):
         """Deletes the tag [tag] if the users calling the command is its owner or a Server Admin (4+)
@@ -120,6 +120,29 @@ class Tags():
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | You can't delete someone else's tag.")
 
+    @tag_del.command(name="alias")
+    @commands.guild_only()
+    async def tag_del_alias(self, ctx, alias : str):
+        """Remove the alias to a tag. Only Server Admins and the tag owner can remove aliases and they can remove any aliases.
+
+        {usage}
+
+        __Examples__
+        `{pre}tag delete alias necro1` - remove the alias "necro1"
+
+        """
+        try:
+            tag = await Tag().convert(ctx, alias)
+        except commands.BadArgument:
+            raise commands.BadArgument(f"Alias {alias} does not exist.")
+
+        if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
+            del self.bot.server_data[ctx.guild.id]["aliases"][alias]
+            await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+
+            await ctx.channel.send(f":white_check_mark: | Alias `{alias}` removed")
+        else:
+            await ctx.channel.send(":negative_squared_cross_mark: | You can't delete the alias to somebody else's tag.")
 
     @tag.command(name="edit")
     @commands.guild_only()
@@ -131,9 +154,9 @@ class Tags():
         __Example__
         `{pre}tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
         if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
-            self.bot.server_data[ctx.message.guild.id]["tags"][content]["content"] = text.replace("'", "\'").replace('"', '\"')
+            self.bot.server_data[ctx.message.guild.id]["tags"][content]["content"] = text
             await self.bot.query_executer("UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", content, ctx.guild.id, tag)
-            await ctx.channel.send(f":white_check_mark: | Tag " + tag + " modified")
+            await ctx.channel.send(f":white_check_mark: | Tag `{tag}` modified")
         else:
             await ctx.channel.send(":negative_squared_cross_mark: | You can't edit someone else's tag.")
 

@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms
+from rings.utils.utils import has_perms, UPDATE_PERMS
 
 import re
 from typing import Union
@@ -31,20 +31,22 @@ class Server():
     @commands.command()
     @has_perms(4)
     async def perms(self, ctx, user : discord.Member, level : int):
-        """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. Permissions reset if you leave the server(Permission level required: 4+ (Server Admin))
+        """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. 
+        Permissions reset if you leave the server(Permission level required: 4+ (Server Admin))
          
         {usage}
         
         __Example__
         `{pre}perms @NecroBot 5` - set the NecroBot permission level to 5"""
+
         if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > level and self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > self.bot.user_data[user.id]["perms"][ctx.message.guild.id]:
             self.bot.user_data[user.id]["perms"][ctx.message.guild.id] = level
-            await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, ctx.guild.id, user.id)
-            await ctx.send(":white_check_mark: | All good to go, **"+ user.display_name + "** now has permission level **"+ str(level) + "**")
+            await self.bot.query_executer(UPDATE_PERMS, level, ctx.guild.id, user.id)
+            await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}**")
             if level == 6:
                 for guild in self.bot.user_data[user.id]["perms"]:
                     self.bot.user_data[user.id]["perms"][guild] = 6
-                    await self.bot.query_executer("UPDATE necrobot.Permissions SET level = 6 WHERE guild_id = $1 AND user_id = $2;", guild, user.id)
+                    await self.bot.query_executer(UPDATE_PERMS, 6, guild, user.id)
         else:
             await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permission to grant this permission level")
 
@@ -64,11 +66,11 @@ class Server():
         `{pre}automod @Necro #general` - adds user Necro and channel general to list of users/channels ignored by the necrobot's automoderation
         `{pre}automod @NecroBot #general` - adds user Necrobot to the list of users ignored by the automoderation and removes channel #general 
         from it (since we added it above)
-        `{pre}automod @ARole` - adds role ARole to the list of roles ignored by automodeartion
+        `{pre}automod @ARole` - adds role ARole to the list of roles ignored by automoderation
         """
 
         if len(mentions) < 1:
-            await ctx.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` "+str(self.all_lists(ctx, "ignore-automod"))+" ```")
+            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` {self.all_lists(ctx, 'ignore-automod')} ```")
             return
 
         for x in mentions:
@@ -120,7 +122,7 @@ class Server():
         """
 
         if len(mentions) < 1:
-            await ctx.send("Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` "+str(self.all_lists(ctx, "ignore-command"))+" ```")
+            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` {self.all_lists(ctx, 'ignore-command')} ```")
             return
         
         for x in mentions:
@@ -139,7 +141,7 @@ class Server():
         """Creates a rich embed of the server settings, also the gateway to the rest of the commands
 
         {usage}"""
-        server = self.bot.server_data[ctx.message.guild.id]
+        server = self.bot.server_data[ctx.message.guild.id] 
         role_obj = discord.utils.get(ctx.message.guild.roles, id=server["mute"])
         role_obj2 = discord.utils.get(ctx.message.guild.roles, id=server["auto-role"])
         embed = discord.Embed(title="__**Server Settings**__", colour=discord.Colour(0x277b0), description="Info on the NecroBot settings for this server")

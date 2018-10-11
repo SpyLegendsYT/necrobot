@@ -3,18 +3,15 @@ import discord
 
 import asyncio
 
-def has_welcome(ctx):
-    if ctx.guild is None:
-        return False
+def has_welcome(bot, member):
+    return bot.server_data[member.guild.id]["welcome-channel"] != "" and bot.server_data[member.guild.id]["welcome"] != ""
 
-    return ctx.bot.server_data[ctx.guild.id]["welcome-channel"] != "" and ctx.bot.server_data[ctx.guild.id]["welcome"] != ""
+def has_goodbye(bot, member):
+    return bot.server_data[member.guild.id]["welcome-channel"] != "" and bot.server_data[member.guild.id]["goodbye"] != ""
 
-def has_goodbye(ctx):
-    if ctx.guild is None:
-        return False
-
-    return ctx.bot.server_data[ctx.guild.id]["welcome-channel"] != "" and ctx.bot.server_data[ctx.guild.id]["goodbye"] != ""
-
+UPDATE_NECROINS = "UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2"
+UPDATE_FLOWERS  = "UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3"
+UPDATE_PERMS    = "UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3"
 
 def has_perms(perms_level):
     def predicate(ctx): 

@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, GuildConverter, react_menu
+from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECROINS
 
 import re
 import json
@@ -78,7 +78,7 @@ class Admin():
         try:
             operation = simple_eval(s)
             self.bot.user_data[user.id]["money"] = int(operation)
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2;", self.bot.user_data[user.id]["money"], user.id)
+            await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[user.id]["money"], user.id)
             await ctx.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, self.bot.user_data[user.id]["money"]))
         except (NameError,SyntaxError):
             await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
@@ -193,7 +193,7 @@ class Admin():
             result = eval(code, env)
             if inspect.isawaitable(result):
                 result = await result
-            await ctx.send(f"{result}")
+            await ctx.send(f'{result.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")}')
         except Exception as e:
             await ctx.send(python.format(f'{type(e).__name__}: {e}'))
             return
@@ -236,10 +236,7 @@ class Admin():
         {usage}"""
         try:
             result  = await self.bot.query_executer(query)
-            if result:
-                await ctx.send(str(result))
-            else:
-                await ctx.send(":thumbsup:")
+            await ctx.send(":thumbsup:")
         except Exception as e:
             await ctx.send(python.format(f'{type(e).__name__}: {e}'))
             return
@@ -380,13 +377,10 @@ class Admin():
 
     @commands.command(hidden=True)
     @has_perms(6)
-    async def log(self, ctx, start : typing.Optional[int], *arguments):
+    async def log(self, ctx, start : typing.Optional[int] = 0, *arguments):
         """Get a list of commands.
 
         {usage}"""
-        if not start:
-            start = 0
-
         if arguments:
             raw_args = " AND ".join(arguments)
             sql = f"SELECT user_id, command, guild_id, message, time_used, can_run FROM necrobot.Logs WHERE {raw_args} ORDER BY time_used DESC"

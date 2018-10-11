@@ -73,11 +73,11 @@ class Profile():
                 money = random.choice(range(235, 450))
                 self.bot.user_data[member.id]["money"] += money
                 await ctx.send(f":m: | {member.mention}, **{ctx.author.display_name}** has given you their daily of **{money}** :euro:")
-                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[member.id]["money"], member.id)
+                await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[member.id]["money"], member.id)
             else:
                 await ctx.send(":m: | You have received your daily **200** :euro:")
                 self.bot.user_data[ctx.author.id]["money"] += 200
-                await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+                await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             
             self.bot.user_data[ctx.author.id]["daily"] = day
             await self.bot.query_executer("UPDATE necrobot.Users SET daily=$1 WHERE user_id = $2;", day, ctx.author.id)
@@ -118,9 +118,9 @@ class Profile():
             await payee.send(f":euro: | **{payer.display_name}** has transferred **{amount}$** to your profile")
             
             self.bot.user_data[payer.id]["money"] -= amount
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[payer.id]["money"], payer.id)
+            await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[payer.id]["money"], payer.id)
             self.bot.user_data[payee.id]["money"] += amount
-            await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2",self.bot.user_data[payee.id]["money"], payee.id)
+            await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[payee.id]["money"], payee.id)
             
         await msg.delete()
 
