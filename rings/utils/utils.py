@@ -12,6 +12,7 @@ def has_goodbye(bot, member):
 UPDATE_NECROINS = "UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2"
 UPDATE_FLOWERS  = "UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3"
 UPDATE_PERMS    = "UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3"
+UPDATE_VALUE    = "UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3"
 
 def has_perms(perms_level):
     def predicate(ctx): 

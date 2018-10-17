@@ -291,13 +291,13 @@ class Profile():
                 await msg.delete()
                 return
                 
-            spot = reply.content
+            spot = int(reply.content)
         elif spot > 8 and spot < 1:
             await ctx.send(":negative_squared_cross_mark: | Please select a spot between 1 and 8")
             return
 
         self.bot.user_data[ctx.author.id]["places"][spot] = badge 
-        await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, ctx.author.id, int(spot))
+        await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, ctx.author.id, spot)
 
         if badge == "":
             await ctx.send(f":white_check_mark: | The badge for position **{spot}** has been reset")

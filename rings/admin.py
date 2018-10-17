@@ -83,14 +83,20 @@ class Admin():
             await ctx.send(":negative_squared_cross_mark: | Not a valid badge")
             return
 
-        if subcommand == "add":
+        if subcommand == "add" and badge not in self.bot.user_data[user.id]["badges"]:
             self.bot.user_data[user.id]["badges"].append(badge)    
             await ctx.send(f":white_check_mark: | Granted the **{badge}** badge to user **{user}**")
-        elif subcommand == "delete":
+        elif subcommand == "delete" and badge in self.bot.user_data[user.id]["badges"]:
+            for key in [key for key, _badge in self.bot.user_data[user.id]["places"].items() if _badge == badge]:
+                self.bot.user_data[user.id]["places"][key] = ""
+                await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, user.id, key)
+
             self.bot.user_data[user.id]["badges"].remove(badge)    
             await ctx.send(f":white_check_mark: | Reclaimd the **{badge}** badge from user **{user}**")
+        else:
+            return
 
-        await self.bot.query_executer("UPDATE necrobot.Users SET badges = $3 WHERE user_id = $2", user.id, ",".join(self.bot.user_data[user.id]["badges"]))
+        await self.bot.query_executer("UPDATE necrobot.Users SET badges = $2 WHERE user_id = $1", user.id, ",".join(self.bot.user_data[user.id]["badges"]))
 
     @commands.command()
     @has_perms(6)
@@ -115,10 +121,10 @@ class Admin():
             await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
             return
 
-        msg = await ctx.send(":white_check_mark: | Operation successful. Change user balace to **{operation}**?")
+        msg = await ctx.send(f":white_check_mark: | Operation successful. Change user balace to **{operation}**?")
 
-        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
         def check(reaction, user):
             return msg.id == reaction.message.id and user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"]

@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
-from rings.utils.utils import has_perms, react_menu, UPDATE_NECROINS, UPDATE_FLOWERS
+from rings.utils.utils import has_perms, react_menu, UPDATE_NECROINS, UPDATE_FLOWERS, UPDATE_VALUE
 
 class Waifu():
     """This is based off the Nadeko bot's waifu module. The reason I copied it was to be able to run it on the same
@@ -174,7 +174,7 @@ class Waifu():
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] -= price
         await self.bot.query_executer(UPDATE_FLOWERS,self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"], ctx.author.id, ctx.guild.id)
         self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"] += price if self.bot.user_data[member.id]["waifu"][ctx.guild.id]["affinity"] == ctx.author.id else price//2
-        await self.bot.query_executer("UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3;", self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"])
+        await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"], member.id, ctx.guild.id)
         if choice in self.bot.user_data[member.id]["waifu"][ctx.guild.id]["gifts"]:
             self.bot.user_data[member.id]["waifu"][ctx.guild.id]["gifts"][choice] += 1
             await self.bot.query_executer("UPDATE necrobot.Gifts SET amount = $1 WHERE user_id = $2 AND guild_id = $3 AND gift = $4;", self.bot.user_data[member.id]["waifu"][ctx.guild.id]["gifts"][choice], member.id, ctx.guild.id, choice)
@@ -261,7 +261,7 @@ class Waifu():
             self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] -= price
             await self.bot.query_executer(UPDATE_FLOWERS,self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"], ctx.author.id, ctx.guild.id)
             self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"] = price
-            await self.bot.query_executer("UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3;", self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"])
+            await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"], member.id, ctx.guild.id)
 
             await ctx.send(f":white_check_mark: | You've claimed **{member.display_name}** as your waifu")
         elif price <= value:
@@ -462,7 +462,7 @@ class Waifu():
         `{pre}reset @ThisUser` - reset the value of the waifu to 50"""
 
         self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"] = amount
-        await self.bot.query_executer("UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3;", self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"])
+        await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"], member.id, ctx.guild.id)
         await ctx.send(f":white_check_mark: | Value of waifu {waifu.name} reset to {amount}")
 
 

@@ -27,14 +27,16 @@ class Social():
 
     @commands.command(aliases=["sean","joke","dad"])
     async def dadjoke(self, ctx):
-        """Send a random dadjoke from a long list. Whoever PM's Necro with the reason for one of the aliases being "sean" gets a free 1,000 NecroBot currency.
+        """Send a random dadjoke from a long list. 
         
         {usage}"""
         await ctx.send(f":speaking_head: | **{random.choice(self.dad_joke)}**")
 
     @commands.command()
     async def riddle(self, ctx):
-        """Ask a riddle to the user from a long list and waits 30 seconds for the answer. If the user fails to answer they go feed Gollum's fishies. To answer the riddle simply type out the answer, no need to prefix it with anything. 
+        """Ask a riddle to the user from a long list and waits 30 seconds for the answer. If the 
+        user fails to answer they go feed Gollum's fishies. To answer the riddle simply type out 
+        the answer, no need to prefix it with anything. 
         
         {usage}"""
         riddle = random.choice(self.riddles_list)
@@ -55,7 +57,8 @@ class Social():
 
     @commands.command()
     async def tarot(self, ctx):
-        """Using the mystical art of tarology, NecroBot reads the user's fate in the card and returns the explanation for each card. Not to be taken seriously. 
+        """Using the mystical art of tarology, NecroBot reads the user's fate in the card and 
+        returns the explanation for each card. Not to be taken seriously. 
         
         {usage}"""
         card_list = random.sample(self.tarot_list, 3)
@@ -91,8 +94,8 @@ class Social():
 
     @commands.command()
     async def pokefusion(self, ctx, pokemon1 = None, pokemon2 = None):
-        """Generates a rich embed containing a pokefusion from Gen 1, this can either be a two random pokemons, one random pokemon and
-        one chosen pokemon or two chosen pokemons.
+        """Generates a rich embed containing a pokefusion from Gen 1, this can either be a two random pokemons, 
+        one random pokemon and one chosen pokemon or two chosen pokemons.
         
         {usage}
 
