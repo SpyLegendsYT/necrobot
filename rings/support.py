@@ -50,6 +50,7 @@ class Support():
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
         embed.add_field(name="Helpful Info", value=f"User: {ctx.author.mention} \nServer: {ctx.guild.name} \nServer ID: {ctx.guild.id}")
         await self.bot.get_channel(398894681901236236).send(embed=embed)
+        await ctx.send(":white_check_mark: | Report sent!")
 
     @commands.group(invoke_without_command=True)
     async def news(self, ctx, index : int = 1):

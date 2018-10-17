@@ -151,7 +151,7 @@ class Server():
         embed.add_field(name="Goodbye Message", value=server["goodbye"][:1024] if server["goodbye"] != "" else "None", inline=False)
         embed.add_field(name="Mute Role", value=role_obj.mention if server["mute"] != "" else "Disabled")
         embed.add_field(name="Prefix", value="`" + server["prefix"] + "`" if server["prefix"] != "" else "`n!`")
-        embed.add_field(name="Broadcast Channel", value=self.bot.get_channel(server["broadcast-channel"]).mention if server["broadcast-channel"] != "" else "None")
+        embed.add_field(name="Broadcast Channel", value=self.bot.get_channel(server["broadcast-channel"]).mention if server["broadcast-channel"] != "" else "Disabled")
         embed.add_field(name="Broadcast Frequency", value="Every " + str(server["broadcast-time"]) + " hour(s)" if server["broadcast-time"] != "" else "None")
         embed.add_field(name="Broadcast Message", value=server["broadcast"] if server["broadcast"] != "" else "None", inline=False)
         embed.add_field(name="Auto Role", value= role_obj2.mention if server["auto-role"] != "" else "None")
@@ -321,9 +321,8 @@ class Server():
         `{pre}broadcast disable` - disables broadcasted messages"""
         if disable == "disable":
             await ctx.send(":white_check_mark: | **Broadcast messages disabled**")
-            self.bot.server_data[ctx.message.guild.id]["broadcast"] = ""
             self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0, broadcast_message = '' WHERE guild_id = $1;", ctx.guild.id)
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
 
 
     @broadcast.command(name="channel")

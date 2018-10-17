@@ -26,41 +26,75 @@ class Admin():
         await guild.leave()
         await ctx.send(f":white_check_mark: | Okay Necro, I've left {guild.name}")
 
+    @commands.group()
+    async def admin(self, ctx):
+        """{usage}"""
+        pass
 
-    @commands.command(name="admin-perms")
+
+    @admin.command(name="perms")
     @commands.is_owner()
-    async def a_perms(self, ctx, server : int, user : int, level : int):
+    async def admin_perms(self, ctx, server : GuildConverter, user : discord.User, level : int):
         """For when regular perms isn't enough.
 
         {usage}"""
-        user_name = self.bot.get_member(user)
-        guild_name = self.bot.get_guild(server)
+        self.bot.user_data[user.id]["perms"][server.id] = level
+        await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server.id, user.id)
 
-        self.bot.user_data[user.id]["perms"][server] = level
-        await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server, user)
+        await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}** on server **{server.name}**" )
 
-        await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}** on server {guild_name}" )
+    @admin.command(name="disable")
+    @has_perms(6)
+    async def admin_disable(self, ctx, *, command : str):
+        """For when regular disable isn't enough
 
-
-    @commands.command()
-    @has_perms(2)
-    async def set(self, ctx, user : discord.Member):
-        """Allows server specific authorities to set the default stats for a user that might have slipped past the 
-        on_ready and on_member_join events (Permission level required: 2+ (Moderator))
-         
         {usage}
-        
-        __Example__
-        `{pre}setstats @NecroBot` - sets the default stats for NecroBot"""
-        if user.id in self.bot.user_data:
-            await ctx.send("Stats already set for user")
+        """
+        command  = self.bot.get_command(command)
+        if command.enabled:
+            command.enabled = False
+            await ctx.send(f":white_check_mark: | Disabled **{command.name}**")
         else:
-            await self.bot.default_stats(user, ctx.message.guild)
-            await ctx.send("Stats set for user")
+            await ctx.send(f":negative_squared_cross_mark: | Command **{command.name}** already disabled")
+
+    @admin.command(name="enable")
+    @has_perms(6)
+    async def admin_enable(self, ctx, *, command : str):
+        """For when regular enable isn't enough
+
+        {usage}
+        """
+        command  = self.bot.get_command(command)
+        if command.enabled:
+            await ctx.send(f":negative_squared_cross_mark: | Command **{command.name}** already enabled")
+        else:
+            command.enabled = True
+            await ctx.send(f":white_check_mark: | Enabled **{command.name}**")
+
+    @admin.command(name="badge")
+    @has_perms(6)
+    async def admin_badge(self, ctx, subcommand : str, user : discord.User, badge : str):
+        """Used to grant special badges to users. Uses add/delete subcommand
+
+        {usage}
+        """
+        badges = list(self.bot.cogs["Profile"].badges_d.keys()) + self.bot.cogs["Profile"].special_badges
+        if badge not in badges:
+            await ctx.send(":negative_squared_cross_mark: | Not a valid badge")
+            return
+
+        if subcommand == "add":
+            self.bot.user_data[user.id]["badges"].append(badge)    
+            await ctx.send(f":white_check_mark: | Granted the **{badge}** badge to user **{user}**")
+        elif subcommand == "delete":
+            self.bot.user_data[user.id]["badges"].remove(badge)    
+            await ctx.send(f":white_check_mark: | Reclaimd the **{badge}** badge from user **{user}**")
+
+        await self.bot.query_executer("UPDATE necrobot.Users SET badges = $3 WHERE user_id = $2", user.id, ",".join(self.bot.user_data[user.id]["badges"]))
 
     @commands.command()
     @has_perms(6)
-    async def add(self, ctx, user : discord.Member, *, equation : str):
+    async def add(self, ctx, user : discord.User, *, equation : str):
         """Does the given pythonic equations on the given user's NecroBot balance. (Permission level required: 6+ (NecroBot Admin))
         `*` - for multiplication
         `+` - for additions
@@ -77,11 +111,32 @@ class Admin():
         s = str(self.bot.user_data[user.id]["money"]) + equation
         try:
             operation = simple_eval(s)
+        except (NameError,SyntaxError):
+            await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
+            return
+
+        msg = await ctx.send(":white_check_mark: | Operation successful. Change user balace to **{operation}**?")
+
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+
+        def check(reaction, user):
+            return msg.id == reaction.message.id and user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"]
+
+        try:
+            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError as e:
+            await msg.delete()
+            return
+
+        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await ctx.send(f":white_check_mark: | Cancelled.")
+            await msg.delete()
+        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             self.bot.user_data[user.id]["money"] = int(operation)
             await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[user.id]["money"], user.id)
             await ctx.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, self.bot.user_data[user.id]["money"]))
-        except (NameError,SyntaxError):
-            await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
+            await msg.clear_reactions()
 
     @commands.command()
     @has_perms(6)
@@ -105,7 +160,7 @@ class Admin():
     @commands.command(hidden=True)
     @commands.is_owner()
     async def get(self, ctx, id : int):
-        """Returns the name of the user or server based on the given id. Used to debug the auto-moderation feature. 
+        """Returns the name of the user or server based on the given id. Used to debug errors. 
         (Permission level required: 7+ (The Bot Smith))
         
         {usage}
@@ -142,7 +197,7 @@ class Admin():
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def invites(self, ctx, *, guild : int = None):
+    async def invites(self, ctx, *, guild : GuildConverter = None):
         """Returns invites (if the bot has valid permissions) for each server the bot is on if no guild id is specified. 
         (Permission level required: 7+ (The Bot Smith))
         
@@ -172,7 +227,6 @@ class Admin():
         
         __Example__
         `It's python code, either you know it or you shouldn't be using this command`"""
-        code = code.strip('` ')
         python = '```py\n{}\n```'
         result = None
 
@@ -193,7 +247,8 @@ class Admin():
             result = eval(code, env)
             if inspect.isawaitable(result):
                 result = await result
-            await ctx.send(f'{result.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")}')
+            result = str(result).replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
+            await ctx.send(result)
         except Exception as e:
             await ctx.send(python.format(f'{type(e).__name__}: {e}'))
             return

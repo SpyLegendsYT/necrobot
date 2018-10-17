@@ -133,3 +133,9 @@ CREATE TABLE necrobot.Aliases(
     guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
     PRIMARY KEY(alias, original, guild_id)
 );
+
+CREATE TABLE necrobot.Feeds(
+    feed varchar(20)
+    webhook_url varchar(200)
+      
+)

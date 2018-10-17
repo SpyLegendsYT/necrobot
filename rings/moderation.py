@@ -12,7 +12,7 @@ class Moderation():
     All you need to keep your server clean and tidy"""
     def __init__(self, bot):
         self.bot = bot
-        self.obligatory = ("Moderation", "Server", "Support", "Admin", "Events", "disable")
+        self.obligatory = ("Moderation", "Server", "Support", "Admin", "Events", "disable", "enable")
 
     @commands.command()
     @has_perms(1)
@@ -222,9 +222,9 @@ class Moderation():
             await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
             return
 
-        if command in self.obligatory:
-            await ctx.send(":negative_squared_cross_mark: | You cannot disable this command/cog", delete_after=5)
-            return
+        # if command in self.obligatory:
+        #     await ctx.send(":negative_squared_cross_mark: | You cannot disable this command/cog", delete_after=5)
+        #     return
 
         disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
         if command not in self.bot.cogs:

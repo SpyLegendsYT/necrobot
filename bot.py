@@ -42,10 +42,11 @@ extensions = [
 ]
 
 replyList = [
-    "*yawn* What can I do fo... *yawn*... for you?", 
+    "*yawn* What can I do fo... *yawn*... for you, {user}?", 
     "NecroBot do that, NecroBot do this, never NecroBot how are y... Oh, hey how can I help?",
-    "I wonder how other bots are treated :thinking: Do they also put up with their owners' terrible coding habits?",
-    "Second sight ordains it! I mean sure..."
+    "I wonder if other bots also have to put with the same terrible coding practices.",
+    "Second sight ordains it! I mean sure...",
+    "If anybody asks you didn't hear it from me, but Edain is the vastly superior mod."
     ]
 
 class NecroBot(commands.Bot):
@@ -64,7 +65,7 @@ class NecroBot(commands.Bot):
         self.version = 2.4
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["got"]
+        self.new_commands = ["got", "enable", "admin"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -129,7 +130,7 @@ class NecroBot(commands.Bot):
             print(f"Logged in as {self.user}")
         else:
             channel = self.get_channel(318465643420712962)
-            await channel.send("**Bot Resumed**")
+            await channel.send("**Bot Resuming**")
 
     async def on_error(self, event, *args, **kwargs): 
         channel = self.get_channel(415169176693506048)
@@ -142,7 +143,7 @@ class NecroBot(commands.Bot):
         try:
             await channel.send(embed=embed)
         except discord.HTTPException:
-            await channel.send(f'Bot: Ignoring exception in {event}')
+            await channel.send(f"Bot: Ignoring exception in {event}")
 
 
     async def on_message(self, message):
@@ -150,11 +151,10 @@ class NecroBot(commands.Bot):
         channel_id = message.channel.id
         regex_match = r"(https://modding-union\.com/index\.php/topic).\d*"
 
-        if message.author.bot or user_id in self.settings["blacklist"]:
+        if message.author.bot or user_id in self.settings["blacklist"] or message.type != discord.MessageType.default:
             return
 
-        if user_id not in self.user_data and message.guild:
-            await self.default_stats(message.author, message.guild)
+        await self.default_stats(message.author, message.guild)
 
         url = re.search(regex_match, message.content)
         if url:
@@ -184,10 +184,7 @@ class NecroBot(commands.Bot):
 bot = NecroBot()
 
 for extension in extensions:
-    try:
-        bot.load_extension(f"rings.{extension}")
-    except Exception as e:
-        print(f'Failed to load extension {extension}.', file=sys.stderr)
-        traceback.print_exc()
+    bot.load_extension(f"rings.{extension}")
+       
 
 bot.run(token)

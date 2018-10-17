@@ -2,6 +2,8 @@
 import discord
 from discord.ext import commands
 
+from rings.utils.utils import UPDATE_NECROINS
+
 import os
 import random
 import asyncio
@@ -32,6 +34,7 @@ class Profile():
             "edain": 5000, "aotr": 5000,
             "rohan": 500, "angmar": 500, "dwarves": 500, "goblins": 500, "gondor": 500, "imladris": 500, "isengard": 500, "lorien": 500, "mordor": 500
         }
+        self.special_badges = ["admin", "smith", "bug"]
         self.badges_coords = [(516, 261, 598, 343), (609, 261, 691, 343), (703, 261, 785, 343), (796, 261, 878, 343), (516, 350, 598, 432), (609, 350, 691, 432), (704, 350, 786, 432), (796, 350, 878, 432)]
         
     def midnight(self):

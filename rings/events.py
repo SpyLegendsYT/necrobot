@@ -27,6 +27,7 @@ class NecroEvents():
         self.bot.query_executer = self.query_executer
         self.bot.default_stats = self.default_stats
         self.bot.load_cache = self.load_cache
+        self.bot.guild_checker = self.guild_checker
         self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
         self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
 
@@ -148,8 +149,11 @@ class NecroEvents():
         while not self.bot.is_closed():
             if self.bot.counter >= 24:
                 self.bot.counter = 0
+            try:
+                await asyncio.sleep(time) # task runs every hour
+            except asyncio.CancelledError:
+                break
 
-            await asyncio.sleep(time) # task runs every hour
             start = t.time()
             self.bot.counter += 1
 
@@ -185,6 +189,8 @@ class NecroEvents():
                 status = self.bot.statuses.pop(0)
                 self.bot.statuses.append(status)
                 await self.bot.change_presence(activity=discord.Game(name=status.format(guild=len(self.bot.guilds), members=len(self.bot.users))))
+        except asyncio.CancelledError:
+            pass
         except Exception as e:
             self.bot.dispatch("error", e)
 
@@ -196,6 +202,9 @@ class NecroEvents():
             if guild.id not in self.bot.server_data:
                     self.bot.server_data[guild.id] = self.bot._new_server()
                     await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
+            else:
+                await self.bot.guild_checker(guild)
+
         await msg.edit(content="All servers checked")
 
         members = self.bot.get_all_members()
@@ -328,7 +337,7 @@ class NecroEvents():
 
         for member in guild.members:
             await self.bot.default_stats(member, guild)
-
+            
         await guild.owner.send(embed=self.bot.tutorial_e)
 
     async def on_message_delete(self, message):
@@ -415,7 +424,7 @@ class NecroEvents():
     async def on_member_remove(self, member):
         if self.bot.user_data[member.id]["perms"][member.guild.id] < 6:
             self.bot.user_data[member.id]["perms"][member.guild.id] = 0
-            await self.bot.query_executer(UPDATE_PERMS, member.guild.id, member.id)
+            await self.bot.query_executer(UPDATE_PERMS, 0, member.guild.id, member.id)
 
         if has_goodbye(self.bot, member):
             channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
@@ -459,7 +468,66 @@ class NecroEvents():
                 pass
 
             if len(users) >=  self.bot.server_data[user.guild.id]["starboard-limit"]:
-                await self.bot._star_message(reaction.message)        
+                await self.bot._star_message(reaction.message)   
+
+    async def on_guild_channel_delete(self, channel):
+        guild = self.bot.server_data[channel.guild.id]
+
+        if channel.id == guild["broadcast-channel"]:
+            guild["broadcast-channel"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0 WHERE guild_id = $1;", channel.guild.id)
+
+        if channel.id == guild["starboard-channel"]:
+            guild["starboard"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = 0 WHERE guild_id = $1;", channel.guild.id)
+
+        if channel.id == guild["welcome-channel"]:
+            guild["welcome-channel"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = 0 WHERE guild_id = $1;", channel.guild.id)
+
+        if channel.id == guild["automod"]:
+            guild["automod"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", channel.guild.id) 
+
+    async def on_guild_role_delete(self, role):
+        guild = self.bot.server_data[role.guild.id]
+
+        if role.id == guild["mute"]:
+            guild["mute"] = "" 
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", role.guild.id)
+
+        if role.id in guild["self-roles"]:
+            guild["self-roles"].remove(role.id)
+            await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", role.guild.id, role.id)
+
+    async def guild_checker(self, guild):
+        channels = [channel.id for channel in guild.channels]
+        roles = [role.id for role in guild.roles] 
+        g = self.bot.server_data[guild.id]
+
+        if g["broadcast-channel"] not in channels:
+            g["broadcast-channel"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0 WHERE guild_id = $1;", guild.id)
+
+        if g["starboard-channel"] not in channels:
+            g["starboard"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = 0 WHERE guild_id = $1;", guild.id)
+
+        if g["welcome-channel"] not in channels:
+            g["welcome-channel"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = 0 WHERE guild_id = $1;", guild.id)
+
+        if g["automod"] not in channels:
+            g["automod"] = ""
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", guild.id) 
+
+        if g["mute"] not in roles:
+            g["mute"] = "" 
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", guild.id)
+
+        for role in [role for role in g["self-roles"] if role not in roles]:
+            guild["self-roles"].remove(role)
+            await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", guild.id, role)
 
 def setup(bot):
     bot.add_cog(NecroEvents(bot))
