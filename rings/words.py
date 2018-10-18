@@ -5,6 +5,7 @@ from discord.ext.commands.cooldowns import BucketType
 from rings.utils.utils import react_menu
 from rings.utils.config import define_headers
 
+import json
 import random
 import aiohttp
 import asyncio
@@ -54,7 +55,7 @@ class Literature():
             await ctx.send(f"Translated from {translated.src} to {translated.dest}: **{translated.text}**")
         except ValueError:
             await ctx.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")
-        except AttributeError:
+        except (AttributeError, json.JSONDecodeError):
             await ctx.send(":negative_squared_cross_mark: | Goolge API being mean again, please wait for another fix to be patched through.")
 
     @translate.command(name="list")

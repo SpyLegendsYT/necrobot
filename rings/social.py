@@ -43,17 +43,13 @@ class Social():
         await ctx.send(f"Riddle me this {ctx.message.author.name}: \n{riddle[0]}")
 
         def check(m):
-            return m.author == ctx.message.author and m.channel == ctx.message.channel
+            return m.author == ctx.message.author and m.channel == ctx.message.channel and riddle[1] in m.content
 
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=30)
-        except asyncio.TimeoutError:
-            return
-
-        if riddle[1] in msg.content.lower():
             await ctx.send("Well played, that was the correct answer.")
-        else:
-            await ctx.send("Wrong answer! Now you go to feed the fishies!")
+        except asyncio.TimeoutError:
+            await ctx.send("Wrong answer! Now you go to feed the fishies!")            
 
     @commands.command()
     async def tarot(self, ctx):

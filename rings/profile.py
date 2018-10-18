@@ -42,7 +42,7 @@ class Profile():
         return (midnight - d.datetime.now()).seconds
 
     @commands.command()
-    async def balance(self, ctx, user : discord.Member = None):
+    async def balance(self, ctx, *, user : discord.Member = None):
         """Prints the given user's NecroBot balance, if no user is supplied then it will print your own NecroBot balance.
         
         {usage}
@@ -56,7 +56,7 @@ class Profile():
             await ctx.send(f":atm: | **{ctx.author.name}** you have **{'{:,}'.format(self.bot.user_data[ctx.author.id]['money'])}** :euro:")
 
     @commands.command(name="daily")
-    async def claim(self, ctx, member : discord.Member = None):
+    async def claim(self, ctx, *, member : discord.Member = None):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day. Can
         also be gifted to a user for some extra cash. 
         
@@ -127,7 +127,7 @@ class Profile():
 
     @commands.command()
     @commands.guild_only()
-    async def info(self, ctx, user : discord.Member = None):
+    async def info(self, ctx, *, user : discord.Member = None):
         """Returns a rich embed of the given user's info. If no user is provided it will return your own info.
         
         {usage}
@@ -245,7 +245,7 @@ class Profile():
         `{pre}badges buy` - sends the link to view the rest of the badges"""
         await ctx.send(f"You have the following badges: {' - '.join(self.bot.user_data[ctx.author.id]['badges'])}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>")
 
-    @badges.command("place")
+    @badges.command(name = "place")
     async def badges_place(self, ctx, badge : str = "none", spot : int = None):
         """Opens the grid menu to allow you to place a badge or reset a badge. Simply supply a badge name to the command to
         place a badge or supply "none" to reset the grid location.
@@ -301,7 +301,7 @@ class Profile():
         else:
             await ctx.send(f":white_check_mark: | Placed badge **{badge}** on position **{spot}**")
 
-    @badges.command("buy")
+    @badges.command(name = "buy")
     async def badges_buy(self, ctx, badge : str = ""):
         """Allows to buy the given badge or sends a link to access the list of all possible badges. That link can be used
         to preview the badges.
