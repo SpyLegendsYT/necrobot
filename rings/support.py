@@ -92,8 +92,8 @@ class Support():
         news_e = {**news , **self.base_d}
         embed = discord.Embed.from_data(news_e)
         msg = await ctx.send(embed=embed)
-        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
         def check(reaction, user):
             return user == ctx.message.author and reaction.emoji in ["\N{NEGATIVE SQUARED CROSS MARK}", "\N{WHITE HEAVY CHECK MARK}"] and msg.id == reaction.message.id

@@ -124,7 +124,8 @@ CREATE TABLE necrobot.Warnings(
 CREATE TABLE necrobot.Starred(
     message_id bigint PRIMARY KEY,
     starred_id bigint,
-    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE necrobot.Aliases(
@@ -135,7 +136,7 @@ CREATE TABLE necrobot.Aliases(
 );
 
 CREATE TABLE necrobot.Feeds(
-    feed varchar(20)
+    feed varchar(20),
     webhook_url varchar(200)
       
 )

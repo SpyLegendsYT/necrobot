@@ -224,11 +224,10 @@ class Misc():
         """Posts a random dog picture from random.dog 
         
         {usage}"""
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as cs:
+        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as cs:
             async with cs.get('https://random.dog/woof.json') as r:
                 res = await r.json()
                 await ctx.send(embed=discord.Embed().set_image(url=res['url']))
-
 
 def setup(bot):
     bot.add_cog(Misc(bot))

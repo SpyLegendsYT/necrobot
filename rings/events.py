@@ -525,7 +525,7 @@ class NecroEvents():
             await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", guild.id)
 
         for role in [role for role in g["self-roles"] if role not in roles]:
-            guild["self-roles"].remove(role)
+            g["self-roles"].remove(role)
             await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", guild.id, role)
 
 def setup(bot):
