@@ -9,7 +9,6 @@ import json
 import random
 import asyncio
 import aiohttp
-import datetime as d
 
 class Misc():
     """A cog for all bunch commands that don't have a specific category they can stick to."""

@@ -148,21 +148,26 @@ class Utilities():
         await react_menu(self.bot, ctx, len(res["data"][choice])//5, _embed_generator)
 
     @commands.command(enabled=False)
-    async def reminder(self, ctx, *, message):
-        """Creates a reminder in seconds. Doesn't work at the moment.
+    async def remindme(self, ctx, *, message):
+        """Creates a reminder in seconds. Doesn't work at the moment. The following times can be used: days (d), 
+        hours (h), minutes (m), seconds (s).
 
         {usage}
 
         __Examples__
-        `{pre}reminder do the dishes in 40` - will remind you to do the dishes in 40 seconds"""
+        `{pre}remindme do the dishes in 40s` - will remind you to do the dishes in 40 seconds
+        `{pre}remindme do the dishes in 2m` - will remind you to do the dishes in 2 minutes
+        `{pre}remindme do the dishes in 4d2h45m` - will remind you to do the dishes in 4 days, 2 hours and 45 minutes
+        """
         if "in" not in message:
             await ctx.send(":negative_squared_cross_mark: | Something went wrong, you need to use the format <message> in <time>")
 
         text = message.split(" in ")[0]
-        time =int(message.split(" in ")[1])
-        await ctx.send(f":white_check_mark: | Okay I will remind you in **{time}** seconds of **{text}**")
+        time = message.split(" in ")[1]
+        sleep = self.bot.conveter(time)
+        await ctx.send(f":white_check_mark: | Okay I will remind you in **{time}** of **{text}**")
 
-        await asyncio.sleep(time)
+        await asyncio.sleep(sleep)
 
         await ctx.send(f":alarm_clock: | You asked to be reminded: **{text}**")
 

@@ -7,7 +7,6 @@ from rings.utils.utils import has_goodbye, has_welcome, UPDATE_PERMS, UPDATE_FLO
 
 import io
 import sys
-import aiohttp
 import asyncio
 import asyncpg
 import traceback

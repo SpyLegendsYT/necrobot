@@ -57,7 +57,7 @@ class Tags():
         `member_count` - returns the number of member
         
         `{member.keyword}`
-        Represents the user that called the command
+        Represents the user that called the tag
         __Keywords__
         `display_name` - the user nick if they have one, else the user's username
         `name` - the user's username

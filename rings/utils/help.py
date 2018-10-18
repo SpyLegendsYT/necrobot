@@ -1,8 +1,9 @@
 #!/usr/bin/python3.6
-import discord
 from discord.ext.commands import *
 
-import itertools, inspect, re, asyncio
+import inspect
+import asyncio
+import itertools
 
 class MissingAttrHandler(str):
     def __init__(self, format):

@@ -4,7 +4,6 @@ from discord.ext import commands
 
 from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECROINS
 
-import re
 import json
 import typing
 import inspect

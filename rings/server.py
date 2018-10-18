@@ -4,7 +4,6 @@ from discord.ext import commands
 
 from rings.utils.utils import has_perms, react_menu, UPDATE_PERMS
 
-import re
 from typing import Union
 
 class Server():

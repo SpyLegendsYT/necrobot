@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from rings.utils.db import db_gen
-from rings.utils.config import token, dbpass
+from rings.utils.config import token
 from rings.utils.help import NecroBotHelpFormatter
 
 import re
@@ -41,31 +41,25 @@ extensions = [
     "tags"
 ]
 
-replyList = [
-    "*yawn* What can I do fo... *yawn*... for you, {user}?", 
-    "NecroBot do that, NecroBot do this, never NecroBot how are y... Oh, hey how can I help?",
-    "I wonder if other bots also have to put with the same terrible coding practices.",
-    "Second sight ordains it! I mean sure...",
-    "If anybody asks you didn't hear it from me, but Edain is the vastly superior mod."
-    ]
-
 class NecroBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=get_pre, 
-                         description="A bot for moderation and LOTR", 
-                         formatter=NecroBotHelpFormatter(), 
-                         case_insensitive=True, 
-                         owner_id=241942232867799040, 
-                         activity=discord.Game(name="Bot booting...", type=0),
-                         max_messages=25000)
+        super().__init__(
+            command_prefix=get_pre, 
+            description="A bot for moderation and LOTR", 
+            formatter=NecroBotHelpFormatter(), 
+            case_insensitive=True, 
+            owner_id=241942232867799040, 
+            activity=discord.Game(name="Bot booting...", type=0),
+            max_messages=25000
+        )
 
         self.uptime_start = t.time()
         self.user_data, self.server_data, self.starred = db_gen()
 
-        self.version = 2.4
+        self.version = 2.5
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["got", "enable", "admin"]
+        self.new_commands = ["got", "enable", "admin", "starboard"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
@@ -167,9 +161,6 @@ class NecroBot(commands.Bot):
         if not isinstance(message.channel, discord.DMChannel):
             self.user_data[user_id]["exp"] += random.randint(2,5)
 
-            if message.content.startswith(self.user.mention):
-                await message.channel.send(random.choice(replyList))
-
             if self.user_data[user_id]["perms"][message.guild.id] < 3:
                 message.content = message.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
         else:
@@ -180,11 +171,7 @@ class NecroBot(commands.Bot):
 
         await self.process_commands(message)
 
-
 bot = NecroBot()
-
 for extension in extensions:
-    bot.load_extension(f"rings.{extension}")
-       
-
+    bot.load_extension(f"rings.{extension}")   
 bot.run(token)

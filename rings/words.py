@@ -5,12 +5,10 @@ from discord.ext.commands.cooldowns import BucketType
 from rings.utils.utils import react_menu
 from rings.utils.config import define_headers
 
-import re
 import random
 import aiohttp
 import asyncio
 import googletrans
-import urbandictionary as ud
 
 translator = googletrans.Translator()
 
