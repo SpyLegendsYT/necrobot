@@ -116,7 +116,7 @@ class NecroEvents():
         
         if message.id not in self.bot.starred:
             self.bot.starred.append(message.id)
-            await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3);", message.id, msg.id, msg.guild.id)
+            await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3, $4);", message.id, msg.id, msg.guild.id, message.author.id)
 
     def converter(self, time):
         days = time.rpartition("d")[0]
