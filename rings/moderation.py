@@ -4,7 +4,6 @@ from discord.ext import commands
 
 from rings.utils.utils import has_perms
 
-import re
 import asyncio
 
 class Moderation():
