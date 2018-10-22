@@ -1,9 +1,7 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 
 import datetime as d
-
 
 class Tag(commands.Converter):
     async def convert(self, ctx, argument):
@@ -15,11 +13,18 @@ class Tag(commands.Converter):
         else:
             raise commands.BadArgument(f"Tag {argument} doesn't exist in server.")
 
-
 class Tags():
     def __init__(self, bot):
         self.bot = bot
         self.restricted = ("list", "raw", "add", "edit", "info", "delete", "alias")
+
+    def is_tag_owner(self, ctx, tag):
+        if ctx.author.id == self.bot.server_data[ctx.guild.id]["tags"][tag]["owner"]:
+            return True
+        elif self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] >= 4:
+            return True
+        else:
+            raise commands.CheckFailure("You don't have permissions to modify this tag")
 
     @commands.group(invoke_without_command = True, aliases=["t","tags"])
     @commands.guild_only()
@@ -34,13 +39,13 @@ class Tags():
         for arg in tag_args:
             arg_dict["arg"+str(tag_args.index(arg))] = arg
 
-        tag_content = self.bot.server_data[ctx.message.guild.id]["tags"][tag]["content"]
+        tag_content = self.bot.server_data[ctx.guild.id]["tags"][tag]["content"]
         try:
-            await ctx.channel.send(tag_content.format(server=ctx.message.guild, member=ctx.message.author, channel=ctx.message.channel, content=ctx.message.content,**arg_dict))
-            self.bot.server_data[ctx.message.guild.id]["tags"][tag]["counter"] += 1
+            await ctx.send(tag_content.format(server=ctx.guild, member=ctx.author, channel=ctx.channel, content=ctx.content,**arg_dict))
+            self.bot.server_data[ctx.guild.id]["tags"][tag]["counter"] += 1
             await self.bot.query_executer("UPDATE necrobot.Tags SET uses = uses + 1 WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
         except KeyError as e:
-            await ctx.channel.send(f"Expecting the following argument: {e.args[0]}")
+            await ctx.send(f"Expecting the following argument: {e.args[0]}")
 
     @tag.command(name="add")
     @commands.guild_only()
@@ -91,13 +96,12 @@ class Tags():
         tag = tag.lower()
         if tag in self.restricted:
             await ctx.send(":negative_squared_cross_mark: | Tag not created, tag name is a reserved keyword")
-        elif tag not in self.bot.server_data[ctx.message.guild.id]["tags"]:
-            sanitized = content
-            self.bot.server_data[ctx.message.guild.id]["tags"][tag] = {'content':sanitized,'owner':ctx.message.author.id, 'created':d.datetime.today().strftime("%d - %B - %Y %H:%M"), 'counter':0}
-            await self.bot.query_executer("INSERT INTO necrobot.Tags VALUES ($1, $2, $3, $4, 0, $5);", ctx.guild.id, tag, content, ctx.author.id, d.datetime.today().strftime("%d - %B - %Y %H:%M"))
-            await ctx.channel.send(":white_check_mark: | Tag " + tag + " added")
+        elif tag not in self.bot.server_data[ctx.guild.id]["tags"]:
+            self.bot.server_data[ctx.guild.id]["tags"][tag] = {'content':content,'owner':ctx.author.id, 'created':d.datetime.today().strftime("%d - %B - %Y %H:%M"), 'counter':0}
+            await self.bot.query_executer("INSERT INTO necrobot.Tags VALUES ($1, $2, $3, $4, 0, $5)", ctx.guild.id, tag, content, ctx.author.id, d.datetime.today().strftime("%d - %B - %Y %H:%M"))
+            await ctx.send(f":white_check_mark: | Tag {tag} added")
         else:
-            await ctx.channel.send(":negative_squared_cross_mark: | A tag with this name already exists")
+            await ctx.send(":negative_squared_cross_mark: | A tag with this name already exists")
 
     @tag.group(name="delete")
     @commands.guild_only()
@@ -108,17 +112,16 @@ class Tags():
         
         __Example__
         `{pre}tag delete necro` - removes the tag 'necro' if you are the owner of if you have a permission level of 4+"""
-        if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
-            del self.bot.server_data[ctx.message.guild.id]["tags"][tag]
-            await self.bot.query_executer("DELETE FROM necrobot.Tags WHERE guild_id = $1 AND name = $2;", ctx.guild.id, tag)
-            for alias, tag_name in self.bot.server_data[ctx.guild.id]["aliases"].items():
-                if tag_name == tag:
-                    del self.bot.server_data[ctx.guild.id]["aliases"][alias]
-                    await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+        self.is_tag_owner(ctx, tag)
 
-            await ctx.channel.send(f":white_check_mark: | Tag {tag} and its aliases removed")
-        else:
-            await ctx.channel.send(":negative_squared_cross_mark: | You can't delete someone else's tag.")
+        del self.bot.server_data[ctx.guild.id]["tags"][tag]
+        await self.bot.query_executer("DELETE FROM necrobot.Tags WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
+        for alias, tag_name in self.bot.server_data[ctx.guild.id]["aliases"].items():
+            if tag_name == tag:
+                del self.bot.server_data[ctx.guild.id]["aliases"][alias]
+                await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+
+        await ctx.send(f":white_check_mark: | Tag {tag} and its aliases removed")
 
     @tag_del.command(name="alias")
     @commands.guild_only()
@@ -136,13 +139,11 @@ class Tags():
         except commands.BadArgument:
             raise commands.BadArgument(f"Alias {alias} does not exist.")
 
-        if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
-            del self.bot.server_data[ctx.guild.id]["aliases"][alias]
-            await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+        self.is_tag_owner(ctx, tag)
 
-            await ctx.channel.send(f":white_check_mark: | Alias `{alias}` removed")
-        else:
-            await ctx.channel.send(":negative_squared_cross_mark: | You can't delete the alias to somebody else's tag.")
+        del self.bot.server_data[ctx.guild.id]["aliases"][alias]
+        await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+        await ctx.send(f":white_check_mark: | Alias `{alias}` removed")
 
     @tag.command(name="edit")
     @commands.guild_only()
@@ -153,12 +154,11 @@ class Tags():
         
         __Example__
         `{pre}tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
-        if ctx.message.author.id == self.bot.server_data[ctx.message.guild.id]["tags"][tag]["owner"] or self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= 4:
-            self.bot.server_data[ctx.message.guild.id]["tags"][content]["content"] = text
-            await self.bot.query_executer("UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", content, ctx.guild.id, tag)
-            await ctx.channel.send(f":white_check_mark: | Tag `{tag}` modified")
-        else:
-            await ctx.channel.send(":negative_squared_cross_mark: | You can't edit someone else's tag.")
+        self.is_tag_owner(ctx, tag)
+
+        self.bot.server_data[ctx.guild.id]["tags"][content]["content"] = text
+        await self.bot.query_executer("UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", content, ctx.guild.id, tag)
+        await ctx.send(f":white_check_mark: | Tag `{tag}` modified")
 
     @tag.command(name="raw")
     @commands.guild_only()
@@ -169,7 +169,7 @@ class Tags():
         
         __Example__
         `{pre}raw necro` - prints the raw data of the 'necro' tag"""
-        await ctx.channel.send(f":notebook: | Source code for {tag}: ```{self.bot.server_data[ctx.message.guild.id]['tags'][tag]['content']}```")
+        await ctx.send(f":notebook: | Source code for {tag}: ```{self.bot.server_data[ctx.guild.id]['tags'][tag]['content']}```")
 
     @tag.command(name="list")
     @commands.guild_only()
@@ -177,9 +177,9 @@ class Tags():
         """Returns the list of tags present on the guild.
         
         {usage}"""
-        tag_list = list(self.bot.server_data[ctx.message.guild.id]["tags"].keys()) + list(self.bot.server_data[ctx.message.guild.id]["aliases"].keys())
+        tag_list = list(self.bot.server_data[ctx.guild.id]["tags"].keys()) + list(self.bot.server_data[ctx.guild.id]["aliases"].keys())
         tag_str = ", ".join(tag_list) if len(tag_list) > 0 else "None"
-        await ctx.channel.send(f"Tags in **{ctx.message.guild.name}**: ```{tag_str}```")
+        await ctx.send(f"Tags in **{ctx.guild.name}**: ```{tag_str}```")
 
     @tag.command(name="info")
     @commands.guild_only()
@@ -190,13 +190,13 @@ class Tags():
         
         __Example__
         `{pre}tag info necro` - prints info for the tag 'necro'"""
-        tag_dict = self.bot.server_data[ctx.message.guild.id]["tags"][tag]
-        embed = discord.Embed(title="__**" + tag + "**__", colour=discord.Colour(0x277b0), description="Created on " + tag_dict["created"])
-        embed.add_field(name="Owner", value=ctx.message.guild.get_member(tag_dict["owner"]).mention)
+        tag_dict = self.bot.server_data[ctx.guild.id]["tags"][tag]
+        embed = discord.Embed(title=f"__**{tag}**__", colour=discord.Colour(0x277b0), description=f'Created on {tag_dict["created"]}')
+        embed.add_field(name="Owner", value=ctx.guild.get_member(tag_dict["owner"]).mention)
         embed.add_field(name="Uses", value=tag_dict["counter"])
         embed.set_footer(text="Generated by NecroBot", icon_url="https://cdn.discordapp.com/avatars/317619283377258497/a491c1fb5395e699148fcfed2ee755cf.jpg?size=128")
 
-        await ctx.channel.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @tag.command(name="alias")
     @commands.guild_only()
@@ -212,12 +212,14 @@ class Tags():
         __Example__
         `{pre}tag alias necro super_necro` - You can now call the tag necro using the name "super_necro"
         """
-        if new_name not in self.bot.server_data[ctx.message.guild.id]["tags"] and new_name not in self.bot.server_data[ctx.message.guild.id]["aliases"] or new_name in self.restricted:
-            self.bot.server_data[ctx.message.guild.id]["aliases"][new_name] = tag
+        if new_name in self.restricted:
+            await ctx.send(":white_check_mark: | Alias name is a reserved keyword")
+        elif new_name not in self.bot.server_data[ctx.guild.id]["tags"] and new_name not in self.bot.server_data[ctx.guild.id]["aliases"]:
+            self.bot.server_data[ctx.guild.id]["aliases"][new_name] = tag
             await self.bot.query_executer("INSERT INTO necrobot.Aliases VALUES ($1, $2, $3)", new_name, tag, ctx.guild.id)
             await ctx.send(":white_check_mark: | Alias successfully created")
         else:
-            await ctx.send(":white_check_mark: | Alias already exists or is a reserved keyword.")
+            await ctx.send(":white_check_mark: | Alias already exists.")
 
 
 def setup(bot):

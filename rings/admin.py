@@ -4,6 +4,7 @@ from discord.ext import commands
 
 from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECROINS
 
+import ast
 import json
 import typing
 import inspect
@@ -13,6 +14,18 @@ from simpleeval import simple_eval
 class Admin():
     def __init__(self, bot):
         self.bot = bot
+
+    def insert_returns(self, body):
+        if isinstance(body[-1], ast.Expr):
+            body[-1] = ast.Return(body[-1].value)
+            ast.fix_missing_locations(body[-1])
+
+        if isinstance(body[-1], ast.If):
+            insert_returns(body[-1].body)
+            insert_returns(body[-1].orelse)
+
+        if isinstance(body[-1], ast.With):
+            insert_returns(body[-1].body)
 
     @commands.command()
     @commands.is_owner()
@@ -29,7 +42,6 @@ class Admin():
     async def admin(self, ctx):
         """{usage}"""
         pass
-
 
     @admin.command(name="perms")
     @commands.is_owner()
@@ -70,9 +82,9 @@ class Admin():
             command.enabled = True
             await ctx.send(f":white_check_mark: | Enabled **{command.name}**")
 
-    @admin.command(name="badge")
+    @admin.command(name="badges")
     @has_perms(6)
-    async def admin_badge(self, ctx, subcommand : str, user : discord.User, badge : str):
+    async def admin_badges(self, ctx, subcommand : str, user : discord.User, badge : str):
         """Used to grant special badges to users. Uses add/delete subcommand
 
         {usage}
@@ -93,6 +105,7 @@ class Admin():
             self.bot.user_data[user.id]["badges"].remove(badge)    
             await ctx.send(f":white_check_mark: | Reclaimd the **{badge}** badge from user **{user}**")
         else:
+            await ctx.send(":negative_squared_cross_mark: | Users has/doesn't have the badge")
             return
 
         await self.bot.query_executer("UPDATE necrobot.Users SET badges = $2 WHERE user_id = $1", user.id, ",".join(self.bot.user_data[user.id]["badges"]))
@@ -113,7 +126,7 @@ class Admin():
         
         __Example__
         `{pre}add @NecroBot +400` - adds 400 to NecroBot's balance"""
-        s = str(self.bot.user_data[user.id]["money"]) + equation
+        s = f'{self.bot.user_data[user.id]["money"]}{equation}'
         try:
             operation = simple_eval(s)
         except (NameError,SyntaxError):
@@ -230,76 +243,39 @@ class Admin():
         
         {usage}
         
-        __Example__
-        `It's python code, either you know it or you shouldn't be using this command`"""
-        python = '```py\n{}\n```'
-        result = None
+        The following global envs are available:
+            `bot``: bot instance
+            `discord`: discord module
+            `commands`: discord.ext.commands module
+            `ctx`: Context instance
+            `__import__`: allows to import module
+            `guild`: guild eval is being invoked in
+            `channel`: channel eval is being invoked in
+            `author`: user invoking the eval
+        """
+        fn_name = "_eval_expr"
+        cmd = cmd.strip("` ")
+        cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+        body = f"async def {fn_name}():\n{cmd}"
+
+        parsed = ast.parse(body)
+        body = parsed.body[0].body
+        insert_returns(body)
 
         env = {
-            'bot': self.bot,
+            'bot': ctx.bot,
+            'discord': discord,
+            'commands': commands,
             'ctx': ctx,
-            'message': ctx.message,
-            'server': ctx.message.guild,
-            'channel': ctx.message.channel,
-            'author': ctx.message.author,
-            'server_data' : self.bot.server_data,
-            'user_data ' : self.bot.user_data
+            '__import__': __import__,
+            'guild': ctx.guild,
+            'channel': ctx.channel,
+            'author': ctx.author
         }
+        exec(compile(parsed, filename="<ast>", mode="exec"), env)
 
-        env.update(globals())
-
-        try:
-            result = eval(code, env)
-            if inspect.isawaitable(result):
-                result = await result
-            result = str(result).replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
-            await ctx.send(result)
-        except Exception as e:
-            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
-            return
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def edit(self, ctx, *, code : str):
-        """Edits the cached user data
-
-        {usage}"""
-        code = code.strip('` ')
-        python = '```py\n{}\n```'
-        result = None
-
-        env = {
-            'bot': self.bot,
-            'ctx': ctx,
-            'message': ctx.message,
-            'server': ctx.message.guild,
-            'channel': ctx.message.channel,
-            'author': ctx.message.author,
-            'server_data' : self.bot.server_data,
-            'user_data ' : self.bot.user_data
-        }
-
-        env.update(globals())
-
-        try:
-            result = exec(code, env)
-            await ctx.send(":white_check_mark: | Don't forget to eval an SQL statement for permanent changes")
-        except Exception as e:
-            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
-            return
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def sql(self, ctx,*, query : str):
-        """Edits the user data in the database
-
-        {usage}"""
-        try:
-            result  = await self.bot.query_executer(query)
-            await ctx.send(":thumbsup:")
-        except Exception as e:
-            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
-            return
+        result = (await eval(f"{fn_name}()", env))
+        await ctx.send(result)
 
     @commands.command()
     @has_perms(6)
@@ -325,29 +301,29 @@ class Admin():
                     blacklist.append(thing.name)
 
                 await ctx.send("**List of blacklisted users/guilds**: {}".format(" - ".join(blacklist)))
+            return
 
-        else:
-            if isinstance(thing, discord.User):
-                if thing.id in self.bot.settings["blacklist"]:
-                    self.bot.settings["blacklist"].remove(thing.id)
-                    await ctx.send(f":white_check_mark: | User **{thing.name}** pardoned")
-                else:
-                    try:
-                        await thing.send(":negative_squared_cross_mark: | You have been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
-                    except discord.Forbidden:
-                        pass
+        if isinstance(thing, discord.User):
+            if thing.id in self.bot.settings["blacklist"]:
+                self.bot.settings["blacklist"].remove(thing.id)
+                await ctx.send(f":white_check_mark: | User **{thing.name}** pardoned")
+            else:
+                try:
+                    await thing.send(":negative_squared_cross_mark: | You have been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
+                except discord.Forbidden:
+                    pass
 
-                    self.bot.settings["blacklist"].append(thing.id)
-                    await ctx.send(f":white_check_mark: | User **{thing.name}** blacklisted")
-            elif isinstance(thing, discord.Guild):
-                if thing.id in self.bot.settings["blacklist"]:
-                    self.bot.settings["blacklist"].remove(thing.id)
-                    await ctx.send(f":white_check_mark: | Guild **{thing.name}** pardoned")
-                else:
-                    await thing.owner.send(":negative_squared_cross_mark: | Your server has been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
-                    await thing.leave()
-                    self.bot.settings["blacklist"].append(thing.id)
-                    await ctx.send(f":white_check_mark: | Guild **{thing.name}** blacklisted")
+                self.bot.settings["blacklist"].append(thing.id)
+                await ctx.send(f":white_check_mark: | User **{thing.name}** blacklisted")
+        elif isinstance(thing, discord.Guild):
+            if thing.id in self.bot.settings["blacklist"]:
+                self.bot.settings["blacklist"].remove(thing.id)
+                await ctx.send(f":white_check_mark: | Guild **{thing.name}** pardoned")
+            else:
+                await thing.owner.send(":negative_squared_cross_mark: | Your server has been blacklisted by NecroBot, if you wish to appeal your ban, join the support server. https://discord.gg/Ape8bZt")
+                await thing.leave()
+                self.bot.settings["blacklist"].append(thing.id)
+                await ctx.send(f":white_check_mark: | Guild **{thing.name}** blacklisted")
 
 
     @commands.command(hidden=True)

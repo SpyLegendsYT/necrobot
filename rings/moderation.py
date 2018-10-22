@@ -74,7 +74,7 @@ class Moderation():
 
     @mute.command(name="role")
     @has_perms(4)
-    async def mute_role(self, ctx, *, role : discord.Role = ""):
+    async def mute_role(self, ctx, *, role : discord.Role = None):
         """Sets the mute role for this server to [role], this is used for the `mute` command, it is the role assigned by 
         the command to the user. Make sure to spell the role correctly, the role name is case sensitive. It is up to the server 
         authorities to set up the proper permissions for the chosen mute role. Once the role is set up it can be renamed and 
@@ -87,7 +87,7 @@ class Moderation():
         __Example__
         `{pre}mute role Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
         `{pre}mute role` - resets the mute role and disables the `mute` command."""
-        if role == "":
+        if not role:
             self.bot.server_data[ctx.message.guild.id]["mute"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Reset mute role")

@@ -50,7 +50,7 @@ class Profile():
         __Example__
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
-        if user is not None:
+        if user:
             await ctx.send(f":atm: | **{user.name}** has **{'{:,}'.format(self.bot.user_data[user.id]['money'])}** :euro:")
         else:
             await ctx.send(f":atm: | **{ctx.author.name}** you have **{'{:,}'.format(self.bot.user_data[ctx.author.id]['money'])}** :euro:")
@@ -69,7 +69,7 @@ class Profile():
         """
         day = str(d.datetime.today().date())
         if day != self.bot.user_data[ctx.author.id]["daily"]:
-            if member != ctx.author and member is not None:
+            if member != ctx.author and member:
                 money = random.choice(range(235, 450))
                 self.bot.user_data[member.id]["money"] += money
                 await ctx.send(f":m: | {member.mention}, **{ctx.author.display_name}** has given you their daily of **{money}** :euro:")
@@ -87,7 +87,7 @@ class Profile():
             await ctx.send(f":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{timer}**")
 
     @commands.command()
-    async def pay(self, ctx, payee : discord.User, amount : int):
+    async def pay(self, ctx, payee : discord.Member, amount : int):
         """Transfers the given amount of money to the given user's NecroBot bank account.
 
         {usage}

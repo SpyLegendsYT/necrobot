@@ -243,6 +243,9 @@ class NecroEvents():
             await self.bot.query_executer("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '', 'False');", member.id)
             await self.bot.query_executer("""INSERT INTO necrobot.Badges VALUES ($1, 1, ''), ($1, 2, ''), ($1, 3, ''), ($1, 4, ''), ($1, 5, ''), ($1, 6, ''), ($1, 7, ''), ($1, 8, '');""", member.id)
 
+        if not guild:
+            return
+
         if isinstance(member, discord.User):
             member = guild.get_member(member.id)
 
@@ -297,10 +300,7 @@ class NecroEvents():
             await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
         elif isinstance(error, commands.BadArgument) or isinstance(error, commands.BadUnionArgument):
             await channel.send(f":negative_squared_cross_mark: | Following error with passed arguments: **{error}**", delete_after=10)
-        elif isinstance(error, asyncio.TimeoutError):
-            if not hasattr(error, "timer"):
-                return
-
+        elif isinstance(error, asyncio.TimeoutError) and hasattr(error, "timer"):
             retry_after = str(timedelta(seconds=error.timer)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
             await channel.send(f":negative_squared_cross_mark: | You took too long to reply, please reply within {retry_after}seconds next time", delete_after=10)
         elif isinstance(error, commands.CommandInvokeError):
