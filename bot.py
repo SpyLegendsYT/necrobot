@@ -38,7 +38,8 @@ extensions = [
     "waifu",
     "words",
     "misc",
-    "tags"
+    "tags",
+    "meta"
 ]
 
 class NecroBot(commands.Bot):

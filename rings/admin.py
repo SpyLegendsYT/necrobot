@@ -207,11 +207,11 @@ class Admin():
 
         await msg.edit(content="Channel with that ID not found")
 
-        role = discord.utils.get([x for x in y.roles for y in self.bot.guilds], id=id)
+        role = discord.utils.get([*x for x in [y.roles for y in self.bot.guilds]], id=id)
         if role:
             await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}**({role.guild.id})")
 
-        await msg.edit(content="Role with that ID not found")
+        await msg.edit(content="Nothing found with that ID")
 
     @commands.command(hidden=True)
     @commands.is_owner()

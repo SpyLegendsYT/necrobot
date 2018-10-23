@@ -178,7 +178,7 @@ class Profile():
                 badge = self.bot.user_data[user.id]["places"][spot]
                 if badge != "":
                     badge_img = Image.open(f"rings/utils/profile/badges/{badge}.png").convert("RGBA")
-                    index = int(spot) - 1
+                    index = spot - 1
                     im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
             draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)

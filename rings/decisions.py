@@ -42,7 +42,7 @@ class Decisions():
         `{pre}coin h 50` - bet 50 coins on the result being head"""
         msg = await ctx.send(random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"]))
 
-        if choice is None and bet is None:
+        if choice not in ["t", "h"]:
             return
 
         bet = abs(bet)
@@ -51,20 +51,15 @@ class Decisions():
             await ctx.send(":negative_squared_cross_mark: | Not enough money", delete_after=5)
             return
 
-        if "head" in msg.content:
-            if choice == "h":
-                await ctx.send("Well done!")
-                self.bot.user_data[ctx.author.id]["money"] += bet
-            elif choice == "t":
-                await ctx.send("Better luck next time")
-                self.bot.user_data[ctx.author.id]["money"] -= bet
-        elif "tail" in msg.content:
-            if choice == "t":
-                await ctx.send("Well done!")
-                self.bot.user_data[ctx.author.id]["money"] += bet
-            elif choice == "h":
-                await ctx.send("Better luck next time")
-                self.bot.user_data[ctx.author.id]["money"] -= bet
+        if "head" in msg.content and choice == "h":
+            await ctx.send("Well done!")
+            self.bot.user_data[ctx.author.id]["money"] += bet
+        elif "tail" in msg.content and choice == "t":
+            await ctx.send("Well done!")
+            self.bot.user_data[ctx.author.id]["money"] += bet
+        else:
+            await ctx.send("Better luck next time")
+            self.bot.user_data[ctx.author.id]["money"] -= bet
 
         await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
 

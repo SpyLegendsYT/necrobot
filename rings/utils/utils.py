@@ -9,6 +9,10 @@ def has_welcome(bot, member):
 def has_goodbye(bot, member):
     return bot.server_data[member.guild.id]["welcome-channel"] != "" and bot.server_data[member.guild.id]["goodbye"] != ""
 
+def has_automod(bot, message):
+    role_id = [role.id for role in message.author.roles]
+    return message.author.id not in self.bot.server_data[message.guild.id]["ignore-automod"] and message.channel.id not in self.bot.server_data[message.guild.id]["ignore-automod"] and not any(x in role_id for x in self.bot.server_data[message.guild.id]["ignore-automod"]) and self.bot.server_data[message.guild.id]["automod"] != ""
+
 UPDATE_NECROINS = "UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2"
 UPDATE_FLOWERS  = "UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3"
 UPDATE_PERMS    = "UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3"
