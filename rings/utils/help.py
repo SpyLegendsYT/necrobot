@@ -2,7 +2,6 @@
 from discord.ext.commands import *
 
 import inspect
-import asyncio
 import itertools
 
 class MissingAttrHandler(str):
@@ -70,22 +69,20 @@ class NecroBotHelpFormatter(HelpFormatter):
         return "Type {0}{1} [command] [subcommand] for more info on a command's subcommand.\n" \
                "Example: `{0}help settings welcome channel` - display help on the channel subcommand of the welcome command \n".format(self.clean_prefix, command_name)
 
-    @asyncio.coroutine
-    def _add_commands_to_page(self, max_width, commands):
+    async def _add_commands_to_page(self, max_width, commands):
         command_list = list()
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
 
-            @asyncio.coroutine
-            def predicate():
+            async def predicate():
                 try:
-                    return (yield from command.can_run(self.context))
+                    return (await command.can_run(self.context))
                 except CommandError:
                     return False
 
-            valid = yield from predicate()
+            valid = await predicate()
             if valid and command.enabled:
                 if name in self.context.bot.new_commands:
                     command_list.append("***{0}***".format(name))
@@ -102,10 +99,9 @@ class NecroBotHelpFormatter(HelpFormatter):
                 # skip aliases
                 continue
 
-            @asyncio.coroutine
-            def predicate():
+            async def predicate():
                 try:
-                    return (yield from command.can_run(self.context))
+                    return (await command.can_run(self.context))
                 except CommandError:
                     return False
 
@@ -118,8 +114,7 @@ class NecroBotHelpFormatter(HelpFormatter):
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 
-    @asyncio.coroutine
-    def format(self):
+    async def format(self):
         """Handles the actual behaviour involved with formatting.
 
         To change the behaviour, this method should be overridden.
@@ -131,7 +126,7 @@ class NecroBotHelpFormatter(HelpFormatter):
         """
         self._paginator = Paginator(prefix="", suffix="")
         if isinstance(self.command, Command):
-            title = ":information_source: **The `{0}` command** :information_source:".format(self.command)
+            title =f":information_source: **The `{self.command}` command** :information_source:"
         else:
             title = ":information_source: **NecroBot Help Menu** :information_source:"
         self._paginator.add_line(title)
@@ -146,7 +141,7 @@ class NecroBotHelpFormatter(HelpFormatter):
 
         if isinstance(self.command, Command):
             # <signature portion>
-            signature = "__Usage__\n" + self.get_command_signature()
+            signature = f"__Usage__\n{self.get_command_signature()}"
 
             # <long doc> section
             if self.command.help:
@@ -165,9 +160,9 @@ class NecroBotHelpFormatter(HelpFormatter):
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return "**" + cog + '** - ' if cog is not None else '\u200b**No Category** - '
+            return f'**{cog}** - ' if cog is not None else '\u200b**No Category** - '
 
-        filtered = yield from self.filter_command_list()
+        filtered = await self.filter_command_list()
         if self.is_bot():
             data = sorted(filtered, key=category)
             counter = 0
@@ -176,8 +171,8 @@ class NecroBotHelpFormatter(HelpFormatter):
                 commands = sorted(commands)
                 counter += 1
                 if len(commands) > 0:
-                    command_list = yield from self._add_commands_to_page(max_width, commands)
-                    self._paginator.add_line(str(counter) + ". " + str(category) +  " | ".join(command_list))
+                    command_list = await self._add_commands_to_page(max_width, commands)
+                    self._paginator.add_line(f'{counter}. {category}{" | ".join(command_list)}')
 
             ending_note = self.get_ending_note()
 
