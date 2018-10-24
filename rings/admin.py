@@ -14,6 +14,7 @@ from simpleeval import simple_eval
 class Admin():
     def __init__(self, bot):
         self.bot = bot
+        self.gates = {}
 
     def insert_returns(self, body):
         if isinstance(body[-1], ast.Expr):
@@ -21,11 +22,11 @@ class Admin():
             ast.fix_missing_locations(body[-1])
 
         if isinstance(body[-1], ast.If):
-            insert_returns(body[-1].body)
-            insert_returns(body[-1].orelse)
+            self.insert_returns(body[-1].body)
+            self.insert_returns(body[-1].orelse)
 
         if isinstance(body[-1], ast.With):
-            insert_returns(body[-1].body)
+            self.insert_returns(body[-1].body)
 
     @commands.command()
     @commands.is_owner()
@@ -175,7 +176,7 @@ class Admin():
         msg = await self.bot.wait_for("message", check=check)
         await to_edit.edit(content=f":speech_left: | **User: {msg.author}** said :**{msg.content[1950:]}**")
         
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def get(self, ctx, id : int):
         """Returns the name of the user or server based on the given id. Used to debug errors. 
@@ -202,18 +203,19 @@ class Admin():
 
         channel = self.bot.get_channel(id)
         if channel:
-            await msg.edit(content=f"Channel: **{channel.name}** on **{channel.guild.name}**({channel.guild.id})")
+            await msg.edit(content=f"Channel: **{channel.name}** on **{channel.guild.name}** ({channel.guild.id})")
             return
 
         await msg.edit(content="Channel with that ID not found")
 
-        role = discord.utils.get([*x for x in [y.roles for y in self.bot.guilds]], id=id)
+        role = discord.utils.get([item for sublist in  [guild.roles for guild in self.bot.guilds] for item in sublist], id=id)
         if role:
-            await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}**({role.guild.id})")
+            await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}** ({role.guild.id})")
+            return
 
         await msg.edit(content="Nothing found with that ID")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def invites(self, ctx, *, guild : GuildConverter = None):
         """Returns invites (if the bot has valid permissions) for each server the bot is on if no guild id is specified. 
@@ -236,9 +238,9 @@ class Admin():
             for guild in self.bot.guilds:
                 await get_invite(guild)
             
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
-    async def debug(self, ctx, *, code : str):
+    async def debug(self, ctx, *, cmd : str):
         """Evaluates code. All credits to Danny for creating a safe eval command (Permission level required: 7+ (The Bot Smith)) 
         
         {usage}
@@ -257,10 +259,11 @@ class Admin():
         cmd = cmd.strip("` ")
         cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
         body = f"async def {fn_name}():\n{cmd}"
+        python = '```py\n{}\n```'
 
         parsed = ast.parse(body)
         body = parsed.body[0].body
-        insert_returns(body)
+        self.insert_returns(body)
 
         env = {
             'bot': ctx.bot,
@@ -272,10 +275,12 @@ class Admin():
             'channel': ctx.channel,
             'author': ctx.author
         }
-        exec(compile(parsed, filename="<ast>", mode="exec"), env)
-
-        result = (await eval(f"{fn_name}()", env))
-        await ctx.send(result)
+        try:
+            exec(compile(parsed, filename="<ast>", mode="exec"), env)
+            result = (await eval(f"{fn_name}()", env))
+            await ctx.send(result)
+        except Exception as e:
+            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
 
     @commands.command()
     @has_perms(6)
@@ -326,7 +331,7 @@ class Admin():
                 await ctx.send(f":white_check_mark: | Guild **{thing.name}** blacklisted")
 
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def load(self, ctx, extension_name : str):
         """Loads the extension name if in NecroBot's list of rings.
@@ -339,7 +344,7 @@ class Admin():
             return
         await ctx.send(f"{extension_name} loaded.")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def unload(self, ctx, extension_name : str):
         """Unloads the extension name if in NecroBot's list of rings.
@@ -348,7 +353,7 @@ class Admin():
         self.bot.unload_extension(f"rings.{extension_name}")
         await ctx.send(f"{extension_name} unloaded.")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def reload(self, ctx, extension_name : str):
         """Unload and loads the extension name if in NecroBot's list of rings.
@@ -362,7 +367,7 @@ class Admin():
             return
         await ctx.send(f"{extension_name} reloaded.")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def off(self, ctx):
         """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
@@ -398,7 +403,7 @@ class Admin():
             await self.bot.session.close()
             await self.bot.logout()
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.is_owner()
     async def save(self, ctx):
         """Save data but doesn't terminate the bot
@@ -411,10 +416,10 @@ class Admin():
         
         await ctx.send(":white_check_mark: | Done saving")
 
-    @commands.command(hidden=True)
+    @commands.command()
     @has_perms(6)
     async def log(self, ctx, start : typing.Optional[int] = 0, *arguments):
-        """Get a list of commands.
+        """Get a list of commands. SQL arguments can be passed to filter the output.
 
         {usage}"""
         if arguments:
@@ -436,6 +441,71 @@ class Admin():
             return embed
 
         await react_menu(self.bot, ctx, len(results)//5, _embed_maker, start)
+
+    @commands.command(name="as")
+    @commands.is_owner()
+    async def _as(self, ctx, user : discord.Member, *, message : str):
+        """Call a command as another user, used for debugging purposes
+
+        {usage}
+
+        __Examples__
+        `{pre}as NecroBot n!balance` - calls the balance command as though necrobot had called it (displaying its balance).
+
+        """
+        if ctx.command == "as":
+            return
+
+        ctx.author = ctx.message.author = user
+        ctx.message.content = message
+
+        await self.bot.process_commands(ctx.message)
+
+    @commands.command()
+    @has_perms(6)
+    async def gate(self, ctx, channel : discord.TextChannel):
+        """Connects two channels with a magic gate so that users on bot servers can communicate. Magic:tm:
+
+        {usage}
+
+        """
+        if channel == ctx.channel:
+            await ctx.send(":negative_squared_cross_mark: | Gate destination cannnot be the same as channel the command is called from")
+            return
+
+        await channel.send(":gate: | A warp gate has opened on your server, you are now in communication with a Necrobot admin. Voice any concerns without fear.")
+        await ctx.send(f":gate: | I've opened a gate to {channel.mention} on {channel.guild}")
+
+        self.gates[ctx.channel.id] = channel
+        self.gates[channel.id] = ctx.channel
+
+        def check(message):
+            if message.author == ctx.author and message.channel == ctx.channel and message.content == "exit":
+                return True
+
+        msg = await self.bot.wait_for("message", check=check)
+
+        await channel.send(":stop: | The NecroBot admin has ended the conversation.")
+        await ctx.send(":stop: | Conversation ended")
+
+        del self.gates[ctx.channel.id]
+        del self.gates[channel.id]        
+
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+
+        if message.channel.id not in self.gates:
+            return
+
+        channel = self.gates[message.channel.id]
+        
+        message.content = message.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
+        embed = discord.Embed(title="Message", description=message.content)
+        embed.set_author(name=message.author, icon_url=message.author.avatar_url_as(format="png", size=128))
+        embed.set_footer(text="Generated by NecroBot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
+        
+        await channel.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Admin(bot))

@@ -20,14 +20,6 @@ class NecroEvents():
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
         channel = ctx.message.channel
-        try:
-            if ctx.command.name in self.bot.server_data[ctx.message.guild.id]["disabled"] and ctx.prefix not in self.bot.admin_prefixes:
-                await ctx.send(f":negative_squared_cross_mark: | Command {ctx.command.name} cannot be used on this server.", delete_after=10)
-                await ctx.message.delete()
-                return
-        except AttributeError:
-            pass
-
         if isinstance(error, commands.MissingRequiredArgument):
             await channel.send(f":negative_squared_cross_mark: | Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`", delete_after=10)
             #this can be used to print *all* the missing arguments (bit hacky tho)

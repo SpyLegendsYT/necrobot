@@ -8,9 +8,9 @@ from rings.utils.help import NecroBotHelpFormatter
 import re
 import sys
 import json
+import time
 import random
 import aiohttp
-import time as t
 import traceback
 
 async def get_pre(bot, message):
@@ -50,11 +50,11 @@ class NecroBot(commands.Bot):
             formatter=NecroBotHelpFormatter(), 
             case_insensitive=True, 
             owner_id=241942232867799040, 
-            activity=discord.Game(name="Bot booting...", type=0),
+            activity=discord.Game(name="Bot booting..."),
             max_messages=25000
         )
 
-        self.uptime_start = t.time()
+        self.uptime_start = time.time()
         self.user_data, self.server_data, self.starred = db_gen()
 
         self.version = 2.5
@@ -140,7 +140,6 @@ class NecroBot(commands.Bot):
         except discord.HTTPException:
             await channel.send(f"Bot: Ignoring exception in {event}")
 
-
     async def on_message(self, message):
         user_id = message.author.id
         channel_id = message.channel.id
@@ -172,7 +171,10 @@ class NecroBot(commands.Bot):
 
         await self.process_commands(message)
 
-bot = NecroBot()
-for extension in extensions:
-    bot.load_extension(f"rings.{extension}")   
-bot.run(token)
+if __name__ == '__main__':
+    bot = NecroBot()
+
+    for extension in extensions:
+        bot.load_extension(f"rings.{extension}")   
+
+    bot.run(token)

@@ -1,6 +1,3 @@
-#!/usr/bin/python3.6
-#!/usr/bin/env python -W ignore::DeprecationWarning
-
 import discord
 from discord.ext import commands
 
@@ -147,9 +144,9 @@ class Utilities():
         random.shuffle(res["data"][choice])
         await react_menu(self.bot, ctx, len(res["data"][choice])//5, _embed_generator)
 
-    @commands.command(enabled=False)
+    @commands.command()
     async def remindme(self, ctx, *, message):
-        """Creates a reminder in seconds. Doesn't work at the moment. The following times can be used: days (d), 
+        """Creates a reminder in seconds. The following times can be used: days (d), 
         hours (h), minutes (m), seconds (s).
 
         {usage}
@@ -164,7 +161,7 @@ class Utilities():
 
         text = message.split(" in ")[0]
         time = message.split(" in ")[1]
-        sleep = self.bot.conveter(time)
+        sleep = self.bot.converter(time)
         await ctx.send(f":white_check_mark: | Okay I will remind you in **{time}** of **{text}**")
 
         await asyncio.sleep(sleep)
@@ -186,7 +183,8 @@ class Utilities():
     @q.command(name="start")
     @has_perms(2)
     async def q_start(self, ctx):
-        """Starts a queue, if there is already an ongoing queue it will fail. The ongoing queue must be cleared first using `{pre}q clear`.
+        """Starts a queue, if there is already an ongoing queue it will fail. The ongoing queue must be cleared first 
+        using `{pre}q clear`.
 
         {usage}"""
         if len(self.queue[ctx.guild.id]["list"]) > 0:

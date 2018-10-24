@@ -41,7 +41,7 @@ class Tags():
 
         tag_content = self.bot.server_data[ctx.guild.id]["tags"][tag]["content"]
         try:
-            await ctx.send(tag_content.format(server=ctx.guild, member=ctx.author, channel=ctx.channel, content=ctx.content,**arg_dict))
+            await ctx.send(tag_content.format(server=ctx.guild, member=ctx.author, channel=ctx.channel, content=ctx.message.content,**arg_dict))
             self.bot.server_data[ctx.guild.id]["tags"][tag]["counter"] += 1
             await self.bot.query_executer("UPDATE necrobot.Tags SET uses = uses + 1 WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
         except KeyError as e:
@@ -156,7 +156,7 @@ class Tags():
         `{pre}tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
         self.is_tag_owner(ctx, tag)
 
-        self.bot.server_data[ctx.guild.id]["tags"][content]["content"] = text
+        self.bot.server_data[ctx.guild.id]["tags"][tag]["content"] = content
         await self.bot.query_executer("UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", content, ctx.guild.id, tag)
         await ctx.send(f":white_check_mark: | Tag `{tag}` modified")
 
