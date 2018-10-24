@@ -18,7 +18,6 @@ class Meta():
         self.bot._mu_auto_embed = self._mu_auto_embed
         self.bot._bmp_converter = self._bmp_converter
         self.bot._star_message = self._star_message
-        self.bot.converter = self.converter
         self.bot.query_executer = self.query_executer
         self.bot.default_stats = self.default_stats
         self.bot.load_cache = self.load_cache
@@ -111,32 +110,7 @@ class Meta():
         
         if message.id not in self.bot.starred:
             self.bot.starred.append(message.id)
-            await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3, $4);", message.id, msg.id, msg.guild.id, message.author.id)
-
-    def converter(self, time):
-        days = time.rpartition("d")[0]
-        if days == "":
-            days = 0
-
-        time = time.rpartition("d")[2]
-
-        hours = time.rpartition("h")[0]
-        if hours == "":
-            hours = 0
-
-        time = time.rpartition("h")[2]
-
-        minutes = time.rpartition("m")[0]
-        if minutes == "":
-            minutes = 0
-
-        time = time.rpartition("m")[2]
-
-        seconds = time.rpartition("s")[0]
-        if seconds == "":
-            seconds = 0
-
-        return int(seconds) + (int(minutes) * 60) + (int(hours) * 3600) + (int(days) * 86400)
+            await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3, $4);", message.id, msg.id, msg.guild.id, message.author.id)        
                
     async def broadcast(self):
         await self.bot.wait_until_ready()

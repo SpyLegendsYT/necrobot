@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, react_menu, UPDATE_PERMS
+from rings.utils.utils import has_perms, react_menu, UPDATE_PERMS, TimeConverter
 
 from typing import Union
 
@@ -281,7 +281,7 @@ class Server():
 
     @commands.command(name="auto-role")
     @has_perms(4)
-    async def auto_role(self, ctx, role : discord.Role = None, time : str = "0s"):
+    async def auto_role(self, ctx, role : discord.Role = None, time : TimeConverter = 0):
         """Sets the auto-role for this server to the given role. Auto-role will assign the role to the member when they join.
         The following times can be used: days (d), hours (h), minutes (m), seconds (s).
 
@@ -299,7 +299,6 @@ class Server():
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-Role disabled")
         else:
-            time_c = self.bot.converter(time)
             self.bot.server_data[ctx.message.guild.id]["auto-role"] = role.id
             self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_timer = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)

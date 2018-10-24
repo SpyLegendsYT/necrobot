@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms
+from rings.utils.utils import has_perms, TimeConverter
 
 import asyncio
 
@@ -39,7 +39,7 @@ class Moderation():
     @commands.group(invoke_without_command = True)
     @has_perms(2)
     @commands.bot_has_permissions(manage_roles=True)
-    async def mute(self, ctx, user : discord.Member, *, time : str = None):
+    async def mute(self, ctx, user : discord.Member, *, time : TimeConverter = None):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
         mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely 
         if no amount is given. The following times can be used: days (d), hours (h), minutes (m), seconds (s).
@@ -51,8 +51,7 @@ class Moderation():
         `{pre}mute @NecroBot` - mute NecroBot until a user with the proper permission level does `{pre}unmute @NecroBot`
         `{pre}mute @NecroBot 30s` - mutes NecroBot for 30 seconds or until a user with the proper permission level does
         `{pre}mute @NecroBot 2m` - mutes NecroBot for 2 minutes
-        `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes
-        `{pre}unmute @NecroBot` - unmutes necrobot."""
+        `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes"""
         if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
             await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
             return
@@ -66,7 +65,6 @@ class Moderation():
             return
 
         if time:
-            time = self.bot.converter(time)
             await asyncio.sleep(time)
             if role in user.roles:
                 await user.remove_roles(role)

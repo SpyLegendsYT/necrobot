@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+import re
 import asyncio
 
 def has_welcome(bot, member):
@@ -19,7 +20,10 @@ UPDATE_PERMS    = "UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $
 UPDATE_VALUE    = "UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3"
 
 def has_perms(perms_level):
-    def predicate(ctx): 
+    def predicate(ctx):
+        if 6 in ctx.bot.user_data[ctx.message.author.id]["perms"].values():
+            return True 
+            
         if isinstance(ctx.message.channel, discord.DMChannel):
             return False
 
@@ -85,3 +89,21 @@ class GuildConverter(commands.IDConverter):
 
         raise commands.BadArgument("Not a known guild")
 
+class TimeConverter(commands.Converter):
+    def convert(self, ctx, argument):
+        time = 0
+
+        pattern = re.compile(r"([0-9]+)([dhms])")
+        matches = re.findall(pattern, argument)
+
+        convert = {
+            "d" : 86400,
+            "h" : 3600,
+            "m" : 60,
+            "s" : 1
+        }
+
+        for match in matches:
+            time += convert[match[1]] * int(match[0])
+
+        return time

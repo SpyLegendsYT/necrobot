@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, react_menu
+from rings.utils.utils import has_perms, react_menu, TimeConverter
 
 import random
 import asyncio
@@ -161,7 +161,7 @@ class Utilities():
 
         text = message.split(" in ")[0]
         time = message.split(" in ")[1]
-        sleep = self.bot.converter(time)
+        sleep = await TimeConverter().convert(time)
         await ctx.send(f":white_check_mark: | Okay I will remind you in **{time}** of **{text}**")
 
         await asyncio.sleep(sleep)
