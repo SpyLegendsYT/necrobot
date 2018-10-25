@@ -21,7 +21,7 @@ UPDATE_VALUE    = "UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND g
 
 def has_perms(perms_level):
     def predicate(ctx):
-        if 6 in ctx.bot.user_data[ctx.message.author.id]["perms"].values():
+        if any(x >= 6 for x in ctx.bot.user_data[ctx.message.author.id]["perms"].values()):
             return True 
             
         if isinstance(ctx.message.channel, discord.DMChannel):

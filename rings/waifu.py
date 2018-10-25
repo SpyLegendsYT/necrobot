@@ -18,6 +18,12 @@ class Waifu():
         self.gifts_e = {"cookie" : ":cookie:", "lollipop":":lollipop:", "rose": ":rose:", "beer":":beer:", "loveletter":":love_letter:", "milk":":milk:", "pizza":":pizza:", "icecream":":icecream:", "chocolate":":chocolate_bar:", "sushi":":sushi:", "rice":":rice:", "movieticket":":tickets:", "book":":notebook_with_decorative_cover:", "dog":":dog:", "cat":":cat:", "lipstick":":lipstick:", "purse":":purse:", "phone":":iphone:", "laptop":":computer:", "violin":":violin:", "piano":":musical_keyboard:", "car":":red_car:", "ring":":ring:", "yacht":":cruise_ship:", "house":":house:", "helicopter":":helicopter:", "spaceship":":rocket:"}
         self.gifts_p = {"cookie" : 10, "lollipop":30, "rose": 50, "beer":75, "loveletter":100, "milk":125, "pizza":150, "icecream":200, "chocolate":200, "sushi":300, "rice":400, "movieticket":800, "book":1500, "dog":2000, "cat":2001, "lipstick":3000, "purse":3500, "phone":4000, "laptop":5000, "violin":7500, "piano":8000, "car":9000, "ring":10000,"yacht":12000, "house":15000, "helicopter":20000, "spaceship":30000}
 
+    def __local_check(self, ctx):
+        if ctx.guild:
+            return True
+        else:
+            raise commands.CheckFailure("This command cannot be used in private messages.")
+
     @commands.command()
     async def trade(self, ctx, coins : int):
         """Trades your hard earned Necroins for :cherry_blossom: with a 1:1 exchange ration.
@@ -331,7 +337,6 @@ class Waifu():
 
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     async def transfer(self, ctx, member : discord.Member, waifu : discord.Member):
         """Transfer a waifu to another user, you must be able to pay 10% of the waifu's price in order to tranfer them.
         
@@ -431,7 +436,6 @@ class Waifu():
 
 
     @commands.command()
-    @commands.guild_only()
     async def give(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
         """Transfer :cherry_blossom: from one user to another.
 
@@ -465,6 +469,17 @@ class Waifu():
         await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"], member.id, ctx.guild.id)
         await ctx.send(f":white_check_mark: | Value of waifu {waifu.name} reset to {amount}")
 
+    async def on_raw_reaction_add(self, payload):
+        if payload.user_id in self.bot.settings["blacklist"]:
+            return
+
+        if payload.emoji.name == "\N{CHERRY BLOSSOM}" and payload.message_id in self.bot.events:
+            if payload.user_id in self.bot.events[payload.message_id]["users"]:
+                return
+
+            self.bot.events[payload.message_id]["users"].append(payload.user_id)
+            self.bot.user_data[payload.user_id]["waifu"][payload.guild_id]["flowers"] += self.bot.events[payload.message_id]["amount"]
+            await self.bot.query_executer(UPDATE_FLOWERS, self.bot.user_data[payload.user_id]["waifu"][payload.guild_id]["flowers"], payload.user_id, payload.guild_id)
 
 def setup(bot):
     bot.add_cog(Waifu(bot))

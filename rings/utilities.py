@@ -46,6 +46,7 @@ class Utilities():
         await ctx.send(f'Pong! That took {self.bot.latency * 1000} seconds.')
 
     @commands.command()
+    @commands.guild_only()
     async def serverinfo(self, ctx):
         """Returns a rich embed of the server's information. 
         
@@ -169,6 +170,7 @@ class Utilities():
         await ctx.send(f":alarm_clock: | You asked to be reminded: **{text}**")
 
     @commands.group(invoke_without_command=True)
+    @commands.guild_only()
     async def q(self, ctx):
         """Displays the content of the queue at the moment. Queue are shortlive instances, do not use them to
         hold data for extended periods of time. A queue should atmost only last a couple of days.
@@ -181,6 +183,7 @@ class Utilities():
             await ctx.send("So far this queue has no users in it.")
 
     @q.command(name="start")
+    @commands.guild_only()
     @has_perms(2)
     async def q_start(self, ctx):
         """Starts a queue, if there is already an ongoing queue it will fail. The ongoing queue must be cleared first 
@@ -195,6 +198,7 @@ class Utilities():
         await ctx.send(":white_check_mark: | Queue initialized")
 
     @q.command(name="end")
+    @commands.guild_only()
     @has_perms(2)
     async def q_end(self, ctx):
         """Ends a queue but does not clear it. Users will no longer be able to use `{pre}q me`
@@ -204,6 +208,7 @@ class Utilities():
         await ctx.send(":white_check_mark: | Users will now not be able to add themselves to queue")
 
     @q.command(name="clear")
+    @commands.guild_only()
     @has_perms(2)
     async def q_clear(self, ctx):
         """Ends a queue and clears it. Users will no longer be able to add themselves and the content of the queue will be 
@@ -215,6 +220,7 @@ class Utilities():
         await ctx.send(":white_check_mark: | Queue cleared and ended. Please start a new queue to be able to add users again")
 
     @q.command(name="me")
+    @commands.guild_only()
     async def q_me(self, ctx):
         """Queue the user that used the command to the current queue. Will fail if queue has been ended or cleared.
 
@@ -232,6 +238,7 @@ class Utilities():
         await ctx.send(":white_check_mark: |  You have been added to the queue")
 
     @q.command(name="next")
+    @commands.guild_only()
     @has_perms(2)
     async def q_next(self, ctx):
         """Mentions the next user and the one after that so they can get ready.

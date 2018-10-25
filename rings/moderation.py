@@ -13,6 +13,12 @@ class Moderation():
         self.bot = bot
         self.obligatory = ("Moderation", "Server", "Support", "Admin", "Events", "disable", "enable")
 
+    def __local_check(self, ctx):
+        if ctx.guild:
+            return True
+        else:
+            raise commands.CheckFailure("This command cannot be used in private messages.")
+
     @commands.command()
     @has_perms(1)
     @commands.bot_has_permissions(manage_nicknames=True)
@@ -218,10 +224,6 @@ class Moderation():
         if not command:
             await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
             return
-
-        # if command in self.obligatory:
-        #     await ctx.send(":negative_squared_cross_mark: | You cannot disable this command/cog", delete_after=5)
-        #     return
 
         disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
         if command not in self.bot.cogs:

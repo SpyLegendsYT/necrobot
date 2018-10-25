@@ -27,7 +27,7 @@ class NecroEvents():
             # missing = list(ctx.command.clean_params.values())[index:]
             # print(f"missing following: {", ".join([x.name for x in missing])}")
         elif isinstance(error, commands.CheckFailure):
-            await channel.send(f":negative_squared_cross_mark: | **{error}**", delete_after=10)
+            await channel.send(f":negative_squared_cross_mark: | {error}", delete_after=10)
         elif isinstance(error, commands.CommandOnCooldown):
             retry_after = str(timedelta(seconds=error.retry_after)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
             await channel.send(f":negative_squared_cross_mark: | This command is on cooldown, retry after **{retry_after}seconds**", delete_after=10)
@@ -165,21 +165,20 @@ class NecroEvents():
             else:
                 await channel.send(message.format(member=member, server=member.guild.name))
 
-    async def on_reaction_add(self, reaction, user):
-        if user.id in self.bot.settings["blacklist"]:
+    async def on_raw_reaction_add(self, payload):
+        if payload.user_id in self.bot.settings["blacklist"] or payload.guild_id:
             return
-            
-        if isinstance(user, discord.User) and reaction.emoji == "\N{WASTEBASKET}" and reaction.message.author == self.bot.user:
-            await reaction.message.delete()
-            return            
 
-        if reaction.emoji == "\N{CHERRY BLOSSOM}" and reaction.message.id in self.bot.events:
-            if user.id in self.bot.events[reaction.message.id]["users"]:
-                return
+        if payload.emoji.name == "\N{WASTEBASKET}":
+            try:
+                await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)
+                print("tes")
+            except (discord.Forbidden, discord.HTTPException):
+                pass
 
-            self.bot.events[reaction.message.id]["users"].append(user.id)
-            self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"] += self.bot.events[reaction.message.id]["amount"]
-            await self.bot.query_executer(UPDATE_FLOWERS, self.bot.user_data[user.id]["waifu"][reaction.message.guild.id]["flowers"], user.id, reaction.message.guild.id)
+    async def on_reaction_add(self, reaction, user):
+        if user.id in self.bot.settings["blacklist"] or not reaction.message.guild:
+            return        
 
         if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
             return

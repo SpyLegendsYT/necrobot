@@ -10,6 +10,12 @@ class Server():
     def __init__(self, bot):
         self.bot = bot
 
+    def __local_check(self, ctx):
+        if ctx.guild:
+            return True
+        else:
+            raise commands.CheckFailure("This command cannot be used in private messages.")
+
     def all_lists(self, ctx, key):
         l = []
         for x in self.bot.server_data[ctx.message.guild.id][key]:
