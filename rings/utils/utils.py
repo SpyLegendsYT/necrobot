@@ -12,7 +12,7 @@ def has_goodbye(bot, member):
 
 def has_automod(bot, message):
     role_id = [role.id for role in message.author.roles]
-    return message.author.id not in self.bot.server_data[message.guild.id]["ignore-automod"] and message.channel.id not in self.bot.server_data[message.guild.id]["ignore-automod"] and not any(x in role_id for x in self.bot.server_data[message.guild.id]["ignore-automod"]) and self.bot.server_data[message.guild.id]["automod"] != ""
+    return message.author.id not in bot.server_data[message.guild.id]["ignore-automod"] and message.channel.id not in bot.server_data[message.guild.id]["ignore-automod"] and not any(x in role_id for x in bot.server_data[message.guild.id]["ignore-automod"]) and bot.server_data[message.guild.id]["automod"] != ""
 
 UPDATE_NECROINS = "UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2"
 UPDATE_FLOWERS  = "UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3"

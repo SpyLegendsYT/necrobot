@@ -93,7 +93,7 @@ class NecroBotHelpFormatter(HelpFormatter):
 
         return command_list
 
-    def _add_subcommands_to_page(self, max_width, commands):
+    async def _add_subcommands_to_page(self, max_width, commands):
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
@@ -105,7 +105,7 @@ class NecroBotHelpFormatter(HelpFormatter):
                 except CommandError:
                     return False
 
-            valid = predicate()
+            valid = await predicate()
             if valid:
                 entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
             else:
@@ -180,7 +180,7 @@ class NecroBotHelpFormatter(HelpFormatter):
             filtered = sorted(filtered)
             if filtered:
                 self._paginator.add_line('__Commands__')
-                self._add_subcommands_to_page(max_width, filtered)
+                await self._add_subcommands_to_page(max_width, filtered)
             ending_note = self.get_ending_note_command()
 
         # add the ending note
