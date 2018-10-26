@@ -278,7 +278,10 @@ class Admin():
         try:
             exec(compile(parsed, filename="<ast>", mode="exec"), env)
             result = (await eval(f"{fn_name}()", env))
-            await ctx.send(result)
+            if result:
+                await ctx.send(result)
+            else:
+                await ctx.send(":white_check_mark:")
         except Exception as e:
             await ctx.send(python.format(f'{type(e).__name__}: {e}'))
 
@@ -463,7 +466,7 @@ class Admin():
 
     @commands.command()
     @has_perms(6)
-    async def gate(self, ctx, channel : discord.TextChannel):
+    async def gate(self, ctx, channel : Union[discord.TextChannel, discord.User]):
         """Connects two channels with a magic gate so that users on bot servers can communicate. Magic:tm:
 
         {usage}
@@ -474,7 +477,7 @@ class Admin():
             return
 
         await channel.send(":gate: | A warp gate has opened on your server, you are now in communication with a Necrobot admin. Voice any concerns without fear.")
-        await ctx.send(f":gate: | I've opened a gate to {channel.mention} on {channel.guild}")
+        await ctx.send(f":gate: | I've opened a gate to {channel.mention}")
 
         self.gates[ctx.channel.id] = channel
         self.gates[channel.id] = ctx.channel
@@ -495,10 +498,12 @@ class Admin():
         if message.author.bot:
             return
 
-        if message.channel.id not in self.gates:
+        if message.channel.id in self.gates:
+            channel = self.gates[message.channel.id]
+        elif message.author.id in self.gates:
+            channel = self.gates[message.author.id]
+        else:
             return
-
-        channel = self.gates[message.channel.id]
         
         message.content = message.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
         embed = discord.Embed(title="Message", description=message.content)
