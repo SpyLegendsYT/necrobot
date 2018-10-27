@@ -448,7 +448,7 @@ class Server():
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
-    async def starboard(self, ctx, member : Union[discord.Member, int] = 1):
+    async def starboard(self, ctx, member : Union[discord.User, int] = 1):
         """Base of the concept of R.Danny's starboard but simplified. This will post a message in a desired channel once it hits
         a certain number of :star: reactions. Default limit is 5, you can change the limit with `{pre}starboard limit` If no
         subcommand is passed it will return a leaderboard of the top starred users, if a user is passed it will return their 
@@ -461,7 +461,7 @@ class Server():
         `{pre}starboard @NecroBot` - returns the amount of post starred that Necrobot has
         `{pre}starboard 3` - return the third page of the starboard leaderboard"""
         if isinstance(member, int):
-            sql = "SELECT user_id, COUNT(message_id) FROM necrobot.Starred WHERE guild_id = $1 GROUP BY user_id ORDER BY COUNT(message_id) DESC"
+            sql = "SELECT user_id, COUNT(message_id) FROM necrobot.Starred WHERE guild_id = $1 AND user_id IS NOT null GROUP BY user_id ORDER BY COUNT(message_id) DESC"
             results = await self.bot.query_executer(sql, ctx.guild.id)
 
             def _embed_maker(index):

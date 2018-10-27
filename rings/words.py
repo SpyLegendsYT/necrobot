@@ -80,7 +80,12 @@ class Literature():
         language = "en"
         async with aiohttp.ClientSession(headers=define_headers) as session:
             async with session.get(f'https://od-api.oxforddictionaries.com/api/v1/inflections/{language}/{word}') as resp:
-                word = await resp.json()
+                try:
+                    word = await resp.json()
+                except aiohttp.ContentTypeError:
+                    await ctx.send(":negative_squared_cross_mark: | Word not found")
+                    return
+                    
                 word = word["results"][0]["lexicalEntries"][0]["inflectionOf"][0]["id"]                
             async with session.get(f"https://od-api.oxforddictionaries.com/api/v1/entries/{language}/{word}") as resp:
                 definition = await resp.json()
