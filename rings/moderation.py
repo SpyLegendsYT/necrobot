@@ -176,22 +176,23 @@ class Moderation():
         `{pre}purge 15 link` - purges all messages containing links from the previous 15 messages
         `{pre}purge 20 mention @Necro` - purges all messages sent by @Necro from the previous 20 messages
         `{pre}purge 35 bot` - purges all messages sent by the bot from the previous 35 messages"""
-        channel = self.bot.server_data[ctx.message.guild.id]["automod"]
-        self.bot.server_data[ctx.message.guild.id]["automod"] = ""
+        channel = self.bot.server_data[ctx.guild.id]["automod"]
+        self.bot.server_data[ctx.guild.id]["automod"] = ""
         number += 1
 
         if check == "link":
-            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: "http" in m.content)
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: "http" in m.content)
         elif check == "mention":
-            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: m.author.mention == extra)
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author.mention == extra)
         elif check == "image":
-            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: len(m.attachments) > 0)
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: len(m.attachments) > 0)
         elif check == "bot":
-            deleted = await ctx.message.channel.purge(limit=number, check=lambda m: m.author == self.bot.user)
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author == self.bot.user)
         else:
-            deleted = await ctx.message.channel.purge(limit=number)
+            deleted = await ctx.channel.purge(limit=number)
 
         await ctx.send(f":wastebasket: | **{len(deleted)-1}** messages purged.", delete_after=5)
+        await asyncio.sleep(1)
 
         self.bot.server_data[ctx.message.guild.id]["automod"] = channel
 

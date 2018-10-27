@@ -33,27 +33,62 @@ class Server():
 
         return l
 
-    @commands.command()
+    @commands.command(aliases=["perms"])
     @has_perms(4)
-    async def perms(self, ctx, user : discord.Member, level : int):
+    async def permissions(self, ctx, user : discord.Member, level : int):
         """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. 
         Permissions reset if you leave the server(Permission level required: 4+ (Server Admin))
          
         {usage}
         
         __Example__
+        `{pre}permissions @NecroBot 5` - set the NecroBot permission level to 5
         `{pre}perms @NecroBot 5` - set the NecroBot permission level to 5"""
+        if level < 0 or level > 7:
+            await ctx.send(":negative_squared_cross_mark: | You cannot promote the user any higher/lower")
 
         if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > level and self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > self.bot.user_data[user.id]["perms"][ctx.message.guild.id]:
+            c = self.bot.user_data[user.id]["perms"][ctx.message.guild.id]
             self.bot.user_data[user.id]["perms"][ctx.message.guild.id] = level
             await self.bot.query_executer(UPDATE_PERMS, level, ctx.guild.id, user.id)
-            await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}**")
+
+            if c < level:
+                await ctx.send(f":white_check_mark: | **{user.display_name}** has been promoted to **{self.bot.permsName[level]}** ({level})")
+            else:
+                await ctx.send(f":white_check_mark: | **{user.display_name}** has been demoted to **{self.bot.permsName[level]}** ({level})")
+            
             if level == 6:
                 for guild in self.bot.user_data[user.id]["perms"]:
                     self.bot.user_data[user.id]["perms"][guild] = 6
                     await self.bot.query_executer(UPDATE_PERMS, 6, guild, user.id)
         else:
             await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permission to grant this permission level")
+
+    @commands.command()
+    @has_perms(4)
+    async def promote(self, ctx, member : discord.Member):
+        """Promote a member by one on the Necrobot hierarchy scale. Gaining access to additional commands
+
+        {usage}
+
+        __Examples__
+        `{pre}promote NecroBot` - promote necrobot by one level
+        """
+        current = self.bot.user_data[member.id]["perms"][ctx.guild.id]
+        await ctx.invoke(self.bot.get_command("permissions"), user=member, level=current + 1)
+
+    @commands.command()
+    @has_perms(4)
+    async def demote(self, ctx, member : discord.Member):
+        """Demote a member by one on the Necrobot hierarchy scale. Losing access to certain commands
+
+        {usage}
+
+        __Examples__
+        `{pre}demote NecroBot` - promote necrobot by one level
+        """
+        current = self.bot.user_data[member.id]["perms"][ctx.guild.id]
+        await ctx.invoke(self.bot.get_command("permissions"), user=member, level=current - 1)
 
     @commands.group(invoke_without_command=True)
     @has_perms(4)

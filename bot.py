@@ -60,8 +60,9 @@ class NecroBot(commands.Bot):
         self.version = 2.5
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["got", "enable", "admin", "starboard", "remindme"]
+        self.new_commands = ["starboard", "remindme", "permissions", "demote", "promote"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
+        self.permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","NecroBot Admin","The Bot Smith"]
 
         self.session = aiohttp.ClientSession(loop=self.loop)
         

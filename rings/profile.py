@@ -16,9 +16,6 @@ from PIL import ImageColor
 
 #/usr/share/fonts/
 
-#Permissions Names
-permsName = ["User","Helper","Moderator","Semi-Admin","Admin","Server Owner","NecroBot Admin","The Bot Smith"]
-
 class Profile():
     def __init__(self, bot):
         self.bot = bot
@@ -181,7 +178,7 @@ class Profile():
                     index = spot - 1
                     im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
-            draw.text((70,85), permsName[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
+            draw.text((70,85), self.bot.permsName[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
             draw.text((260,125), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=self.font30)
             draw.text((260,230), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=self.font30)
             draw.text((43,313), user.display_name, (0,0,0), font=self.font21)
