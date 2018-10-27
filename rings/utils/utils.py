@@ -90,7 +90,7 @@ class GuildConverter(commands.IDConverter):
         raise commands.BadArgument("Not a known guild")
 
 class TimeConverter(commands.Converter):
-    def convert(self, ctx, argument):
+    async def convert(self, ctx, argument):
         time = 0
 
         pattern = re.compile(r"([0-9]+)([dhms])")

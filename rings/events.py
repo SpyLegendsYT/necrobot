@@ -101,7 +101,7 @@ class NecroEvents():
         if isinstance(before.channel, discord.DMChannel) or before.author.bot or before.content == after.content:
             return
 
-        if has_automod(self.bot, message):
+        if has_automod(self.bot, after):
             embed = discord.Embed(title="Message Edited", description=f"In {before.channel.mention} by {before.author.mention}", colour=discord.Colour(0x277b0))
             if not after.content:
                 after.content = "\U0000200b"
@@ -181,10 +181,7 @@ class NecroEvents():
         if user.id in self.bot.settings["blacklist"] or not reaction.message.guild:
             return        
 
-        if self.bot.server_data[user.guild.id]["starboard-channel"] == "":
-            return
-
-        if reaction.message.channel.id == self.bot.server_data[user.guild.id]["starboard-channel"]:
+        if self.bot.server_data[user.guild.id]["starboard-channel"] in ["", reaction.message.channel.id]:
             return
 
         if reaction.message.id in self.bot.starred:

@@ -162,7 +162,7 @@ class Utilities():
 
         text = message.split(" in ")[0]
         time = message.split(" in ")[1]
-        sleep = await TimeConverter().convert(time)
+        sleep = await TimeConverter().convert(ctx, time)
         await ctx.send(f":white_check_mark: | Okay I will remind you in **{time}** of **{text}**")
 
         await asyncio.sleep(sleep)

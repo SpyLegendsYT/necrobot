@@ -58,23 +58,23 @@ class Moderation():
         `{pre}mute @NecroBot 30s` - mutes NecroBot for 30 seconds or until a user with the proper permission level does
         `{pre}mute @NecroBot 2m` - mutes NecroBot for 2 minutes
         `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes"""
-        if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
+        if self.bot.server_data[ctx.guild.id]["mute"] == "":
             await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
             return
 
-        role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
+        role = discord.utils.get(ctx.guild.roles, id=self.bot.server_data[ctx.guild.id]["mute"])
         if role not in user.roles:
             await user.add_roles(role)
-            await ctx.send(f":white_check_mark: | User: **{user.display_name}** has been muted")
+            await ctx.send(f":white_check_mark: | User **{user.display_name}** has been muted")
         else:
-            await ctx.send(f":negative_squared_cross_mark: | User: **{user.display_name}** is already muted", delete_after=5)
+            await ctx.send(f":negative_squared_cross_mark: | User **{user.display_name}** is already muted", delete_after=5)
             return
 
         if time:
             await asyncio.sleep(time)
             if role in user.roles:
                 await user.remove_roles(role)
-                await ctx.send(f":white_check_mark: | User: **{user.display_name}** has been automatically unmuted")
+                await ctx.send(f":white_check_mark: | User **{user.display_name}** has been automatically unmuted")
 
     @mute.command(name="role")
     @has_perms(4)
@@ -120,9 +120,9 @@ class Moderation():
         role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
         if role in user.roles:
             await user.remove_roles(role)
-            await ctx.send(f":white_check_mark: | User: **{user.display_name}** has been unmuted")
+            await ctx.send(f":white_check_mark: | User **{user.display_name}** has been unmuted")
         else:
-            await ctx.send(f":negative_squared_cross_mark: | User: **{user.display_name}** is not muted", delete_after=5)
+            await ctx.send(f":negative_squared_cross_mark: | User **{user.display_name}** is not muted", delete_after=5)
 
     @commands.group(invoke_without_command = True)
     @has_perms(1)
