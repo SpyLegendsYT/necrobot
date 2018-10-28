@@ -139,7 +139,14 @@ class NecroEvents():
             if member.id in self.bot.settings["blacklist"]:
                 await channel.send(":eight_pointed_black_star: | **You are not welcome here, disturber of the peace**")
             else:
-                await channel.send(message.format(member=member, server=member.guild.name))
+                message = message.format(
+                    member=ctx.author, 
+                    server=ctx.guild.name,
+                    mention=ctx.author.mention,
+                    name=ctx.author.name,
+                    id=ctx.author.id
+                )
+                await channel.send(message)
 
         if not self.bot.server_data[member.guild.id]["auto-role"] == "":
             role = discord.utils.get(member.guild.roles, id=self.bot.server_data[member.guild.id]["auto-role"])
@@ -164,7 +171,14 @@ class NecroEvents():
             if member.id in self.bot.settings["blacklist"]:
                 await channel.send(":eight_pointed_black_star: | **...**")
             else:
-                await channel.send(message.format(member=member, server=member.guild.name))
+                message = message.format(
+                    member=ctx.author, 
+                    server=ctx.guild.name,
+                    mention=ctx.author.mention,
+                    name=ctx.author.name,
+                    id=ctx.author.id
+                )
+                await channel.send(message)
 
     async def on_raw_reaction_add(self, payload):
         if payload.user_id in self.bot.settings["blacklist"] or payload.guild_id:

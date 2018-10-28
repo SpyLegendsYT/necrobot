@@ -58,7 +58,7 @@ class Admin():
     @admin.command(name="disable")
     @has_perms(6)
     async def admin_disable(self, ctx, *, command : str):
-        """For when regular disable isn't enough
+        """For when regular disable isn't enough. Disables command discord-wide
 
         {usage}
         """
@@ -72,7 +72,7 @@ class Admin():
     @admin.command(name="enable")
     @has_perms(6)
     async def admin_enable(self, ctx, *, command : str):
-        """For when regular enable isn't enough
+        """For when regular enable isn't enough. Re-enables the command discord-wide.
 
         {usage}
         """

@@ -206,22 +206,38 @@ class Server():
     @commands.group(invoke_without_command=True)
     @has_perms(4)
     async def welcome(self, ctx, *, message=""):
-        """Sets the welcome message (aka the message sent to the welcome channel when a new user joins), you can 
-        format the message to mention the user and server. `{member}` will be replaced by a mention of the member 
-        and `{server}` will be replaced by the server name.  (Permission level required: 4+ (Server Owner))
-         
+        """Sets the message that will be sent to the designated channel everytime a member joins the server. You 
+        can use special keywords to replace certain words by stuff like the name of the member or a mention.
+        List of keywords:
+        `{mention}` - mentions the member
+        `{member}` - name and discriminator of the member
+        `{name}` - name of the member
+        `{server}` - name of the server
+        `{id}` - id of the member that joined
+
+        (Permission level required: 4+ (Server Admin))
+
         {usage}
         
         __Example__
-        `{pre}welcome Hello {member} :wave:` - sets the welcome message to be 'Hello {member} :wave:' with 
-        `{member}` being replaced by the new member's name"""
+        `{pre}welcome Hello {member} :wave:` - sets the welcome message to be 'Hello Necrobot#1231 :wave:'.
+        `{pre}welcome hey there {mention}, welcome to {server}` - set the welcome message to 'hey there @NecroBot, welcome
+        to NecroBot Support Server'
+        """
         if message == "":
             await ctx.send(":white_check_mark: | Welcome message reset and disabled")
         else:
             try:
-                await ctx.send(f":white_check_mark: | Your server's welcome message will be: \n{message.format(member=ctx.author, server=ctx.guild.name)}")
+                message = message.format(
+                    member=ctx.author, 
+                    server=ctx.guild.name,
+                    mention=ctx.author.mention,
+                    name=ctx.author.name,
+                    id=ctx.author.id
+                )
+                await ctx.send(f":white_check_mark: | Your server's welcome message will be: \n{message}")
             except KeyError as e:
-                await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
+                await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument. Check the help guide to see what you can use the command with.")
                 return
 
         self.bot.server_data[ctx.message.guild.id]["welcome"] = message
@@ -230,26 +246,42 @@ class Server():
     @commands.group(invoke_without_command=True)
     @has_perms(4)
     async def goodbye(self, ctx, *, message= ""):
-        """Sets the goodbye message (aka the message sent to the welcome channel when a user leaves), you can format 
-        the message to mention the user and server. `{member}` will be replaced by a mention of the member and `{server}` 
-        will be replaced by the server name.  (Permission level required: 4+ (Server Owner))
-         
+        """Sets the message that will be sent to the designated channel everytime a member leaves the server. You 
+        can use special keywords to replace certain words by stuff like the name of the member or a mention.
+        List of keywords:
+        `{mention}` - mentions the member
+        `{member}` - name and discriminator of the member
+        `{name}` - name of the member
+        `{server}` - name of the server
+        `{id}` - id of the member that left
+
+        (Permission level required: 4+ (Server Admin))
+
         {usage}
         
         __Example__
-        `{pre}goodbye Goodbye {member} :wave:` - sets the goodbye message to be 'Goodbye {member} :wave:' 
-        with `{member}` being replaced by the new member's name"""
+        `{pre}goodbye Hello {member} :wave:` - sets the welcome message to be 'Hello Necrobot#1231 :wave:'.
+        `{pre}goddbye hey there {mention}, we'll miss you on {server}` - set the welcome message to 'hey 
+        there @NecroBot, we'll miss you on NecroBot Support Server'
+        """
         if message == "":
             await ctx.send(":white_check_mark: | Goodbye message reset and disabled")
         else:
             try:
-                await ctx.send(":white_check_mark: | Your server's goodbye message will be: \n" + message.format(member=ctx.author, server=ctx.guild))
+                message = message.format(
+                    member=ctx.author, 
+                    server=ctx.guild.name,
+                    mention=ctx.author.mention,
+                    name=ctx.author.name,
+                    id=ctx.author.id
+                )
+                await ctx.send(f":white_check_mark: | Your server's goodbye message will be: \n{message}")
             except KeyError as e:
                 await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
                 return
 
         self.bot.server_data[ctx.message.guild.id]["goodbye"] = message
-        await self.bot.query_executer("UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
+        await self.bot.query_executer("UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2", message, ctx.guild.id)
 
     async def channel_set(self, ctx, channel):
         if channel == "":
