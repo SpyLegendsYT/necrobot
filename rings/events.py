@@ -19,7 +19,7 @@ class NecroEvents():
 
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
-        channel = ctx.message.channel
+        channel = ctx.channel
         if isinstance(error, commands.MissingRequiredArgument):
             await channel.send(f":negative_squared_cross_mark: | Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`", delete_after=10)
             #this can be used to print *all* the missing arguments (bit hacky tho)

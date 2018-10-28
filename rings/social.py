@@ -40,10 +40,10 @@ class Social():
         
         {usage}"""
         riddle = random.choice(self.riddles_list)
-        await ctx.send(f"Riddle me this {ctx.message.author.name}: \n{riddle[0]}")
+        await ctx.send(f"Riddle me this {ctx.author.name}: \n{riddle[0]}")
 
         def check(m):
-            return m.author == ctx.message.author and m.channel == ctx.message.channel and riddle[1] in m.content
+            return m.author == ctx.author and m.channel == ctx.channel and riddle[1] in m.content
 
         try:
             msg = await self.bot.wait_for("message", check=check, timeout=30)
@@ -58,7 +58,7 @@ class Social():
         
         {usage}"""
         card_list = random.sample(self.tarot_list, 3)
-        await ctx.send(f":white_flower: | Settle down now and let Necro see your future my dear {ctx.message.author.name}...\n**Card #1:** {card_list[0]}\n**Card #2:** {card_list[1]}\n**Card #3:** {card_list[2]}\n__*That is your fate, none can change it for better or worst.*__")
+        await ctx.send(f":white_flower: | Settle down now and let Necro see your future my dear {ctx.author.name}...\n**Card #1:** {card_list[0]}\n**Card #2:** {card_list[1]}\n**Card #3:** {card_list[2]}\n__*That is your fate, none can change it for better or worst.*__")
 
     @commands.command()
     async def rr(self, ctx, bullets : int = 1):

@@ -18,7 +18,7 @@ class Server():
 
     def all_lists(self, ctx, key):
         l = []
-        for x in self.bot.server_data[ctx.message.guild.id][key]:
+        for x in self.bot.server_data[ctx.guild.id][key]:
             channel = self.bot.get_channel(x)
             if channel:
                 l.append(f"C: {channel.name}")
@@ -27,7 +27,7 @@ class Server():
             if member:
                 l.append(f"U: {member.name}")
 
-            role = discord.utils.get(ctx.message.guild.roles, id=x)
+            role = discord.utils.get(ctx.guild.roles, id=x)
             if role:
                 l.append(f"R: {role.name}")
 
@@ -47,9 +47,9 @@ class Server():
         if level < 0 or level > 7:
             await ctx.send(":negative_squared_cross_mark: | You cannot promote the user any higher/lower")
 
-        if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > level and self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > self.bot.user_data[user.id]["perms"][ctx.message.guild.id]:
-            c = self.bot.user_data[user.id]["perms"][ctx.message.guild.id]
-            self.bot.user_data[user.id]["perms"][ctx.message.guild.id] = level
+        if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > level and self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > self.bot.user_data[user.id]["perms"][ctx.guild.id]:
+            c = self.bot.user_data[user.id]["perms"][ctx.guild.id]
+            self.bot.user_data[user.id]["perms"][ctx.guild.id] = level
             await self.bot.query_executer(UPDATE_PERMS, level, ctx.guild.id, user.id)
 
             if c < level:
@@ -114,12 +114,12 @@ class Server():
             return
 
         for x in mentions:
-            if x.id not in self.bot.server_data[ctx.message.guild.id]["ignore-automod"]:
-                self.bot.server_data[ctx.message.guild.id]["ignore-automod"].append(x.id)
+            if x.id not in self.bot.server_data[ctx.guild.id]["ignore-automod"]:
+                self.bot.server_data[ctx.guild.id]["ignore-automod"].append(x.id)
                 await ctx.send(":white_check_mark: | **"+ x.name +"** will be ignored by the bot's automoderation.")
                 await self.bot.query_executer("INSERT INTO necrobot.IgnoreAutomod VALUES ($1, $2);", ctx.guild.id, x.id)
             else:
-                self.bot.server_data[ctx.message.guild.id]["ignore-automod"].remove(x.id)
+                self.bot.server_data[ctx.guild.id]["ignore-automod"].remove(x.id)
                 await ctx.send(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot's automoderation.")
                 await self.bot.query_executer("DELETE FROM necrobot.IgnoreAutomod WHERE guild_id = $1 AND id = $2;", ctx.guild.id, x.id)
 
@@ -135,11 +135,11 @@ class Server():
         `{pre}automod channel #channel` - set the automoderation messages to be sent to channel 'channel'
         `{pre}automod channel` - disables automoderation for the entire server"""
         if channel == "":
-            self.bot.server_data[ctx.message.guild.id]["automod"] = ""
+            self.bot.server_data[ctx.guild.id]["automod"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-moderation **disabled**")
         else:
-            self.bot.server_data[ctx.message.guild.id]["automod"] = channel.id
+            self.bot.server_data[ctx.guild.id]["automod"] = channel.id
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = $2 WHERE guild_id = $1;", ctx.guild.id, channel.id)
             await ctx.send(":white_check_mark: | Okay, all automoderation messages will be posted in " + channel.mention + " from now on.")
 
@@ -166,12 +166,12 @@ class Server():
             return
         
         for x in mentions:
-            if x.id not in self.bot.server_data[ctx.message.guild.id]["ignore-command"]:
-                self.bot.server_data[ctx.message.guild.id]["ignore-command"].append(x.id)
+            if x.id not in self.bot.server_data[ctx.guild.id]["ignore-command"]:
+                self.bot.server_data[ctx.guild.id]["ignore-command"].append(x.id)
                 await ctx.send(":white_check_mark: | **"+ x.name +"** will be ignored by the bot.")
                 await self.bot.query_executer("INSERT INTO necrobot.IgnoreCommand VALUES ($1, $2);", ctx.guild.id, x.id)
             else:
-                self.bot.server_data[ctx.message.guild.id]["ignore-command"].remove(x.id)
+                self.bot.server_data[ctx.guild.id]["ignore-command"].remove(x.id)
                 await ctx.send(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot.")
                 await self.bot.query_executer("DELETE FROM necrobot.IgnoreCommand WHERE guild_id = $1 AND id = $2;", ctx.guild.id, x.id)
 
@@ -181,9 +181,9 @@ class Server():
         """Creates a rich embed of the server settings, also the gateway to the rest of the commands
 
         {usage}"""
-        server = self.bot.server_data[ctx.message.guild.id] 
-        role_obj = discord.utils.get(ctx.message.guild.roles, id=server["mute"])
-        role_obj2 = discord.utils.get(ctx.message.guild.roles, id=server["auto-role"])
+        server = self.bot.server_data[ctx.guild.id] 
+        role_obj = discord.utils.get(ctx.guild.roles, id=server["mute"])
+        role_obj2 = discord.utils.get(ctx.guild.roles, id=server["auto-role"])
         embed = discord.Embed(title="__**Server Settings**__", colour=discord.Colour(0x277b0), description="Info on the NecroBot settings for this server")
         embed.add_field(name="Automod Channel", value=self.bot.get_channel(server["automod"]).mention if server["automod"] != "" else "Disabled")
         embed.add_field(name="Welcome Channel", value=self.bot.get_channel(server["welcome-channel"]).mention if server["welcome-channel"] != "" else "Disabled")
@@ -240,7 +240,7 @@ class Server():
                 await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument. Check the help guide to see what you can use the command with.")
                 return
 
-        self.bot.server_data[ctx.message.guild.id]["welcome"] = message
+        self.bot.server_data[ctx.guild.id]["welcome"] = message
         await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
 
     @commands.group(invoke_without_command=True)
@@ -280,23 +280,23 @@ class Server():
                 await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
                 return
 
-        self.bot.server_data[ctx.message.guild.id]["goodbye"] = message
+        self.bot.server_data[ctx.guild.id]["goodbye"] = message
         await self.bot.query_executer("UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2", message, ctx.guild.id)
 
     async def channel_set(self, ctx, channel):
         if channel == "":
-            self.bot.server_data[ctx.message.guild.id]["welcome-channel"] = ""
+            self.bot.server_data[ctx.guild.id]["welcome-channel"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Welcome/Goodbye messages **disabled**")
         else:
-            self.bot.server_data[ctx.message.guild.id]["welcome-channel"] = channel.id
+            self.bot.server_data[ctx.guild.id]["welcome-channel"] = channel.id
             await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
             await ctx.send(":white_check_mark: | Okay, users will get their welcome/goodbye message in " + channel.mention + " from now on.")
 
     @welcome.command(name="channel")
     @has_perms(4)
     async def welcome_channel(self, ctx, channel : discord.TextChannel = ""):
-        """Sets the welcome channel to [channel], the [channel] argument should be a channel mention. The welcome 
+        """Sets the welcome channel to [channel], the [channel] argument should be a channel mention/name/id. The welcome 
         message for users will be sent there. Can be called with either goodbye or welcome, regardless both will use
         the same channel, calling the command with both parent commands but different channel will not make
         messages send to two channels.
@@ -343,7 +343,7 @@ class Server():
             await ctx.send(f":negative_squared_cross_mark: | Prefix can't be more than 15 characters. {len(prefix)}/15")
             return
 
-        self.bot.server_data[ctx.message.guild.id]["prefix"] = prefix
+        self.bot.server_data[ctx.guild.id]["prefix"] = prefix
         await self.bot.query_executer("UPDATE necrobot.Guilds SET prefix = $1 WHERE guild_id = $2;", prefix, ctx.guild.id)
 
 
@@ -368,11 +368,11 @@ class Server():
         `{pre}auto-role` - resets and disables the autorole system. """
 
         if not role:
-            self.bot.server_data[ctx.message.guild.id]["auto-role"] = ""
+            self.bot.server_data[ctx.guild.id]["auto-role"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-Role disabled")
         else:
-            self.bot.server_data[ctx.message.guild.id]["auto-role"] = role.id
+            self.bot.server_data[ctx.guild.id]["auto-role"] = role.id
             self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
             await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_timer = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
             await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** for: {time} ({time_c} seconds)")
@@ -392,7 +392,7 @@ class Server():
         `{pre}broadcast disable` - disables broadcasted messages"""
         if disable == "disable":
             await ctx.send(":white_check_mark: | **Broadcast messages disabled**")
-            self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = ""
+            self.bot.server_data[ctx.guild.id]["broadcast-channel"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
 
 
@@ -406,11 +406,11 @@ class Server():
         __Example__
         `{pre}broadcast channel #general` - sets the broadcast channel to #general"""
         if channel == "":
-            self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = ""
+            self.bot.server_data[ctx.guild.id]["broadcast-channel"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Broadcast messages disabled")        
  
-        self.bot.server_data[ctx.message.guild.id]["broadcast-channel"] = channel.id
+        self.bot.server_data[ctx.guild.id]["broadcast-channel"] = channel.id
         await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
         await ctx.send(f":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in {channel.mention}")        
 
@@ -424,7 +424,7 @@ class Server():
         __Example__
         `{pre}broadcast message test 1 2 3` - sets the broadcast channel to #general"""
 
-        self.bot.server_data[ctx.message.guild.id]["broadcast"] = message
+        self.bot.server_data[ctx.guild.id]["broadcast"] = message
         await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_message = $1 WHERE guild_id = $2;", message, ctx.guild.id)
         
         if message == "":
@@ -443,7 +443,7 @@ class Server():
         __Example__
         `{pre}broadcast time 4` - sets the broadcast message to be sent every 4 hour"""
         if hours > 0 and hours <= 24:
-            self.bot.server_data[ctx.message.guild.id]["broadcast-time"] = hours
+            self.bot.server_data[ctx.guild.id]["broadcast-time"] = hours
             await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_time = $1 WHERE guild_id = $2;", hours, ctx.guild.id)
             await ctx.send(f":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{hours}` hour(s)")        
         else:
@@ -463,16 +463,16 @@ class Server():
         `{pre}giveme Good` - gives or remove the role 'Good' to the user if it is in the list of self assignable roles"""
 
         if role == "":
-            roles = [x.name for x in ctx.guild.roles if x.id in self.bot.server_data[ctx.message.guild.id]["self-roles"]]
+            roles = [x.name for x in ctx.guild.roles if x.id in self.bot.server_data[ctx.guild.id]["self-roles"]]
             await ctx.send("List of Self Assignable Roles:\n- " + "\n- ".join(roles))
             return
 
-        if role.id in self.bot.server_data[ctx.message.guild.id]["self-roles"]:
+        if role.id in self.bot.server_data[ctx.guild.id]["self-roles"]:
             if role not in ctx.author.roles:
-                await ctx.message.author.add_roles(role)
+                await ctx.author.add_roles(role)
                 await ctx.send(f":white_check_mark: | Role {role.name} added.")
             else:
-                await ctx.message.author.remove_roles(role)
+                await ctx.author.remove_roles(role)
                 await ctx.send(f":white_check_mark: | Role {role.name} removed.")
 
         else:
@@ -487,12 +487,12 @@ class Server():
         
         __Example__
         `{pre}giveme add Good` - adds the role 'Good' to the list of self assignable roles"""
-        if role.id in self.bot.server_data[ctx.message.guild.id]["self-roles"]:
+        if role.id in self.bot.server_data[ctx.guild.id]["self-roles"]:
             await ctx.send(":negative_squared_cross_mark: | Role already in list of self assignable roles")
             return
 
         await self.bot.query_executer("INSERT INTO necrobot.SelfRoles VALUES ($1, $2);", ctx.guild.id, role.id)
-        self.bot.server_data[ctx.message.guild.id]["self-roles"].append(role.id)
+        self.bot.server_data[ctx.guild.id]["self-roles"].append(role.id)
         await ctx.send(f":white_check_mark: | Added role **{role.name}** to list of self assignable roles.")
 
     @giveme.command(name="delete")
@@ -504,12 +504,12 @@ class Server():
         
         __Example__
         `{pre}giveme delete Good` - removes the role 'Good' from the list of self assignable roles"""
-        if role.id not in self.bot.server_data[ctx.message.guild.id]["self-roles"]:
+        if role.id not in self.bot.server_data[ctx.guild.id]["self-roles"]:
             await ctx.send(":negative_squared_cross_mark: | Role not in self assignable list")
             return
 
         await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", ctx.guild.id, role.id)
-        self.bot.server_data[ctx.message.guild.id]["self-roles"].remove(role.id)
+        self.bot.server_data[ctx.guild.id]["self-roles"].remove(role.id)
         await ctx.send(f":white_check_mark: | Role **{role.name}** removed from self assignable roles")
             
 

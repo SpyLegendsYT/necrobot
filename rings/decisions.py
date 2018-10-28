@@ -79,7 +79,7 @@ class Decisions():
         except TypeError:
             t = dice_list
 
-        await ctx.send(f":game_die: | **{ctx.message.author.display_name}** rolled {dice_list} for a total of: **{t}**")
+        await ctx.send(f":game_die: | **{ctx.author.display_name}** rolled {dice_list} for a total of: **{t}**")
 
     @commands.command(name="8ball")
     async def ball8(self, ctx, *, message):

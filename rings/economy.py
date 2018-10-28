@@ -132,7 +132,7 @@ class Economy():
         __Example__
         `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
         `{pre}blackjack` - bet the default 10 :euro:"""
-        if ctx.message.channel.id in self.IS_GAME:
+        if ctx.channel.id in self.IS_GAME:
             await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
             return 
         
@@ -144,9 +144,9 @@ class Economy():
             await ctx.send(":negative_squared_cross_mark: | Please bet at least 10 necroins.", delete_after=5)
             return
 
-        self.IS_GAME.append(ctx.message.channel.id)
+        self.IS_GAME.append(ctx.channel.id)
         await self.blackjack_game(ctx, bet)
-        self.IS_GAME.remove(ctx.message.channel.id)
+        self.IS_GAME.remove(ctx.channel.id)
 
 
     async def blackjack_game(self, ctx, bet):
@@ -382,7 +382,7 @@ class Economy():
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError as e:
                     e.timer = 120
-                    self.IS_GAME.remove(ctx.message.channel.id)
+                    self.IS_GAME.remove(ctx.channel.id)
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
 
@@ -413,7 +413,7 @@ class Economy():
                     user2 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError as e:
                     e.timer = 120
-                    self.IS_GAME.remove(ctx.message.channel.id)
+                    self.IS_GAME.remove(ctx.channel.id)
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
                 
@@ -443,7 +443,7 @@ class Economy():
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError as e:
                     e.timer = 120
-                    self.IS_GAME.remove(ctx.message.channel.id)
+                    self.IS_GAME.remove(ctx.channel.id)
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
 
@@ -498,7 +498,7 @@ class Economy():
                 reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
             except asyncio.TimeoutError as e:
                     e.timer = 120
-                    self.IS_GAME.remove(ctx.message.channel.id)
+                    self.IS_GAME.remove(ctx.channel.id)
                     await msg.delete()
                     return self.bot.dispatch("command_error", ctx, e)
 

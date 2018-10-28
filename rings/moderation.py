@@ -31,7 +31,7 @@ class Moderation():
         __Example__
         `{pre}nick @NecroBot Lord of All Bots` - renames NecroBot to 'Lord of All Bots'
         `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
-        if self.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] > self.bot.user_data[user.id]["perms"][ctx.message.guild.id]:
+        if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > self.bot.user_data[user.id]["perms"][ctx.guild.id]:
             if not nickname:
                 msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
             else:
@@ -92,13 +92,13 @@ class Moderation():
         `{pre}mute role Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
         `{pre}mute role` - resets the mute role and disables the `mute` command."""
         if not role:
-            self.bot.server_data[ctx.message.guild.id]["mute"] = ""
+            self.bot.server_data[ctx.guild.id]["mute"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", ctx.guild.id)
             await ctx.send(":white_check_mark: | Reset mute role")
             return
 
         await ctx.send(f":white_check_mark: | Okay, the mute role for your server will be {role.mention}")
-        self.bot.server_data[ctx.message.guild.id]["mute"] = role.id
+        self.bot.server_data[ctx.guild.id]["mute"] = role.id
         await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = $1 WHERE guild_id = $2;", role.id, ctx.guild.id)
 
 
@@ -113,11 +113,11 @@ class Moderation():
 
         __Example__
         `{pre}unmute @NecroBot` - unmutes NecroBot if he is muted"""
-        if self.bot.server_data[ctx.message.guild.id]["mute"] == "":
+        if self.bot.server_data[ctx.guild.id]["mute"] == "":
             await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
             return
             
-        role = discord.utils.get(ctx.message.guild.roles, id=self.bot.server_data[ctx.message.guild.id]["mute"])
+        role = discord.utils.get(ctx.guild.roles, id=self.bot.server_data[ctx.guild.id]["mute"])
         if role in user.roles:
             await user.remove_roles(role)
             await ctx.send(f":white_check_mark: | User **{user.display_name}** has been unmuted")
@@ -136,9 +136,9 @@ class Moderation():
         Necrobot's warning list and pm the warning message to him"""
         await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** added to warning list of user {user.display_name}")
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
-        await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.message.created_at))
+        await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.created_at))
         try:
-            await user.send(f"You have been warned on {ctx.message.guild.name}, the warning is: \n {message}")
+            await user.send(f"You have been warned on {ctx.guild.name}, the warning is: \n {message}")
         except discord.Forbidden:
             pass
 
@@ -194,7 +194,7 @@ class Moderation():
         await ctx.send(f":wastebasket: | **{len(deleted)-1}** messages purged.", delete_after=5)
         await asyncio.sleep(1)
 
-        self.bot.server_data[ctx.message.guild.id]["automod"] = channel
+        self.bot.server_data[ctx.guild.id]["automod"] = channel
 
     @commands.command()
     @has_perms(3)
@@ -223,10 +223,10 @@ class Moderation():
         `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
         `{pre}disable Animals` - disables every command in the the Animals cog"""
         if not command:
-            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
+            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.guild.id]['disabled']}")
             return
 
-        disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
+        disabled = self.bot.server_data[ctx.guild.id]["disabled"]
         if command not in self.bot.cogs:
             command_obj = self.bot.get_command(command)
 
@@ -263,10 +263,10 @@ class Moderation():
         `{pre}enabled cat` - enable the cat command, after that everybody can use it again freely.
         `{pre}enable Animals` - enables every command in the the Animals cog"""
         if not command:
-            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.message.guild.id]['disabled']}")
+            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.guild.id]['disabled']}")
             return
 
-        disabled = self.bot.server_data[ctx.message.guild.id]["disabled"]
+        disabled = self.bot.server_data[ctx.guild.id]["disabled"]
         if command not in self.bot.cogs:
             command_obj = self.bot.get_command(command)
 
@@ -313,7 +313,7 @@ class Moderation():
             await self.bot._star_message(message)
         else:
             def check(reaction, user):
-                return user == ctx.message.author and str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}"
+                return user == ctx.author and str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
             msg = await ctx.send("React to the message you wish to star with :white_check_mark:")
             try:

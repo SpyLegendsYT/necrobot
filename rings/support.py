@@ -96,7 +96,7 @@ class Support():
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
         def check(reaction, user):
-            return user == ctx.message.author and reaction.emoji in ["\N{NEGATIVE SQUARED CROSS MARK}", "\N{WHITE HEAVY CHECK MARK}"] and msg.id == reaction.message.id
+            return user == ctx.author and reaction.emoji in ["\N{NEGATIVE SQUARED CROSS MARK}", "\N{WHITE HEAVY CHECK MARK}"] and msg.id == reaction.message.id
 
         reaction, user = await self.bot.wait_for("reaction_add", check=check)
 
