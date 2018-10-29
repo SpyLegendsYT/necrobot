@@ -561,12 +561,12 @@ class Server():
         `{pre}starboard channel` - disables starboard"""
         if channel == "":
             self.bot.server_data[ctx.guild.id]["starboard-channel"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = 0 WHERE guild_id = $1", ctx.guild.id)
             await ctx.send(":white_check_mark: | Starboard messages disabled.")
             return
 
         self.bot.server_data[ctx.guild.id]["starboard-channel"] = channel.id
-        await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
+        await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
         await ctx.send(f":white_check_mark: | Starboard messages will now be sent to {channel.mention}")
 
     @starboard.command(name="limit")
@@ -583,7 +583,7 @@ class Server():
             return
 
         self.bot.server_data[ctx.guild.id]["starboard-limit"] = limit
-        await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_limit = $1 WHERE guild_id = $2;", limit, ctx.guild.id)
+        await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_limit = $1 WHERE guild_id = $2", limit, ctx.guild.id)
         await ctx.send(f":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{limit}** stars")
 
 def setup(bot):

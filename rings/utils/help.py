@@ -160,7 +160,7 @@ class NecroBotHelpFormatter(HelpFormatter):
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return f'**{cog}** - ' if cog is not None else '\u200b**No Category** - '
+            return f'**{cog}** - ' if cog is not None else '**Support** - '
 
         filtered = await self.filter_command_list()
         if self.is_bot():

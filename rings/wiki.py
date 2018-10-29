@@ -4,6 +4,7 @@ from discord.ext import commands
 
 import re
 import wikia
+import urllib
 import unwiki
 import difflib
 from mwclient import Site
@@ -158,6 +159,36 @@ class Wiki():
             pass
             
         await ctx.send(msg, embed=embed)
+
+    @commands.command()
+    async def faq(self, ctx, *, question : str = None):
+        """Replies with up to 5 links from the Edain FAQ that have matched close to the initial question.
+
+        {usage}
+
+        __Example__
+        `{pre}faq mirkwood faction` - will reply with links on why Mirkwood isn't its own faction
+        """
+        if not question:
+            await ctx.send("https://edain.wikia.com/wiki/Frequently_Asked_Questions")
+            return
+            
+        article = wikia.article("edain", "Frequently Asked Questions")
+        matches = difflib.get_close_matches(question, article.sections, n=5, cutoff=0.4)
+
+        if len(matches) < 1:
+            await ctx.send(":negative_squared_cross_mark: | Sorry, didn't find anything")
+            return
+
+        message = []
+        for section in matches:
+            url = urllib.parse.quote(section.replace(" ", "_"))
+            message.append(f"**{section}**")
+            message.append(f"{article.url}{url}")
+
+        await ctx.send("\n".join(message))
+
+
 
 def setup(bot):
     bot.add_cog(Wiki(bot))
