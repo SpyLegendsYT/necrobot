@@ -307,3 +307,33 @@ tutorial_e = {'footer': {
     'description': "A helpful tutorial section for a more advanced overview on NecroBot's system. This should give users a more indepth overview on certain specifics features of it. It's a lot of information to take in at once, so feel free to read it bit by bit, and if you have any more questions you can join the official support server. Use `n!about` for an invite link.", 
     'title': 'NecroBot Tutorial'
     }
+
+gift_list = {
+        "cookie": {"price": 10, "emote": ":cookie:"},
+        "lollipop": {"price": 30, "emote": ":lollipop:"},
+        "rose": {"price": 50, "emote": ":rose:"},
+        "beer": {"price": 75, "emote": ":beer:"},
+        "loveletter": {"price": 100, "emote": ":love_letter:"},
+        "milk": {"price": 125, "emote": ":milk:"},
+        "pizza": {"price": 150, "emote": ":pizza:"},
+        "icecream": {"price": 200, "emote": ":icecream:"},
+        "chocolate": {"price": 200, "emote": ":chocolate_bar:"},
+        "sushi": {"price": 300, "emote": ":sushi:"},
+        "rice": {"price": 400, "emote": ":rice:"},
+        "movieticket": {"price": 800, "emote": ":tickets:"},
+        "book": {"price": 1500, "emote": ":notebook_with_decorative_cover:"},
+        "dog": {"price": 2000, "emote": ":dog:"},
+        "cat": {"price": 2001, "emote": ":cat:"},
+        "lipstick": {"price": 3000, "emote": ":lipstick:"},
+        "purse": {"price": 3500, "emote": ":purse:"},
+        "phone": {"price": 4000, "emote": ":iphone:"},
+        "laptop": {"price": 5000, "emote": ":computer:"},
+        "violin": {"price": 7500, "emote": ":violin:"},
+        "piano": {"price": 8000, "emote": ":musical_keyboard:"},
+        "car": {"price": 9000, "emote": ":red_car:"},
+        "ring": {"price": 10000, "emote": ":ring:"},
+        "yacht": {"price": 12000, "emote": ":cruise_ship:"},
+        "house": {"price": 15000, "emote": ":house:"},
+        "helicopter": {"price": 20000, "emote": ":helicopter:"},
+        "spaceship": {"price": 30000, "emote": ":rocket:"}
+    }

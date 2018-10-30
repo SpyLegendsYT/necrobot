@@ -44,7 +44,7 @@ class Admin():
         """{usage}"""
         pass
 
-    @admin.command(name="perms")
+    @admin.command(name="permsissions", aliases=["perms"])
     @commands.is_owner()
     async def admin_perms(self, ctx, server : GuildConverter, user : discord.User, level : int):
         """For when regular perms isn't enough.
@@ -52,6 +52,10 @@ class Admin():
         {usage}"""
         self.bot.user_data[user.id]["perms"][server.id] = level
         await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server.id, user.id)
+        if level >= 6:
+            for server in self.bot.user_data[user.id]["perms"]:
+                self.bot.user_data[user.id]["perms"][server] = level
+                await self.bot.query_executer(UPDATE_PERMS, level, server, user.id)
 
         await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}** on server **{server.name}**" )
 

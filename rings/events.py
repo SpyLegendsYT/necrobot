@@ -140,11 +140,11 @@ class NecroEvents():
                 await channel.send(":eight_pointed_black_star: | **You are not welcome here, disturber of the peace**")
             else:
                 message = message.format(
-                    member=ctx.author, 
-                    server=ctx.guild.name,
-                    mention=ctx.author.mention,
-                    name=ctx.author.name,
-                    id=ctx.author.id
+                    member=member, 
+                    server=member.guild.name,
+                    mention=member.mention,
+                    name=member.name,
+                    id=member.id
                 )
                 await channel.send(message)
 
@@ -172,11 +172,11 @@ class NecroEvents():
                 await channel.send(":eight_pointed_black_star: | **...**")
             else:
                 message = message.format(
-                    member=ctx.author, 
-                    server=ctx.guild.name,
-                    mention=ctx.author.mention,
-                    name=ctx.author.name,
-                    id=ctx.author.id
+                    member=member, 
+                    server=member.guild.name,
+                    mention=member.mention,
+                    name=member.name,
+                    id=member.id
                 )
                 await channel.send(message)
 

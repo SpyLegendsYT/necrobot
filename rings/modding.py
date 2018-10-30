@@ -74,7 +74,7 @@ class Modding():
                     embed.add_field(name=article.title, value=f"{article.desc}... [Link]({article.url})\nPublished {article.date}")
             elif page == 1:
                 embed.add_field(name="\u200b", value=" ".join([f"[#{tag.name}]({tag.url})" for tag in mod.tags]))
-                embed.add_field(name="Misc: ", value=f"{mod.rating} \n{moad.publishers}\n{mod.release_date}\n**[Comment]({mod.comment})**  -  **[Follow]({mod.follow})**")
+                embed.add_field(name="Misc: ", value=f"{mod.rating} \n{mod.publishers}\n{mod.release_date}\n**[Comment]({mod.comment})**  -  **[Follow]({mod.follow})**")
                 embed.add_field(name="Style", value= "\n".join([mod.style.genre, mod.style.theme, mod.style.players]), inline=True)
                 embed.add_field(name="Stats", value= f"Rank: {mod.rank}\nVisits: {mod.count.visits}\nFiles:  {mod.count.files}\nArticles: {mod.count.articles}\nReviews: {mod.count.reviews}\nLast Update: {mod.last_update}")
             elif page == 2:

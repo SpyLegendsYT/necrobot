@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import has_perms, react_menu, UPDATE_NECROINS, UPDATE_FLOWERS, UPDATE_VALUE
-from rings.util.var import gift_list
+from rings.utils.var import gift_list
 
 class Waifu():
     """This is based off the Nadeko bot's waifu module. The reason I copied it was to be able to run it on the same

@@ -13,12 +13,6 @@ class Support():
     """All the NecroBot support commands are here to help you enjoy your time with NecroBot """
     def __init__(self, bot):
         self.bot = bot
-        self.base_d = {"author": {
-            "name": "Necrobot's Anchorman", "url": "https://discord.gg/Ape8bZt", 
-            "icon_url": bot.user.avatar_url_as(format="png", size=128)}, 
-            "color": 161712, "type": "rich"
-        }
-
         
     @commands.command(aliases=["support"])
     async def about(self, ctx):
@@ -93,7 +87,12 @@ class Support():
             await ctx.send(str(e))
             return
 
-        news_e = {**news , **self.base_d}
+        base_d = {"author": {
+            "name": "Necrobot's Anchorman", "url": "https://discord.gg/Ape8bZt", 
+            "icon_url": self.bot.user.avatar_url_as(format="png", size=128)}, 
+            "color": 161712, "type": "rich"
+        }
+        news_e = {**news , **base_d}
         embed = discord.Embed.from_data(news_e)
         msg = await ctx.send(embed=embed)
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
