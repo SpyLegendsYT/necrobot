@@ -3,6 +3,7 @@ from discord.ext import commands
 
 import re
 import asyncio
+import datetime as d
 
 def has_welcome(bot, member):
     return bot.server_data[member.guild.id]["welcome-channel"] != "" and bot.server_data[member.guild.id]["welcome"] != ""
@@ -107,3 +108,10 @@ class TimeConverter(commands.Converter):
             time += convert[match[1]] * int(match[0])
 
         return time
+
+def midnight():
+    """Get the number of seconds until midnight."""
+    tomorrow = d.datetime.now() + d.timedelta(1)
+    midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
+                        day=tomorrow.day, hour=0, minute=0, second=0)
+    return (midnight - d.datetime.now()).seconds

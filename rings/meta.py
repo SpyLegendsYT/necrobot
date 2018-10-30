@@ -2,12 +2,13 @@ import discord
 from discord.ext import commands
 
 from rings.utils.config import *
-from rings.utils.utils import UPDATE_PERMS
+from rings.utils.utils import UPDATE_PERMS, midnight
 
 import io
 import time
 import asyncio
 import asyncpg
+import datetime
 import traceback
 import itertools
 from PIL import Image
@@ -113,7 +114,7 @@ class Meta():
         if message.id not in self.bot.starred:
             self.bot.starred.append(message.id)
             await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3, $4);", message.id, msg.id, msg.guild.id, message.author.id)        
-               
+        
     async def broadcast(self):
         await self.bot.wait_until_ready()
         time = 3600
@@ -180,7 +181,7 @@ class Meta():
         
         d = defaultdict(list)
         for member in self.bot.get_all_members():
-            d[member.id].append(guild.id)
+            d[member.id].append(member.guild.id)
             await self.bot.default_stats(member, member.guild)
 
         await asyncio.sleep(1)
@@ -188,9 +189,9 @@ class Meta():
         for user in set(self.bot.get_all_members()):
             logged = set(self.bot.user_data[user.id]["perms"].keys())
             actual = set(d[user.id])
-            for guild in (logged - actual):
-                self.bot.user_data[user.id]["perms"][guild] = 0
-                await self.bot.query_executer(UPDATE_PERMS, 0, guild, user.id)
+            for guild_id in (logged - actual):
+                self.bot.user_data[user.id]["perms"][guild_id] = 0
+                await self.bot.query_executer(UPDATE_PERMS, 0, guild_id, user.id)
 
         await msg.edit(content="All members checked")
         await msg.edit(content="**Bot Online**")

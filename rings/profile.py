@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import UPDATE_NECROINS
+from rings.utils.utils import UPDATE_NECROINS, midnight
 
 import random
 import asyncio
@@ -30,13 +30,6 @@ class Profile():
         }
         self.special_badges = ["admin", "smith", "bug"]
         self.badges_coords = [(516, 261, 598, 343), (609, 261, 691, 343), (703, 261, 785, 343), (796, 261, 878, 343), (516, 350, 598, 432), (609, 350, 691, 432), (704, 350, 786, 432), (796, 350, 878, 432)]
-        
-    def midnight(self):
-        """Get the number of seconds until midnight."""
-        tomorrow = d.datetime.now() + d.timedelta(1)
-        midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
-                            day=tomorrow.day, hour=0, minute=0, second=0)
-        return (midnight - d.datetime.now()).seconds
 
     @commands.command()
     async def balance(self, ctx, *, user : discord.Member = None):
@@ -79,7 +72,7 @@ class Profile():
             self.bot.user_data[ctx.author.id]["daily"] = day
             await self.bot.query_executer("UPDATE necrobot.Users SET daily=$1 WHERE user_id = $2;", day, ctx.author.id)
         else:
-            timer = str(d.timedelta(seconds=self.midnight())).partition(".")[0].replace(":", "{}")
+            timer = str(d.timedelta(seconds=midnight())).partition(".")[0].replace(":", "{}")
             timer = timer.format("hours, ", "minutes and ") + "seconds"
             await ctx.send(f":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{timer}**")
 
