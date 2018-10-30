@@ -11,7 +11,6 @@ class Moderation():
     All you need to keep your server clean and tidy"""
     def __init__(self, bot):
         self.bot = bot
-        self.obligatory = ("Moderation", "Server", "Support", "Admin", "Events", "disable", "enable")
 
     def __local_check(self, ctx):
         if ctx.guild:
