@@ -53,9 +53,9 @@ class Server():
             await self.bot.query_executer(UPDATE_PERMS, level, ctx.guild.id, user.id)
 
             if c < level:
-                await ctx.send(f":white_check_mark: | **{user.display_name}** has been promoted to **{self.bot.permsName[level]}** ({level})")
+                await ctx.send(f":white_check_mark: | **{user.display_name}** has been promoted to **{self.bot.perms_name[level]}** ({level})")
             else:
-                await ctx.send(f":white_check_mark: | **{user.display_name}** has been demoted to **{self.bot.permsName[level]}** ({level})")
+                await ctx.send(f":white_check_mark: | **{user.display_name}** has been demoted to **{self.bot.perms_name[level]}** ({level})")
             
             if level == 6:
                 for guild in self.bot.user_data[user.id]["perms"]:
