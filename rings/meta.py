@@ -1,16 +1,12 @@
 import discord
-from discord.ext import commands
 
-from rings.utils.config import *
-from rings.utils.utils import UPDATE_PERMS, midnight
+from rings.utils.config import dbpass
+from rings.utils.utils import UPDATE_PERMS
 
 import io
-import time
 import asyncio
 import asyncpg
-import datetime
 import traceback
-import itertools
 from PIL import Image
 from bs4 import BeautifulSoup
 from collections import defaultdict
@@ -72,7 +68,7 @@ class Meta():
 
         embed = discord.Embed(title=title, url=url, colour=discord.Colour(0x277b0), description=f"Some information on the thread that was linked \n -Board: **{board}** \n -{read}")
         if op.a is not None:
-            embed.set_author(name=f"OP: {op.a.string}", url=op.a["href"], icon_url=op.find("img", class_="avatar")["src"] if op.find("img", class_="avatar") is not None else bot_ico)
+            embed.set_author(name=f"OP: {op.a.string}", url=op.a["href"], icon_url=op.find("img", class_="avatar")["src"] if op.find("img", class_="avatar") is not None else self.bot.user.avatar_url_as(format="png", size=128))
         else:
             embed.set_author(name=f"OP: {list(op.stripped_strings)[0]}")
 
@@ -172,8 +168,8 @@ class Meta():
         msg = await channel.send("**Initiating Bot**")
         for guild in self.bot.guilds:
             if guild.id not in self.bot.server_data:
-                    self.bot.server_data[guild.id] = self.bot._new_server()
-                    await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
+                self.bot.server_data[guild.id] = self.bot._new_server()
+                await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
             else:
                 await self.bot.guild_checker(guild)
 
@@ -206,6 +202,7 @@ class Meta():
                 result = await conn.fetch(query, *args)
             else:
                 await conn.execute(query, *args)
+            return result
         except Exception as error:
             channel = self.bot.get_channel(415169176693506048)
             the_traceback = f"```py\n{' '.join(traceback.format_exception(type(error), error, error.__traceback__, chain=False))}\n```"
@@ -217,7 +214,7 @@ class Meta():
             await channel.send(embed=embed) 
         finally:
             await self.bot.pool.release(conn)
-            return result
+            
             
     async def default_stats(self, member, guild):
         if member.id not in self.bot.user_data:

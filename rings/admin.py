@@ -1,13 +1,12 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECROINS
+from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECROINS, UPDATE_PERMS
 
 import ast
 import json
 import typing
-import inspect
+import asyncio
 from typing import Union
 from simpleeval import simple_eval
 
@@ -30,7 +29,7 @@ class Admin():
 
     @commands.command()
     @commands.is_owner()
-    async def leave(self, ctx, guild : GuildConverter, *, reason : str ="unspecified"):
+    async def leave(self, ctx, guild : GuildConverter, *, reason : str = "unspecified"):
         """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
         {usage}"""
         if reason != "unspecified":
@@ -53,11 +52,11 @@ class Admin():
         self.bot.user_data[user.id]["perms"][server.id] = level
         await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server.id, user.id)
         if level >= 6:
-            for server in self.bot.user_data[user.id]["perms"]:
-                self.bot.user_data[user.id]["perms"][server] = level
-                await self.bot.query_executer(UPDATE_PERMS, level, server, user.id)
+            for guild in self.bot.user_data[user.id]["perms"]:
+                self.bot.user_data[user.id]["perms"][guild] = level
+                await self.bot.query_executer(UPDATE_PERMS, level, guild, user.id)
 
-        await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}** on server **{server.name}**" )
+        await ctx.send(f":white_check_mark: | All good to go, **{user.display_name}** now has permission level **{level}** on server **{server.name}**")
 
     @admin.command(name="disable")
     @has_perms(6)
@@ -66,7 +65,7 @@ class Admin():
 
         {usage}
         """
-        command  = self.bot.get_command(command)
+        command = self.bot.get_command(command)
         if command.enabled:
             command.enabled = False
             await ctx.send(f":white_check_mark: | Disabled **{command.name}**")
@@ -80,7 +79,7 @@ class Admin():
 
         {usage}
         """
-        command  = self.bot.get_command(command)
+        command = self.bot.get_command(command)
         if command.enabled:
             await ctx.send(f":negative_squared_cross_mark: | Command **{command.name}** already enabled")
         else:
@@ -134,7 +133,7 @@ class Admin():
         s = f'{self.bot.user_data[user.id]["money"]}{equation}'
         try:
             operation = simple_eval(s)
-        except (NameError,SyntaxError):
+        except (NameError, SyntaxError):
             await ctx.send(":negative_squared_cross_mark: | Operation not recognized.")
             return
 
@@ -148,7 +147,7 @@ class Admin():
 
         try:
             reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             await msg.delete()
             return
 
@@ -239,8 +238,8 @@ class Admin():
         if guild:
             await get_invite(guild)
         else:
-            for guild in self.bot.guilds:
-                await get_invite(guild)
+            for server in self.bot.guilds:
+                await get_invite(server)
             
     @commands.command()
     @commands.is_owner()
@@ -304,12 +303,12 @@ class Admin():
         `{pre}blacklist Bad Guild` - blacklist the guild Bad Guild
         """
         if not thing:
-            if len(self.bot.settings["blacklist"]) < 1:
+            if not self.bot.settings["blacklist"]:
                 await ctx.send("**List of blacklisted users/guilds**: **None**")
             else:
                 blacklist = []
-                for thing in self.bot.settings["blacklist"]:
-                    thing = self.bot.get_guild(thing) or self.bot.get_user(thing)
+                for item in self.bot.settings["blacklist"]:
+                    thing = self.bot.get_guild(item) or self.bot.get_user(item)
                     blacklist.append(thing.name)
 
                 await ctx.send("**List of blacklisted users/guilds**: {}".format(" - ".join(blacklist)))
@@ -388,11 +387,11 @@ class Admin():
             return user.id == 241942232867799040 and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
         
         try:
-            reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
         except asyncio.TimeoutError as e:
             msg.clear_reactions()
             e.timer = 300
-            return bot.dispatch("command_error", ctx, e)
+            return self.bot.dispatch("command_error", ctx, e)
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await msg.delete()
@@ -419,7 +418,7 @@ class Admin():
         await ctx.send(":white_check_mark: | Saving")
         
         with open("rings/utils/data/settings.json", "w") as outfile:
-                json.dump(self.bot.settings, outfile)
+            json.dump(self.bot.settings, outfile)
         
         await ctx.send(":white_check_mark: | Done saving")
 
@@ -487,10 +486,10 @@ class Admin():
         self.gates[channel.id] = ctx.channel
 
         def check(message):
-            if message.author == ctx.author and message.channel == ctx.channel and message.content == "exit":
-                return True
+            return message.author == ctx.author and message.channel == ctx.channel and message.content == "exit"
 
-        msg = await self.bot.wait_for("message", check=check)
+
+        await self.bot.wait_for("message", check=check)
 
         await channel.send(":stop: | The NecroBot admin has ended the conversation.")
         await ctx.send(":stop: | Conversation ended")

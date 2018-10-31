@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
@@ -20,8 +19,8 @@ class Waifu():
     def __local_check(self, ctx):
         if ctx.guild:
             return True
-        else:
-            raise commands.CheckFailure("This command cannot be used in private messages.")
+
+        raise commands.CheckFailure("This command cannot be used in private messages.")
 
     @commands.command()
     async def trade(self, ctx, coins : int):
@@ -143,8 +142,6 @@ class Waifu():
         """Displays the list of gifts that can be gifted.
 
         {usage}"""
-        index = 0
-
         def embed_maker(index):
             keys = list(gift_list.keys())[index*15:(index+1)*15]
             embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu gift shop")
@@ -255,7 +252,7 @@ class Waifu():
         else:
             value = round(self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"] * 1.10)
 
-        if price > value and price <= self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"]:
+        if self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] >= price > value:
             claimer = self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-claimer"]
             if claimer != "":
                 self.bot.user_data[claimer]["waifu"][ctx.guild.id]["waifus"].remove(member.id)
@@ -442,7 +439,7 @@ class Waifu():
 
 
     @commands.command()
-    async def give(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
+    async def give(self, ctx, amount : int, member : discord.Member):
         """Transfer :cherry_blossom: from one user to another.
 
         {usage}
@@ -472,7 +469,7 @@ class Waifu():
         `{pre}reset @ThisUser` - reset the value of the waifu to 50"""
 
         self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"] = amount
-        await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"], member.id, ctx.guild.id)
+        await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[waifu.id]["waifu"][ctx.guild.id]["waifu-value"], waifu.id, ctx.guild.id)
         await ctx.send(f":white_check_mark: | Value of waifu {waifu.name} reset to {amount}")
 
     async def on_raw_reaction_add(self, payload):

@@ -123,7 +123,7 @@ class Utilities():
             try:
                 res = await r.json()
             except:
-                 res = await r.json(content_type="application/javascript")
+                res = await r.json(content_type="application/javascript")
 
         def _embed_generator(index):
             embed = discord.Embed(title=f"__**{res['date']}**__", colour=discord.Colour(0x277b0), url=res["url"], description=f"Necrobot is proud to present: **{choice} today in History**\n Page {index+1}/{len(res['data'][choice])//5+1}")
@@ -176,7 +176,7 @@ class Utilities():
         hold data for extended periods of time. A queue should atmost only last a couple of days.
 
         {usage}"""
-        if len(self.queue[ctx.guild.id]["list"]) > 0:
+        if self.queue[ctx.guild.id]["list"]:
             queue = [f"**{ctx.guild.get_member(x).display_name}**" for x in self.queue[ctx.guild.id]["list"]]
             await ctx.send("So far the queue has the following users in it:\n-{}".format('\n-'.join(queue)))
         else:
@@ -190,7 +190,7 @@ class Utilities():
         using `{pre}q clear`.
 
         {usage}"""
-        if len(self.queue[ctx.guild.id]["list"]) > 0:
+        if self.queue[ctx.guild.id]["list"]:
             await ctx.send(":negative_squared_cross_mark: | A queue is already ongoing, please clear the queue first")
             return
 
@@ -244,7 +244,7 @@ class Utilities():
         """Mentions the next user and the one after that so they can get ready.
         
         {usage}"""
-        if len(self.queue[ctx.guild.id]["list"]) < 1:
+        if self.queue[ctx.guild.id]["list"]:
             await ctx.send(":negative_squared_cross_mark: | No users left in that queue")
             return
 

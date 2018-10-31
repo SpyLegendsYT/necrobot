@@ -2,9 +2,8 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.var import tarot_list, lotr_list, dad_joke, dex, riddle_list
+from rings.utils.var import tarot_list, lotr_list, dad_joke, dex, riddle_list, got_quotes
 
-import json
 import random
 import asyncio
 from bs4 import BeautifulSoup
@@ -35,7 +34,7 @@ class Social():
             return m.author == ctx.author and m.channel == ctx.channel and riddle[1] in m.content
 
         try:
-            msg = await self.bot.wait_for("message", check=check, timeout=30)
+            await self.bot.wait_for("message", check=check, timeout=30)
             await ctx.send("Well played, that was the correct answer.")
         except asyncio.TimeoutError:
             await ctx.send("Wrong answer! Now you go to feed the fishies!")            
@@ -132,7 +131,7 @@ class Social():
         """
         if character:
             quotes = [quote for quote in got_quotes if character.lower() in quote["character"].lower()]
-            if len(quotes) > 0:
+            if quote:
                 quote = random.choice(quotes)
             else:
                 await ctx.send(":negative_squared_cross_mark: | Didn't find that character")

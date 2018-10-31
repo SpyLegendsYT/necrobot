@@ -35,7 +35,7 @@ class NecroEvents():
             await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.", delete_after=10)
         elif isinstance(error, commands.DisabledCommand):
             await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
-        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.BadUnionArgument):
+        elif isinstance(error, (commands.BadUnionArgument, commands.BadArgument)):
             await channel.send(f":negative_squared_cross_mark: | Following error with passed arguments: **{error}**", delete_after=10)
         elif isinstance(error, asyncio.TimeoutError) and hasattr(error, "timer"):
             retry_after = str(timedelta(seconds=error.timer)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
@@ -156,7 +156,7 @@ class NecroEvents():
                 await asyncio.sleep(self.bot.server_data[member.guild.id]["auto-role-timer"])
                 try:
                     await member.remove_roles(role)
-                except:
+                except discord.HTTPException:
                     pass
 
     async def on_member_remove(self, member):

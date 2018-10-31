@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 
@@ -7,14 +6,17 @@ from rings.utils.utils import has_perms, react_menu, UPDATE_PERMS, TimeConverter
 from typing import Union
 
 class Server():
+    """Contains all the commands related to customising Necrobot's behavior on your server and to your server members. Contains
+    commands for stuff such as setting broadcast, giving users permissions, ignoring users, getting info on your current settings,
+    ect..."""
     def __init__(self, bot):
         self.bot = bot
 
     def __local_check(self, ctx):
         if ctx.guild:
             return True
-        else:
-            raise commands.CheckFailure("This command cannot be used in private messages.")
+
+        raise commands.CheckFailure("This command cannot be used in private messages.")
 
     def all_lists(self, ctx, key):
         l = []
@@ -109,7 +111,7 @@ class Server():
         `{pre}automod @ARole` - adds role ARole to the list of roles ignored by automoderation
         """
 
-        if len(mentions) < 1:
+        if not mentions:
             await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` {self.all_lists(ctx, 'ignore-automod')} ```")
             return
 
@@ -161,7 +163,7 @@ class Server():
         `{pre}ignore @ARole` - adds role ARole to the list of roles ignored by the bot
         """
 
-        if len(mentions) < 1:
+        if not mentions:
             await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` {self.all_lists(ctx, 'ignore-command')} ```")
             return
         
@@ -373,9 +375,9 @@ class Server():
             await ctx.send(":white_check_mark: | Auto-Role disabled")
         else:
             self.bot.server_data[ctx.guild.id]["auto-role"] = role.id
-            self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time_c
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_timer = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time_c)
-            await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** for: {time} ({time_c} seconds)")
+            self.bot.server_data[ctx.guild.id]["auto-role-timer"] = time
+            await self.bot.query_executer("UPDATE necrobot.Guilds SET auto_role = $1, auto_role_timer = $3 WHERE guild_id = $2;", role.id, ctx.guild.id, time)
+            await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** for: {time} seconds")
 
     @commands.group(name="broadcast", invoke_without_command=True)
     @has_perms(4)
@@ -442,7 +444,7 @@ class Server():
 
         __Example__
         `{pre}broadcast time 4` - sets the broadcast message to be sent every 4 hour"""
-        if hours > 0 and hours <= 24:
+        if 0 < hours <= 24:
             self.bot.server_data[ctx.guild.id]["broadcast-time"] = hours
             await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_time = $1 WHERE guild_id = $2;", hours, ctx.guild.id)
             await ctx.send(f":white_check_mark: | Okay, the broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{hours}` hour(s)")        

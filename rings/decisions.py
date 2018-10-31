@@ -1,5 +1,3 @@
-#!/usr/bin/python3.6
-import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 

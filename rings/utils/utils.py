@@ -55,8 +55,8 @@ async def react_menu(bot, ctx, max, page_generator, page=0):
             return user == ctx.message.author and reaction.emoji in react_list and msg.id == reaction.message.id
 
         try:
-            reaction, user = await bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError as e:
+            reaction, _ = await bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError:
             await msg.clear_reactions()
             return
 
@@ -113,5 +113,5 @@ def midnight():
     """Get the number of seconds until midnight."""
     tomorrow = d.datetime.now() + d.timedelta(1)
     midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
-                        day=tomorrow.day, hour=0, minute=0, second=0)
+                          day=tomorrow.day, hour=0, minute=0, second=0)
     return (midnight - d.datetime.now()).seconds

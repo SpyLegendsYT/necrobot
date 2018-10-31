@@ -1,5 +1,5 @@
 import psycopg2
-from .config import dbpass
+from config import dbpass
 
 def db_gen():
     server_data = {}
@@ -23,7 +23,7 @@ def db_gen():
             "starboard-channel":g[10] if g[10] != 0 else "",
             "starboard-limit":g[11],
             "auto-role":g[12] if g[12] != 0 else "",
-            "auto-role-timer":g[13] if g[13] != None else 0,
+            "auto-role-timer":g[13] if g[13] is not None else 0,
             "self-roles":[],
             "ignore-command":[],
             "ignore-automod":[],

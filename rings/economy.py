@@ -22,8 +22,8 @@ class Card(standard52.Card):
     def value(self):
         if self.rank in (JACK, QUEEN, KING):
             return JACK_VALUE
-        else:
-            return self.rank
+        
+        return self.rank
 
 class Deck(standard52.Deck):
     def create_card(self, suit, rank):
@@ -47,7 +47,7 @@ class Hand(common.Hand):
                 aces += 1
             else:
                 total += card.value()
-        for i in range(aces):
+        for _ in range(aces):
             if total + ACE_HIGH <= WIN_MAX:
                 total += ACE_HIGH
             else:
@@ -78,7 +78,6 @@ class Game(common.Game):
 
     def play(self, player):
         if not self.is_over():
-            over = 0
             hand = self.hands[player]
             if not hand.busted:
                 card = self.deck.draw()
@@ -201,7 +200,7 @@ class Economy():
                 await msg.add_reaction(reaction)
 
             try :
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=120)
+                reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
             except asyncio.TimeoutError:
                 await ctx.send("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
                 self.bot.user_data[ctx.author.id]["money"] -= bet
@@ -354,7 +353,7 @@ class Economy():
                 if not b[int(corner//3.5)][(corner-1)%3] in ["X", "O"]:
                     choices.append(corner)
 
-            if len(choices) > 0:
+            if choices:
                 return random.choice(choices)
 
             choices = []
@@ -363,7 +362,7 @@ class Economy():
                 if not b[int(side//3.5)][(side-1)%3] in ["X", "O"]:
                     choices.append(side)
 
-            if len(choices) > 0:
+            if choices:
                 return random.choice(choices)
 
 
@@ -473,10 +472,10 @@ class Economy():
 
         #command code
         board = [
-                ["1", "2", "3"],
-                ["4", "5", "6"],
-                ["7", "8", "9"]
-                ]
+            ["1", "2", "3"],
+            ["4", "5", "6"],
+            ["7", "8", "9"]
+        ]
                 
         if enemy == ctx.author:
             await ctx.send(":negative_squared_cross_mark: | You cannot play against yourself, pick a player or fight Necrobot.")
@@ -485,7 +484,7 @@ class Economy():
         if enemy == self.bot.user:
             msg = await ctx.send(":white_check_mark: | NecroBot has accepted your challenge, be prepared to face him")
             await asyncio.sleep(2)
-            ai_msg = await ctx.send("AI picks: ")
+            await ctx.send("AI picks: ")
             await against_ai()
         else:
             msg = await ctx.send(f":white_check_mark: | You have challenged **{enemy.display_name}**. {enemy.mention}, would you like to play? React with :white_check_mark: to play or with :negative_squared_cross_mark: to reject their challenge.")
@@ -494,13 +493,14 @@ class Economy():
 
             def check(reaction, user):
                 return user == enemy and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+            
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+                reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
             except asyncio.TimeoutError as e:
-                    e.timer = 120
-                    self.IS_GAME.remove(ctx.channel.id)
-                    await msg.delete()
-                    return self.bot.dispatch("command_error", ctx, e)
+                e.timer = 300
+                self.IS_GAME.remove(ctx.channel.id)
+                await msg.delete()
+                return self.bot.dispatch("command_error", ctx, e)
 
             if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
                 await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")

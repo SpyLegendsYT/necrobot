@@ -144,7 +144,7 @@ class Tags():
         self.is_tag_owner(ctx, tag)
 
         del self.bot.server_data[ctx.guild.id]["aliases"][alias]
-        await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+        await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag)
         await ctx.send(f":white_check_mark: | Alias `{alias}` removed")
 
     @tag.command(name="edit")
@@ -180,7 +180,7 @@ class Tags():
         
         {usage}"""
         tag_list = list(self.bot.server_data[ctx.guild.id]["tags"].keys()) + list(self.bot.server_data[ctx.guild.id]["aliases"].keys())
-        tag_str = ", ".join(tag_list) if len(tag_list) > 0 else "None"
+        tag_str = ", ".join(tag_list) if tag_list else "None"
         await ctx.send(f"Tags in **{ctx.guild.name}**: ```{tag_str}```")
 
     @tag.command(name="info")

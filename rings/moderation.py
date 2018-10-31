@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 
@@ -15,8 +14,8 @@ class Moderation():
     def __local_check(self, ctx):
         if ctx.guild:
             return True
-        else:
-            raise commands.CheckFailure("This command cannot be used in private messages.")
+
+        raise commands.CheckFailure("This command cannot be used in private messages.")
 
     @commands.command()
     @has_perms(1)
@@ -184,7 +183,7 @@ class Moderation():
         elif check == "mention":
             deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author.mention == extra)
         elif check == "image":
-            deleted = await ctx.channel.purge(limit=number, check=lambda m: len(m.attachments) > 0)
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.attachments)
         elif check == "bot":
             deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author == self.bot.user)
         else:
@@ -316,7 +315,7 @@ class Moderation():
 
             msg = await ctx.send("React to the message you wish to star with :white_check_mark:")
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+                reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
             except asyncio.TimeoutError as e:
                 await msg.delete()
                 e.timer = 300

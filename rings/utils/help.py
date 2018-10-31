@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 from discord.ext.commands import *
 
 import inspect
@@ -51,6 +50,7 @@ class NecroBotHelpFormatter(HelpFormatter):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
+        self._paginator = Paginator(prefix="", suffix="")
 
     def get_command_signature(self):
         """Retrieves the signature portion of the help page."""
@@ -124,7 +124,6 @@ class NecroBotHelpFormatter(HelpFormatter):
         list
             A paginated output of the help command.
         """
-        self._paginator = Paginator(prefix="", suffix="")
         if isinstance(self.command, Command):
             title =f":information_source: **The `{self.command}` command** :information_source:"
         else:
@@ -170,7 +169,7 @@ class NecroBotHelpFormatter(HelpFormatter):
                 # there simply is no prettier way of doing this.
                 commands = sorted(commands)
                 counter += 1
-                if len(commands) > 0:
+                if commands:
                     command_list = await self._add_commands_to_page(max_width, commands)
                     self._paginator.add_line(f'{counter}. {category}{" | ".join(command_list)}')
 
