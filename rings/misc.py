@@ -185,7 +185,7 @@ class Misc():
             async with self.bot.session.get(f"https://owapi.net/api/v3/u/{username}/heroes", headers=headers) as r:
                 try:
                     data = await r.json()
-                except Exception as e:
+                except Exception:
                     return
 
             hero_list = list(data[region]["heroes"]["stats"]["quickplay"].keys())

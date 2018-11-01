@@ -233,7 +233,7 @@ class Meta():
             
     async def default_stats(self, member, guild):
         if member.id not in self.bot.user_data:
-            self.bot.user_data[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, "warnings": {}, 'places':{1:"", 2:"", 3:"", 4:"", 5:"", 6:"", 7:"", 8:""}, "tutorial": False}
+            self.bot.user_data[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, "warnings": {}, "reminders":[], 'places':{1:"", 2:"", 3:"", 4:"", 5:"", 6:"", 7:"", 8:""}, "tutorial": False}
             await self.bot.query_executer("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '', 'False');", member.id)
             await self.bot.query_executer("INSERT INTO necrobot.Badges VALUES ($1, 1, ''), ($1, 2, ''), ($1, 3, ''), ($1, 4, ''), ($1, 5, ''), ($1, 6, ''), ($1, 7, ''), ($1, 8, '');", member.id)
 

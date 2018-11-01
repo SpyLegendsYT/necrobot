@@ -1,6 +1,8 @@
+#!/usr/bin/python3.6
 from discord.ext.commands import *
 
 import inspect
+import asyncio
 import itertools
 
 class MissingAttrHandler(str):
@@ -50,7 +52,6 @@ class NecroBotHelpFormatter(HelpFormatter):
         self.width = width
         self.show_hidden = show_hidden
         self.show_check_failure = show_check_failure
-        self._paginator = Paginator(prefix="", suffix="")
 
     def get_command_signature(self):
         """Retrieves the signature portion of the help page."""
@@ -61,7 +62,7 @@ class NecroBotHelpFormatter(HelpFormatter):
     def get_ending_note(self):
         command_name = self.context.invoked_with
         return "Commands in `codeblocks` are commands you can use, commands with ~~strikethrough~~ you cannot use but you can still check the help. Commands in *italics* are recent additions.\n" \
-               "Type {0}{1} [command] for more info on a command.(Example: `{0}help edain`\n" \
+               "Type {0}{1} [command] for more info on a command.(Example: `{0}help edain`)\n" \
                "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. (Example: `{0}help Animals`) \n".format(self.clean_prefix, command_name)
 
     def get_ending_note_command(self):
@@ -69,20 +70,22 @@ class NecroBotHelpFormatter(HelpFormatter):
         return "Type {0}{1} [command] [subcommand] for more info on a command's subcommand.\n" \
                "Example: `{0}help settings welcome channel` - display help on the channel subcommand of the welcome command \n".format(self.clean_prefix, command_name)
 
-    async def _add_commands_to_page(self, max_width, commands):
+    @asyncio.coroutine
+    def _add_commands_to_page(self, max_width, commands):
         command_list = list()
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
 
-            async def predicate():
+            @asyncio.coroutine
+            def predicate():
                 try:
-                    return (await command.can_run(self.context))
+                    return (yield from command.can_run(self.context))
                 except CommandError:
                     return False
 
-            valid = await predicate()
+            valid = yield from predicate()
             if valid and command.enabled:
                 if name in self.context.bot.new_commands:
                     command_list.append("***{0}***".format(name))
@@ -93,19 +96,20 @@ class NecroBotHelpFormatter(HelpFormatter):
 
         return command_list
 
-    async def _add_subcommands_to_page(self, max_width, commands):
+    def _add_subcommands_to_page(self, max_width, commands):
         for name, command in commands:
             if name in command.aliases:
                 # skip aliases
                 continue
 
-            async def predicate():
+            @asyncio.coroutine
+            def predicate():
                 try:
-                    return (await command.can_run(self.context))
+                    return (yield from command.can_run(self.context))
                 except CommandError:
                     return False
 
-            valid = await predicate()
+            valid = predicate()
             if valid:
                 entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
             else:
@@ -114,7 +118,8 @@ class NecroBotHelpFormatter(HelpFormatter):
             shortened = self.shorten(entry)
             self._paginator.add_line(shortened)
 
-    async def format(self):
+    @asyncio.coroutine
+    def format(self):
         """Handles the actual behaviour involved with formatting.
 
         To change the behaviour, this method should be overridden.
@@ -124,8 +129,9 @@ class NecroBotHelpFormatter(HelpFormatter):
         list
             A paginated output of the help command.
         """
+        self._paginator = Paginator(prefix="", suffix="")
         if isinstance(self.command, Command):
-            title =f":information_source: **The `{self.command}` command** :information_source:"
+            title = f":information_source: **The `{self.command}` command** :information_source:"
         else:
             title = ":information_source: **NecroBot Help Menu** :information_source:"
         self._paginator.add_line(title)
@@ -159,9 +165,9 @@ class NecroBotHelpFormatter(HelpFormatter):
             cog = tup[1].cog_name
             # we insert the zero width space there to give it approximate
             # last place sorting position.
-            return f'**{cog}** - ' if cog is not None else '**Support** - '
+            return f"**{cog}** - " if cog is not None else '**Support** - '
 
-        filtered = await self.filter_command_list()
+        filtered = yield from self.filter_command_list()
         if self.is_bot():
             data = sorted(filtered, key=category)
             counter = 0
@@ -169,9 +175,9 @@ class NecroBotHelpFormatter(HelpFormatter):
                 # there simply is no prettier way of doing this.
                 commands = sorted(commands)
                 counter += 1
-                if commands:
-                    command_list = await self._add_commands_to_page(max_width, commands)
-                    self._paginator.add_line(f'{counter}. {category}{" | ".join(command_list)}')
+                if len(commands) > 0:
+                    command_list = yield from self._add_commands_to_page(max_width, commands)
+                    self._paginator.add_line(f'{counter}. {category} {" | ".join(command_list)}')
 
             ending_note = self.get_ending_note()
 
@@ -179,7 +185,7 @@ class NecroBotHelpFormatter(HelpFormatter):
             filtered = sorted(filtered)
             if filtered:
                 self._paginator.add_line('__Commands__')
-                await self._add_subcommands_to_page(max_width, filtered)
+                self._add_subcommands_to_page(max_width, filtered)
             ending_note = self.get_ending_note_command()
 
         # add the ending note

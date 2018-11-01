@@ -227,7 +227,7 @@ class Admin():
         {usage}"""
         async def get_invite(guild):
             try:
-                channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).create_instant_invite][0]
+                channel = [x for x in guild.text_channels if x.permissions_for(guild.me).create_instant_invite][0]
                 invite = await channel.create_invite(max_age=86400)
                 await ctx.send(f"Server: {guild.name}({guild.id}) - <{invite.url}>")
             except discord.errors.Forbidden:
