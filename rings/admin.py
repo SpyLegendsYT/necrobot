@@ -446,7 +446,7 @@ class Admin():
 
             return embed
 
-        await react_menu(self.bot, ctx, len(results)//5, _embed_maker, start)
+        await react_menu(ctx, len(results)//5, _embed_maker, start)
 
     @commands.command(name="as")
     @commands.is_owner()

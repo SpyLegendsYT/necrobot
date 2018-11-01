@@ -85,7 +85,7 @@ class Modding():
 
         reader = AsyncReader()
         mod = await reader.parse_mod(url)
-        await react_menu(self.bot, ctx, 2, _embed_generator)
+        await react_menu(ctx, 2, _embed_generator)
 
     @commands.command()
     async def game(self, ctx, *, game : str):
@@ -134,7 +134,7 @@ class Modding():
 
         reader = AsyncReader()
         game = await reader.parse_game(url)
-        await react_menu(self.bot, ctx, 2, _embed_generator)
+        await react_menu(ctx, 2, _embed_generator)
 
 def setup(bot):
     bot.add_cog(Modding(bot))

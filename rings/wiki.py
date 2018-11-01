@@ -182,7 +182,7 @@ class Wiki():
             if section[1] < 55:
                 continue
             section = section[0]
-            url = urllib.parse.quote(section.replace(" ", "_"))
+            url = urllib.parse.quote(section.replace(" ", "_"), safe="/:").replace("%", ".")
             message.append(f"**{section}**")
             message.append(f"<{article.url.replace(' ', '_')}#{url}>")
 

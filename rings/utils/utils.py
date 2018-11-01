@@ -36,7 +36,7 @@ def has_perms(perms_level):
     return commands.check(predicate)
 
 
-async def react_menu(bot, ctx, max, page_generator, page=0):
+async def react_menu(ctx, max, page_generator, page=0):
     msg = await ctx.send(embed=page_generator(page))
     while True:
         react_list = []
@@ -55,7 +55,7 @@ async def react_menu(bot, ctx, max, page_generator, page=0):
             return user == ctx.message.author and reaction.emoji in react_list and msg.id == reaction.message.id
 
         try:
-            reaction, _ = await bot.wait_for("reaction_add", check=check, timeout=300)
+            reaction, _ = await ctx.bot.wait_for("reaction_add", check=check, timeout=300)
         except asyncio.TimeoutError:
             await msg.clear_reactions()
             return
@@ -70,6 +70,24 @@ async def react_menu(bot, ctx, max, page_generator, page=0):
 
         await msg.clear_reactions()
         await msg.edit(embed=page_generator(page))
+
+def time_converter(argument):
+    time = 0
+
+    pattern = re.compile(r"([0-9]+)([dhms])")
+    matches = re.findall(pattern, argument)
+
+    convert = {
+        "d" : 86400,
+        "h" : 3600,
+        "m" : 60,
+        "s" : 1
+    }
+
+    for match in matches:
+        time += convert[match[1]] * int(match[0])
+
+    return time
 
 class GuildConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
@@ -92,22 +110,7 @@ class GuildConverter(commands.IDConverter):
 
 class TimeConverter(commands.Converter):
     async def convert(self, ctx, argument):
-        time = 0
-
-        pattern = re.compile(r"([0-9]+)([dhms])")
-        matches = re.findall(pattern, argument)
-
-        convert = {
-            "d" : 86400,
-            "h" : 3600,
-            "m" : 60,
-            "s" : 1
-        }
-
-        for match in matches:
-            time += convert[match[1]] * int(match[0])
-
-        return time
+        return time_converter(argument)
 
 def midnight():
     """Get the number of seconds until midnight."""

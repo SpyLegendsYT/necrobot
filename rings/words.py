@@ -106,7 +106,7 @@ class Literature():
 
             return embed
 
-        await react_menu(self.bot, ctx, len(definition["results"][0]["lexicalEntries"][0]["entries"])-1, _embed_maker)
+        await react_menu(ctx, len(definition["results"][0]["lexicalEntries"][0]["entries"])-1, _embed_maker)
 
     @commands.command()
     async def shuffle(self, ctx, *sentence):

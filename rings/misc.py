@@ -198,7 +198,7 @@ class Misc():
                 except IndexError:
                     hero_int = 0
 
-        await react_menu(self.bot, ctx, len(hero_list)-1, get_a_hero_stat, hero_int)
+        await react_menu(ctx, len(hero_list)-1, get_a_hero_stat, hero_int)
 
     @commands.command()
     @commands.cooldown(3, 5, BucketType.channel)

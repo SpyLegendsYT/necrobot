@@ -542,7 +542,7 @@ class Server():
 
                 return embed
 
-            await react_menu(self.bot, ctx, len(results)//15, _embed_maker, member-1)
+            await react_menu(ctx, len(results)//15, _embed_maker, member-1)
         else:
             sql = "SELECT user_id, COUNT(message_id) FROM necrobot.Starred WHERE guild_id = $1 AND user_id = $2 GROUP BY user_id ORDER BY COUNT(message_id)"
             result = await self.bot.query_executer(sql, ctx.guild.id, member.id)

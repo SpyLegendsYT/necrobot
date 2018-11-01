@@ -73,7 +73,7 @@ class Support():
         def _embed_generator(page):
             return discord.Embed.from_data(news[page])
 
-        await react_menu(self.bot, ctx, len(news) - 1, _embed_generator, index-1)
+        await react_menu(ctx, len(news) - 1, _embed_generator, index-1)
 
     @news.command("add")
     @has_perms(6)

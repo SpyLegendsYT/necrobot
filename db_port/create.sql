@@ -140,3 +140,12 @@ CREATE TABLE necrobot.Feeds(
     webhook_url varchar(200)
       
 )
+
+CREATE TABLE necrobot.Reminders(
+    user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    channel_id bigint,
+    reminder varchar(2000),
+    timer varchar(200),
+    start_date varchar(200),
+    PRIMARY KEY(user_id, start_date)
+)

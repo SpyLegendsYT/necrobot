@@ -1,5 +1,5 @@
 import psycopg2
-from config import dbpass
+from .config import dbpass
 
 def db_gen():
     server_data = {}
@@ -70,7 +70,8 @@ def db_gen():
             "perms":{},
             "waifu":{},
             "places":{},
-            "warnings":{}
+            "warnings":{},
+            "reminders":[]
         }
 
     cur.execute("SELECT * FROM necrobot.Permissions;")
@@ -113,5 +114,9 @@ def db_gen():
     cur.execute("SELECT * FROM necrobot.Aliases;")
     for t in cur.fetchall():
         server_data[t[2]]["aliases"][t[0]] = t[1]
+
+    cur.execute("SELECT * FROM necrobot.Reminders;")
+    for t in cur.fetchall():
+        user_data[t[0]]["reminders"].append({"channel": t[1], "text": t[2], "timer": t[3], "start": t[4], "task": None})
 
     return user_data, server_data, starred

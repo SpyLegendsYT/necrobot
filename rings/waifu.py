@@ -151,7 +151,7 @@ class Waifu():
 
             return embed
 
-        await react_menu(self.bot, ctx, len(list(gift_list.keys()))//15, embed_maker)
+        await react_menu(ctx, len(list(gift_list.keys()))//15, embed_maker)
 
     @commands.command()
     async def gift(self, ctx, choice, member : discord.Member):

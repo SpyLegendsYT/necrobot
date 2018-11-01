@@ -1,11 +1,12 @@
 import discord
 
 from rings.utils.config import dbpass
-from rings.utils.utils import UPDATE_PERMS
+from rings.utils.utils import UPDATE_PERMS, time_converter
 
 import io
 import asyncio
 import asyncpg
+import datetime
 import traceback
 from PIL import Image
 from bs4 import BeautifulSoup
@@ -24,6 +25,7 @@ class Meta():
         self.bot.guild_checker = self.guild_checker
         self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
         self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
+        self.bot.reminder_task = self.reminder_task
 
     def __unload(self):
         self.bot.broadcast_task.cancel()
@@ -166,6 +168,7 @@ class Meta():
         self.bot.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         channel = self.bot.get_channel(318465643420712962)
         msg = await channel.send("**Initiating Bot**")
+        
         for guild in self.bot.guilds:
             if guild.id not in self.bot.server_data:
                 self.bot.server_data[guild.id] = self.bot._new_server()
@@ -182,12 +185,24 @@ class Meta():
 
         await asyncio.sleep(1)
 
-        for user in set(self.bot.get_all_members()):
+        for user in self.bot.users:
             logged = set(self.bot.user_data[user.id]["perms"].keys())
             actual = set(d[user.id])
             for guild_id in (logged - actual):
                 self.bot.user_data[user.id]["perms"][guild_id] = 0
                 await self.bot.query_executer(UPDATE_PERMS, 0, guild_id, user.id)
+
+            for reminder in self.bot.user_data[user.id]["reminders"]:
+                time = datetime.datetime.strptime(reminder["start"], '%Y-%m-%d %H:%M:%S.%f')
+                now = datetime.datetime.now()
+                timer = time_converter(reminder["timer"])
+
+                sleep = timer - ((now - time).total_seconds())
+                if sleep < 0:
+                    sleep = 0
+
+                task = self.bot.loop.create_task(self.bot.reminder_task(user.id, reminder, sleep))
+                reminder["task"] = task
 
         await msg.edit(content="All members checked")
         await msg.edit(content="**Bot Online**")
@@ -274,6 +289,20 @@ class Meta():
         for role in [role for role in g["self-roles"] if role not in roles]:
             g["self-roles"].remove(role)
             await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", guild.id, role)
+
+    async def reminder_task(self, user_id, reminder, time):
+        try:
+            await asyncio.sleep(time)
+        except asyncio.CancelledError:
+            return
+
+        user = self.bot.get_user(user_id)
+        channel = self.bot.get_channel(reminder["channel"])
+        await channel.send(f":alarm_clock: | {user.mention} reminder: **{reminder['text']}**")
+
+        r = next((item for item in self.bot.user_data[user_id]["reminders"] if item["start"] == reminder["start"]), None)
+        self.bot.user_data[user_id]["reminders"].remove(r)
+        await self.bot.query_executer("DELETE FROM necrobot.Reminders WHERE start_date = $1 AND user_id = $2", r["start"], user_id)
 
 def setup(bot):
     bot.add_cog(Meta(bot))
