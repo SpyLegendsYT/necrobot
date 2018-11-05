@@ -4,6 +4,7 @@ from discord.ext import commands
 from rings.utils.utils import has_perms, react_menu, TimeConverter
 
 import random
+import aiohttp
 import datetime
 from simpleeval import simple_eval
 from collections import defaultdict
@@ -125,7 +126,7 @@ class Utilities():
         async with self.bot.session.get(f'http://history.muffinlabs.com/date{date}') as r:
             try:
                 res = await r.json()
-            except:
+            except aiohttp.ClientResponseError:
                 res = await r.json(content_type="application/javascript")
 
         def _embed_generator(index):
@@ -301,7 +302,7 @@ class Utilities():
         """Mentions the next user and the one after that so they can get ready.
         
         {usage}"""
-        if self.queue[ctx.guild.id]["list"]:
+        if not self.queue[ctx.guild.id]["list"]:
             await ctx.send(":negative_squared_cross_mark: | No users left in that queue")
             return
 
@@ -354,6 +355,8 @@ class Utilities():
 
             if f:
                 return (f - 32) * 5/9
+
+            return None
 
         def mass_i_to_m(measure, symbol, conversion):
             #convert to oz

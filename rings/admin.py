@@ -5,9 +5,8 @@ from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECR
 
 import ast
 import json
-import typing
 import asyncio
-from typing import Union
+from typing import Union, Optional
 from simpleeval import simple_eval
 
 class Admin():
@@ -15,17 +14,17 @@ class Admin():
         self.bot = bot
         self.gates = {}
 
-    def insert_returns(self, body):
+    def _insert_returns(self, body):
         if isinstance(body[-1], ast.Expr):
             body[-1] = ast.Return(body[-1].value)
             ast.fix_missing_locations(body[-1])
 
         if isinstance(body[-1], ast.If):
-            self.insert_returns(body[-1].body)
-            self.insert_returns(body[-1].orelse)
+            self._insert_returns(body[-1].body)
+            self._insert_returns(body[-1].orelse)
 
         if isinstance(body[-1], ast.With):
-            self.insert_returns(body[-1].body)
+            self._insert_returns(body[-1].body)
 
     @commands.command()
     @commands.is_owner()
@@ -181,7 +180,7 @@ class Admin():
         
     @commands.command()
     @commands.is_owner()
-    async def get(self, ctx, id : int):
+    async def get(self, ctx, obj_id : int):
         """Returns the name of the user or server based on the given id. Used to debug errors. 
         (Permission level required: 7+ (The Bot Smith))
         
@@ -190,28 +189,28 @@ class Admin():
         __Example__
         `{pre}get 345345334235345` - returns the user or server name with that id"""
         msg = await ctx.send("Scanning...")
-        user = self.bot.get_user(id)
+        user = self.bot.get_user(obj_id)
         if user:
             await msg.edit(content=f"User: **{user}**")
             return
 
         await msg.edit(content="User with that ID not found.")
 
-        guild = self.bot.get_guild(id)
+        guild = self.bot.get_guild(obj_id)
         if guild:
             await msg.edit(content=f"Server: **{guild}**")
             return
 
         await msg.edit(content="Server with that ID not found")
 
-        channel = self.bot.get_channel(id)
+        channel = self.bot.get_channel(obj_id)
         if channel:
             await msg.edit(content=f"Channel: **{channel.name}** on **{channel.guild.name}** ({channel.guild.id})")
             return
 
         await msg.edit(content="Channel with that ID not found")
 
-        role = discord.utils.get([item for sublist in  [guild.roles for guild in self.bot.guilds] for item in sublist], id=id)
+        role = discord.utils.get([item for sublist in  [guild.roles for guild in self.bot.guilds] for item in sublist], id=obj_id)
         if role:
             await msg.edit(content=f"Role: **{role.name}** on **{role.guild.name}** ({role.guild.id})")
             return
@@ -249,7 +248,7 @@ class Admin():
         {usage}
         
         The following global envs are available:
-            `bot``: bot instance
+            `bot`: bot instance
             `discord`: discord module
             `commands`: discord.ext.commands module
             `ctx`: Context instance
@@ -266,7 +265,7 @@ class Admin():
 
         parsed = ast.parse(body)
         body = parsed.body[0].body
-        self.insert_returns(body)
+        self._insert_returns(body)
 
         env = {
             'bot': ctx.bot,
@@ -424,7 +423,7 @@ class Admin():
 
     @commands.command()
     @has_perms(6)
-    async def log(self, ctx, start : typing.Optional[int] = 0, *arguments):
+    async def log(self, ctx, start : Optional[int] = 0, *arguments):
         """Get a list of commands. SQL arguments can be passed to filter the output.
 
         {usage}"""

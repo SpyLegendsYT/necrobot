@@ -188,8 +188,10 @@ class Economy():
         def check(reaction, user):
             return user == ctx.author and str(reaction.emoji) in reaction_list and msg.id == reaction.message.id
 
+        to_send = "**You** have {} Total: {} \n**The Dealer** has {} Total: {}"
+        status = await ctx.send(to_send.format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
         while not game.is_over():
-            status = await ctx.send(f"**You** have {player.hand} Total: {player.hand.value()} \n**The Dealer** has {bank.hand} Total: {bank.hand.value()}")
+            await status.edit(content=to_send.format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
             if player.hand.value() == 21:
                 break
             elif bank.hand.value() == 21:
@@ -248,18 +250,16 @@ class Economy():
                 else:
                     break   
 
-            
-            await status.delete()               
-
         await game_end()
         await status.delete()
 
-    @commands.command(aliases=["slots"], enabled=False)
+    @commands.command(aliases=["slots"], enable=False)
+    @commands.guild_only()
     async def slot(self, ctx):
         """Enter 50 Necroins and roll to see if you win more
 
         {usage}"""
-        symbol_list = [":black_joker:", ":white_flower:", ":diamond_shape_with_a_dot_inside:", ":fleur_de_lis:", ":trident:", ":cherry_blossom:", "<:onering:351442796420399119>", ":squid:"]
+        symbol_list = [":black_joker:", ":white_flower:", ":diamond_shape_with_a_dot_inside:", ":fleur_de_lis:", ":trident:", ":cherry_blossom:", "<:onering:351442796420399119>"]
         
         l1 = random.sample(symbol_list, len(symbol_list))
         l2 = random.sample(symbol_list, len(symbol_list))
@@ -267,10 +267,11 @@ class Economy():
 
         msg = await ctx.send(f"{l1[0]}|{l2[0]}|{l3[0]}\n{l1[1]}|{l2[1]}|{l3[1]}\n{l1[2]}|{l2[2]}|{l3[2]}")
 
-        for sym in range(len(symbol_list[2:-1])):
+        for sym in range(1, 5):
             await msg.edit(content=f"{l1[sym-1]}|{l2[sym-1]}|{l3[sym-1]}\n{l1[sym]}|{l2[sym]}|{l3[sym]}\n{l1[sym+1]}|{l2[sym+1]}|{l3[sym+1]}")
-            final = [l1[sym], l2[sym], l3[sym]]
             await asyncio.sleep(1)
+            if sym == 4:
+                final = [l1[sym], l2[sym], l3[sym]]
 
         if len(set(final)) == 1:
             final = final[0]
@@ -280,6 +281,8 @@ class Economy():
 
         if final == ":onering:":
             await ctx.send(":white_check_mark: | **Jackpot!** You won **2500** Necroins!")
+        elif final == ":cherry_blossom:":
+            await ctx.send(":white_check_mark: | Congrats! You win **1000** :cherry_blossom:")
         else:
             await ctx.send(final)
 

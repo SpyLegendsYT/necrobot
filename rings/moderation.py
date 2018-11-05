@@ -43,7 +43,7 @@ class Moderation():
     @commands.group(invoke_without_command = True)
     @has_perms(2)
     @commands.bot_has_permissions(manage_roles=True)
-    async def mute(self, ctx, user : discord.Member, *, time : TimeConverter = None):
+    async def mute(self, ctx, user : discord.Member, time : TimeConverter = None):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
         mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely 
         if no amount is given. The following times can be used: days (d), hours (h), minutes (m), seconds (s).
@@ -162,7 +162,7 @@ class Moderation():
     @commands.command()
     @has_perms(4)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge(self, ctx, number : int = 1, check="", extra=""):
+    async def purge(self, ctx, number : int = 1, check = "", extra : discord.Member = ""):
         """Removes number of messages from the channel it is called in. That's all it does at the moment 
         but later checks will also be added to allow for more flexible/specific purging (Permission level required: 4+ 
         (Server Admin))
@@ -181,7 +181,7 @@ class Moderation():
         if check == "link":
             deleted = await ctx.channel.purge(limit=number, check=lambda m: "http" in m.content)
         elif check == "mention":
-            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author.mention == extra)
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author == extra)
         elif check == "image":
             deleted = await ctx.channel.purge(limit=number, check=lambda m: m.attachments)
         elif check == "bot":
@@ -190,8 +190,6 @@ class Moderation():
             deleted = await ctx.channel.purge(limit=number)
 
         await ctx.send(f":wastebasket: | **{len(deleted)-1}** messages purged.", delete_after=5)
-        await asyncio.sleep(1)
-
         self.bot.server_data[ctx.guild.id]["automod"] = channel
 
     @commands.command()

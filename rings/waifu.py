@@ -10,7 +10,7 @@ class Waifu():
     system as this bot and to be able to modify and customize. For the newcomers, the waifu system is kind of like a
     wedding system, where users can \"marry \" each other. Just don't take it too seriously and have fun 
 
-    Since the authorities of the server have complete control of the waifu currency, it is possible to disable most of
+    Since the authorities of the server have complete control of the flower currency, it is possible to disable most of
     the waifu commands and just retain a few in order to use the currency as an in-server currency that can be used to
     purchase stuff like fancy roles or special nicknames."""
     def __init__(self, bot):
@@ -75,53 +75,18 @@ class Waifu():
             user = ctx.author
 
         count = self.bot.user_data[user.id]["waifu"][ctx.guild.id]["heart-changes"]
-        if count < 1:
-            title = "Pure"
-        elif count < 2:
-            title = "Faithful"
-        elif count < 4:
-            title = "Defiled"
-        elif count < 5:
-            title = "Cheater"
-        elif count < 6:
-            title = "Tainted"
-        elif count < 11:
-            title = "Corrupted"
-        elif count < 13:
-            title = "Lewd"
-        elif count < 15:
-            title = "Sloot"
-        elif count < 17:
-            title = "Depraved"
-        else:
-            title = "Harlot"
+        titles = {1: "Pure", 2: "Faithful", 4:"Defiled", 5: "Cheater", 6: "Tainted", 11: "Corrupted", 13: "Lewd", 15: "Sloot", 17: "Depraved"}
+        title = "Harlot"
+        for x in titles:
+            if count < x:
+                title = titles[x]
 
         count = len(self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"])
-        if count == 0:
-            title_a = "Lonely"
-        elif count == 1:
-            title_a = "Devoted"
-        elif count < 4:
-            title_a = "Rookie"
-        elif count < 6:
-            title_a = "Schemer"
-        elif count < 8:
-            title_a = "Dilettante"
-        elif count < 10:
-            title_a = "Intermediate"
-        elif count < 12:
-            title_a = "Seducer"
-        elif count < 15:
-            title_a = "Expert"
-        elif count < 17:
-            title_a = "Veteran"
-        elif count < 25:
-            title_a = "Incubis"
-        elif count < 50:
-            title_a = "Harem King"
-        else:
-            title_a = "Harem God"
-
+        titles_a = {0: "Lonely", 1: "Devoted", 4: "Rookie", 6: "Schemer", 8:"Dilettante", 10: "Intermediate", 12: "Seducer", 15: "Expert", 17: "Veteran", 25: "Incubis", 50: "Harem King"}
+        title_a = "Harem God"
+        for x in titles_a:
+            if count <= x:
+                title_a = titles_a[x]
 
         embed = discord.Embed(color=discord.Colour(0x277b0), title=f"Waifu {user.name} - {title_a}")
         embed.add_field(name="Price", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifu-value"])
@@ -130,7 +95,7 @@ class Waifu():
         embed.add_field(name="Changes of heart", value=f"{self.bot.user_data[user.id]['waifu'][ctx.guild.id]['heart-changes']} the {title}")
         embed.add_field(name="Divorces", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["divorces"])
         gifts = self.bot.user_data[user.id]["waifu"][ctx.guild.id]["gifts"]
-        gift_str = "\n".join([f"{gifts_list[x.lower()]['emote']}x{value}" for key, value in gifts.items if value > 0])
+        gift_str = "\n".join([f"{gift_list[x.lower()]['emote']}x{value}" for key, value in gifts.items if value > 0])
         embed.add_field(name="Gifts", value=gift_str if gift_str != "" else "None", inline=False)
         waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"]])
         embed.add_field(name=f"Waifus ({len(self.bot.user_data[user.id]['waifu'][ctx.guild.id]['waifus'])})", value=waifus if waifus != "" else "None", inline=False)

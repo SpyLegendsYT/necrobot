@@ -18,7 +18,7 @@ class Server():
 
         raise commands.CheckFailure("This command cannot be used in private messages.")
 
-    def all_lists(self, ctx, key):
+    def _all_lists(self, ctx, key):
         l = []
         for x in self.bot.server_data[ctx.guild.id][key]:
             channel = self.bot.get_channel(x)
@@ -112,7 +112,7 @@ class Server():
         """
 
         if not mentions:
-            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` {self.all_lists(ctx, 'ignore-automod')} ```")
+            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` {self._all_lists(ctx, 'ignore-automod')} ```")
             return
 
         for x in mentions:
@@ -143,7 +143,7 @@ class Server():
         else:
             self.bot.server_data[ctx.guild.id]["automod"] = channel.id
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = $2 WHERE guild_id = $1;", ctx.guild.id, channel.id)
-            await ctx.send(":white_check_mark: | Okay, all automoderation messages will be posted in " + channel.mention + " from now on.")
+            await ctx.send(f":white_check_mark: | Okay, all automoderation messages will be posted in {channel.mention} from now on.")
 
     @commands.command()
     @has_perms(4)
@@ -164,23 +164,23 @@ class Server():
         """
 
         if not mentions:
-            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` {self.all_lists(ctx, 'ignore-command')} ```")
+            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by NecroBot: ``` {self._all_lists(ctx, 'ignore-command')} ```")
             return
         
         for x in mentions:
             if x.id not in self.bot.server_data[ctx.guild.id]["ignore-command"]:
                 self.bot.server_data[ctx.guild.id]["ignore-command"].append(x.id)
-                await ctx.send(":white_check_mark: | **"+ x.name +"** will be ignored by the bot.")
+                await ctx.send(f":white_check_mark: | **{x.name}** will be ignored by the bot.")
                 await self.bot.query_executer("INSERT INTO necrobot.IgnoreCommand VALUES ($1, $2);", ctx.guild.id, x.id)
             else:
                 self.bot.server_data[ctx.guild.id]["ignore-command"].remove(x.id)
-                await ctx.send(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot.")
+                await ctx.send(f":white_check_mark: | **{x.name}** will no longer be ignored by the bot.")
                 await self.bot.query_executer("DELETE FROM necrobot.IgnoreCommand WHERE guild_id = $1 AND id = $2;", ctx.guild.id, x.id)
 
     @commands.group(aliases=["setting"], invoke_without_command=True)
     @has_perms(4)
     async def settings(self, ctx):
-        """Creates a rich embed of the server settings, also the gateway to the rest of the commands
+        """Creates a rich embed of the server settings
 
         {usage}"""
         server = self.bot.server_data[ctx.guild.id] 
@@ -192,9 +192,9 @@ class Server():
         embed.add_field(name="Welcome Message", value=server["welcome"][:1024] if server["welcome"] != "" else "None", inline=False)
         embed.add_field(name="Goodbye Message", value=server["goodbye"][:1024] if server["goodbye"] != "" else "None", inline=False)
         embed.add_field(name="Mute Role", value=role_obj.mention if server["mute"] != "" else "Disabled")
-        embed.add_field(name="Prefix", value="`" + server["prefix"] + "`" if server["prefix"] != "" else "`n!`")
+        embed.add_field(name="Prefix", value=f'`{server["prefix"]}`' if server["prefix"] != "" else "`n!`")
         embed.add_field(name="Broadcast Channel", value=self.bot.get_channel(server["broadcast-channel"]).mention if server["broadcast-channel"] != "" else "Disabled")
-        embed.add_field(name="Broadcast Frequency", value="Every " + str(server["broadcast-time"]) + " hour(s)" if server["broadcast-time"] != "" else "None")
+        embed.add_field(name="Broadcast Frequency", value=f'Every {server["broadcast-time"]} hour(s)' if server["broadcast-time"] != "" else "None")
         embed.add_field(name="Broadcast Message", value=server["broadcast"] if server["broadcast"] != "" else "None", inline=False)
         embed.add_field(name="Auto Role", value= role_obj2.mention if server["auto-role"] != "" else "None")
         embed.add_field(name="Auto Role Time Limit", value= server["auto-role-timer"] if server["auto-role-timer"] > 0 else "Permanent")       
@@ -293,7 +293,7 @@ class Server():
         else:
             self.bot.server_data[ctx.guild.id]["welcome-channel"] = channel.id
             await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = $1 WHERE guild_id = $2;", channel.id, ctx.guild.id)
-            await ctx.send(":white_check_mark: | Okay, users will get their welcome/goodbye message in " + channel.mention + " from now on.")
+            await ctx.send(f":white_check_mark: | Okay, users will get their welcome/goodbye message in {channel.mention} from now on.")
 
     @welcome.command(name="channel")
     @has_perms(4)

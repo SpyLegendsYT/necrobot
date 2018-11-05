@@ -1,4 +1,4 @@
-from discord.ext.commands import Paginator, CommandError, Command, Help
+from discord.ext.commands import Paginator, CommandError, Command, HelpFormatter
 
 import inspect
 import itertools
