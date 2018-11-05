@@ -11,6 +11,7 @@ import json
 import time
 import random
 import aiohttp
+import datetime
 import traceback
 
 async def get_pre(bot, message):
@@ -72,7 +73,7 @@ class NecroBot(commands.Bot):
         self.events = {}
         self.ignored_messages = []
         self.ready = False
-        self.counter = 0
+        self.counter = datetime.datetime.now().hour
 
         @self.check
         def disabled_check(ctx):
@@ -100,7 +101,9 @@ class NecroBot(commands.Bot):
             guild_id = ctx.guild.id
 
             if ctx.prefix in self.admin_prefixes:
-                return self.user_data[user_id]["perms"][guild_id] > 0
+                if self.user_data[user_id]["perms"][guild_id] > 0:
+                    return True
+                raise commands.CheckFailure("You are not allowed to use admin prefixes")
 
             if user_id in self.server_data[guild_id]["ignore-command"]:
                 raise commands.CheckFailure("You are being ignored by the bot")

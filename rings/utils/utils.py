@@ -36,7 +36,7 @@ def has_perms(perms_level):
     return commands.check(predicate)
 
 
-async def react_menu(ctx, max, page_generator, page=0):
+async def react_menu(ctx, max_pages, page_generator, page=0):
     msg = await ctx.send(embed=page_generator(page))
     while True:
         react_list = []
@@ -45,7 +45,7 @@ async def react_menu(ctx, max, page_generator, page=0):
 
         react_list.append("\N{BLACK SQUARE FOR STOP}")
 
-        if page < max:
+        if page < max_pages:
             react_list.append("\N{BLACK RIGHT-POINTING TRIANGLE}")
 
         for reaction in react_list:
@@ -111,6 +111,18 @@ class GuildConverter(commands.IDConverter):
 class TimeConverter(commands.Converter):
     async def convert(self, ctx, argument):
         return time_converter(argument)
+
+class MoneyConverter(commands.Converter):
+    async def convert(self, ctx, argument):
+        if not argument.isdigit():
+            raise commands.BadArgument("Not a valid intenger")
+        else:
+            argument = abs(int(argument))
+
+        if argument <= ctx.bot.user_data[ctx.author.id]["money"]:
+            return argument
+        else:
+            raise commands.BadArgument("You do not have enough money")
 
 def midnight():
     """Get the number of seconds until midnight."""

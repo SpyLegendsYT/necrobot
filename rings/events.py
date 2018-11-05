@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_goodbye, has_welcome, has_automod, UPDATE_PERMS, UPDATE_FLOWERS
+from rings.utils.utils import has_goodbye, has_welcome, has_automod, UPDATE_PERMS
 
 import sys
 import asyncio
@@ -25,7 +25,7 @@ class NecroEvents():
             #this can be used to print *all* the missing arguments (bit hacky tho)
             # index = list(ctx.command.clean_params.keys()).index(error.param.name)
             # missing = list(ctx.command.clean_params.values())[index:]
-            # print(f"missing following: {", ".join([x.name for x in missing])}")
+            # print(f"missing following: {', '.join([x.name for x in missing])}")
         elif isinstance(error, commands.CheckFailure):
             await channel.send(f":negative_squared_cross_mark: | {error}", delete_after=10)
         elif isinstance(error, commands.CommandOnCooldown):
@@ -36,7 +36,7 @@ class NecroEvents():
         elif isinstance(error, commands.DisabledCommand):
             await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
         elif isinstance(error, (commands.BadUnionArgument, commands.BadArgument)):
-            await channel.send(f":negative_squared_cross_mark: | Following error with passed arguments: **{error}**", delete_after=10)
+            await channel.send(f":negative_squared_cross_mark: | {error}", delete_after=10)
         elif isinstance(error, asyncio.TimeoutError) and hasattr(error, "timer"):
             retry_after = str(timedelta(seconds=error.timer)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
             await channel.send(f":negative_squared_cross_mark: | You took too long to reply, please reply within {retry_after}seconds next time", delete_after=10)

@@ -115,16 +115,16 @@ class Meta():
         
     async def broadcast(self):
         await self.bot.wait_until_ready()
-        time = 3600
         while not self.bot.is_closed():
             if self.bot.counter >= 24:
                 self.bot.counter = 0
+
+            now = datetime.datetime.now()
+            time = 3600 - (now.second + (now.minute * 60))
             try:
                 await asyncio.sleep(time) # task runs every hour
             except asyncio.CancelledError:
-                break
-
-            start = time.time()
+                return
             self.bot.counter += 1
 
             def guild_check(guild):
@@ -146,10 +146,7 @@ class Meta():
                     channel = self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"])
                     await channel.send(self.bot.server_data[guild]["broadcast"])
                 except Exception as e:
-                    raise Exception(f"Broadcast error with guild {guild}\n{e}")
-
-            time = 3600 - round(time.time() - start)
-
+                    await self.bot.get_channel(415169176693506048).send(f"Broadcast error with guild {guild}\n{e}")
 
     async def rotation_status(self):
         await self.bot.wait_until_ready()
@@ -160,7 +157,7 @@ class Meta():
                 self.bot.statuses.append(status)
                 await self.bot.change_presence(activity=discord.Game(name=status.format(guild=len(self.bot.guilds), members=len(self.bot.users))))
         except asyncio.CancelledError:
-            pass
+            return
         except Exception as e:
             self.bot.dispatch("error", e)
 

@@ -2,8 +2,20 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
-from rings.utils.utils import has_perms, react_menu, UPDATE_NECROINS, UPDATE_FLOWERS, UPDATE_VALUE
+from rings.utils.utils import has_perms, react_menu, UPDATE_NECROINS, UPDATE_FLOWERS, UPDATE_VALUE, MoneyConverter
 from rings.utils.var import gift_list
+
+class FlowerConverter(commands.Converter):
+    async def convert(self, ctx, argument):
+        if not argument.isdigit():
+            raise commands.BadArgument("Not a valid intenger")
+        else:
+            argument = abs(int(argument))
+
+        if argument <= ctx.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flower"]:
+            return argument
+        else:
+            raise commands.BadArgument("You do not have enough :cherry_blossom:")
 
 class Waifu():
     """This is based off the Nadeko bot's waifu module. The reason I copied it was to be able to run it on the same
@@ -23,7 +35,7 @@ class Waifu():
         raise commands.CheckFailure("This command cannot be used in private messages.")
 
     @commands.command()
-    async def trade(self, ctx, coins : int):
+    async def trade(self, ctx, coins : MoneyConverter):
         """Trades your hard earned Necroins for :cherry_blossom: with a 1:1 exchange ration.
 
         {usage}
@@ -31,12 +43,6 @@ class Waifu():
         __Examples__
         `{pre}trade 400` - trade 400 Necroins for 400 :cherry_blossom:
         """
-
-        coins = abs(coins)
-
-        if self.bot.user_data[ctx.author.id]["money"] < coins:
-            await ctx.send(":negative_squared_cross_mark: | You don't have enough Necroins")
-            return
 
         self.bot.user_data[ctx.author.id]["money"] -= coins
         await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
@@ -194,7 +200,7 @@ class Waifu():
             
 
     @commands.command(name="claim")
-    async def claim_waifu(self, ctx, price : int, member : discord.Member):
+    async def claim_waifu(self, ctx, price : FlowerConverter, member : discord.Member):
         """Claim a user as your waifu, a user can only be claimed by one person but can have many waifus. You
         must propose and amount superior to the current price of the waifu.
 
@@ -217,7 +223,7 @@ class Waifu():
         else:
             value = round(self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"] * 1.10)
 
-        if self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] >= price > value:
+        if price > value:
             claimer = self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-claimer"]
             if claimer != "":
                 self.bot.user_data[claimer]["waifu"][ctx.guild.id]["waifus"].remove(member.id)
@@ -233,10 +239,8 @@ class Waifu():
             await self.bot.query_executer(UPDATE_VALUE, self.bot.user_data[member.id]["waifu"][ctx.guild.id]["waifu-value"], member.id, ctx.guild.id)
 
             await ctx.send(f":white_check_mark: | You've claimed **{member.display_name}** as your waifu")
-        elif price <= value:
-            await ctx.send(f":negative_squared_cross_mark: | You must pay more than {value} :cherry_blossom: to claim this waifu")
         else:
-            await ctx.send(":negative_squared_cross_mark: | You don't have enough :cherry_blossom:")
+            await ctx.send(f":negative_squared_cross_mark: | You must pay more than {value} :cherry_blossom: to claim this waifu")
 
     @commands.group(invoke_without_command=True)
     @commands.cooldown(1, 21600, BucketType.member)
@@ -404,18 +408,13 @@ class Waifu():
 
 
     @commands.command()
-    async def give(self, ctx, amount : int, member : discord.Member):
+    async def give(self, ctx, amount : FlowerConverter, member : discord.Member):
         """Transfer :cherry_blossom: from one user to another.
 
         {usage}
 
         __Examples__
         `{pre}give 100 @ThisGuy` - give 100 :cherry_blossom: to user ThisGuy"""
-        amount = abs(amount)
-        if self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] < amount:
-            await ctx.send(":negative_squared_cross_mark: | You don't have enough :cherry_blossom:")
-            return
-
         self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"] -= amount
         await self.bot.query_executer(UPDATE_FLOWERS,self.bot.user_data[ctx.author.id]["waifu"][ctx.guild.id]["flowers"], ctx.author.id, ctx.guild.id)
         self.bot.user_data[member.id]["waifu"][ctx.guild.id]["flowers"] += amount

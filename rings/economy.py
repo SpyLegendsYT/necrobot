@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import UPDATE_NECROINS
+from rings.utils.utils import UPDATE_NECROINS, MoneyConverter
 
 import random
 import asyncio
@@ -121,7 +121,7 @@ class Economy():
 
 
     @commands.command(aliases=["bj"])
-    async def blackjack(self, ctx, bet : int = 10):
+    async def blackjack(self, ctx, bet : MoneyConverter = 10):
         """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: 
         or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you 
         placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
@@ -134,10 +134,6 @@ class Economy():
         if ctx.channel.id in self.IS_GAME:
             await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
             return 
-        
-        if self.bot.user_data[ctx.author.id]["money"] < bet :
-            await ctx.send(":negative_squared_cross_mark: | You don't have enough money", delete_after = 5)
-            return
 
         if bet < 10:
             await ctx.send(":negative_squared_cross_mark: | Please bet at least 10 necroins.", delete_after=5)
@@ -259,7 +255,15 @@ class Economy():
         """Enter 50 Necroins and roll to see if you win more
 
         {usage}"""
-        symbol_list = [":black_joker:", ":white_flower:", ":diamond_shape_with_a_dot_inside:", ":fleur_de_lis:", ":trident:", ":cherry_blossom:", "<:onering:351442796420399119>"]
+        symbol_list = [
+            ":black_joker:", 
+            ":white_flower:", 
+            ":diamond_shape_with_a_dot_inside:", 
+            ":fleur_de_lis:", 
+            ":trident:", 
+            ":cherry_blossom:", 
+            "<:onering:351442796420399119>"
+        ]
         
         l1 = random.sample(symbol_list, len(symbol_list))
         l2 = random.sample(symbol_list, len(symbol_list))
@@ -283,8 +287,10 @@ class Economy():
             await ctx.send(":white_check_mark: | **Jackpot!** You won **2500** Necroins!")
         elif final == ":cherry_blossom:":
             await ctx.send(":white_check_mark: | Congrats! You win **1000** :cherry_blossom:")
+        elif final == ":fleur_de_lis:":
+            await ctx.send(":white_check_mark: | You win **500** Necroins!")
         else:
-            await ctx.send(final)
+            await ctx.send(":negative_squared_cross_mark: | Better luck next time")
 
     @commands.command()
     async def ttt(self, ctx, enemy : discord.Member):

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import UPDATE_NECROINS, midnight
+from rings.utils.utils import UPDATE_NECROINS, midnight, MoneyConverter
 
 import random
 import asyncio
@@ -74,7 +74,7 @@ class Profile():
             await ctx.send(f":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{timer}**")
 
     @commands.command()
-    async def pay(self, ctx, payee : discord.Member, amount : int):
+    async def pay(self, ctx, payee : discord.Member, amount : MoneyConverter):
         """Transfers the given amount of money to the given user's NecroBot bank account.
 
         {usage}
@@ -97,7 +97,7 @@ class Profile():
             await ctx.send(f":white_check_mark: | **{payer.display_name}** cancelled the transaction.")
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[payer.id]["money"] < amount:
-                await ctx.send(":negative_squared_cross_mark: | You don't have enough money")
+                await ctx.send(":negative_squared_cross_mark: | You no longer have enough money")
                 await msg.delete()
                 return
 
