@@ -91,7 +91,11 @@ class Profile():
         def check(reaction, user):
             return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
 
-        reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        try:
+            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            await msg.clear_reactions()
+            return
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await ctx.send(f":white_check_mark: | **{payer.display_name}** cancelled the transaction.")
@@ -102,12 +106,16 @@ class Profile():
                 return
 
             await ctx.send(f":white_check_mark: | **{payer.display_name}** approved the transaction.")
-            await payee.send(f":euro: | **{payer.display_name}** has transferred **{amount}$** to your profile")
             
             self.bot.user_data[payer.id]["money"] -= amount
             await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[payer.id]["money"], payer.id)
             self.bot.user_data[payee.id]["money"] += amount
             await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[payee.id]["money"], payee.id)
+
+            try:
+                await payee.send(f":euro: | **{payer.display_name}** has transferred **{amount}$** to your profile")
+            except (discord.Forbidden, discord.HTTPException):
+                pass
             
         await msg.delete()
 

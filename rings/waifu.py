@@ -125,7 +125,7 @@ class Waifu():
         await react_menu(ctx, len(list(gift_list.keys()))//15, embed_maker)
 
     @commands.command()
-    async def gift(self, ctx, choice, member : discord.Member):
+    async def gift(self, ctx, member : discord.Member, choice):
         """Gifts an item from the gift list (`{pre}gifts` to display). The gift increases the value of the waifu by
         a different amount depending on whether or not their affinity is set to the gifter.
 
@@ -200,7 +200,7 @@ class Waifu():
             
 
     @commands.command(name="claim")
-    async def claim_waifu(self, ctx, price : FlowerConverter, member : discord.Member):
+    async def claim_waifu(self, ctx, member : discord.Member, price : FlowerConverter):
         """Claim a user as your waifu, a user can only be claimed by one person but can have many waifus. You
         must propose and amount superior to the current price of the waifu.
 
@@ -359,7 +359,7 @@ class Waifu():
 
     @commands.command()
     @has_perms(3)
-    async def award(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
+    async def award(self, ctx, member : discord.Member, amount : int, *, reason : str = ""):
         """Award :cherry_blossom: currency to a user, admin command.
 
         {usage}
@@ -376,7 +376,7 @@ class Waifu():
 
     @commands.command()
     @has_perms(3)
-    async def take(self, ctx, amount : int, member : discord.Member,*, reason : str = ""):
+    async def take(self, ctx, member : discord.Member, amount : int, *, reason : str = ""):
         """Take :cherry_blossom: currency from a user, admin command.
 
         {usage}
@@ -408,7 +408,7 @@ class Waifu():
 
 
     @commands.command()
-    async def give(self, ctx, amount : FlowerConverter, member : discord.Member):
+    async def give(self, ctx, member : discord.Member, amount : FlowerConverter):
         """Transfer :cherry_blossom: from one user to another.
 
         {usage}

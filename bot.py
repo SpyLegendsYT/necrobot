@@ -45,6 +45,7 @@ extensions = [
     "meta"
 ]
 
+
 class NecroBot(commands.Bot):
     def __init__(self):
         super().__init__(
@@ -60,13 +61,12 @@ class NecroBot(commands.Bot):
         self.uptime_start = time.time()
         self.user_data, self.server_data, self.starred = db_gen()
 
-        self.version = 2.5
+        self.version = 2.6
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["starboard", "remindme", "permissions", "demote", "promote", "faq"]
+        self.new_commands = ["remindme", "permissions", "demote", "promote", "faq", "stats"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
         self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "The Bot Smith"]
-
         self.session = aiohttp.ClientSession(loop=self.loop)
         
         self.cat_cache = []
@@ -135,8 +135,7 @@ class NecroBot(commands.Bot):
             print('------')
             print(f"Logged in as {self.user}")
         else:
-            channel = self.get_channel(318465643420712962)
-            await channel.send("**Bot Resuming**")
+            await self.get_channel(318465643420712962).send("**Bot Resuming**")
 
     async def on_error(self, event, *args, **kwargs): 
         """Something has gone wrong so we just try to send a helpful traceback to the channel. If
@@ -160,7 +159,7 @@ class NecroBot(commands.Bot):
         need to mention everyone with the bot if you're less."""
         user_id = message.author.id
         regex_match = r"(https://modding-union\.com/index\.php/topic).\d*"
-
+        
         if message.author.bot or user_id in self.settings["blacklist"] or message.type != discord.MessageType.default:
             return
 
