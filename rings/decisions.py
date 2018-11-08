@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import UPDATE_NECROINS, MoneyConverter
-from rings.utils.var import ball8_list
+from rings.utils.var import var
 
 import dice
 import random
@@ -88,6 +88,7 @@ class Decisions():
         """Uses an 8ball system to reply to the user's question. 
         
         {usage}"""
+        ball8_list = var[self.bot.server_data[ctx.guild.id]["language"]].ball8_list
         await ctx.send(f"{message} \n:8ball: | {random.choice(ball8_list)}")
 
 def setup(bot):

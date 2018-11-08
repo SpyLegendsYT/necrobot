@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import has_perms, react_menu, UPDATE_NECROINS, UPDATE_FLOWERS, UPDATE_VALUE, MoneyConverter
-from rings.utils.var import gift_list
+from rings.utils.var import var
 
 class FlowerConverter(commands.Converter):
     async def convert(self, ctx, argument):
@@ -101,6 +101,7 @@ class Waifu():
         embed.add_field(name="Changes of heart", value=f"{self.bot.user_data[user.id]['waifu'][ctx.guild.id]['heart-changes']} the {title}")
         embed.add_field(name="Divorces", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["divorces"])
         gifts = self.bot.user_data[user.id]["waifu"][ctx.guild.id]["gifts"]
+        gift_list = var[self.bot.server_data[ctx.guild.id]["language"]].gift_list
         gift_str = "\n".join([f"{gift_list[x.lower()]['emote']}x{value}" for key, value in gifts.items if value > 0])
         embed.add_field(name="Gifts", value=gift_str if gift_str != "" else "None", inline=False)
         waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"]])
@@ -113,6 +114,7 @@ class Waifu():
         """Displays the list of gifts that can be gifted.
 
         {usage}"""
+        gift_list = var[self.bot.server_data[ctx.guild.id]["language"]].gift_list
         def embed_maker(index):
             keys = list(gift_list.keys())[index*15:(index+1)*15]
             embed = discord.Embed(color=discord.Colour(0x277b0), title="Waifu gift shop")
@@ -135,6 +137,7 @@ class Waifu():
         `{pre}gift Chocolate @ThirdThot` - gifts a chocolate to the user ThirdThot
         """
         choice = choice.lower()
+        gift_list = var[self.bot.server_data[ctx.guild.id]["language"]].gift_list
         if choice not in gift_list:
             await ctx.send(":negative_squared_cross_mark: | No such gift")
             return

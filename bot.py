@@ -4,7 +4,6 @@ from discord.ext import commands
 from rings.utils.db import db_gen
 from rings.utils.config import token
 from rings.utils.help import NecroBotHelpFormatter
-from rings.utils.var import tutorial_e
 
 import re
 import json
@@ -121,8 +120,6 @@ class NecroBot(commands.Bot):
 
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
-        
-        self.tutorial_e = discord.Embed.from_data(tutorial_e)
 
     async def on_ready(self):
         """If this is the first time the boot is booting then we load the cache and set the

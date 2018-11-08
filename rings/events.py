@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 
 from rings.utils.utils import has_goodbye, has_welcome, has_automod, UPDATE_PERMS
+from rings.utils.var import var
 
 import sys
 import asyncio
@@ -74,8 +75,9 @@ class NecroEvents():
 
         for member in guild.members:
             await self.bot.default_stats(member, guild)
-            
-        await guild.owner.send(embed=self.bot.tutorial_e)
+        
+        tutorial_e = discord.Embed.from_data(var[self.bot.server_data[guild.id]["language"]].tutorial_e)
+        await guild.owner.send(embed=tutorial_e)
 
     async def on_message_delete(self, message):
         if message.id in self.bot.ignored_messages:

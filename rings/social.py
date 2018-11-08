@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 
-# from rings.utils.var import tarot_list, lotr_list, dad_joke, dex, riddle_list, got_quotes
-from rings.utils.var2 import var
+from rings.utils.var import var
 
 import random
 import asyncio
