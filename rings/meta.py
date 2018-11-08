@@ -2,6 +2,7 @@ import discord
 
 from rings.utils.config import dbpass
 from rings.utils.utils import UPDATE_PERMS, time_converter
+# from rings.utils.i18n import i18n_dict
 
 import io
 import asyncio
@@ -26,6 +27,7 @@ class Meta():
         self.bot.broadcast_task = self.bot.loop.create_task(self.broadcast())
         self.bot.status_task = self.bot.loop.create_task(self.rotation_status())
         self.bot.reminder_task = self.reminder_task
+        self.bot.t = self.translate
 
     def __unload(self):
         self.bot.broadcast_task.cancel()
@@ -51,8 +53,16 @@ class Meta():
             "auto-role-timer": 0,
             "starboard-channel":"",
             "starboard-limit":5,
-            "aliases":{}
+            "aliases":{},
+            "language": "en"
         } 
+
+    def translate(self, dest, string):
+        try:
+            lang = self.bot.server_data[dest.guild.id]["language"]
+            return i18n_dict[lang][string]
+        except AttributeError:
+            return i18n_dict["en"][string]
 
     async def _mu_auto_embed(self, url, message):
         async with self.bot.session.get(url) as resp:

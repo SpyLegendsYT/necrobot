@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.var import tarot_list, lotr_list, dad_joke, dex, riddle_list, got_quotes
+# from rings.utils.var import tarot_list, lotr_list, dad_joke, dex, riddle_list, got_quotes
+from rings.utils.var2 import var
 
 import random
 import asyncio
@@ -17,6 +18,7 @@ class Social():
         """Send a random dadjoke from a long list. 
         
         {usage}"""
+        dadjoke = var[self.bot.server_data[ctx.guild.id]["language"]].dad_joke
         await ctx.send(f":speaking_head: | **{random.choice(dad_joke)}**")
 
     @commands.command()
@@ -26,6 +28,7 @@ class Social():
         the answer, no need to prefix it with anything. 
         
         {usage}"""
+        riddle_list = var[self.bot.server_data[ctx.guild.id]["language"]].riddle_list
         riddle = random.choice(riddle_list)
         await ctx.send(f"Riddle me this {ctx.author.name}: \n{riddle[0]}")
 
@@ -44,6 +47,7 @@ class Social():
         returns the explanation for each card. Not to be taken seriously. 
         
         {usage}"""
+        tarot_list = var[self.bot.server_data[ctx.guild.id]["language"]].tarot_list
         card_list = random.sample(tarot_list, 3)
         await ctx.send(f":white_flower: | Settle down now and let Necro see your future my dear {ctx.author.name}...\n**Card #1:** {card_list[0]}\n**Card #2:** {card_list[1]}\n**Card #3:** {card_list[2]}\n__*That is your fate, none can change it for better or worst.*__")
 
@@ -86,7 +90,7 @@ class Social():
         `{pre}pokefusion` - random pokefusion
         `{pre}pokefusion raichu` - pokefusion of random pokemon and raichu
         `{pre}pokefusion raichu arceus` - pokefusion of raichu and arceus"""
-
+        dex = var[self.bot.server_data[ctx.guild.id]["language"]].dex
         if not pokemon1:
             pokemon1 = random.choice(dex)
 
@@ -128,6 +132,8 @@ class Social():
         `{pre}got` - posts a random quotes
         `{pre}got Tyrion` - posts a random quote from Tyrion
         """
+        got_quotes = var[self.bot.server_data[ctx.guild.id]["language"]].got_quotes
+
         if character:
             quotes = [quote for quote in got_quotes if character.lower() in quote["character"].lower()]
             if quote:

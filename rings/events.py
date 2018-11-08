@@ -70,7 +70,7 @@ class NecroEvents():
 
         if guild.id not in self.bot.server_data:
             self.bot.server_data[guild.id] = self.bot._new_server()
-            await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0, 0);", guild.id)
+            await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0, 0, 'en');", guild.id)
 
         for member in guild.members:
             await self.bot.default_stats(member, guild)

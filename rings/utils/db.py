@@ -24,6 +24,7 @@ def db_gen():
             "starboard-limit":g[11],
             "auto-role":g[12] if g[12] != 0 else "",
             "auto-role-timer":g[13] if g[13] is not None else 0,
+            "language": g[14] if g[14] else "en",
             "self-roles":[],
             "ignore-command":[],
             "ignore-automod":[],
