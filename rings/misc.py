@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import react_menu
-from rings.utils.hunger_game import events
+from rings.utils.var import events
 
 import random
 import asyncio
@@ -33,6 +33,7 @@ class Misc():
             await ctx.send(":negative_squared_cross_mark: | Please provide no more than 32 characters separated by `,`.")
 
         dead_list = []
+        events = var[self.bot.server_data[ctx.guild.id]].events
 
         async def _phase_parser(event_name):
             idle_tributes = tributes_list.copy()

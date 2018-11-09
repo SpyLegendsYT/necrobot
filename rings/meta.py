@@ -2,7 +2,7 @@ import discord
 
 from rings.utils.config import dbpass
 from rings.utils.utils import UPDATE_PERMS, time_converter
-# from rings.utils.i18n import i18n_dict
+from rings.utils.i18n import i18n
 
 import io
 import asyncio
@@ -57,12 +57,12 @@ class Meta():
             "language": "en"
         } 
 
-    def translate(self, dest, string):
+    def translate(self, origin, string):
         try:
-            lang = self.bot.server_data[dest.guild.id]["language"]
-            return i18n_dict[lang][string]
+            lang = self.bot.server_data[origin.guild.id]["language"]
+            return i18n[lang][string]
         except AttributeError:
-            return i18n_dict["en"][string]
+            return i18n["en"][string]
 
     async def _mu_auto_embed(self, url, message):
         async with self.bot.session.get(url) as resp:

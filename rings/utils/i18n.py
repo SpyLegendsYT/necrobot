@@ -1,2 +1,2 @@
-from lang import en, fr
-i18n_dict = {"en": en, "fr": fr}
+from .lang.strings import en, fr
+i18n = {"en": en, "fr": fr, "de": de}

@@ -14,7 +14,7 @@ class CoinConverter(commands.Converter):
         if argument.lower() in ["t", "tail"]:
             return "t"
 
-        raise commands.BadArgument("Choices must be one of: `t`, `tail`, `h` or `head`")
+        raise commands.BadArgument(ctx.bot.t(ctx, "incorrect-coin-choice"))
 
 class Decisions():
     """Helpful commands to help you make decisions"""
@@ -32,7 +32,7 @@ class Decisions():
         `{pre}choose Bob, John Smith, Mary` - choose between the names of Bob, John Smith, and Mary
         `{pre}choose 1, 2` - choose between 1 and 2 """
         choice_list = [x.strip() for x in choices.split(",")]
-        await ctx.send(f"I choose **{random.choice(choice_list)}**")
+        await ctx.send(self.bot.t(ctx, "choose-choice").format(random.choice(choice_list)))
 
     @commands.command(aliases=["flip"])
     @commands.cooldown(3, 5, BucketType.user)
@@ -44,24 +44,18 @@ class Decisions():
         __Example__
         `{pre}coin` - flips a coin
         `{pre}coin h 50` - bet 50 coins on the result being head"""
-        outcome = random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"])
+        outcome = random.choice(self.bot.t(ctx, "coin-choices"))
         
         if bet:
             bet = abs(bet)
-            if "head" in outcome and choice == "h":
-                outcome += "\nWell done!"
-                self.bot.user_data[ctx.author.id]["money"] += bet
-            elif "tail" in outcome and choice == "t":
-                outcome += "\nWell done!"
+            if ("head" in outcome and choice == "h") or ("tail" in outcome and choice == "t"):
+                outcome += f"\n{self.bot.t(ctx, 'well-done')}"
                 self.bot.user_data[ctx.author.id]["money"] += bet
             else:
-                outcome += "\nBetter luck next time."
+                outcome += f"\n{self.bot.t(ctx, 'better-luck')}"
                 self.bot.user_data[ctx.author.id]["money"] -= bet
 
             await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-        else:
-            await ctx.send(":negative_squared_cross_mark: | Not enough money", delete_after=5)
-            return
 
         await ctx.send(outcome)
 
@@ -81,7 +75,7 @@ class Decisions():
         except TypeError:
             t = dice_list
 
-        await ctx.send(f":game_die: | **{ctx.author.display_name}** rolled {dice_list} for a total of: **{t}**")
+        await ctx.send(self.bot.t(ctx, "die-sum").format(ctx.author.display_name, dice_list, t))
 
     @commands.command(name="8ball")
     async def ball8(self, ctx, *, message):

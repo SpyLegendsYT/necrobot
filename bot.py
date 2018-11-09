@@ -84,7 +84,7 @@ class NecroBot(commands.Bot):
             disabled = self.server_data[ctx.message.guild.id]["disabled"]
 
             if ctx.command.name in disabled and ctx.prefix not in self.admin_prefixes:
-                raise commands.CheckFailure("This command has been disabled")
+                raise commands.CheckFailure(ctx.bot.t(ctx, "disabled-command"))
 
             return True
                 
@@ -102,17 +102,17 @@ class NecroBot(commands.Bot):
             if ctx.prefix in self.admin_prefixes:
                 if self.user_data[user_id]["perms"][guild_id] > 0:
                     return True
-                raise commands.CheckFailure("You are not allowed to use admin prefixes")
+                raise commands.CheckFailure(ctx.bot.t(ctx, "admin-prefix-forbidden"))
 
             if user_id in self.server_data[guild_id]["ignore-command"]:
-                raise commands.CheckFailure("You are being ignored by the bot")
+                raise commands.CheckFailure(ctx.bot.t(ctx, "user-ignored"))
 
             if ctx.channel.id in self.server_data[guild_id]["ignore-command"]:
-                raise commands.CheckFailure("Commands not allowed in this channel.")
+                raise commands.CheckFailure(ctx.bot.t(ctx, "channel-ignored"))
 
             if any(x in roles for x in self.server_data[guild_id]["ignore-command"]):
                 roles = [f"**{x.name}**" for x in ctx.author.roles if x.id in self.server_data[guild_id]["ignore-command"]]
-                raise commands.CheckFailure(f"Roles {', '.join(roles)} aren't allowed to use commands.")
+                raise commands.CheckFailure(ctx.bot.t(ctx, "roles-ignored").format(', '.join(roles)))
 
             return True
 
@@ -178,7 +178,7 @@ class NecroBot(commands.Bot):
         else:
             if not self.user_data[user_id]["tutorial"]:
                 self.user_data[user_id]["tutorial"] = True
-                await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:? Give it a shot, react to this message with :wastebasket: .")
+                await message.channel.send(self.t(message.channel, "wastebasket-tip"))
                 await self.query_executer("UPDATE necrobot.Users SET tutorial = 'True' WHERE user_id = $1", user_id)
 
         await self.process_commands(message)
