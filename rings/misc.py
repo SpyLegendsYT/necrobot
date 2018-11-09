@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import react_menu
-from rings.utils.var import events
+from rings.utils.var import var
 
 import random
 import asyncio
