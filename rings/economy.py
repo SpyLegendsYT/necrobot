@@ -83,7 +83,7 @@ class Game(common.Game):
                 card = self.deck.draw()
                 hand.add_card(card)
                 player.add_card(card)
-                return f"draws a **{card}**"
+                return card
 
 class Player(common.Player):
     def __init__(self, name, risk):
@@ -132,11 +132,11 @@ class Economy():
         `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
         `{pre}blackjack` - bet the default 10 :euro:"""
         if ctx.channel.id in self.IS_GAME:
-            await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
+            await ctx.send(self.bot.t(ctx, "blackjack-ongoing"), delete_after = 5)
             return 
 
         if bet < 10:
-            await ctx.send(":negative_squared_cross_mark: | Please bet at least 10 necroins.", delete_after=5)
+            await ctx.send(self.bot.t(ctx, "blackjack-minimum"), delete_after=5)
             return
 
         self.IS_GAME.append(ctx.channel.id)
@@ -148,30 +148,36 @@ class Economy():
         async def win(msg):
             self.bot.user_data[ctx.author.id]["money"] += bet
             await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYour bet money is doubled, you win {bet * 2} :euro:")    
+            msg = self.bot.t(ctx, msg)
+            end_game = self.bot.t(ctx, "blackjack-end").format(msg, ctx.author.display_name, player.hand, player.hand.value(), bank.hand, bank.hand.value())
+            victory = self.bot.t(ctx, "blackjack-win").format(bet * 2)
+            await ctx.send(f"{end_game}\n{victory}")    
 
         async def lose(msg):
             self.bot.user_data[ctx.author.id]["money"] -= bet
             await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}. \nYou lose the game and the bet money placed.")
+            msg = self.bot.t(ctx, msg)
+            end_game = self.bot.t(ctx, "blackjack-end").format(msg, ctx.author.display_name, player.hand, player.hand.value(), bank.hand, bank.hand.value())
+            victory = self.bot.t(ctx, "blackjack-lose")
+            await ctx.send(f"{end_game}\n{victory}")
 
         async def game_end():
             if player.hand.value() == 21:
-                await win("**BLACKJACK**")
+                await win("player-blackjack")
             elif bank.hand.value() == 21:
-                await lose("**BlackJack for the Dealer**")
+                await lose("dealer-blackjack")
             elif player.hand.value() > 21:
-                await lose("**You** go bust.")
+                await lose("player-bust")
             elif bank.hand.value() > 21:
-                await win("**The Dealer** goes bust.")
+                await win("dealer-bust")
             elif bank.hand.beats(player.hand):
-                await lose("**The Dealer's** hand beats **your** hand.")
+                await lose("dealer-beats")
             elif player.hand.beats(bank.hand):
-                await win("**Your** hand beats **the Dealer's** hand.")
+                await win("player-beat")
             else: #tie
-                await ctx.send("Tie, everything is reset.")
+                await ctx.send("blackjack-tie")
         
-        await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
+        await ctx.send(self.bot.t(ctx, "blackjack-start").format(ctx.author.display_name, bet))
         reaction_list = ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"]
         player = Player(ctx.author.display_name, 0)
         bank = Player("Bank", 0)
@@ -184,7 +190,7 @@ class Economy():
         def check(reaction, user):
             return user == ctx.author and str(reaction.emoji) in reaction_list and msg.id == reaction.message.id
 
-        to_send = "**You** have {} Total: {} \n**The Dealer** has {} Total: {}"
+        to_send = self.bot.t(ctx, "blackjack-status")
         status = await ctx.send(to_send.format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
         while not game.is_over():
             await status.edit(content=to_send.format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
@@ -193,29 +199,30 @@ class Economy():
             elif bank.hand.value() == 21:
                 break
             
-            msg = await ctx.send(f"**Current bet** - {bet} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card")
+            msg = await ctx.send(self.bot.t(ctx, "blackjack-options").format(bet))
             for reaction in reaction_list:
                 await msg.add_reaction(reaction)
 
             try :
                 reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
-            except asyncio.TimeoutError:
-                await ctx.send("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
+            except asyncio.TimeoutError as e:
                 self.bot.user_data[ctx.author.id]["money"] -= bet
                 await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+                e.timeout = 120
                 await msg.delete()
+                await self.bot.dispatch("command_error", ctx, e)
                 return     
 
             await msg.delete()
             if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
-                await ctx.send(f"**You** {game.play(player)}", delete_after=5)
+                await ctx.send(self.bot.t(ctx, "blackjack-draw").format(ctx.author.display_name, game.play(player)), delete_after=5)
                 if player.hand.busted:
                     break
                 else:
                     if bank.hand.is_passing(player):
-                        await ctx.send("**The Dealer** passes his turn", delete_after=5)
+                        await ctx.send(self.bot.t(ctx, "blackjack-pass").format("The Dealer"), delete_after=5)
                     else:
-                        await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+                        await ctx.send(self.bot.t(ctx, "blackjack-draw").format("The Dealer", game.play(bank)), delete_after=5)
                         if bank.hand.busted:
                             break
                         elif player.hand.value() == 21:
@@ -223,7 +230,7 @@ class Economy():
 
             elif reaction.emoji == "\N{MONEY BAG}":
                 if self.bot.user_data[ctx.author.id]["money"] >= bet * 2:
-                    await ctx.send(f"**You** double your bet and {game.play(player)}", delete_after=5)
+                    await ctx.send(self.bot.t(ctx, "blackjack-double"), delete_after=5)
                     bet *= 2
                     if player.hand.busted:
                         break
@@ -231,16 +238,16 @@ class Economy():
                         break
                     else:
                         while not bank.hand.is_passing(player) and not bank.hand.busted:
-                            await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+                            await ctx.send(self.bot.t(ctx, "blackjack-draw").format("The Dealer", game.play(bank)), delete_after=5)
 
                         break
                 else:
-                    await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
+                    await ctx.send(self.bot.t(ctx, "blackjack-not-double"), delete_after=5)
 
             elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                await ctx.send("**You** pass your turn", delete_after=5)
+                await ctx.send(self.bot.t(ctx, "blackjack-pass").format(ctx.author.display_name), delete_after=5)
                 if not bank.hand.is_passing(player):
-                    await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
+                    await ctx.send(self.bot.t(ctx, "blackjack-draw").format("The Dealer", game.play(bank)), delete_after=5)
                     if bank.hand.busted:
                         break
                 else:
@@ -290,7 +297,7 @@ class Economy():
         elif final == ":fleur_de_lis:":
             await ctx.send(":white_check_mark: | You win **500** Necroins!")
         else:
-            await ctx.send(":negative_squared_cross_mark: | Better luck next time")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'better-luck')}")
 
     @commands.command()
     async def ttt(self, ctx, enemy : discord.Member):
@@ -329,7 +336,7 @@ class Economy():
             for x in b:
                 msg.append(f" {x[0]} | {x[1]} | {x[2]} \n")
 
-            return "```\n"+ "------------\n".join(msg) + "\n```\nReply with the desired grid position. Won't work if not an intenger between 1 and 9 or from a place already taken."
+            return "```\n"+ "------------\n".join(msg) + self.bot.t(ctx, "ttt-print-board")
 
         def comp_move(b):
             #check if any of our moves can win
@@ -386,7 +393,7 @@ class Economy():
                     return message.author == ctx.author and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
                 
                 try:
-                    await current_msg.edit(content=f"Awaiting response from player: **{ctx.author.display_name}**")
+                    await current_msg.edit(content=self.bot.t(ctx, "ttt-waiting").format(ctx.author.display_name))
                     user1 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError as e:
                     e.timer = 120
@@ -401,11 +408,11 @@ class Economy():
                 board[int(user1//3.5)][(user1-1)%3] = "O"
 
                 if check_win(board):
-                    await ctx.send(f"{ctx.author.display_name} wins")
+                    await ctx.send(self.bot.t(ctx, "ttt-win").format(ctx.author.display_name))
                     break
 
                 if board_full(board):
-                    await ctx.send("**Nobody wins**")
+                    await ctx.send(self.bot.t(ctx, "ttt-tie"))
                     break
 
                 await msg.edit(content=print_board(board))
@@ -417,7 +424,7 @@ class Economy():
                     return message.author == enemy and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
                 
                 try:
-                    await current_msg.edit(content=f"Awaiting response from player: **{enemy.display_name}**")
+                    await current_msg.edit(content=self.bot.t(ctx, "ttt-waiting").format(enemy.display_name))
                     user2 = await self.bot.wait_for("message", check=check, timeout=300)
                 except asyncio.TimeoutError as e:
                     e.timer = 120
@@ -432,7 +439,7 @@ class Economy():
                 board[int(user2//3.5)][(user2-1)%3] = "X"
 
                 if check_win(board):
-                    await ctx.send(f"{enemy.display_name} wins")
+                    await ctx.send(self.bot.t(ctx, "ttt-win").format(enemy.display_name))
                     break
 
             await msg.edit(content=print_board(board))
@@ -462,11 +469,11 @@ class Economy():
                 board[int(user1//3.5)][(user1-1)%3] = "O"
 
                 if check_win(board):
-                    await ctx.send("**You win**")
+                    await ctx.send(self.bot.t(ctx, "ttt-win").format(ctx.author.display_name))
                     break
 
                 if board_full(board):
-                    await ctx.send("**Nobody wins**")
+                    await ctx.send(self.bot.t(ctx, "ttt-tie"))
                     break
 
                 user2 = comp_move(board)
@@ -474,7 +481,7 @@ class Economy():
                 board[int(user2//3.5)][(user2-1)%3] = "X"
 
                 if check_win(board):
-                    await ctx.send("**Necrobot wins**")
+                    await ctx.send(self.bot.t(ctx, "ttt-win").format(ctx.guild.me.display_name))
                     break
 
             await msg.edit(content=print_board(board))
@@ -487,16 +494,16 @@ class Economy():
         ]
                 
         if enemy == ctx.author:
-            await ctx.send(":negative_squared_cross_mark: | You cannot play against yourself, pick a player or fight Necrobot.")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'ttt-self')}")
             return
 
         if enemy == self.bot.user:
-            msg = await ctx.send(":white_check_mark: | NecroBot has accepted your challenge, be prepared to face him")
+            msg = await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'ttt-bot-accept')}")
             await asyncio.sleep(2)
-            await ctx.send("AI picks: ")
+            await ctx.send(self.bot.t(ctx, 'ttt-bot-picks'))
             await against_ai()
         else:
-            msg = await ctx.send(f":white_check_mark: | You have challenged **{enemy.display_name}**. {enemy.mention}, would you like to play? React with :white_check_mark: to play or with :negative_squared_cross_mark: to reject their challenge.")
+            msg = await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'ttt-player-accepted')}".format(enemy.display_name, enemy.mention))
             await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
             await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
@@ -512,11 +519,11 @@ class Economy():
                 return self.bot.dispatch("command_error", ctx, e)
 
             if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-                await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'ttt-no-play')}")
                 await msg.delete()
             elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
                 await msg.clear_reactions()
-                current_msg = await ctx.send("Awaiting response from player: ")
+                current_msg = await ctx.send(self.bot.t(ctx, 'ttt-player-waiting'))
                 await two_players()
 
 def setup(bot):
