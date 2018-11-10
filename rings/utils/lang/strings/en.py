@@ -67,7 +67,57 @@ strings = {
 
     #meta.py
     "mu-embed-message": "Oh. That's a little bare. Here, let me embed that for you.",
-    "mu-embed-info": "Some information on the thread that was linked \n -Board: **{}** \n -{}"
+    "mu-embed-info": "Some information on the thread that was linked \n -Board: **{}** \n -{}",
 
     #misc.py
+    "hg-title": "Hunger Games Simulator",
+    "hg-next": "Press :arrow_forward: to proceed",
+    "hg-dead": "Dead Tributes",
+    "hg-winner-title": "Hunger Game Winner",
+    "hg-winner-message": ":tada:{} is the Winner! :tada:",
+    "none": "None",
+    "most": "Most",
+    "ow-region": "in region",
+    "ow-general": "General Stats",
+    "ow-hero": "Hero Stats",
+    "cat-overload": "API overloading, have a cached picture instead.",
+    "cat-empty": "API overloading and cache empty, looks like you'll have to wait for now.",
+
+    #modding.py
+    "no-mod": "No mod with that name found",
+    "no-game": "No game with that name found",
+    "also-like": "You may also like",
+
+    #moderation
+    "nick-reset": "User **{}**'s nickname reset",
+    "nick-changed": "User **{}** renamed to **{}**",
+    "nick-no-perms": "You do not have the required NecroBot permissions to rename this user.",
+    "mute-no-role": "Please set up the mute role with `n!mute role [rolename]` first.",
+    "mute-muted": "User **{}** has been muted",
+    "mute-already-muted": "User **{}** is already muted",
+    "mute-auto-unmute": "User **{}** has been automatically unmuted",
+    "mute-role-set": "Okay, the mute role for your server will be {}",
+    "mute-role-reset": "Reset mute role",
+    "unmute-unmuted": "User **{}** has been unmuted",
+    "unmute-already-unmuted": "User **{}** is not muted",
+    "warn-add": "Warning: **\"{}\"** added to warning list of user {}",
+    "warn-send": "You have been warned on {}, the warning is: \n {}",
+    "warn-delete-bad-position": "Not a valid warning position",
+    "warn-delete": "Warning: **\"{}\"** removed from warning list of user {}",
+    "purge": "**{}** messages purged.",
+    "disabled-list": "**Cogs and Commands disabled on the server**:",
+    "disabled-not-found": "No such command/cog.",
+    "disabled-already-disabled": "This command is already disabled.",
+    "disabled-command-disabled": "Command **{}** is now disabled",
+    "disabled-cog-disabled": "All commands in cog **{}** are now disabled",
+    "enabled-already-enabled": "This command is already enabled.",
+    "enabled-command-enabled": "Command **{}** is now enabled",
+    "enabled-cog-enabled": "All commands in cog **{}** are now enabled",
+    "no-starboard": "Please set a starboard first",
+    "message-not-found": "Message not found, make sure you are in the channel with the message.",
+    "react-message": "React to the message you wish to star with :white_check_mark:",
+
+    #profile.py
+    
+
 }

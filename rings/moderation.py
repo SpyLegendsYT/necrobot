@@ -15,7 +15,7 @@ class Moderation():
         if ctx.guild:
             return True
 
-        raise commands.CheckFailure("This command cannot be used in private messages.")
+        raise commands.CheckFailure(ctx.bot.t(ctx, 'error-nopriv'))
 
     @commands.command()
     @has_perms(1)
@@ -31,14 +31,14 @@ class Moderation():
         `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
         if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > self.bot.user_data[user.id]["perms"][ctx.guild.id]:
             if not nickname:
-                msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
+                msg = f":white_check_mark: | {self.bot.t(ctx, 'nick-reset').format(user.display_name)}"
             else:
-                msg = f":white_check_mark: | User **{user.display_name}** renamed to **{nickname}**"
+                msg = f":white_check_mark: | {self.bot.t(ctx, 'nick-changed').format(user.display_name, nickname)}"
 
             await user.edit(nick=nickname)
             await ctx.send(msg)
         else:
-            await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'nick-no-perms')}")
 
     @commands.group(invoke_without_command = True)
     @has_perms(2)
@@ -57,22 +57,22 @@ class Moderation():
         `{pre}mute @NecroBot 2m` - mutes NecroBot for 2 minutes
         `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes"""
         if self.bot.server_data[ctx.guild.id]["mute"] == "":
-            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'mute-no-role')}")
             return
 
         role = discord.utils.get(ctx.guild.roles, id=self.bot.server_data[ctx.guild.id]["mute"])
         if role not in user.roles:
             await user.add_roles(role)
-            await ctx.send(f":white_check_mark: | User **{user.display_name}** has been muted")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'mute-muted')}")
         else:
-            await ctx.send(f":negative_squared_cross_mark: | User **{user.display_name}** is already muted", delete_after=5)
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'mute-already-muted')}", delete_after=5)
             return
 
         if time:
             await asyncio.sleep(time)
             if role in user.roles:
                 await user.remove_roles(role)
-                await ctx.send(f":white_check_mark: | User **{user.display_name}** has been automatically unmuted")
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'mute-auto-unmute')}")
 
     @mute.command(name="role")
     @has_perms(4)
@@ -92,10 +92,10 @@ class Moderation():
         if not role:
             self.bot.server_data[ctx.guild.id]["mute"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", ctx.guild.id)
-            await ctx.send(":white_check_mark: | Reset mute role")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'mute-role-reset')}")
             return
 
-        await ctx.send(f":white_check_mark: | Okay, the mute role for your server will be {role.mention}")
+        await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'mute-role-set').format(role.mention)}")
         self.bot.server_data[ctx.guild.id]["mute"] = role.id
         await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = $1 WHERE guild_id = $2;", role.id, ctx.guild.id)
 
@@ -112,15 +112,15 @@ class Moderation():
         __Example__
         `{pre}unmute @NecroBot` - unmutes NecroBot if he is muted"""
         if self.bot.server_data[ctx.guild.id]["mute"] == "":
-            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'mute-no-role')}")
             return
             
         role = discord.utils.get(ctx.guild.roles, id=self.bot.server_data[ctx.guild.id]["mute"])
         if role in user.roles:
             await user.remove_roles(role)
-            await ctx.send(f":white_check_mark: | User **{user.display_name}** has been unmuted")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'unmute-unmuted')}")
         else:
-            await ctx.send(f":negative_squared_cross_mark: | User **{user.display_name}** is not muted", delete_after=5)
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'unmute-already-unmuted')}", delete_after=5)
 
     @commands.group(invoke_without_command = True)
     @has_perms(1)
@@ -132,11 +132,11 @@ class Moderation():
         __Example__
         `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
         Necrobot's warning list and pm the warning message to him"""
-        await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** added to warning list of user {user.display_name}")
+        await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'warn-add').format(message, user.display_name)}")
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
         await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.created_at))
         try:
-            await user.send(f"You have been warned on {ctx.guild.name}, the warning is: \n {message}")
+            await user.send(self.bot.t(ctx, 'warn-send').format(ctx.guild.name, message))
         except discord.Forbidden:
             pass
 
@@ -153,10 +153,10 @@ class Moderation():
         try:
             message = self.bot.user_data[user.id]["warnings"][ctx.guild.id].pop(position - 1)
         except IndexError:
-            await ctx.send(":negative_squared_cross_mark: | Not a valid warning position")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'warn-delete-bad-position')}")
             return
             
-        await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** removed from warning list of user {user.display_name}")
+        await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'warn-delete').format(message, user.display_name)}")
         await self.bot.query_executer("DELETE FROM necrobot.Warnings WHERE user_id = $1 AND guild_id = $2 AND warning_content = $3;", user.id, ctx.guild.id, message)
 
     @commands.command()
@@ -189,7 +189,7 @@ class Moderation():
         else:
             deleted = await ctx.channel.purge(limit=number)
 
-        await ctx.send(f":wastebasket: | **{len(deleted)-1}** messages purged.", delete_after=5)
+        await ctx.send(f":wastebasket: | {self.bot.t(ctx, 'purge').format(len(deleted)-1)}", delete_after=5)
         self.bot.server_data[ctx.guild.id]["automod"] = channel
 
     @commands.command()
@@ -219,7 +219,7 @@ class Moderation():
         `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
         `{pre}disable Animals` - disables every command in the the Animals cog"""
         if not command:
-            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.guild.id]['disabled']}")
+            await ctx.send(f"{self.bot.t(ctx, 'disabled-list')} {self.bot.server_data[ctx.guild.id]['disabled']}")
             return
 
         disabled = self.bot.server_data[ctx.guild.id]["disabled"]
@@ -227,22 +227,22 @@ class Moderation():
             command_obj = self.bot.get_command(command)
 
             if not command_obj:
-                await ctx.send(":negative_squared_cross_mark: | No such command/cog.", delete_after=5)
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'disabled-not-found')}", delete_after=5)
                 return
 
             if command in disabled:
-                await ctx.send(":negative_squared_cross_mark: | This command is already disabled.")
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'disabled-already-disabled')}")
             else:
                 disabled.append(command)
                 await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, command)
-                await ctx.send(f":white_check_mark: | Command **{command}** is now disabled")
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'disabled-command-disabled').format(command)}")
 
         else:
             all_commands = [x.name for x in self.bot.commands if x.cog_name == command and x.name not in disabled]
             for _command in all_commands:
                 disabled.append(_command)
                 await self.bot.query_executer("INSERT INTO necrobot.Disabled VALUES ($1, $2)", ctx.guild.id, _command)
-            await ctx.send(f":white_check_mark: | All commands in cog **{command}** are now disabled") 
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'disabled-cog-disabled').format(command)}") 
 
     @commands.command()
     @has_perms(4)
@@ -259,7 +259,7 @@ class Moderation():
         `{pre}enabled cat` - enable the cat command, after that everybody can use it again freely.
         `{pre}enable Animals` - enables every command in the the Animals cog"""
         if not command:
-            await ctx.send(f"**Cogs and Commands disabled on the server**: {self.bot.server_data[ctx.guild.id]['disabled']}")
+            await ctx.send(f"{self.bot.t(ctx, 'disabled-list')} {self.bot.server_data[ctx.guild.id]['disabled']}")
             return
 
         disabled = self.bot.server_data[ctx.guild.id]["disabled"]
@@ -267,21 +267,21 @@ class Moderation():
             command_obj = self.bot.get_command(command)
 
             if not command_obj:
-                await ctx.send(":negative_squared_cross_mark: | No such command/cog.", delete_after=5)
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'disabled-not-found')}", delete_after=5)
                 return
 
             if command in disabled:
                 disabled.remove(command)
                 await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = $2", ctx.guild.id, command)
-                await ctx.send(f":white_check_mark: | Command **{command}** is now enabled")
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'enabled-command-enabled')}")
             else:
-                await ctx.send(":negative_squared_cross_mark: | This command is already enabled.")
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'enabled-already-enabled')}")
         else:
             all_commands = [x.name for x in self.bot.commands if x.cog_name == command and x.name in disabled]
             for _command in all_commands:
                 disabled.remove(_command)
                 await self.bot.query_executer("DELETE FROM necrobot.Disabled WHERE guild_d = $1 AND command = $2", ctx.guild.id, _command)
-            await ctx.send(f":white_check_mark: | All commands in cog **{command}** are now enabled")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'enabled-already-enabled')}")
 
 
     @commands.command()
@@ -296,14 +296,14 @@ class Moderation():
         `{pre}star 427227137511129098` - gets the message by id and stars it.
         `{pre}star` - initiates the interactive message picking sessions that allows you to react to a message to star it"""
         if self.bot.server_data[ctx.guild.id]["starboard-channel"] == "":
-            await ctx.send(":negative_squared_cross_mark: | Please set a starboard first")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'no-starboard')}")
             return
 
         if message_id:
             try:
                 message = await ctx.channel.get_message(message_id)
             except commands.CommandInvokeError:
-                await ctx.send(":negative_squared_cross_mark: | Message not found, make sure you are in the channel with the message.")
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'message-not-found')}")
                 return
 
             await self.bot._star_message(message)
@@ -311,7 +311,7 @@ class Moderation():
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}"
 
-            msg = await ctx.send("React to the message you wish to star with :white_check_mark:")
+            msg = await ctx.send(self.bot.t(ctx, 'react-message'))
             try:
                 reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
             except asyncio.TimeoutError as e:
