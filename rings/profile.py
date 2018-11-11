@@ -236,7 +236,7 @@ class Profile():
         `{pre}badges place` - open the menu to reset the badge on a specific grid location
         `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location
         `{pre}badges buy` - sends the link to view the rest of the badges"""
-        await ctx.send(f"You have the following badges: {' - '.join(self.bot.user_data[ctx.author.id]['badges'])}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>")
+        await ctx.send(self.bot.t(ctx, "badge-list").format(' - '.join(self.bot.user_data[ctx.author.id]['badges'])))
 
     @badges.command(name = "place")
     async def badges_place(self, ctx, badge : str = "none", spot : int = None):
@@ -253,14 +253,14 @@ class Profile():
         """
         badge = badge.lower() if badge.lower() != "none" else ""
         if badge not in self.bot.user_data[ctx.author.id]["badges"] and badge != "":
-            await ctx.send(":negative_squared_cross_mark: | You do not posses this badge")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'badge-no-possess')}")
             return
 
         def check(message):
             if ctx.author != message.author:
                 return False
 
-            if message.content == "exit":
+            if message.content == self.bot.t(ctx, 'badge-exit'):
                 return True
 
             if message.content.isdigit():
@@ -269,7 +269,7 @@ class Profile():
             return False
 
         if spot is None:
-            msg = await ctx.send("Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge. Or type `exit` to exit the menu.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```")
+            msg = await ctx.send(self.bot.t(ctx, 'badge-spot-picker'))
             
             try:
                 reply = await self.bot.wait_for("message", check=check, timeout=300)
@@ -277,22 +277,22 @@ class Profile():
                 await msg.delete()
                 return
 
-            if reply.content == "exit":
+            if reply.content == self.bot.t(ctx, 'badge-exit'):
                 await msg.delete()
                 return
                 
             spot = int(reply.content)
         elif 1 < spot < 8:
-            await ctx.send(":negative_squared_cross_mark: | Please select a spot between 1 and 8")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'badge-wrong-spot')}")
             return
 
         self.bot.user_data[ctx.author.id]["places"][spot] = badge 
         await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, ctx.author.id, spot)
 
         if badge == "":
-            await ctx.send(f":white_check_mark: | The badge for position **{spot}** has been reset")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'badge-spot-reset')}")
         else:
-            await ctx.send(f":white_check_mark: | Placed badge **{badge}** on position **{spot}**")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'badge-spot-set')}")
 
     @badges.command(name = "buy")
     async def badges_buy(self, ctx, badge : str = ""):
@@ -306,18 +306,18 @@ class Profile():
         `{pre}badges buy` - sends the link to view the rest of the badges"""
         badge = badge.lower()
         if badge == "":
-            await ctx.send("Click the link to see a list of badges: <https://github.com/ClementJ18/necrobot#badges>\nWant to suggest a new badge? Use n!report and include the link of an image with a 1:1 ratio.")
+            await ctx.send(self.bot.t(ctx, 'badge-link'))
             return
 
         if badge not in self.badges_d:
-            await ctx.send(":negative_squared_cross_mark: | There is no such badge")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'badge-no-exist')}")
             return
 
         if badge in self.bot.user_data[ctx.author.id]["badges"]:
-            await ctx.send(":negative_squared_cross_mark: | You already posses that badge")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'badge-already-have')}")
             return
 
-        msg = await ctx.send("Are you sure you want to buy the **{}** badge for **{:,}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.".format(badge, self.badges_d[badge]))
+        msg = await ctx.send(self.bot.t(ctx, 'badge-buy-confirmation').format(badge, self.badges_d[badge]))
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
@@ -331,17 +331,17 @@ class Profile():
             return
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.send(f":white_check_mark: | **{ctx.author.display_name}** cancelled the transaction.")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'pay-cancelled')}")
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[ctx.author.id]["money"] < self.badges_d[badge]:
-                await ctx.send(":negative_squared_cross_mark: | You don't have enough money")
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'pay-not-enough')}")
                 await msg.delete()
                 return
 
             self.bot.user_data[ctx.author.id]["money"] -= self.badges_d[badge]
             self.bot.user_data[ctx.author.id]["badges"].append(badge)
             await self.bot.query_executer("UPDATE necrobot.Users SET necroins = $1, badges = $3 WHERE user_id = $2",self.bot.user_data[ctx.author.id]["money"], ctx.author.id, ",".join(self.bot.user_data[ctx.author.id]["badges"]))
-            await ctx.send(":white_check_mark: | Badge purchased, you can place it using `n!badges place [badge]`")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'badge-purchased')}")
          
         await msg.delete()
 

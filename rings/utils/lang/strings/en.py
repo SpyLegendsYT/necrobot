@@ -128,7 +128,7 @@ strings = {
     "seconds": "seconds",
     "pay-confirmation": "Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.",
     "pay-cancelled": "**{}** cancelled the transaction.",
-    "pay-not-enough": "You no longer have enough money",
+    "pay-not-enough": "You don't have enough money",
     "pay-approved": "**{}** approved the transaction.",
     "pay-dm": "**{}** has transferred **{}** necroins to your profile"
     "date-created": "Date Created",
@@ -141,8 +141,17 @@ strings = {
     "title-reset": "Your title has been reset",
     "title-too-long": "You have gone over the 32 character limit, your title wasn't set. ({}/32)",
     "title-set": "Great, your title is now **{}**",
-
-
-    
+    "badge-list": "You have the following badges: {}\nSee more here: <https://github.com/ClementJ18/necrobot#badges>",
+    "badge-no-possess": "You do not posses this badge",
+    "badge-exit": "exit",
+    "badge-spot-picker": "Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge. Or type `exit` to exit the menu.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```",
+    "badge-wrong-spot": "Please select a spot between 1 and 8",
+    "badge-spot-reset": "The badge for position **{spot}** has been reset",
+    "badge-spot-set": "Placed badge **{badge}** on position **{spot}**",
+    "badge-link": "Click the link to see a list of badges: <https://github.com/ClementJ18/necrobot#badges>\nWant to suggest a new badge? Use n!report and include the link of an image with a 1:1 ratio.",
+    "badge-no-exist": "There is no such badge",
+    "badge-already-have": "You already possess that badge",
+    "badge-buy-confirmation": "Are you sure you want to buy the **{}** badge for **{:,}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.",
+    "badge-purchased": "Badge purchased, you can place it using `n!badges place [badge]`"
 
 }
