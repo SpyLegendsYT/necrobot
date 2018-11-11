@@ -118,6 +118,31 @@ strings = {
     "react-message": "React to the message you wish to star with :white_check_mark:",
 
     #profile.py
+    "balance-author": "**{}** you have **{:,}** necroins",
+    "balance-user": "**{}** has **{:,}** necroins",
+    "daily-give": "{}, **{}** has given you their daily of **{}** necroins",
+    "daily-claim": "You have received your daily **200** necroins",
+    "daily-already-claimed": "You have already claimed your daily today, you can claim your daily again in **{}**",
+    "hours": "hours, ",
+    "minutes-and": "minutes and ",
+    "seconds": "seconds",
+    "pay-confirmation": "Are you sure you want to pay **{}** to user **{}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.",
+    "pay-cancelled": "**{}** cancelled the transaction.",
+    "pay-not-enough": "You no longer have enough money",
+    "pay-approved": "**{}** approved the transaction.",
+    "pay-dm": "**{}** has transferred **{}** necroins to your profile"
+    "date-created": "Date Created",
+    "date-joined": "Date Joined",
+    "permissions-level": "Permission Level",
+    "user-name": "User Name",
+    "top-role": "Top Role",
+    "warning-list": "Warning List",
+    "title": "**Title**",
+    "title-reset": "Your title has been reset",
+    "title-too-long": "You have gone over the 32 character limit, your title wasn't set. ({}/32)",
+    "title-set": "Great, your title is now **{}**",
+
+
     
 
 }

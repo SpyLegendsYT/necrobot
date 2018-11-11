@@ -38,9 +38,9 @@ class Profile():
         `{pre}balance @NecroBot` - prints NecroBot's balance
         `{pre}balance` - prints your own balance"""
         if user:
-            await ctx.send(f":atm: | **{user.name}** has **{'{:,}'.format(self.bot.user_data[user.id]['money'])}** :euro:")
+            await ctx.send(f":atm: | {self.bot.t(ctx, 'balance-user').format(user.name, self.bot.user_data[user.id]['money'])}")
         else:
-            await ctx.send(f":atm: | **{ctx.author.name}** you have **{'{:,}'.format(self.bot.user_data[ctx.author.id]['money'])}** :euro:")
+            await ctx.send(f":atm: | {self.bot.t(ctx, 'balance-author').format(ctx.author.name, self.bot.user_data[ctx.author.name]['money'])}")
 
     @commands.command(name="daily")
     async def claim(self, ctx, *, member : discord.Member = None):
@@ -59,10 +59,10 @@ class Profile():
             if member != ctx.author and member:
                 money = random.choice(range(235, 450))
                 self.bot.user_data[member.id]["money"] += money
-                await ctx.send(f":m: | {member.mention}, **{ctx.author.display_name}** has given you their daily of **{money}** :euro:")
+                await ctx.send(f":m: | {self.bot.t(ctx, 'daily-give').format(member.mention, ctx.author.display_name, money)}")
                 await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[member.id]["money"], member.id)
             else:
-                await ctx.send(":m: | You have received your daily **200** :euro:")
+                await ctx.send(f":m: | {self.bot.t(ctx, 'daily-claim')}")
                 self.bot.user_data[ctx.author.id]["money"] += 200
                 await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
             
@@ -70,8 +70,8 @@ class Profile():
             await self.bot.query_executer("UPDATE necrobot.Users SET daily=$1 WHERE user_id = $2;", day, ctx.author.id)
         else:
             timer = str(d.timedelta(seconds=midnight())).partition(".")[0].replace(":", "{}")
-            timer = timer.format("hours, ", "minutes and ") + "seconds"
-            await ctx.send(f":negative_squared_cross_mark: | You have already claimed your daily today, you can claim your daily again in **{timer}**")
+            timer = timer.format({self.bot.t(ctx, 'hours')}, {self.bot.t(ctx, 'minutes-and')}) + {self.bot.t(ctx, 'seconds')}
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'daily-already-claimed').format(timer)}")
 
     @commands.command()
     async def pay(self, ctx, payee : discord.Member, amount : MoneyConverter):
@@ -84,7 +84,7 @@ class Profile():
         amount = abs(amount)
         payer = ctx.author
 
-        msg = await ctx.send(f"Are you sure you want to pay **{amount}** to user **{payee.display_name}**? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.")
+        msg = await ctx.send(self.bot.t(ctx, 'pay-confirmation').format(amount, payeed.display_name))
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
 
@@ -98,14 +98,14 @@ class Profile():
             return
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await ctx.send(f":white_check_mark: | **{payer.display_name}** cancelled the transaction.")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'pay-cancelled').format(payer.display_name)}")
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             if self.bot.user_data[payer.id]["money"] < amount:
-                await ctx.send(":negative_squared_cross_mark: | You no longer have enough money")
+                await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'pay-not-enough')}")
                 await msg.delete()
                 return
 
-            await ctx.send(f":white_check_mark: | **{payer.display_name}** approved the transaction.")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'pay-approved').format(payer.display_name)}")
             
             self.bot.user_data[payer.id]["money"] -= amount
             await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[payer.id]["money"], payer.id)
@@ -113,12 +113,11 @@ class Profile():
             await self.bot.query_executer(UPDATE_NECROINS,self.bot.user_data[payee.id]["money"], payee.id)
 
             try:
-                await payee.send(f":euro: | **{payer.display_name}** has transferred **{amount}$** to your profile")
+                await payee.send(f":euro: | {self.bot.t(ctx, 'pay-approved').format(amount, payer.display_name)}")
             except (discord.Forbidden, discord.HTTPException):
                 pass
             
         await msg.delete()
-
 
     @commands.command()
     @commands.guild_only()
@@ -133,17 +132,17 @@ class Profile():
         if not user:
             user = ctx.author
 
-        embed = discord.Embed(title=f"__{user.display_name}__", colour=discord.Colour(0x277b0), description=f"**Title**: {self.bot.user_data[user.id]['title']}")
+        embed = discord.Embed(title=f"__{user.display_name}__", colour=discord.Colour(0x277b0), description=f"{self.bot.t(ctx, 'title')}: {self.bot.user_data[user.id]['title']}")
         embed.set_thumbnail(url=user.avatar_url.replace("webp","jpg"))
-        embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
+        embed.set_footer(text=self.bot.t(ctx, 'generated-necrobot'), icon_url=self.bot.user.avatar_url_as(format="png", size=128))
 
-        embed.add_field(name="Date Created", value=user.created_at.strftime("%d - %B - %Y %H:%M"))
-        embed.add_field(name="Date Joined", value=user.joined_at.strftime("%d - %B - %Y %H:%M"), inline=True)
-        embed.add_field(name="Permission Level", value=self.bot.user_data[user.id]["perms"][ctx.guild.id])
+        embed.add_field(name=self.bot.t(ctx, 'date-created'), value=user.created_at.strftime("%d - %B - %Y %H:%M"))
+        embed.add_field(name=self.bot.t(ctx, 'date-joined'), value=user.joined_at.strftime("%d - %B - %Y %H:%M"), inline=True)
+        embed.add_field(name=self.bot.t(ctx, 'permissions-level'), value=self.bot.user_data[user.id]["perms"][ctx.guild.id])
 
-        embed.add_field(name="User Name", value=user.name + "#" + user.discriminator)
-        embed.add_field(name="Top Role", value=user.top_role.name, inline=True)
-        embed.add_field(name="Warning List", value=self.bot.user_data[user.id]["warnings"][ctx.guild.id])
+        embed.add_field(name=self.bot.t(ctx, 'user-name'), value=str(user))
+        embed.add_field(name=self.bot.t(ctx, 'top-role'), value=user.top_role.name, inline=True)
+        embed.add_field(name=self.bot.t(ctx, 'warning-list'), value=self.bot.user_data[user.id]["warnings"][ctx.guild.id])
 
         await ctx.send(embed=embed)
 
@@ -214,11 +213,11 @@ class Profile():
         `{pre}settitle Cool Dood` - set your title to 'Cool Dood'
         `{pre}settitle` - resets your title"""
         if text == "":
-            await ctx.send(":white_check_mark: | Your title has been reset")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'title-reset')}")
         elif len(text) <= 32:
-            await ctx.send(f":white_check_mark: | Great, your title is now **{text}**")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'title-set').format(text)}")
         else:
-            await ctx.send(f":negative_squared_cross_mark: | You have gone over the 32 character limit, your title wasn't set. ({len(text)}/32)")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'title-too-long'.format(len(text)))}")
             return
 
         self.bot.user_data[ctx.author.id]["title"] = text
