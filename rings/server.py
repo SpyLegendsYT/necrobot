@@ -16,7 +16,7 @@ class Server():
         if ctx.guild:
             return True
 
-        raise commands.CheckFailure("This command cannot be used in private messages.")
+        raise commands.CheckFailure(self.bot.t(ctx, "error-nopriv"))
 
     def _all_lists(self, ctx, key):
         l = []
@@ -47,7 +47,7 @@ class Server():
         `{pre}permissions @NecroBot 5` - set the NecroBot permission level to 5
         `{pre}perms @NecroBot 5` - set the NecroBot permission level to 5"""
         if level < 0 or level > 7:
-            await ctx.send(":negative_squared_cross_mark: | You cannot promote the user any higher/lower")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'perms-max-min')}")
 
         if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > level and self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > self.bot.user_data[user.id]["perms"][ctx.guild.id]:
             c = self.bot.user_data[user.id]["perms"][ctx.guild.id]
@@ -55,16 +55,19 @@ class Server():
             await self.bot.query_executer(UPDATE_PERMS, level, ctx.guild.id, user.id)
 
             if c < level:
-                await ctx.send(f":white_check_mark: | **{user.display_name}** has been promoted to **{self.bot.perms_name[level]}** ({level})")
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'perms-promoted').format(user.display_name, self.bot.perms_name[level], level)}")
+            elif c > level:
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'perms-demoted').format(user.display_name, self.bot.perms_name[level], level)}")
             else:
-                await ctx.send(f":white_check_mark: | **{user.display_name}** has been demoted to **{self.bot.perms_name[level]}** ({level})")
-            
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'perms-no-change').format(user.display_name)}")
+                return
+
             if level == 6:
                 for guild in self.bot.user_data[user.id]["perms"]:
                     self.bot.user_data[user.id]["perms"][guild] = 6
                     await self.bot.query_executer(UPDATE_PERMS, 6, guild, user.id)
         else:
-            await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permission to grant this permission level")
+            await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'perms-no-necrobot-perms')}")
 
     @commands.command()
     @has_perms(4)
@@ -112,17 +115,17 @@ class Server():
         """
 
         if not mentions:
-            await ctx.send(f"Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation: ``` {self._all_lists(ctx, 'ignore-automod')} ```")
+            await ctx.send(f"{self.bot.t(ctx, 'automod-list')}: ``` {self._all_lists(ctx, 'ignore-automod')} ```")
             return
 
         for x in mentions:
             if x.id not in self.bot.server_data[ctx.guild.id]["ignore-automod"]:
                 self.bot.server_data[ctx.guild.id]["ignore-automod"].append(x.id)
-                await ctx.send(":white_check_mark: | **"+ x.name +"** will be ignored by the bot's automoderation.")
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'automod-add').format(x.name)}")
                 await self.bot.query_executer("INSERT INTO necrobot.IgnoreAutomod VALUES ($1, $2);", ctx.guild.id, x.id)
             else:
                 self.bot.server_data[ctx.guild.id]["ignore-automod"].remove(x.id)
-                await ctx.send(":white_check_mark: | **"+ x.name +"** will no longer be ignored by the bot's automoderation.")
+                await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'automod-remove').format(x.name)}")
                 await self.bot.query_executer("DELETE FROM necrobot.IgnoreAutomod WHERE guild_id = $1 AND id = $2;", ctx.guild.id, x.id)
 
     @automod.command(name="channel")
@@ -139,11 +142,11 @@ class Server():
         if channel == "":
             self.bot.server_data[ctx.guild.id]["automod"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", ctx.guild.id)
-            await ctx.send(":white_check_mark: | Auto-moderation **disabled**")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'automod-disable')}")
         else:
             self.bot.server_data[ctx.guild.id]["automod"] = channel.id
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = $2 WHERE guild_id = $1;", ctx.guild.id, channel.id)
-            await ctx.send(f":white_check_mark: | Okay, all automoderation messages will be posted in {channel.mention} from now on.")
+            await ctx.send(f":white_check_mark: | {self.bot.t(ctx, 'automod-channel').format(channel.mention)}")
 
     @commands.command()
     @has_perms(4)

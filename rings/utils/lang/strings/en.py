@@ -130,7 +130,7 @@ strings = {
     "pay-cancelled": "**{}** cancelled the transaction.",
     "pay-not-enough": "You don't have enough money",
     "pay-approved": "**{}** approved the transaction.",
-    "pay-dm": "**{}** has transferred **{}** necroins to your profile"
+    "pay-dm": "**{}** has transferred **{}** necroins to your profile",
     "date-created": "Date Created",
     "date-joined": "Date Joined",
     "permissions-level": "Permission Level",
@@ -146,12 +146,24 @@ strings = {
     "badge-exit": "exit",
     "badge-spot-picker": "Where would you like to place the badge on your badge board? Enter the grid number of where you would like to place the badge. Or type `exit` to exit the menu.\n```py\n[1] [2] [3] [4]\n[5] [6] [7] [8]\n```",
     "badge-wrong-spot": "Please select a spot between 1 and 8",
-    "badge-spot-reset": "The badge for position **{spot}** has been reset",
-    "badge-spot-set": "Placed badge **{badge}** on position **{spot}**",
+    "badge-spot-reset": "The badge for position **{}** has been reset",
+    "badge-spot-set": "Placed badge **{}** on position **{**",
     "badge-link": "Click the link to see a list of badges: <https://github.com/ClementJ18/necrobot#badges>\nWant to suggest a new badge? Use n!report and include the link of an image with a 1:1 ratio.",
     "badge-no-exist": "There is no such badge",
     "badge-already-have": "You already possess that badge",
     "badge-buy-confirmation": "Are you sure you want to buy the **{}** badge for **{:,}** Necroins? Press :white_check_mark: to confirm transaction. Press :negative_squared_cross_mark: to cancel the transaction.",
-    "badge-purchased": "Badge purchased, you can place it using `n!badges place [badge]`"
+    "badge-purchased": "Badge purchased, you can place it using `n!badges place [badge]`",
+
+    #server.py
+    "perms-max-min": "You cannot promote the user any higher/lower",
+    "perms-promoted": "**{}** has been promoted to **{}** ({})",
+    "perms-demoted": "**{}** has been demoted to **{}** ({})",
+    "perms-no-change": "Permissions level for user **{}** unchanged.",
+    "perms-no-necrobot-perms": "You do not have the required NecroBot permission to grant this permission level",
+    "automod-list": "Channels(**C**), Users(**U**) and Roles (**R**) ignored by auto moderation",
+    "automod-add": "**{}** will be ignored by the bot's automoderation.",
+    "automod-remove": "**{}** will no longer be ignored by the bot's automoderation.",
+    "automod-channel": "Okay, all automoderation messages will be posted in {} from now on.",
+    "automod-disabled": "Auto-moderation **disabled**",
 
 }
