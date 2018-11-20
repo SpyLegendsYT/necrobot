@@ -250,4 +250,24 @@ strings = {
     "about-message": "I'm currently in {} guilds and I can see {} members. I was created using Python and the d.py library. ",
     "invite-message": "Invite bot to your server",
     "get-help": "Get help with the bot",
+
+    #tag.py
+    "tag-not-exist": "Tag **{}** doesn't exist in server.",
+    "tag-not-author": "You don't have permissions to modify this tag",
+    "tag-arg-error": "Expecting the following argument: {}",
+    "tag-reserved": "Tag not created, tag name is a reserved keyword",
+    "tag-already-exist": "A tag with this name already exists",
+    "tag-removed": "Tag {} and its aliases removed",
+    "tag-alias-not-exist": "Alias {} does not exist.",
+    "tag-alias-removed": "Alias `{}` removed",
+    "tag-edited": "Tag `{}` modified",
+    "tag-source": "Source code for {}",
+    "tag-list-title": "Tags on this server",
+    "owner": "Owner",
+    "uses": "Uses",
+    "created-on": "Created on",
+    "tag-alias-reserved": "Alias name is a reserved keyword",
+    "tag-alias-already-exists": "Alias already exists.",
+    "tag-alias-created": "Alias successfully created",
+
 }
