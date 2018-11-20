@@ -140,8 +140,12 @@ class Economy():
             return
 
         self.IS_GAME.append(ctx.channel.id)
-        await self.blackjack_game(ctx, bet)
-        self.IS_GAME.remove(ctx.channel.id)
+        try:
+            await self.blackjack_game(ctx, bet)
+        except Exception:
+            pass
+        finally:
+            self.IS_GAME.remove(ctx.channel.id)
 
 
     async def blackjack_game(self, ctx, bet):
@@ -251,7 +255,9 @@ class Economy():
                     if bank.hand.busted:
                         break
                 else:
-                    break   
+                    break
+
+            await asyncio.sleep(1)   
 
         await game_end()
         await status.delete()

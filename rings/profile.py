@@ -282,7 +282,7 @@ class Profile():
                 return
                 
             spot = int(reply.content)
-        elif 1 < spot < 8:
+        elif 1 > spot > 8:
             await ctx.send(f":negative_squared_cross_mark: | {self.bot.t(ctx, 'badge-wrong-spot')}")
             return
 

@@ -99,6 +99,10 @@ class Admin():
         if badge not in badges:
             await ctx.send(":negative_squared_cross_mark: | Not a valid badge")
             return
+            
+        if subcommand not in ("add", "delete"):
+            await ctx.send(":negative_squared_cross_mark: | Not a valid subcommand")
+            return
 
         if subcommand == "add" and badge not in self.bot.user_data[user.id]["badges"]:
             self.bot.user_data[user.id]["badges"].append(badge)    
