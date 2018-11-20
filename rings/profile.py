@@ -283,7 +283,7 @@ class Profile():
                 return
                 
             spot = int(reply.content)
-        elif 1 < spot < 8:
+        elif 1 > spot > 8:
             await ctx.send(":negative_squared_cross_mark: | Please select a spot between 1 and 8")
             return
 
