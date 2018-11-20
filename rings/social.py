@@ -76,7 +76,7 @@ class Social():
         await ctx.send(f"<:onering:351442796420399119> | **Fact #{lotr_list.index(choice) + 1}**: {choice}")
 
     @commands.command()
-    async def pokefusion(self, ctx, pokemon1 = None, pokemon2 = None):
+    async def pokefusion(self, ctx, pokemon1 = random.choice(dex), pokemon2 = random.choice(dex)):
         """Generates a rich embed containing a pokefusion from Gen 1, this can either be a two random pokemons, 
         one random pokemon and one chosen pokemon or two chosen pokemons.
         
@@ -86,13 +86,6 @@ class Social():
         `{pre}pokefusion` - random pokefusion
         `{pre}pokefusion raichu` - pokefusion of random pokemon and raichu
         `{pre}pokefusion raichu arceus` - pokefusion of raichu and arceus"""
-
-        if not pokemon1:
-            pokemon1 = random.choice(dex)
-
-        if not pokemon2:
-            pokemon2 = random.choice(dex)
-         
         try:
             dex_1 = dex.index(pokemon1.lower()) + 1
             dex_2 = dex.index(pokemon2.lower()) + 1
