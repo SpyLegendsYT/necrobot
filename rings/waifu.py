@@ -101,7 +101,7 @@ class Waifu():
         embed.add_field(name="Changes of heart", value=f"{self.bot.user_data[user.id]['waifu'][ctx.guild.id]['heart-changes']} the {title}")
         embed.add_field(name="Divorces", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["divorces"])
         gifts = self.bot.user_data[user.id]["waifu"][ctx.guild.id]["gifts"]
-        gift_str = "\n".join([f"{gift_list[x.lower()]['emote']}x{value}" for key, value in gifts.items if value > 0])
+        gift_str = "\n".join([f"{gift_list[x.lower()]['emote']}x{value}" for key, value in gifts.items() if value > 0])
         embed.add_field(name="Gifts", value=gift_str if gift_str != "" else "None", inline=False)
         waifus = "\n".join([self.bot.get_user(x).name for x in self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"]])
         embed.add_field(name=f"Waifus ({len(self.bot.user_data[user.id]['waifu'][ctx.guild.id]['waifus'])})", value=waifus if waifus != "" else "None", inline=False)
