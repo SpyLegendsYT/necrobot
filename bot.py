@@ -42,7 +42,8 @@ extensions = [
     "words",
     "misc",
     "tags",
-    "meta"
+    "meta",
+    "edain"
 ]
 
 
