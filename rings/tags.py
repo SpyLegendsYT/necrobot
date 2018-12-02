@@ -49,7 +49,7 @@ class Tags():
         except KeyError as e:
             await ctx.send(f"Expecting the following argument: {e.args[0]}")
         except Exception as e:
-            await ctx.send(str(e))
+            await ctx.send(str(f":warning: | {e}"))
 
     @tag.command(name="add")
     @commands.guild_only()
