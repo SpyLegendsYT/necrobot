@@ -309,6 +309,10 @@ class Profile():
         if badge == "":
             await ctx.send("Click the link to see a list of badges: <https://github.com/ClementJ18/necrobot#badges>\nWant to suggest a new badge? Use n!report and include the link of an image with a 1:1 ratio.")
             return
+            
+        if badge in self.special_badges:
+            await ctx.send(":negative_squared_cross_mark: | Special badges can only be granted by NecroBot admins")
+            return
 
         if badge not in self.badges_d:
             await ctx.send(":negative_squared_cross_mark: | There is no such badge")

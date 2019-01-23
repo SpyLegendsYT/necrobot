@@ -135,12 +135,6 @@ CREATE TABLE necrobot.Aliases(
     PRIMARY KEY(alias, original, guild_id)
 );
 
-CREATE TABLE necrobot.Feeds(
-    feed varchar(20),
-    webhook_url varchar(200)
-      
-)
-
 CREATE TABLE necrobot.Reminders(
     user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
     channel_id bigint,
@@ -148,4 +142,4 @@ CREATE TABLE necrobot.Reminders(
     timer varchar(200),
     start_date varchar(200),
     PRIMARY KEY(user_id, start_date)
-)
+);

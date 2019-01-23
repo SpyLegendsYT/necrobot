@@ -31,7 +31,9 @@ class Tags():
     @commands.group(invoke_without_command = True, aliases=["t","tags"])
     @commands.guild_only()
     async def tag(self, ctx, tag : Tag, *tag_args):
-        """The base of the tag system. Also used to summoned tags through the [tag] argument.
+        """The base of the tag system. Also used to summoned tags through the [tag] argument. Tags can also
+        be called by mentionning the bot, however tags that need arguments will not work with this. In addition,
+        multi word tags need to be wraped in quotation marks when being created.
         
         {usage}
         
@@ -109,7 +111,7 @@ class Tags():
 
     @tag.group(name="delete")
     @commands.guild_only()
-    async def tag_del(self, ctx, tag : Tag):
+    async def tag_del(self, ctx, *, tag : Tag):
         """Deletes the tag [tag] if the users calling the command is its owner or a Server Admin (4+)
         
         {usage}
@@ -129,7 +131,7 @@ class Tags():
 
     @tag_del.command(name="alias")
     @commands.guild_only()
-    async def tag_del_alias(self, ctx, alias : str):
+    async def tag_del_alias(self, ctx, *, alias : str):
         """Remove the alias to a tag. Only Server Admins and the tag owner can remove aliases and they can remove any aliases.
 
         {usage}
@@ -166,7 +168,7 @@ class Tags():
 
     @tag.command(name="raw")
     @commands.guild_only()
-    async def tag_raw(self, ctx, tag : Tag):
+    async def tag_raw(self, ctx, *, tag : Tag):
         """Returns the unformatted content of the tag [tag] so other users can see how it works.
         
         {usage}
@@ -193,7 +195,7 @@ class Tags():
 
     @tag.command(name="info")
     @commands.guild_only()
-    async def tag_info(self, ctx, tag : Tag):
+    async def tag_info(self, ctx, *, tag : Tag):
         """Returns information on the tag given.
         
         {usage}
@@ -210,7 +212,7 @@ class Tags():
 
     @tag.command(name="alias")
     @commands.guild_only()
-    async def tag_alias(self, ctx, tag : Tag, new_name : str):
+    async def tag_alias(self, ctx, tag : Tag, *, new_name : str):
         """Allows to create an alias for a tag, allowing to call the content of the
         tag by another name without changing the name or editing the content. Alias are
         merely a link, therefore any content updates to the original tag will be reflected 
@@ -231,6 +233,21 @@ class Tags():
         else:
             await ctx.send(":white_check_mark: | Alias already exists.")
 
+    async def on_message(self, message):
+        if message.author.bot or message.author.id in self.bot.settings["blacklist"] or message.guild is None:
+            return
+
+        if message.content.startswith(message.guild.me.mention):
+            content = message.content[len(message.guild.me.mention)+1:].lower().strip()
+            try:
+                reply = self.bot.server_data[message.guild.id]["tags"][content]["content"]
+            except KeyError:
+                return
+
+            ctx = await self.bot.get_context(message)
+            command = self.bot.get_command("tag")
+
+            await ctx.invoke(command, tag=content)
 
 def setup(bot):
     bot.add_cog(Tags(bot))
