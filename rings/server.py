@@ -25,7 +25,7 @@ class Server():
             if channel:
                 l.append(f"C: {channel.name}")
 
-            member = self.bot.get_member(x)
+            member = ctx.guild.get_member(x)
             if member:
                 l.append(f"U: {member.name}")
 

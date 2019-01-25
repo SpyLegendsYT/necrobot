@@ -86,6 +86,8 @@ class Social():
         `{pre}pokefusion` - random pokefusion
         `{pre}pokefusion raichu` - pokefusion of random pokemon and raichu
         `{pre}pokefusion raichu arceus` - pokefusion of raichu and arceus"""
+        dex_1 = dex_2 = None
+
         try:
             dex_1 = dex.index(pokemon1.lower()) + 1
             dex_2 = dex.index(pokemon2.lower()) + 1
