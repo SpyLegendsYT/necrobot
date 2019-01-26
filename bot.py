@@ -60,7 +60,7 @@ class NecroBot(commands.Bot):
         )
 
         self.uptime_start = time.time()
-        self.user_data, self.server_data, self.starred = db_gen()
+        self.user_data, self.server_data, self.starred, self.polls = db_gen()
 
         self.version = 2.6
         self.prefixes = ["n!", "N!", "n@", "N@"]

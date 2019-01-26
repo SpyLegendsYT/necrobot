@@ -9,7 +9,6 @@ class Edain:
     """A cog for commands and events solely created for the unofficial Edain Community server"""
     def __init__(self, bot):
         self.bot = bot
-        self.polls = {}
 
     def __local__check(ctx):
         if not ctx.guild:
@@ -22,7 +21,8 @@ class Edain:
         matches = re.findall(regex, message.content)
         emojis = [emoji for emoji in message.guild.emojis if f":{emoji.name}:" in matches]
         emojis.extend(matches)
-        self.polls[message.id] = []
+        self.bot.polls[message.id] = []
+        await self.bot.query_executer("INSERT INTO necrobot.Polls VALUES($1, 0000, 'anchor:anchor')", message.id)
 
         for emoji in emojis:
             try:
@@ -58,32 +58,37 @@ class Edain:
             await self.poll_builder(message)
 
     async def on_raw_reaction_add(self, payload):
-        if payload.message_id not in self.polls:
+        to_remove = False
+        if payload.message_id not in self.bot.polls:
             return
 
         if payload.user_id == self.bot.user.id:
             return
 
-        if payload.user_id in self.polls[payload.message_id]:
-            emoji = payload.emoji._as_reaction()
-            await  self.bot._connection.http.remove_reaction(payload.message_id, payload.channel_id, emoji, payload.user_id)
-            
-            channel = self.bot.get_channel(336820934117818368)
+        if payload.user_id in self.bot.polls[payload.message_id]:
+            to_remove = True
+
+            channel = self.bot.get_channel(336820934117818368) or self.bot.get_channel(321305756999745547)
             user = self.bot.get_user(payload.user_id)
 
             await channel.send(f":warning:| User {user.mention} tried adding multiple reactions to the poll")
 
-        self.polls[payload.message_id].append(payload.user_id)
+        await self.bot.query_executer("INSERT INTO necrobot.Polls VALUES($1, $2, $3)", payload.message_id, payload.user_id, payload.emoji.name)
+        self.bot.polls[payload.message_id].append(payload.user_id)
+
+        if to_remove:
+            emoji = payload.emoji._as_reaction()
+            await  self.bot._connection.http.remove_reaction(payload.message_id, payload.channel_id, emoji, payload.user_id)
 
 
     async def on_raw_reaction_remove(self, payload):
-        if payload.message_id not in self.polls:
+        if payload.message_id not in self.bot.polls:
             return
 
-        try:
-            self.polls[payload.message_id].remove(payload.user_id)
-        except ValueError:
-            pass
+        if self.bot.polls[payload.message_id].count(payload.user_id) > 0:
+            self.bot.polls[payload.message_id].remove(payload.user_id)
+            await self.bot.query_executer("DELETE FROM necrobot.Polls WHERE message_id=$1 AND user_id=$2 AND reaction=$3", 
+                payload.message_id, payload.user_id, payload.emoji.name)
 
 def setup(bot):
     bot.add_cog(Edain(bot))

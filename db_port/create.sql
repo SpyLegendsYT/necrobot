@@ -143,3 +143,9 @@ CREATE TABLE necrobot.Reminders(
     start_date varchar(200),
     PRIMARY KEY(user_id, start_date)
 );
+
+CREATE TABLE necrobot.Polls(
+    message_id bigint,
+    user_id bigint,
+    reaction varchar(200)
+);

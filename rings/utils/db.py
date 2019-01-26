@@ -1,5 +1,6 @@
 import psycopg2
 from .config import dbpass
+from collections import defaultdict
 
 def db_gen():
     server_data = {}
@@ -119,4 +120,10 @@ def db_gen():
     for t in cur.fetchall():
         user_data[t[0]]["reminders"].append({"channel": t[1], "text": t[2], "timer": t[3], "start": t[4], "task": None})
 
-    return user_data, server_data, starred
+    polls = defaultdict(list)
+    cur.execute("SELECT * FROM necrobot.Polls;")
+    for u in cur.fetchall():
+        polls[u[0]].append(u[1])
+
+
+    return user_data, server_data, starred, polls

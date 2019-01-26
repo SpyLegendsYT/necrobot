@@ -125,7 +125,7 @@ class Social():
         """
         if character:
             quotes = [quote for quote in got_quotes if character.lower() in quote["character"].lower()]
-            if quote:
+            if quotes:
                 quote = random.choice(quotes)
             else:
                 await ctx.send(":negative_squared_cross_mark: | Didn't find that character")
