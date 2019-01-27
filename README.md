@@ -29,24 +29,26 @@ Tell them GitHub sent you!
 # Badges
 Hover on each badge to get its name.
 
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/admin.png "admin")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/smith.png "smith")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/bug.png "bug")
+![admin](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/admin.png "admin")
+![smith](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/smith.png "smith")
+![bug](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/bug.png "bug")
 
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necrobot.png "necrobot")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/glorfindel.png "glorfindel")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necro.png "necro")
+![necrobot](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necrobot.png "necrobot")
+![glorfindel](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/glorfindel.png "glorfindel")
+![necro](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/necro.png "necro")
 
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/edain.png "edain")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/aotr.png "aotr")
+![edain](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/edain.png "edain")
+![aotr](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/aotr.png "aotr")
 
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/rohan.png "rohan")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/gondor.png "gondor")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/imladris.png "imladris")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/dwarves.png "dwarves")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/lorien.png "lorien")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/goblins.png "goblins")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/angmar.png "angmar")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/isengard.png "isengard")
-![alt text](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/mordor.png "mordor")
+![rohan](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/rohan.png "rohan")
+![gondor](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/gondor.png "gondor")
+![imladris](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/imladris.png "imladris")
+![dwarves](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/dwarves.png "dwarves")
+![lorien](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/lorien.png "lorien")
+![goblins](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/goblins.png "goblins")
+![angmar](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/angmar.png "angmar")
+![isengard](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/isengard.png "isengard")
+![mordor](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/mordor.png "mordor")
+
+![ring](https://github.com/ClementJ18/necrobot/blob/rewrite/rings/utils/profile/badges/ring.png "ring")
 

@@ -17,6 +17,9 @@ class NecroEvents():
         channel = self.bot.get_channel(318465643420712962)
         await channel.send("**Bot Resumed**")
 
+    async def on_private_channel_create(self, channel):
+        await channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:? Give it a shot, react to this message with :wastebasket: .")
+
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
         channel = ctx.channel
@@ -187,7 +190,6 @@ class NecroEvents():
         if payload.emoji.name == "\N{WASTEBASKET}":
             try:
                 await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)
-                print("tes")
             except (discord.Forbidden, discord.HTTPException):
                 pass
 

@@ -48,7 +48,7 @@ class Edain:
         await d.delete()
         await reaction.message.clear_reactions()
 
-        await self.poll_builder(reaction.message)        
+        await self.poll_builder(reaction.message)
 
     async def on_message(self, message):
         if message.author.bot or message.author.id in self.bot.settings["blacklist"]:
