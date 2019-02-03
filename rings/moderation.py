@@ -208,7 +208,7 @@ class Moderation():
     @has_perms(4)
     async def disable(self, ctx, command=None):
         """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ or N@
-        prefix. To re-enable a command or cog call the `enable` comannd on it. Disabling cogs works as a sort of "select all" 
+        prefix. To re-enable a command or cog call the `enable` command on it. Disabling cogs works as a sort of "select all" 
         button which means that all commands will be disabled and individual commands can then be enabled separatly for
         fine tuning.
 

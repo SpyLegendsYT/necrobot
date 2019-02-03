@@ -53,7 +53,7 @@ class Literature():
         try:
             translated = py_translator.Translator().translate(sentence, dest=lang)
             await ctx.send(f"Translated from {translated.src} to {translated.dest}: **{translated.text}**")
-        except (AttributeError, json.JSONDecodeError):
+        except (AttributeError, json.JSONDecodeError, IndexError):
             await ctx.send(":negative_squared_cross_mark: | Goolge API being mean again, please wait for another fix to be patched through.")
         except ValueError:
             await ctx.send(":negative_squared_cross_mark: | No such language, do `n!translate list` for all languages (Warning: Big text blob)")

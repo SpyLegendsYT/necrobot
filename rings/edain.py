@@ -6,15 +6,19 @@ from rings.utils.utils import has_perms
 import re
 
 class Edain:
-    """A cog for commands and events solely created for the unofficial Edain Community server"""
+    """A cog for commands and events solely created for the unofficial Edain Community server. Commands 
+    and functionalities provided by this cog will not work on any other server."""
     def __init__(self, bot):
         self.bot = bot
 
     def __local__check(ctx):
         if not ctx.guild:
-            return False
+            raise commands.CheckFailure("This command cannot be used in DMs")
 
-        return ctx.guild.id in (327175434754326539, 311630847969198082)
+        if not ctx.guild.id in (327175434754326539, 311630847969198082):
+            raise commands.CheckFailure("This command cannot be used in this server")
+
+        return True
 
     async def poll_builder(self, message):
         regex = r"(:[^ \n]*:|[^\w\s,])"
@@ -44,7 +48,11 @@ class Edain:
         def check(reaction, user):
             return str(reaction.emoji) == "\N{WHITE HEAVY CHECK MARK}" and user == ctx.author
 
-        reaction, _ = await self.bot.wait_for("reaction_add", check=check)
+        try:
+            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        except:
+            return
+            
         await d.delete()
         await reaction.message.clear_reactions()
 

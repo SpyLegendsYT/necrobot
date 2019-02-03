@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from rings.utils.db import db_gen
-from rings.utils.config import token
+from rings.utils.config import token, modio_api
 from rings.utils.help import NecroBotHelpFormatter
 from rings.utils.var import tutorial_e
 
@@ -13,6 +13,7 @@ import random
 import aiohttp
 import datetime
 import traceback
+import async_modio
 
 async def get_pre(bot, message):
     """If the guild has set a custom prefix we return that and the ability to mention alongside regular 
@@ -43,7 +44,8 @@ extensions = [
     "misc",
     "tags",
     "meta",
-    "edain"
+    "edain",
+    "modio"
 ]
 
 class NecroBot(commands.Bot):
@@ -59,7 +61,7 @@ class NecroBot(commands.Bot):
         )
 
         self.uptime_start = time.time()
-        self.user_data, self.server_data, self.starred, self.polls = db_gen()
+        self.user_data, self.server_data, self.starred, self.polls, self.games = db_gen()
 
         self.version = 2.7
         self.prefixes = ["n!", "N!", "n@", "N@"]
@@ -74,6 +76,7 @@ class NecroBot(commands.Bot):
         self.ignored_messages = []
         self.ready = False
         self.counter = datetime.datetime.now().hour
+        self.modio = async_modio.Client(api_key=modio_api)
 
         @self.check
         def disabled_check(ctx):

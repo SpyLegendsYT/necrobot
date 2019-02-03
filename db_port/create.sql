@@ -149,3 +149,10 @@ CREATE TABLE necrobot.Polls(
     user_id bigint,
     reaction varchar(200)
 );
+
+CREATE TABLE necrobot.Modio(
+    user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    game_id bigint,
+    PRIMARY KEY(user_id, guild_id)
+);

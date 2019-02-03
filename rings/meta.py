@@ -51,7 +51,7 @@ class Meta():
             "auto-role-timer": 0,
             "starboard-channel":"",
             "starboard-limit":5,
-            "aliases":{}
+            "aliases":{},
         } 
 
     async def _mu_auto_embed(self, url, message):

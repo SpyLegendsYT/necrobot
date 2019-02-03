@@ -413,6 +413,7 @@ class Admin():
             self.bot.broadcast_task.cancel()
             self.bot.status_task.cancel()
             await self.bot.session.close()
+            await self.bot.modio.close()
             await self.bot.logout()
 
     @commands.command()

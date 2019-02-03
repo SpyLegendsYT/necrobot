@@ -125,5 +125,9 @@ def db_gen():
     for u in cur.fetchall():
         polls[u[0]].append(u[1])
 
+    games = defaultdict(dict)
+    cur.execute("SELECT * FROM necrobot.Modio;")
+    for u in cur.fetchall():
+        games[u[0]][u[1]] = u[2]
 
-    return user_data, server_data, starred, polls
+    return user_data, server_data, starred, polls, games
