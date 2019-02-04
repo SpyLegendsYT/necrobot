@@ -156,7 +156,7 @@ class Modio:
             - Rank: {mod.stats.rank}/{mod.stats.rank_total}
             - Downloads: {mod.stats.downloads}
             - Subscribers: {mod.stats.subscribers}
-            - :thumbsup: {mod.stats.positive} / :thumbdown: {mod.stats.negative}: {mod.stats.text}%
+            - :thumbsup: **{mod.stats.positive} / {mod.stats.negative}** :thumbdown: - {mod.stats.weighted}%
             - {mod.stats.text} 
         ''')
 
