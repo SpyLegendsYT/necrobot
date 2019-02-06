@@ -45,7 +45,6 @@ extensions = [
     "tags",
     "meta",
     "edain",
-    "modio"
 ]
 
 class NecroBot(commands.Bot):
@@ -61,22 +60,24 @@ class NecroBot(commands.Bot):
         )
 
         self.uptime_start = time.time()
+        self.counter = datetime.datetime.now().hour
+
         self.user_data, self.server_data, self.starred, self.polls, self.games = db_gen()
 
-        self.version = 2.7
+        self.version = 2.8
+        self.ready = False
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["remindme", "permissions", "demote", "promote", "faq", "stats"]
+        self.new_commands = ["moddb", "modio"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
         self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "The Bot Smith"]
-        self.session = aiohttp.ClientSession(loop=self.loop)
         
+        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.modio = async_modio.Client(api_key=modio_api)
+
         self.cat_cache = []
         self.events = {}
         self.ignored_messages = []
-        self.ready = False
-        self.counter = datetime.datetime.now().hour
-        self.modio = async_modio.Client(api_key=modio_api)
 
         @self.check
         def disabled_check(ctx):
@@ -163,19 +164,24 @@ class NecroBot(commands.Bot):
         user_id = message.author.id
         regex_match = r"(https://modding-union\.com/index\.php/topic).\d*"
         
+        #reject blacklisted users and system messages
         if message.author.bot or user_id in self.settings["blacklist"] or message.type != discord.MessageType.default:
             return
 
+        #set the default stats for users just in case they're not already set
         await self.default_stats(message.author, message.guild)
 
+        #search for mu links
         url = re.search(regex_match, message.content)
         if url:
             await self._mu_auto_embed(url.group(0), message)
 
+        #search for any .bmp files to convert
         if message.attachments:
             if message.attachments[0].filename.endswith(".bmp"):
                 await self._bmp_converter(message)
 
+        #if this is on a guild clean the content and award xp
         if not isinstance(message.channel, discord.DMChannel):
             self.user_data[user_id]["exp"] += random.randint(2, 5)
 

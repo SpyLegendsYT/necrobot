@@ -24,7 +24,21 @@ class Waifu():
 
     Since the authorities of the server have complete control of the flower currency, it is possible to disable most of
     the waifu commands and just retain a few in order to use the currency as an in-server currency that can be used to
-    purchase stuff like fancy roles or special nicknames."""
+    purchase stuff like fancy roles or special nicknames.
+
+    In order to do this, you can run the following commands to disable everything and then enable the correct commands to
+    create an isolated economy system:
+        - `{pre}disable Waifu` - disables all the Waifu commands
+        - `{pre}enable $` - allow users to check their balance
+        - `{pre}enabled give` - allow users to transfer flowers to each other
+        - `{pre}enable award` - allow admins to award flowers
+        - `{pre}enable take` - allow admins to take flowers from users
+        - `{pre}enable flowerevent` - allow admins to create events that will automatically award flowers to users
+
+        Optional:
+        - `{pre}enable trade` - allow users to change necroins into flowers on your server
+
+    """
     def __init__(self, bot):
         self.bot = bot
 
