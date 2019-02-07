@@ -4,6 +4,7 @@ from discord.ext import commands
 from rings.utils.utils import has_perms
 
 import re
+import emoji_unicode
 
 class Edain:
     """A cog for commands and events solely created for the unofficial Edain Community server. Commands 
@@ -21,10 +22,14 @@ class Edain:
         return True
 
     async def poll_builder(self, message):
-        regex = r"(:[^ \n]*:|[^\w\s,])"
-        matches = re.findall(regex, message.content)
-        emojis = [emoji for emoji in message.guild.emojis if f":{emoji.name}:" in matches]
-        emojis.extend(matches)
+        CUSTOM_EMOJI = r'<:[^\s]+:([0-9]*)>'
+        UNICODE_EMOJI = emoji_unicode.RE_PATTERN_TEMPLATE
+
+        custom_emojis = [self.bot.get_emoji(int(emoji)) for emoji in re.findall(CUSTOM_EMOJI, message.content)]
+        unicode_emojis = re.findall(UNICODE_EMOJI, message.content)
+
+        emojis = [*custom_emojis, *unicode_emojis]
+        
         self.bot.polls[message.id] = []
         await self.bot.query_executer("INSERT INTO necrobot.Polls VALUES($1, 0000, 'anchor:anchor')", message.id)
 
