@@ -138,8 +138,6 @@ class NecroBot(commands.Bot):
             print(self.server_data)
             print('------')
             print(f"Logged in as {self.user}")
-        else:
-            await self.get_channel(318465643420712962).send("**Bot Resuming**")
 
     async def on_error(self, event, *args, **kwargs): 
         """Something has gone wrong so we just try to send a helpful traceback to the channel. If

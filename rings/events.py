@@ -13,10 +13,6 @@ class NecroEvents():
     def __init__(self, bot):
         self.bot = bot
 
-    async def on_resumed(self):
-        channel = self.bot.get_channel(318465643420712962)
-        await channel.send("**Bot Resumed**")
-
     async def on_private_channel_create(self, channel):
         await channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:? Give it a shot, react to this message with :wastebasket: .")
 
@@ -62,7 +58,7 @@ class NecroEvents():
                 print(f'Bot: Ignoring exception in command {ctx.command}:', file=sys.stderr)
                 traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
             
-            thing = ctx.guild or ctx.user
+            thing = ctx.guild or ctx.author
             if thing.id != 311630847969198082:
                 await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server, the invite is in the `about` command.", delete_after=10)
                 
@@ -132,6 +128,15 @@ class NecroEvents():
 
     async def on_member_join(self, member):
         await self.bot.default_stats(member, member.guild)
+
+        if any(self.bot.user_data[member.id]["perms"][x] == 7 for x in self.bot.user_data[member.id]["perms"]):
+            self.bot.user_data[member.id]["perms"][guild.id] = 7
+        elif any(self.bot.user_data[member.id]["perms"][x] == 6 for x in self.bot.user_data[member.id]["perms"]):
+            self.bot.user_data[member.id]["perms"][guild.id] = 6
+        else:
+            self.bot.user_data[member.id]["perms"][guild.id] = 0
+
+        await self.bot.query_executer("UPDATE necrobot.Permissions WHERE guild_id=$1 AND user_id=$2 SET level=$3", guild.id, member.id, self.bot.user_data[member.id]["perms"][guild.id])
 
         if member.bot:
             return

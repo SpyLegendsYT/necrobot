@@ -191,12 +191,14 @@ class Meta():
         #spared from this
         #In a second part we also set up all the tasks for the reminders, each reminder gets their remaining time 
         #calculated (and set to 0 if it's done) and then the task is set.
+
+        #we actually don't wanna do this cause cache, instead we will catch it on the on_member_join
         for user in self.bot.users:
-            logged = set(self.bot.user_data[user.id]["perms"].keys())
-            for guild_id in logged - set(d[user.id]):
-                if self.bot.user_data[user.id]["perms"][guild_id] < 6:
-                    self.bot.user_data[user.id]["perms"][guild_id] = 0
-                    await self.bot.query_executer(UPDATE_PERMS, 0, guild_id, user.id)
+            # logged = set(self.bot.user_data[user.id]["perms"].keys())
+            # for guild_id in logged - set(d[user.id]):
+            #     if self.bot.user_data[user.id]["perms"][guild_id] < 6:
+            #         self.bot.user_data[user.id]["perms"][guild_id] = 0
+            #         await self.bot.query_executer(UPDATE_PERMS, 0, guild_id, user.id)
 
             for reminder in self.bot.user_data[user.id]["reminders"]:
                 time = datetime.datetime.strptime(reminder["start"], '%Y-%m-%d %H:%M:%S.%f')
