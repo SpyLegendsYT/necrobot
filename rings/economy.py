@@ -141,9 +141,10 @@ class Economy():
 
         self.IS_GAME.append(ctx.channel.id)
         try:
-            await self.blackjack_game(ctx, bet)
-        except Exception:
-            pass
+            syncer = functools.partial(self.blackjack_game, ctx, bet)
+            await self.bot.loop.run_in_executor(None, syncer)
+        except Exception as e:
+            await ctx.send(f":negative_squared_cross_mark: | {e}")
         finally:
             self.IS_GAME.remove(ctx.channel.id)
 
