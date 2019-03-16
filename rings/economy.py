@@ -58,6 +58,9 @@ class Hand(common.Hand):
         return self.value() > WIN_MAX
 
     def is_passing(self, other):
+        if self.value() >= other.hand.value():
+            return True
+
         return not self.busted and self.value() >= WIN_MIN and self.value() >= other.hand.value()
 
     def beats(self, other):
@@ -141,8 +144,7 @@ class Economy():
 
         self.IS_GAME.append(ctx.channel.id)
         try:
-            syncer = functools.partial(self.blackjack_game, ctx, bet)
-            await self.bot.loop.run_in_executor(None, syncer)
+            await self.blackjack_game(ctx, bet)
         except Exception as e:
             await ctx.send(f":negative_squared_cross_mark: | {e}")
         finally:
@@ -169,12 +171,12 @@ class Economy():
                 await lose("**You** go bust.")
             elif bank.hand.value() > 21:
                 await win("**The Dealer** goes bust.")
-            elif bank.hand.beats(player.hand):
+            elif bank.hand.value() > player.hand.value():
                 await lose("**The Dealer's** hand beats **your** hand.")
-            elif player.hand.beats(bank.hand):
+            elif player.hand.value() > bank.hand.value():
                 await win("**Your** hand beats **the Dealer's** hand.")
             else: #tie
-                await ctx.send("Tie, everything is reset.")
+                await ctx.send(f"End of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}.\nTie, everything is reset. ")
         
         await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
         reaction_list = ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"]
@@ -205,9 +207,8 @@ class Economy():
             try :
                 reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
             except asyncio.TimeoutError:
-                await ctx.send("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
-                self.bot.user_data[ctx.author.id]["money"] -= bet
-                await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
+                await lose("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
+                await status.delete()
                 await msg.delete()
                 return     
 

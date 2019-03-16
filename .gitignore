@@ -1,13 +1,5 @@
 config.py
-archive/
 *.pyc
 *.jpg
-guild_insert.sql
-user_insert.sql
-self_roles.json
+db_port/db-*
 settings.json
-hunger_games_events.json
-rings/utils/tamagochi.py
-api.py
-rings/bfme.py
-rings/_bfme.py
