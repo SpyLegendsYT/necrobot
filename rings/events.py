@@ -130,13 +130,13 @@ class NecroEvents():
         await self.bot.default_stats(member, member.guild)
 
         if any(self.bot.user_data[member.id]["perms"][x] == 7 for x in self.bot.user_data[member.id]["perms"]):
-            self.bot.user_data[member.id]["perms"][guild.id] = 7
+            self.bot.user_data[member.id]["perms"][member.guild.id] = 7
         elif any(self.bot.user_data[member.id]["perms"][x] == 6 for x in self.bot.user_data[member.id]["perms"]):
-            self.bot.user_data[member.id]["perms"][guild.id] = 6
+            self.bot.user_data[member.id]["perms"][member.guild.id] = 6
         else:
-            self.bot.user_data[member.id]["perms"][guild.id] = 0
+            self.bot.user_data[member.id]["perms"][member.guild.id] = 0
 
-        await self.bot.query_executer("UPDATE necrobot.Permissions WHERE guild_id=$1 AND user_id=$2 SET level=$3", guild.id, member.id, self.bot.user_data[member.id]["perms"][guild.id])
+        await self.bot.query_executer(UPDATE_PERMS, self.bot.user_data[member.id]["perms"][member.guild.id], member.guild.id, member.id)
 
         if member.bot:
             return

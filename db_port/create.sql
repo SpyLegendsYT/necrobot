@@ -145,7 +145,12 @@ CREATE TABLE necrobot.Reminders(
 );
 
 CREATE TABLE necrobot.Polls(
-    message_id bigint,
+    message_id bigint PRIMARY KEY,
+    votes int 
+);
+
+CREATE TABLE necrobot.Votes(
+    message_id bigint REFERENCES necrobot.Polls(message_id) ON DELETE CASCADE,
     user_id bigint,
     reaction varchar(200)
 );

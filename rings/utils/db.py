@@ -120,10 +120,16 @@ def db_gen():
     for t in cur.fetchall():
         user_data[t[0]]["reminders"].append({"channel": t[1], "text": t[2], "timer": t[3], "start": t[4], "task": None})
 
-    polls = defaultdict(list)
-    cur.execute("SELECT * FROM necrobot.Polls;")
+    def factory():
+        return {'votes': 1, 'voters':[]}    
+    polls = defaultdict(factory)
+    cur.execute("SELECT * FROM necrobot.Polls")
     for u in cur.fetchall():
-        polls[u[0]].append(u[1])
+        polls[u[0]]["votes"] = u[1]
+
+    cur.execute("SELECT * FROM necrobot.Votes;")
+    for u in cur.fetchall():
+        polls[u[0]]["voters"].append(u[1])
 
     games = defaultdict(dict)
     cur.execute("SELECT * FROM necrobot.Modio;")
