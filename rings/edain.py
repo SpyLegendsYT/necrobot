@@ -65,6 +65,23 @@ class Edain:
 
         await self.poll_builder(reaction.message)
 
+    @commands.command()
+    async def results(self, ctx, message_id : int):
+        """Get the results of a poll
+
+        {usage}"""
+        sql = 'SELECT reaction, COUNT(user_id) FROM necrobot.Votes WHERE message_id=$1 GROUP BY reaction ORDER BY count DESC'
+        results = await self.bot.query_executer(sql, message_id)
+
+        def emojify(emoji):
+            if re.match(emoji_unicode.RE_PATTERN_TEMPLATE, emoji):
+                return emoji
+
+            return discord.utils.get(ctx.guild.emojis, name=emoji)
+
+        string = "\n".join([f'{emojify(x[0])} - {x[1]}' for x in results])
+        await ctx.send(f"__Results__\n{string}")
+
     async def on_message(self, message):
         if message.author.bot or message.author.id in self.bot.settings["blacklist"]:
             return
@@ -108,11 +125,6 @@ class Edain:
             self.bot.polls[payload.message_id]["voters"].remove(payload.user_id)
             await self.bot.query_executer("DELETE FROM necrobot.Votes WHERE message_id=$1 AND user_id=$2 AND reaction=$3", 
                 payload.message_id, payload.user_id, payload.emoji.name)
-
-    async def on_raw_message_delete(self, payload):
-        if payload.message_id in self.bot.polls:
-            del self.bot.polls[payload.message_id]
-            await self.bot.query_executer("DELETE FROM necrobot.Polls WHERE message_id=$1", payload.message_id)
 
 def setup(bot):
     bot.add_cog(Edain(bot))
