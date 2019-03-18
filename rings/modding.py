@@ -59,7 +59,7 @@ class Modding():
                     embed.add_field(name=article.name, value=f"{article.summary}... [Link]({article.url})")
             elif page == 1:
                 embed.add_field(name="\u200b", value=" ".join([f"[#{tag}]({url})" for tag, url in game.tags.items()]))
-                embed.add_field(name="Misc: ", value=f"{game.rating}/10 \n{game.profile.release.strftime('%b-%d-%Y %H:%M:%S')}\n[{game.profile.engine.name}]({game.profile.engine.url})\n**[Comment]({game.url}#commentform)**  -  **[Follow]({game.profile.follow})**")
+                embed.add_field(name="Misc: ", value=f"{game.rating}/10 \n{game.profile.release.strftime('%d-%b-%Y')}\n[{game.profile.engine.name}]({game.profile.engine.url})\n**[Comment]({game.url}#commentform)**  -  **[Follow]({game.profile.follow})**")
                 embed.add_field(name="Stats", value=f"Rank: {game.stats.rank}/{game.stats.total}\nVisits: {game.stats.today}\nFiles:  {game.stats.files}\nArticles: {game.stats.articles}\nReviews: {game.stats.reviews}")
             elif page == 2:
                 suggestion_list = [f"[{suggestion.name}]({suggestion.url})" for suggestion in game.suggestions]
@@ -108,7 +108,7 @@ class Modding():
                     embed.add_field(name=article.name, value=f"{article.summary}... [Link]({article.url})")
             elif page == 1:
                 embed.add_field(name="\u200b", value=" ".join([f"[#{tag}]({url})" for tag, url in mod.tags.items()]))
-                embed.add_field(name="Misc: ", value=f"{mod.rating}/10 \n{mod.profile.release.strftime('%b-%d-%Y %H:%M:%S')}\n[{mod.profile.game.name}]({mod.profile.game.url})\n**[Comment]({mod.url}#commentform)**  -  **[Follow]({mod.profile.follow})**")
+                embed.add_field(name="Misc: ", value=f"{mod.rating}/10 \n{mod.profile.release.strftime('%d-%b-%Y')}\n[{mod.profile.game.name}]({mod.profile.game.url})\n**[Comment]({mod.url}#commentform)**  -  **[Follow]({mod.profile.follow})**")
                 embed.add_field(name="Stats", value=f"Rank: {mod.stats.rank}/{mod.stats.total}\nVisits: {mod.stats.today}\nFiles:  {mod.stats.files}\nArticles: {mod.stats.articles}\nReviews: {mod.stats.reviews}")
             elif page == 2:
                 suggestion_list = [f"[{suggestion.name}]({suggestion.url})" for suggestion in mod.suggestions]
