@@ -7,6 +7,7 @@ import re
 import asyncio
 import itertools
 import emoji_unicode
+from collections import defaultdict
 
 class Edain:
     """A cog for commands and events solely created for the unofficial Edain Community server. Commands 
@@ -31,7 +32,7 @@ class Edain:
         unicode_emojis = re.findall(UNICODE_EMOJI, message.content)
 
         emojis = [*custom_emojis, *unicode_emojis]
-        votes = re.search(r'Votes: (\d*)', message.content)
+        votes = re.search(r'votes: (\d*)', message.content.lower())
         votes = int(votes.group(1)) if votes is not None else 1
         
         self.bot.polls[message.id] = {'votes': votes, 'voters':[]}
@@ -73,12 +74,8 @@ class Edain:
         {usage}"""
         sql = 'SELECT * FROM necrobot.Votes'
         results = await self.bot.query_executer(sql)
-        # results = itertools.groupby(results, lambda x: x[0])
-        final_results = {}
+        final_results = defaultdict(dict)
         for result in results:
-            if result[0] not in final_results:
-                final_results[result[0]] = {}
-
             if result[2] in final_results[result[0]]:
                 final_results[result[0]][result[2]] += 1
             else:
