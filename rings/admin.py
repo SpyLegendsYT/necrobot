@@ -41,6 +41,7 @@ class Admin():
         await ctx.send(f":white_check_mark: | Okay Necro, I've left {guild.name}")
 
     @commands.group()
+    @has_perms(6)
     async def admin(self, ctx):
         """{usage}"""
         pass

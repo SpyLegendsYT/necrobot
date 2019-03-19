@@ -45,7 +45,7 @@ class Moderation():
     @commands.bot_has_permissions(manage_roles=True)
     async def mute(self, ctx, user : discord.Member, time : TimeConverter = None):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
-        mute role using `{pre}settings mute`. The user can either be muted for the given amount of seconds or indefinitely 
+        mute role using `{pre}mute role`. The user can either be muted for the given amount of seconds or indefinitely 
         if no amount is given. The following times can be used: days (d), hours (h), minutes (m), seconds (s).
         (Permission level required: 2+ (Moderator))
         

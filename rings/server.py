@@ -39,7 +39,7 @@ class Server():
     @has_perms(4)
     async def permissions(self, ctx, user : discord.Member, level : int):
         """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. 
-        Permissions reset if you leave the server(Permission level required: 4+ (Server Admin))
+        Permissions reset if you leave the server (Permission level required: 4+ (Server Admin))
          
         {usage}
         
@@ -69,7 +69,8 @@ class Server():
     @commands.command()
     @has_perms(4)
     async def promote(self, ctx, member : discord.Member):
-        """Promote a member by one on the Necrobot hierarchy scale. Gaining access to additional commands
+        """Promote a member by one on the Necrobot hierarchy scale. Gaining access to additional commands. 
+        (Permission level required: 4+ (Server Admin))
 
         {usage}
 
@@ -82,7 +83,8 @@ class Server():
     @commands.command()
     @has_perms(4)
     async def demote(self, ctx, member : discord.Member):
-        """Demote a member by one on the Necrobot hierarchy scale. Losing access to certain commands
+        """Demote a member by one on the Necrobot hierarchy scale. Losing access to certain commands.
+        (Permission level required: 4+ (Server Admin))
 
         {usage}
 
