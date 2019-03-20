@@ -9,7 +9,7 @@ import json
 import random
 import aiohttp
 import asyncio
-import py_translator
+import googletrans
 
 class Literature():
     """Commands related to words and literature"""
@@ -51,7 +51,7 @@ class Literature():
         `{pre}translate en Bonjour` - detects french and translates to english
         `{pre}translate ne Hello` - detects english and translates to dutch"""
         try:
-            translated = py_translator.Translator().translate(sentence, dest=lang)
+            translated = googletrans.Translator().translate(sentence, dest=lang)
             await ctx.send(f"Translated from {translated.src} to {translated.dest}: **{translated.text}**")
         except (AttributeError, json.JSONDecodeError, IndexError):
             await ctx.send(":negative_squared_cross_mark: | Goolge API being mean again, please wait for another fix to be patched through.")
@@ -63,7 +63,7 @@ class Literature():
         """Use to display all possible languages to translate from
 
         {usage}"""
-        text = ", ".join([f"**{value}**: {lang}" for lang, value in py_translator.languages.items()])
+        text = ", ".join([f"**{value}**: {lang}" for lang, value in googletrans.languages.items()])
         await ctx.send(text[:-2])
 
     @commands.command()
@@ -117,7 +117,12 @@ class Literature():
         __Examples__
         `{pre}shuffle Fun time` - uFn imet
         """
-        new_sentence = ["".join(random.shuffle(list(word))) for word in sentence]
+        new_sentence = []
+        for word in sentence:
+            w = list(word)
+            random.shuffle(w)
+            new_sentence.append("".join(w))
+
         await ctx.send(" ".join(new_sentence))
 
 

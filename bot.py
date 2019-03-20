@@ -186,6 +186,7 @@ class NecroBot(commands.Bot):
             if self.user_data[user_id]["perms"][message.guild.id] < 3:
                 message.content = message.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
         else:
+            #else make sure that they know they can clean up bot messages by reacting to them
             if not self.user_data[user_id]["tutorial"]:
                 self.user_data[user_id]["tutorial"] = True
                 await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:? Give it a shot, react to this message with :wastebasket: .")
