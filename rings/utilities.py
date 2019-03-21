@@ -328,7 +328,7 @@ class Utilities():
         `{pre}convert 5 km in`  - convert 5 kilometers to inches"""
         def m_to_i(measure, symbol, conversion):
             index = m_values.index(symbol)
-            measure *= (100**(index)) #convert to milimiters
+            measure *= (10**(index)) #convert to milimiters
             measure /= 25.4 #convert to inches
 
             #convert to requested imperial
@@ -345,7 +345,7 @@ class Utilities():
 
             measure *= 25.4 # converter to milimiters
             index = m_values.index(conversion)
-            measure /= (100**(index))#convert to requested metric
+            measure /= (10**(index))#convert to requested metric
 
             return measure
 
@@ -366,13 +366,13 @@ class Utilities():
 
             measure = measure * 28349.5 #convert to miligrams
             index = mass_m_values.index(conversion)
-            measure /= (100**(index+1)) #convert to requested imperial
+            measure /= (10**(index)) #convert to requested imperial
 
             return measure
 
         def mass_m_to_i(measure, symbol, conversion):
             index = mass_m_values.index(symbol)
-            measure *= (100**(index+1)) # convert to miligrams
+            measure *= (10**(index)) # convert to miligrams
             measure = measure / 28349.5 #convert to oz
 
             #convert to requested imperial
@@ -407,7 +407,7 @@ class Utilities():
             await ctx.send(msg.format(" - ".join(i_values), " - ".join(mass_i_values), " - ".join(m_values), " - ".join(mass_m_values)))
             return
 
-        await ctx.send(f":white_check_mark: | **{measure}{conversion}**")
+        await ctx.send(f":white_check_mark: | **{measure:.2f}{conversion}**")
 
 def setup(bot):
     bot.add_cog(Utilities(bot))
