@@ -100,6 +100,7 @@ class Waifu():
         for x in titles:
             if count < x:
                 title = titles[x]
+                break
 
         count = len(self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifus"])
         titles_a = {0: "Lonely", 1: "Devoted", 4: "Rookie", 6: "Schemer", 8:"Dilettante", 10: "Intermediate", 12: "Seducer", 15: "Expert", 17: "Veteran", 25: "Incubis", 50: "Harem King"}
@@ -107,6 +108,7 @@ class Waifu():
         for x in titles_a:
             if count <= x:
                 title_a = titles_a[x]
+                break
 
         embed = discord.Embed(color=discord.Colour(0x277b0), title=f"Waifu {user.name} - {title_a}")
         embed.add_field(name="Price", value=self.bot.user_data[user.id]["waifu"][ctx.guild.id]["waifu-value"])

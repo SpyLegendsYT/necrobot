@@ -40,8 +40,10 @@ class Tags():
         __Example__
         `{pre}tag necro` - prints the content of the tag 'necro' given that it exists on this server"""
         arg_dict = dict()
+        index = 0
         for arg in tag_args:
-            arg_dict["arg"+str(tag_args.index(arg))] = arg
+            arg_dict[f"arg{index}"] = arg
+            index += 1
 
         tag_content = self.bot.server_data[ctx.guild.id]["tags"][tag]["content"]
         try:

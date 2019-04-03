@@ -164,8 +164,8 @@ class Utilities():
         if "in" not in message:
             await ctx.send(":negative_squared_cross_mark: | Something went wrong, you need to use the format <message> in <time>")
 
-        text = message.split(" in ")[0]
-        time = message.split(" in ")[1]
+        text = message.rpartition(" in ")[0]
+        time = message.rpartition(" in ")[-1]
         sleep = await TimeConverter().convert(ctx, time)
 
         partial = {"channel": ctx.channel.id, "text": text, "timer": time, "start": str(datetime.datetime.now())}
@@ -318,7 +318,7 @@ class Utilities():
 
     @commands.command()
     async def convert(self, ctx, measure : float, symbol, conversion = None):
-        """The ultimate conversion tool to breach the gap with America/UK and the rest of the world. Can convert most metric
+        """The ultimate conversion tool to bridge the gap with America/UK and the rest of the world. Can convert most metric
         units to imperial and most imperial units to metric. This works for lenght, temperature and mass measures.
 
         {usage}

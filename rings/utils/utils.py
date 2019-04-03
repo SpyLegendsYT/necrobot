@@ -29,7 +29,7 @@ def has_perms(perms_level):
             return False
 
         if not ctx.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level:
-            raise commands.CheckFailure("You do not have the required NecroBot permissions")
+            raise commands.CheckFailure(f"You do not have the required NecroBot permissions. Your permission level must be {perms_level}")
         else:
             return True
 

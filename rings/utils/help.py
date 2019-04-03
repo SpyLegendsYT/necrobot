@@ -136,7 +136,7 @@ class NecroBotHelpFormatter(HelpFormatter):
 
         if description:
             # <description> portion
-            self._paginator.add_line(description, empty=True)
+            self._paginator.add_line(description.format(pre=self.clean_prefix), empty=True)
 
         if isinstance(self.command, Command):
             # <signature portion>

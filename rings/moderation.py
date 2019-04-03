@@ -210,7 +210,8 @@ class Moderation():
         """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ or N@
         prefix. To re-enable a command or cog call the `enable` command on it. Disabling cogs works as a sort of "select all" 
         button which means that all commands will be disabled and individual commands can then be enabled separatly for
-        fine tuning.
+        fine tuning. (Permission level required: 4+ (Server Admin))
+
 
         {usage}
 
@@ -250,7 +251,8 @@ class Moderation():
         """Enable a command or cog. Once a command or cog is enabled everybody can use it given no other restrictions such 
         as blacklisted or ignored. To disable a command or cog call the `disable` comannd on it. Enabling cogs works as a 
         sort of "select all" button which means that all commands will be enabled and individual commands can then be disabled
-        separatly for fine tuning.
+        separatly for fine tuning. (Permission level required: 4+ (Server Admin))
+
 
         {usage}
 

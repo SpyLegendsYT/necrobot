@@ -9,7 +9,7 @@ import random
 
 class CoinConverter(commands.Converter):
     async def convert(self, ctx, argument):
-        if argument.lower() in ["h, head"]:
+        if argument.lower() in ["h", "head"]:
             return "h"
         if argument.lower() in ["t", "tail"]:
             return "t"

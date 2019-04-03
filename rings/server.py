@@ -89,7 +89,7 @@ class Server():
         {usage}
 
         __Examples__
-        `{pre}demote NecroBot` - promote necrobot by one level
+        `{pre}demote NecroBot` - demote necrobot by one level
         """
         current = self.bot.user_data[member.id]["perms"][ctx.guild.id]
         await ctx.invoke(self.bot.get_command("permissions"), user=member, level=current - 1)
