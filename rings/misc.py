@@ -85,7 +85,12 @@ class Misc():
         embed = await _phase_parser("bloodbath")
         msg = await ctx.send(embed=embed)
         await msg.add_reaction("\N{BLACK RIGHT-POINTING TRIANGLE}")
-        await self.bot.wait_for("reaction_add", check=check, timeout=600)
+        try:
+            await self.bot.wait_for("reaction_add", check=check, timeout=600)
+        except asyncio.TimeoutError as e:
+            e.timer = 600
+            await msg.clear_reactions()
+            return self.bot.dispatch("command_error",ctx, e)
 
         async def _event_parser(event):
             def check(reaction, user):

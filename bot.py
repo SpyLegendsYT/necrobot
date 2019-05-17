@@ -55,8 +55,8 @@ class NecroBot(commands.Bot):
             formatter=NecroBotHelpFormatter(), 
             case_insensitive=True, 
             owner_id=241942232867799040, 
-            activity=discord.Game(name="Bot booting..."),
-            max_messages=25000
+            activity=discord.Game(name="n!help for help"),
+            max_messages=50000
         )
 
         self.uptime_start = time.time()
