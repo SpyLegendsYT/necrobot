@@ -1,5 +1,5 @@
 import psycopg2
-from .config import dbpass
+from config import dbpass
 from collections import defaultdict
 
 def db_gen():

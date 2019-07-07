@@ -11,14 +11,13 @@ from io import BytesIO
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
-#/usr/share/fonts/
 
 class Profile():
     def __init__(self, bot):
         self.bot = bot
-        self.font20 = ImageFont.truetype("Ringbearer Medium.ttf", 20)
-        self.font21 = ImageFont.truetype("Ringbearer Medium.ttf", 21)
-        self.font30 = ImageFont.truetype("Ringbearer Medium.ttf", 30)
+        self.font20 = ImageFont.truetype(f"rings/utils/profile/fonts/Ringbearer Medium.ttf", 20)
+        self.font21 = ImageFont.truetype(f"rings/utils/profile/fonts/Ringbearer Medium.ttf", 21)
+        self.font30 = ImageFont.truetype(f"rings/utils/profile/fonts/Ringbearer Medium.ttf", 30)
         self.overlay = Image.open("rings/utils/profile/overlay.png").convert("RGBA")
         self.badges_d = {
             "necrobot": 1000000, "glorfindel" : 1000000, "necro" : 10000000,
@@ -27,7 +26,10 @@ class Profile():
             "ring": 1000        
         }
         self.special_badges = ["admin", "smith", "bug"]
-        self.badges_coords = [(516, 261, 598, 343), (609, 261, 691, 343), (703, 261, 785, 343), (796, 261, 878, 343), (516, 350, 598, 432), (609, 350, 691, 432), (704, 350, 786, 432), (796, 350, 878, 432)]
+        self.badges_coords = [
+            (580, 295, 680, 395), (685, 295, 785, 395), (790, 295, 890, 395), (895, 295, 995, 395), 
+            (580, 400, 680, 500), (685, 400, 785, 500), (790, 400, 890, 500), (895, 400, 995, 500)
+        ]
 
     @commands.command()
     async def balance(self, ctx, *, user : discord.Member = None):
@@ -120,7 +122,6 @@ class Profile():
             
         await msg.delete()
 
-
     @commands.command()
     @commands.guild_only()
     async def info(self, ctx, *, user : discord.Member = None):
@@ -159,30 +160,29 @@ class Profile():
         `{pre}info @NecroBot` - returns the NecroBot info for NecroBot
         `{pre}info` - returns your own NecroBot info"""
         def profile_maker():
-            im = Image.open(f"rings/utils/profile/backgrounds/{random.randint(1,147)}.jpg").resize((1024,512)).crop((60,29,964,480)).convert("RGBA")
+            #
+            im = Image.open(f"rings/utils/profile/backgrounds/{random.randint(1,22)}.jpg").resize((1024,512)).convert("RGBA")
             draw = ImageDraw.Draw(im)
 
-            pfp = Image.open(BytesIO(image_bytes)).resize((150,150)).convert("RGBA")
-            perms_level = Image.open(f"rings/utils/profile/perms_level/{self.bot.user_data[user.id]['perms'][ctx.guild.id]}.png") .resize((50,50)).convert("RGBA")
+            pfp = Image.open(BytesIO(image_bytes)).resize((170,170)).convert("RGBA")
+            perms_level = Image.open(f"rings/utils/profile/perms_level/{self.bot.user_data[user.id]['perms'][ctx.guild.id]}.png").resize((50,50)).convert("RGBA")
 
-            im.paste(self.overlay, box=(0, 0, 905, 453), mask=self.overlay)
-            im.paste(pfp, box=(75, 132, 225, 282), mask=pfp)
-            im.paste(perms_level, box=(125, 25, 175, 75))
+            im.paste(self.overlay, box=(0, 0, 1024, 512), mask=self.overlay)
+            im.paste(pfp, box=(83, 147, 253, 317), mask=pfp)
+            im.paste(perms_level, box=(143, 30, 193, 80))
 
             for spot in self.bot.user_data[user.id]["places"]:
                 badge = self.bot.user_data[user.id]["places"][spot]
                 if badge != "":
-                    badge_img = Image.open(f"rings/utils/profile/badges/{badge}.png").convert("RGBA")
+                    badge_img = Image.open(f"rings/utils/profile/badges/{badge}.png").resize((100, 100)).convert("RGBA")
                     index = spot - 1
                     im.paste(badge_img, box=self.badges_coords[index], mask=badge_img)
 
-            draw.text((70,85), self.bot.perms_name[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
-            draw.text((260,125), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=self.font30)
-            draw.text((260,230), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=self.font30)
-            draw.text((43,313), user.display_name, (0,0,0), font=self.font21)
-            draw.text((43,356), self.bot.user_data[user.id]["title"], (0,0,0), font=self.font21)
-            draw.line((52,346,468,346),fill=(0,0,0), width=2)
-
+            draw.text((83,97), self.bot.perms_name[self.bot.user_data[user.id]["perms"][ctx.guild.id]], (0,0,0), font=self.font20)
+            draw.text((300,145), "{:,}$".format(self.bot.user_data[user.id]["money"]), (0,0,0), font=self.font30)
+            draw.text((300,255), "{:,} EXP".format(self.bot.user_data[user.id]["exp"]), (0,0,0), font=self.font30)
+            draw.text((50,355), user.display_name, (0,0,0), font=self.font21)
+            draw.text((50,405), self.bot.user_data[user.id]["title"], (0,0,0), font=self.font21)
             
             output_buffer = BytesIO()
             im.save(output_buffer, "png")

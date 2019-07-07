@@ -29,16 +29,17 @@ class Moderation():
         __Example__
         `{pre}nick @NecroBot Lord of All Bots` - renames NecroBot to 'Lord of All Bots'
         `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
-        if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > self.bot.user_data[user.id]["perms"][ctx.guild.id]:
-            if not nickname:
-                msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
-            else:
-                msg = f":white_check_mark: | User **{user.display_name}** renamed to **{nickname}**"
+        if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] <= self.bot.user_data[user.id]["perms"][ctx.guild.id]:
+            return await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
 
-            await user.edit(nick=nickname)
-            await ctx.send(msg)
+        if not nickname:
+            msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
         else:
-            await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to rename this user.")
+            msg = f":white_check_mark: | User **{user.display_name}** renamed to **{nickname}**"
+
+        await user.edit(nick=nickname)
+        await ctx.send(msg)
+            
 
     @commands.group(invoke_without_command = True)
     @has_perms(2)
@@ -56,6 +57,9 @@ class Moderation():
         `{pre}mute @NecroBot 30s` - mutes NecroBot for 30 seconds or until a user with the proper permission level does
         `{pre}mute @NecroBot 2m` - mutes NecroBot for 2 minutes
         `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes"""
+        if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] <= self.bot.user_data[user.id]["perms"][ctx.guild.id]:
+            return await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to mute this user.")
+
         if self.bot.server_data[ctx.guild.id]["mute"] == "":
             await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
             return
@@ -73,6 +77,7 @@ class Moderation():
             if role in user.roles:
                 await user.remove_roles(role)
                 await ctx.send(f":white_check_mark: | User **{user.display_name}** has been automatically unmuted")
+            
 
     @mute.command(name="role")
     @has_perms(4)
@@ -132,6 +137,9 @@ class Moderation():
         __Example__
         `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
         Necrobot's warning list and pm the warning message to him"""
+        if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] <= self.bot.user_data[user.id]["perms"][ctx.guild.id]:
+            return await ctx.send(":negative_squared_cross_mark: | You do not have the required NecroBot permissions to warn this user.")
+
         await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** added to warning list of user {user.display_name}")
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
         await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.created_at))

@@ -162,7 +162,7 @@ class Utilities():
         `{pre}remindme do the dishes in 4d2h45m` - will remind you to do the dishes in 4 days, 2 hours and 45 minutes
         """
         if "in" not in message:
-            await ctx.send(":negative_squared_cross_mark: | Something went wrong, you need to use the format <message> in <time>")
+            return await ctx.send(":negative_squared_cross_mark: | Something went wrong, you need to use the format <message> in <time>")
 
         text = message.rpartition(" in ")[0]
         time = message.rpartition(" in ")[-1]

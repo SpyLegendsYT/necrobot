@@ -4,12 +4,15 @@ from discord.ext import commands
 from rings.utils.utils import has_perms, GuildConverter, react_menu, UPDATE_NECROINS, UPDATE_PERMS
 from rings.utils.config import github_key
 
+import sh
+import os
 import ast
 import json
 import psutil
 import asyncio
 from typing import Union, Optional
 from simpleeval import simple_eval
+
 
 class Admin():
     def __init__(self, bot):
@@ -271,10 +274,6 @@ class Admin():
         body = f"async def {fn_name}():\n{cmd}"
         python = '```py\n{}\n```'
 
-        parsed = ast.parse(body)
-        body = parsed.body[0].body
-        self._insert_returns(body)
-
         env = {
             'bot': ctx.bot,
             'discord': discord,
@@ -285,7 +284,12 @@ class Admin():
             'channel': ctx.channel,
             'author': ctx.author
         }
+
         try:
+            parsed = ast.parse(body)
+            body = parsed.body[0].body
+            self._insert_returns(body)
+
             exec(compile(parsed, filename="<ast>", mode="exec"), env)
             result = (await eval(f"{fn_name}()", env))
             if result:
@@ -342,43 +346,6 @@ class Admin():
                 await thing.leave()
                 self.bot.settings["blacklist"].append(thing.id)
                 await ctx.send(f":white_check_mark: | Guild **{thing.name}** blacklisted")
-
-
-    @commands.command()
-    @commands.is_owner()
-    async def load(self, ctx, extension_name : str):
-        """Loads the extension name if in NecroBot's list of rings.
-        
-        {usage}"""
-        try:
-            self.bot.load_extension(f"rings.{extension_name}")
-        except (AttributeError,ImportError) as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-            return
-        await ctx.send(f"{extension_name} loaded.")
-
-    @commands.command()
-    @commands.is_owner()
-    async def unload(self, ctx, extension_name : str):
-        """Unloads the extension name if in NecroBot's list of rings.
-         
-        {usage}"""
-        self.bot.unload_extension(f"rings.{extension_name}")
-        await ctx.send(f"{extension_name} unloaded.")
-
-    @commands.command()
-    @commands.is_owner()
-    async def reload(self, ctx, extension_name : str):
-        """Unload and loads the extension name if in NecroBot's list of rings.
-         
-        {usage}"""
-        self.bot.unload_extension(f"rings.{extension_name}")
-        try:
-            self.bot.load_extension(f"rings.{extension_name}")
-        except (AttributeError,ImportError) as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-            return
-        await ctx.send(f"{extension_name} reloaded.")
 
     @commands.command()
     @commands.is_owner()
@@ -532,7 +499,58 @@ class Admin():
         await ctx.send(":stop: | Conversation ended")
 
         del self.gates[ctx.channel.id]
-        del self.gates[channel.id]        
+        del self.gates[channel.id] 
+
+    @commands.command()
+    @has_perms(6)
+    async def feeds(self, ctx):
+        """Get info on all the feeds managed on this server.
+
+        {usage}
+        """
+        ps = sh.grep(sh.ps("-ef"), 'python3.6')
+        
+        feeds_dict = {
+            "main.py": {
+                "name": "Confessions", 
+                "command": "nohup sudo python3.6 /home/pi/cardiff_confessions/main.py&",
+                "emote": "\N{HEAR-NO-EVIL MONKEY}"
+            },
+            "rss.py": {
+                "name": "RSS Feeds", 
+                "command": "nohup sudo python3.6 /home/pi/feeds/rss.py&",
+                "emote": "\N{OPEN MAILBOX WITH RAISED FLAG}"
+            },
+            "log.py": {
+                "name": "ModDB Logger", 
+                "command": "nohup sudo python3.6 /home/pi/edain/log.py&",
+                "emote": "\N{CHART WITH DOWNWARDS TREND}"
+            }
+        }
+
+        up = [key for key, value in feeds_dict.items() if key in ps]
+        down = [key for key, value in feeds_dict.items() if not key in ps]
+
+        string = f"__Status on the systems__\n**Online**: {', '.join([feeds_dict[key]['name'] for key in up])}\n**Offline**: {', '.join([feeds_dict[key]['name'] for key in down])}"
+        msg = await ctx.send(string)
+
+        allowed = []
+        for key in down:
+            emote = feeds_dict[key]["emote"]
+            allowed.append(emote)
+            await msg.add_reaction(emote)
+
+        reaction, _ = await self.bot.wait_for("reaction_add", check=lambda reaction, user: user == ctx.author and reaction.channel == ctx.channel and reaction.emoji in allowed)
+
+        await msg.clear_reactions()
+
+        if reaction.emoji == "\N{CHART WITH DOWNWARDS TREND}":
+            os.system("nohup sudo python3.6 /home/pi/edain/log.py&")
+        elif reaction.emoji == "\N{OPEN MAILBOX WITH RAISED FLAG}":
+            os.system("nohup sudo python3.6 /home/pi/feeds/rss.py&")
+        elif reaction.emoji == "\N{HEAR-NO-EVIL MONKEY}":
+            os.system("nohup sudo python3.6 /home/pi/cardiff_confessions/main.py&")
+
 
     async def on_message(self, message):
         if message.author.bot:

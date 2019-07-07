@@ -209,7 +209,7 @@ class NecroEvents():
             return
 
         if reaction.emoji == "\N{WHITE MEDIUM STAR}" and reaction.count >= self.bot.server_data[user.guild.id]["starboard-limit"]:
-            users = await reaction.users().flatten()
+            users = [x for x in await reaction.users().flatten() if x.id not in self.bot.settings["blacklist"]]
             try:
                 users.remove(reaction.message.author)
             except ValueError:
