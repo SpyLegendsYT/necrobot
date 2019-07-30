@@ -39,12 +39,12 @@ extensions = [
     "decisions",
     "economy",
     "events",
-    "waifu",
     "words",
     "misc",
     "tags",
     "meta",
     "edain",
+    "rss"
 ]
 
 class NecroBot(commands.Bot):

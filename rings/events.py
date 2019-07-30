@@ -57,7 +57,7 @@ class NecroEvents():
             except discord.HTTPException:
                 print(f'Bot: Ignoring exception in command {ctx.command}:', file=sys.stderr)
                 traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-            
+
             thing = ctx.guild or ctx.author
             if thing.id != 311630847969198082:
                 await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server, the invite is in the `about` command.", delete_after=10)
@@ -145,7 +145,7 @@ class NecroEvents():
             channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
             message = self.bot.server_data[member.guild.id]["welcome"]
             if member.id in self.bot.settings["blacklist"]:
-                await channel.send(":eight_pointed_black_star: | **You are not welcome here, disturber of the peace**")
+                await channel.send(f":eight_pointed_black_star: | {member.mention}. **You are not welcome here, disturber of the peace**")
             else:
                 message = message.format(
                     member=member, 
@@ -236,6 +236,8 @@ class NecroEvents():
         if channel.id == guild["automod"]:
             guild["automod"] = ""
             await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", channel.guild.id) 
+
+        await self.bot.query_executer("DELETE FROM necrobot.Youtube WHERE guild_id = $1 AND channel_id = $2", channel.guild.id, channel.id)
 
     async def on_guild_role_delete(self, role):
         guild = self.bot.server_data[role.guild.id]

@@ -161,3 +161,11 @@ CREATE TABLE necrobot.Modio(
     game_id bigint,
     PRIMARY KEY(user_id, guild_id)
 );
+
+CREATE TABLE necrobot.Youtube(
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    channel_id bigint,
+    youtuber_id varchar(50),
+    last_update TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY(guild_id, youtuber_id)
+);
