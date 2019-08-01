@@ -167,5 +167,6 @@ CREATE TABLE necrobot.Youtube(
     channel_id bigint,
     youtuber_id varchar(50),
     last_update TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    filter varchar(200),
     PRIMARY KEY(guild_id, youtuber_id)
 );
