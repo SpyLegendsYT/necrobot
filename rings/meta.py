@@ -221,7 +221,7 @@ class Meta():
         conn = await self.bot.pool.acquire()
         result = []
         try:
-            if query.startswith("SELECT"):
+            if query.upper().startswith("SELECT"):
                 result = await conn.fetch(query, *args)
             else:
                 await conn.execute(query, *args)
