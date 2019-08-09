@@ -167,7 +167,7 @@ class NecroEvents():
         if self.bot.server_data[member.guild.id]["automod"] != "":
             channel = member.guild.get_channel(self.bot.server_data[member.guild.id]["automod"])
             try:
-                invites = await member.guild.invites()
+                invites = sorted(await member.guild.invites(), key=lambda x: x.created_at)
             except discord.Forbidden:
                 pass
             else:
@@ -177,7 +177,7 @@ class NecroEvents():
                             INSERT INTO necrobot.Invites as inv VALUES($1, $2, $3, $4, $5)
                             ON CONFLICT (id)
                             DO UPDATE SET uses = $4 WHERE inv.id = $1 RETURNING url""",
-                            invite.id, member.guild.id, invite.url, invite.uses, invite.inviter.id, fetchval=True
+                        invite.id, member.guild.id, invite.url, invite.uses, invite.inviter.id, fetchval=True
                     )
                     if changed:
                         embed = discord.Embed(title="Member Joined", description=f"{member.mention} has joined the server using {invite.url}")
