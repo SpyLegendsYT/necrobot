@@ -128,7 +128,7 @@ class NecroBot(commands.Bot):
         
         self.tutorial_e = discord.Embed.from_data(tutorial_e)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def load(self, ctx, extension_name : str):
         """Loads the extension name if in NecroBot's list of rings.
@@ -141,7 +141,7 @@ class NecroBot(commands.Bot):
             return
         await ctx.send(f"{extension_name} loaded.")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def unload(self, ctx, extension_name : str):
         """Unloads the extension name if in NecroBot's list of rings.
@@ -150,7 +150,7 @@ class NecroBot(commands.Bot):
         self.unload_extension(f"rings.{extension_name}")
         await ctx.send(f"{extension_name} unloaded.")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def reload(self, ctx, extension_name : str):
         """Unload and loads the extension name if in NecroBot's list of rings.

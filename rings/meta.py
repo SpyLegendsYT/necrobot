@@ -217,12 +217,14 @@ class Meta():
         await msg.edit(content="**Bot Online**")
         await self.bot.change_presence(activity=discord.Game(name="n!help for help"))
 
-    async def query_executer(self, query, *args):
+    async def query_executer(self, query, *args, **kwargs):
         conn = await self.bot.pool.acquire()
         result = []
         try:
             if query.upper().startswith("SELECT"):
                 result = await conn.fetch(query, *args)
+            elif "fetchval" in kwargs:
+                result = await conn.fetchval(query, *args)
             else:
                 await conn.execute(query, *args)
         except Exception as error:
@@ -297,6 +299,15 @@ class Meta():
         for role in [role for role in g["self-roles"] if role not in roles]:
             g["self-roles"].remove(role)
             await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", guild.id, role)
+
+        invites = await guild.invites()
+        for invite in invites:
+            await self.bot.query_executer("""
+                INSERT INTO necrobot.Invites VALUES ($1, $2, $3, $4, $5)
+                ON CONFLICT (id)
+                DO UPDATE SET uses = $4 WHERE id = $1""",
+                invite.id, guild.id, invite.url, invite.uses, invite.inviter.id
+            )
 
     async def reminder_task(self, user_id, reminder, time):
         try:

@@ -170,3 +170,11 @@ CREATE TABLE necrobot.Youtube(
     filter varchar(200),
     PRIMARY KEY(guild_id, youtuber_id)
 );
+
+CREATE TABLE necrobot.Invites(
+    id varchar(10) PRIMARY KEY,
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    url varchar(200),
+    uses int,
+    inviter bigint
+);
