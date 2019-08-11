@@ -140,7 +140,7 @@ class Meta():
                 if self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"]) is None:
                     return False
                     
-                return self.bot.get_channel(self.bot.server_data[guild]["broadcast-channel"]) is not None and self.bot.server_data[guild]["broadcast"] != "" and (self.bot.counter % self.bot.server_data[guild]["broadcast-time"]) == 0
+                return self.bot.counter % self.bot.server_data[guild]["broadcast-time"] == 0
 
             broadcast_guilds = [guild for guild in self.bot.server_data if guild_check(guild)]
 

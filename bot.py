@@ -4,7 +4,6 @@ from discord.ext import commands
 from rings.utils.db import db_gen
 from rings.utils.config import token, modio_api
 from rings.utils.help import NecroBotHelpFormatter
-from rings.utils.var import tutorial_e
 
 import re
 import json
@@ -64,13 +63,13 @@ class NecroBot(commands.Bot):
 
         self.user_data, self.server_data, self.starred, self.polls, self.games = db_gen()
 
-        self.version = 2.8
+        self.version = 2.9
         self.ready = False
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
         self.new_commands = ["youtube"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
-        self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "The Bot Smith"]
+        self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "Bot Smiths"]
         
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.modio = async_modio.Client(api_key=modio_api)
@@ -125,8 +124,6 @@ class NecroBot(commands.Bot):
 
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
-        
-        self.tutorial_e = discord.Embed.from_data(tutorial_e)
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -236,4 +233,10 @@ if __name__ == '__main__':
     for extension in extensions:
         bot.load_extension(f"rings.{extension}")   
 
-    bot.run(token)
+    try:
+        bot.run(token)
+    except:
+        pass
+    finally:
+        with open("rings/utils/data/settings.json", "w") as outfile:
+            json.dump(self.bot.settings, outfile)

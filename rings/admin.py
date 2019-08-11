@@ -380,22 +380,10 @@ class Admin():
             await channel.send("**Bot Offline**")
             self.bot.broadcast_task.cancel()
             self.bot.status_task.cancel()
+            self.bot.cogs["RSS"].task.cancel()
             await self.bot.session.close()
             await self.bot.modio.close()
             await self.bot.logout()
-
-    @commands.command()
-    @commands.is_owner()
-    async def save(self, ctx):
-        """Save data but doesn't terminate the bot
-
-        {usage}"""
-        await ctx.send(":white_check_mark: | Saving")
-        
-        with open("rings/utils/data/settings.json", "w") as outfile:
-            json.dump(self.bot.settings, outfile)
-        
-        await ctx.send(":white_check_mark: | Done saving")
 
     @commands.command()
     @has_perms(6)
@@ -474,7 +462,7 @@ class Admin():
     @commands.command()
     @has_perms(6)
     async def gate(self, ctx, channel : Union[discord.TextChannel, discord.User]):
-        """Connects two channels with a magic gate so that users on bot servers can communicate. Magic:tm:
+        """Connects two channels with a magic gate so that users on both servers can communicate. Magic:tm:
 
         {usage}
 
@@ -490,7 +478,7 @@ class Admin():
         self.gates[channel.id] = ctx.channel
 
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content == "exit"
+            return message.author == ctx.author and message.channel == ctx.channel and message.content == "n!exit"
 
 
         await self.bot.wait_for("message", check=check)
