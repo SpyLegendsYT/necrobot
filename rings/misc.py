@@ -137,7 +137,7 @@ class Misc():
         await ctx.send(embed=embed) 
 
 
-    @commands.command()
+    @commands.command(enabled=False)
     async def ow(self, ctx, username, region="eu", hero=None):
         """Creates a rich embed of the user's Owerwatch stats for PC only. You must parse through a valid Battle.NET Battle 
         Tag and optionally a region. You can also optionally parse in a hero's name to start the embeds at this hero.

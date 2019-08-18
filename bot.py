@@ -6,6 +6,7 @@ from rings.utils.config import token, modio_api
 from rings.utils.help import NecroBotHelpFormatter
 
 import re
+import sys
 import json
 import time
 import random
@@ -77,6 +78,8 @@ class NecroBot(commands.Bot):
         self.cat_cache = []
         self.events = {}
         self.ignored_messages = []
+
+        self.pool = None
 
         @self.check
         def disabled_check(ctx):
@@ -235,8 +238,8 @@ if __name__ == '__main__':
 
     try:
         bot.run(token)
-    except:
-        pass
+    except Exception as error:
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
     finally:
         with open("rings/utils/data/settings.json", "w") as outfile:
-            json.dump(self.bot.settings, outfile)
+            json.dump(bot.settings, outfile)

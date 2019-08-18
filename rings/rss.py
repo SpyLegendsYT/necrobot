@@ -130,12 +130,12 @@ class RSS():
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             try:
-                await self.youtube_sub_task()
                 await asyncio.sleep(900)
+                await self.youtube_sub_task()
             except asyncio.CancelledError:
                 return
             except Exception as e:
-                await self.bot.dispatch("error", e)
+                await self.bot.dispatch("error", f'rss_task: {e}')
 
 def setup(bot):
     bot.add_cog(RSS(bot))

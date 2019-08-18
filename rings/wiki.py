@@ -4,7 +4,7 @@ from discord.ext import commands
 import re
 import wikia
 import urllib
-import unwiki
+from unwiki.unwiki import UnWiki
 from mwclient import Site
 from fuzzywuzzy import process
 
@@ -97,7 +97,7 @@ class Wiki():
         url = "http://tolkiengateway.net/wiki/" + article.name.replace(" ", "_")
         raw_desc = re.sub('<[^<]+?>', '', article.text(section=0))
         
-        description = unwiki.UnWiki(raw_desc).__str__()
+        description = UnWiki(raw_desc).__str__()
         embed = discord.Embed(title=article.name, colour=discord.Colour(0x277b0), url=url, description=description[:2047])
 
         try:
@@ -134,7 +134,7 @@ class Wiki():
         except wikia.wikia.WikiaError:
             try:
                 search_list = wikia.search(wiki, article_name)
-                msg = f"Article: **{article.name}** not found, returning first search result and the following search list: {search_list[1:]}"
+                msg = f"Article: **{article_name}** not found, returning first search result and the following search list: {search_list[1:]}"
                 article = wikia.page(wiki, search_list[0])
             except ValueError:
                 await ctx.send(":negative_squared_cross_mark: | Article not found or wiki not recognized, and search didn't return any result. Please try again with different terms.")

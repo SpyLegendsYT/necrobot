@@ -162,7 +162,7 @@ class Meta():
         except asyncio.CancelledError:
             return
         except Exception as e:
-            self.bot.dispatch("error", e)
+            self.bot.dispatch("error", f'rotation_status: {e}')
 
     async def load_cache(self):        
         self.bot.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
@@ -218,6 +218,9 @@ class Meta():
         await self.bot.change_presence(activity=discord.Game(name="n!help for help"))
 
     async def query_executer(self, query, *args, **kwargs):
+        if self.bot.pool is None:
+            return []
+
         conn = await self.bot.pool.acquire()
         result = []
         try:
@@ -243,7 +246,7 @@ class Meta():
             
     async def default_stats(self, member, guild):
         if member.id not in self.bot.user_data:
-            self.bot.user_data[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, "warnings": {}, "reminders":[], 'places':{1:"", 2:"", 3:"", 4:"", 5:"", 6:"", 7:"", 8:""}, "tutorial": False}
+            self.bot.user_data[member.id] = {'money': 200, 'daily': '', 'title': '', 'exp': 0, 'perms': {}, 'badges':[], "waifu":{}, "warnings": defaultdict(list), "reminders":[], 'places':{1:"", 2:"", 3:"", 4:"", 5:"", 6:"", 7:"", 8:""}, "tutorial": False}
             await self.bot.query_executer("INSERT INTO necrobot.Users VALUES ($1, 200, 0, '          ', '', '', 'False');", member.id)
             await self.bot.query_executer("INSERT INTO necrobot.Badges VALUES ($1, 1, ''), ($1, 2, ''), ($1, 3, ''), ($1, 4, ''), ($1, 5, ''), ($1, 6, ''), ($1, 7, ''), ($1, 8, '');", member.id)
 
@@ -300,14 +303,17 @@ class Meta():
             g["self-roles"].remove(role)
             await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", guild.id, role)
 
-        invites = await guild.invites()
-        for invite in invites:
-            await self.bot.query_executer("""
-                INSERT INTO necrobot.Invites VALUES ($1, $2, $3, $4, $5)
-                ON CONFLICT (id)
-                DO UPDATE SET uses = $4 WHERE id = $1""",
-                invite.id, guild.id, invite.url, invite.uses, invite.inviter.id
-            )
+        try:
+            invites = await guild.invites()
+            for invite in invites:
+                await self.bot.query_executer("""
+                    INSERT INTO necrobot.Invites as inv VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (id)
+                    DO UPDATE SET uses = $4 WHERE inv.id = $1""",
+                    invite.id, guild.id, invite.url, invite.uses, invite.inviter.id
+                )
+        except (discord.Forbidden, AttributeError):
+            pass
 
     async def reminder_task(self, user_id, reminder, time):
         try:
@@ -324,7 +330,7 @@ class Meta():
             self.bot.user_data[user_id]["reminders"].remove(r)
             await self.bot.query_executer("DELETE FROM necrobot.Reminders WHERE start_date = $1 AND user_id = $2", r["start"], user_id)
         except Exception as e:
-            await ctx.send(f"Reminder **{reminder[:30]}** has failed:\n{e}")
+            await self.bot.get_channel(415169176693506048).send(f"Reminder **{reminder[:30]}** has failed:\n{e}")
 
 def setup(bot):
     bot.add_cog(Meta(bot))

@@ -117,12 +117,10 @@ class Literature():
         __Examples__
         `{pre}shuffle Fun time` - uFn imet
         """
-        new_sentence = []
-        for word in sentence:
-            w = list(word)
-            random.shuffle(w)
-            new_sentence.append("".join(w))
+        if not sentence:
+            return await ctx.send(":negative_squared_cross_mark: | Please provide a sentence to shuffle")
 
+        new_sentence = ["".join(random.shuffle(list(word))) for word in sentence]
         await ctx.send(" ".join(new_sentence))
 
 

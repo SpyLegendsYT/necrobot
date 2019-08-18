@@ -1,5 +1,5 @@
 import psycopg2
-from config import dbpass
+from rings.utils.config import dbpass
 from collections import defaultdict
 
 def db_gen():
@@ -71,7 +71,7 @@ def db_gen():
             "perms":{},
             "waifu":{},
             "places":{},
-            "warnings":{},
+            "warnings":defaultdict(list),
             "reminders":[]
         }
 
