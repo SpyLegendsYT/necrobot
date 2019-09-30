@@ -210,11 +210,11 @@ class Meta():
                 timer = time_converter(reminder["timer"])
 
                 sleep = timer - ((datetime.datetime.now() - time).total_seconds())
-                if sleep < 0:
-                    sleep = 0
-
-                task = self.bot.loop.create_task(self.bot.reminder_task(user.id, reminder, sleep))
-                reminder["task"] = task
+                if sleep <= 0:
+                    await self.bot.query_executer("DELETE FROM necrobot.Reminders WHERE start_date = $1 AND user_id = $2", reminder["start"], user.id)
+                else:
+                    task = self.bot.loop.create_task(self.bot.reminder_task(user.id, reminder, sleep))
+                    reminder["task"] = task
 
         await msg.edit(content="**Bot Online**")
         await self.bot.change_presence(activity=discord.Game(name="n!help for help"))
