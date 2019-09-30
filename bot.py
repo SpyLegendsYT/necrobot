@@ -128,41 +128,45 @@ class NecroBot(commands.Bot):
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def load(self, ctx, extension_name : str):
-        """Loads the extension name if in NecroBot's list of rings.
-        
-        {usage}"""
-        try:
-            self.load_extension(f"rings.{extension_name}")
-        except (AttributeError,ImportError) as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-            return
-        await ctx.send(f"{extension_name} loaded.")
+        @commands.command(hidden=True)
+        @commands.is_owner()
+        async def load(self, ctx, extension_name : str):
+            """Loads the extension name if in NecroBot's list of rings.
+            
+            {usage}"""
+            try:
+                self.load_extension(f"rings.{extension_name}")
+            except (AttributeError,ImportError) as e:
+                await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+                return
+            await ctx.send(f"{extension_name} loaded.")
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def unload(self, ctx, extension_name : str):
-        """Unloads the extension name if in NecroBot's list of rings.
-         
-        {usage}"""
-        self.unload_extension(f"rings.{extension_name}")
-        await ctx.send(f"{extension_name} unloaded.")
+        @commands.command(hidden=True)
+        @commands.is_owner()
+        async def unload(self, ctx, extension_name : str):
+            """Unloads the extension name if in NecroBot's list of rings.
+             
+            {usage}"""
+            self.unload_extension(f"rings.{extension_name}")
+            await ctx.send(f"{extension_name} unloaded.")
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def reload(self, ctx, extension_name : str):
-        """Unload and loads the extension name if in NecroBot's list of rings.
-         
-        {usage}"""
-        self.unload_extension(f"rings.{extension_name}")
-        try:
-            self.load_extension(f"rings.{extension_name}")
-        except (AttributeError,ImportError) as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-            return
-        await ctx.send(f"{extension_name} reloaded.")
+        @commands.command(hidden=True)
+        @commands.is_owner()
+        async def reload(self, ctx, extension_name : str):
+            """Unload and loads the extension name if in NecroBot's list of rings.
+             
+            {usage}"""
+            self.unload_extension(f"rings.{extension_name}")
+            try:
+                self.load_extension(f"rings.{extension_name}")
+            except (AttributeError,ImportError) as e:
+                await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+                return
+            await ctx.send(f"{extension_name} reloaded.")
+
+            self.add_command(self.load)
+            self.add_command(self.unload)
+            self.add_command(self.reload)
 
     async def on_ready(self):
         """If this is the first time the boot is booting then we load the cache and set the

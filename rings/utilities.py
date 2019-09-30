@@ -41,6 +41,8 @@ class Utilities():
             await ctx.send(f":1234: | **{final}**")
         except NameError:
             await ctx.send(":negative_squared_cross_mark: | **Mathematical equation not recognized.**")
+        except Exception as e:
+            await ctx.send(f":negative_squared_cross_mark: | {e}")
 
     @commands.command(aliases=["pong"])
     async def ping(self, ctx):

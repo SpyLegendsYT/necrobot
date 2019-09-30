@@ -110,6 +110,8 @@ class Meta():
             else:
                 embed.add_field(name='Attachment', value=f'[{file.filename}]({file.url})', inline=False)
 
+        embed.add_field(name="Message", value=f'[Jump]({message.jump_url})')
+
         msg = await self.bot.get_channel(self.bot.server_data[message.guild.id]["starboard-channel"]).send(content=f"In {message.channel.mention}", embed=embed)
         
         if message.id not in self.bot.starred:

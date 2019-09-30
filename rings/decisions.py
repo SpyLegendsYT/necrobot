@@ -36,7 +36,7 @@ class Decisions():
 
     @commands.command(aliases=["flip"])
     @commands.cooldown(3, 5, BucketType.user)
-    async def coin(self, ctx, choice : CoinConverter = None, bet : MoneyConverter = None):
+    async def coin(self, ctx, choice : CoinConverter = None, bet : MoneyConverter = 0):
         """Flips a coin and returns the result. Can also be used to bet money on the result (`h` for head and `t` for tail).
         
         {usage}
@@ -46,7 +46,7 @@ class Decisions():
         `{pre}coin h 50` - bet 50 coins on the result being head"""
         outcome = random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"])
         
-        if bet:
+        if bet > 0:
             bet = abs(bet)
             if "head" in outcome and choice == "h":
                 outcome += "\nWell done!"
@@ -59,9 +59,6 @@ class Decisions():
                 self.bot.user_data[ctx.author.id]["money"] -= bet
 
             await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-        else:
-            await ctx.send(":negative_squared_cross_mark: | Not enough money", delete_after=5)
-            return
 
         await ctx.send(outcome)
 

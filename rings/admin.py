@@ -34,10 +34,10 @@ class Admin():
 
     @commands.command()
     @commands.is_owner()
-    async def leave(self, ctx, guild : GuildConverter, *, reason : str = "unspecified"):
+    async def leave(self, ctx, guild : GuildConverter, *, reason : str = None):
         """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
         {usage}"""
-        if reason != "unspecified":
+        if reason is not None:
             channel = [x for x in guild.text_channels if x.permissions_for(self.bot.user).send_messages][0]
             await channel.send(f"I'm sorry, Necro#6714 has decided I should leave this server, because: {reason}")
         await guild.leave()
@@ -57,6 +57,8 @@ class Admin():
         {usage}"""
         self.bot.user_data[user.id]["perms"][server.id] = level
         await self.bot.query_executer("UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3;", level, server.id, user.id)
+        
+        #if we're demoting a bot admin make sure they get demoted on every server
         if level >= 6:
             for guild in self.bot.user_data[user.id]["perms"]:
                 self.bot.user_data[user.id]["perms"][guild] = level
@@ -117,7 +119,7 @@ class Admin():
                 await self.bot.query_executer("UPDATE necrobot.Badges SET badge = $1 WHERE user_id = $2 AND place = $3", badge, user.id, key)
 
             self.bot.user_data[user.id]["badges"].remove(badge)    
-            await ctx.send(f":white_check_mark: | Reclaimd the **{badge}** badge from user **{user}**")
+            await ctx.send(f":white_check_mark: | Reclaimed the **{badge}** badge from user **{user}**")
         else:
             await ctx.send(":negative_squared_cross_mark: | Users has/doesn't have the badge")
             return
@@ -237,24 +239,20 @@ class Admin():
         {usage}"""
         async def get_invite(guild):
             try:
-                channel = [x for x in guild.text_channels if x.permissions_for(guild.me).create_instant_invite][0]
-                invite = await channel.create_invite(max_age=86400)
-                await ctx.send(f"Server: {guild.name}({guild.id}) - <{invite.url}>")
-            except discord.errors.Forbidden:
-                await ctx.send(f"I don't have the necessary permissions on {guild.name}({guild.id}). That server is owned by {guild.owner}({guild.id})")
-            except IndexError:
-                await ctx.send(f"No text channels in {guild.name}({guild.id})")
+                invite = await guild.invites()[0]
+                return f"Server: {guild.name}({guild.id}) - <{invite.url}>"
+            except (discord.Forbidden, IndexError) as e:
+                return f"Server: {guild.name}({guild.id}) - <{e}>"
 
         if guild:
-            await get_invite(guild)
+            await ctx.send(await get_invite(guild))
         else:
-            for server in self.bot.guilds:
-                await get_invite(server)
+            await ctx.send("\n".join([await get_invite(guild) for guild in self.bot.guilds]))
             
     @commands.command()
     @commands.is_owner()
     async def debug(self, ctx, *, cmd : str):
-        """Evaluates code. All credits to Danny for creating a safe eval command (Permission level required: 7+ (The Bot Smith)) 
+        """Evaluates code. (Permission level required: 7+ (The Bot Smith)) 
         
         {usage}
         
@@ -425,7 +423,7 @@ class Admin():
         if ctx.command == "as":
             return
 
-        ctx.author = ctx.message.author = user
+        ctx.message.author = user
         ctx.message.content = message
 
         await self.bot.process_commands(ctx.message)
