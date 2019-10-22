@@ -236,7 +236,7 @@ class NecroEvents():
 
     async def on_reaction_add(self, reaction, user):
         if user.id in self.bot.settings["blacklist"] or not reaction.message.guild:
-            return        
+            return       
 
         if self.bot.server_data[user.guild.id]["starboard-channel"] in ["", reaction.message.channel.id]:
             return

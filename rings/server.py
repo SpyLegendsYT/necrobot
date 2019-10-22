@@ -48,6 +48,7 @@ class Server():
         `{pre}perms @NecroBot 5` - set the NecroBot permission level to 5"""
         if level < 0 or level > 7:
             await ctx.send(":negative_squared_cross_mark: | You cannot promote the user any higher/lower")
+            return
 
         if self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > level and self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] > self.bot.user_data[user.id]["perms"][ctx.guild.id]:
             c = self.bot.user_data[user.id]["perms"][ctx.guild.id]
