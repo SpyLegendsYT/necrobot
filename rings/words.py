@@ -63,8 +63,8 @@ class Literature():
         """Use to display all possible languages to translate from
 
         {usage}"""
-        text = ", ".join([f"**{value}**: {lang}" for lang, value in googletrans.languages.items()])
-        await ctx.send(text[:-2])
+        text = ", ".join([f"**{value}**: {lang}" for lang, value in googletrans.LANGUAGES.items()])
+        await ctx.send(text)
 
     @commands.command()
     @commands.cooldown(3, 60, BucketType.user)
