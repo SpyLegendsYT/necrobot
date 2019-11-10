@@ -15,7 +15,7 @@ class Wiki():
         self.bot = bot
 
     @commands.command()
-    async def edain(self, ctx, *, article : str):
+    async def edain(self, ctx, *, article : str = None):
         """Performs a search on the Edain Mod Wiki for the give article name. If an article is found then it will 
         return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
         
@@ -28,7 +28,7 @@ class Wiki():
         await self.personalised_wiki_check(ctx, "edain", article)
 
     @commands.command()
-    async def aotr(self, ctx, *, article : str):
+    async def aotr(self, ctx, *, article : str = None):
         """Performs a search on the Age of the Ring Wiki for the give article name. If an article is found then it will 
         return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
         
@@ -41,6 +41,9 @@ class Wiki():
         await self.personalised_wiki_check(ctx, "aotr", article)
 
     async def personalised_wiki_check(self, ctx, wiki, article):
+        if article is None:
+            return await ctx.send(f"<https://{wiki}.wikia.com/>")
+
         msg = None
         try:
             article = wikia.page(wiki, article)
@@ -97,7 +100,7 @@ class Wiki():
         await ctx.send(msg, embed=embed)
 
     @commands.command()
-    async def lotr(self, ctx, *, article_name : str):
+    async def lotr(self, ctx, *, article_name : str = None):
         """Performs a search on the Tolkien Gateway for the give article name. If an article is found then it 
         will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
@@ -106,6 +109,9 @@ class Wiki():
         __Example__
         `{pre}lotr Finrod` - creates an embed of Finrod Felagund
         `{pre}lotr Fellowship` - searches for 'Fellowship' and returns the first result"""
+        if article_name is None:
+            return await ctx.send(f"<http://tolkiengateway.net/>")
+
         msg = ""
         site = Site(("http", "tolkiengateway.net"))
         if site.pages[article_name].text() != "":
@@ -137,7 +143,7 @@ class Wiki():
         await ctx.send(msg, embed=embed)
 
     @commands.command()
-    async def wiki(self, ctx, wiki : str, *, article_name : str):
+    async def wiki(self, ctx, wiki : str, *, article_name : str = None):
         """Performs a search on the given wiki (if valid) for the given article name. If an article is found then it 
         will return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
 
@@ -147,6 +153,9 @@ class Wiki():
         `{pre}wiki disney Donald Duck` - creates a rich embed of the Donald Duck page
         `{pre}wiki transformers Optimus` - searches for the 'Optimus Page' and returns a list of search results and a
          rich embed of the first one."""
+        if article_name is None:
+            return await ctx.send(f"<https://{wiki}.wikia.com/>")
+
         msg = ""
         if wiki.lower() == "edain":
             await ctx.send(":negative_squared_cross_mark: | No. Use the `edain` command")
