@@ -123,11 +123,15 @@ class Tags():
         self.is_tag_owner(ctx, tag)
 
         del self.bot.server_data[ctx.guild.id]["tags"][tag]
+        to_del = []
         await self.bot.query_executer("DELETE FROM necrobot.Tags WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
         for alias, tag_name in self.bot.server_data[ctx.guild.id]["aliases"].items():
             if tag_name == tag:
-                del self.bot.server_data[ctx.guild.id]["aliases"][alias]
-                await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag_name)
+                to_del.append((alias, tag_name))
+
+        for e in to_del:
+            del self.bot.server_data[ctx.guild.id]["aliases"][e[0]]
+            await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, e[1])
 
         await ctx.send(f":white_check_mark: | Tag {tag} and its aliases removed")
 

@@ -403,7 +403,7 @@ class Admin():
             for row in results[index*5:(index+1)*5]:
                 user = self.bot.get_user(row["user_id"])
                 guild = self.bot.get_guild(row["guild_id"])
-                embed.add_field(name=row["command"], value=f"From {user} ({user.id}) on {guild} ({guild.id}) on {row['time_used']}\n **Message**\n{row['message'][:1000]}")
+                embed.add_field(name=row["command"], value=f"From {user} ({user.id}) on {guild} ({guild.id}) on {row['time_used']}\n **Message**\n{row['message'][:1000]}", inline=False)
 
             return embed
 
@@ -449,10 +449,10 @@ class Admin():
                 continue
             members[user.status].add(user.id)
 
-        embed.add_field(name="Members", value="\n".join([f"{emojis[key.name]} {len(value)}" for key, value in members.items()]))
+        embed.add_field(name="Members", value="\n".join([f"{emojis[key.name]} {len(value)}" for key, value in members.items()]), inline=False)
         memory_usage = self.process.memory_full_info().uss / 1024**2
         cpu_usage = self.process.cpu_percent() / psutil.cpu_count()
-        embed.add_field(name='Process', value=f'{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU')
+        embed.add_field(name='Process', value=f'{memory_usage:.2f} MiB\n{cpu_usage:.2f}% CPU', inline=False)
 
         await ctx.send(embed=embed)
             

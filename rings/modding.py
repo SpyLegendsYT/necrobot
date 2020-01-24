@@ -52,18 +52,18 @@ class Modding():
 
             sections = ["Articles", "Reviews", "Downloads", "Videos", "Images"]
             nav_bar = [f"[{x}]({url}/{x.lower()})" for x in sections]
-            embed.add_field(name="Navigation", value=" - ".join(nav_bar))
+            embed.add_field(name="Navigation", value=" - ".join(nav_bar), inline=False)
 
             if page == 0:
                 for article in game.articles[:4]:
-                    embed.add_field(name=article.name, value=f"{article.summary}... [Link]({article.url})")
+                    embed.add_field(name=article.name, value=f"{article.summary}... [Link]({article.url})", inline=False)
             elif page == 1:
-                embed.add_field(name="\u200b", value=" ".join([f"[#{tag}]({url})" for tag, url in game.tags.items()]))
-                embed.add_field(name="Misc: ", value=f"{game.rating}/10 \n{game.profile.release.strftime('%d-%b-%Y')}\n[{game.profile.engine.name}]({game.profile.engine.url})\n**[Comment]({game.url}#commentform)**  -  **[Follow]({game.profile.follow})**")
-                embed.add_field(name="Stats", value=f"Rank: {game.stats.rank}/{game.stats.total}\nVisits: {game.stats.today}\nFiles:  {game.stats.files}\nArticles: {game.stats.articles}\nReviews: {game.stats.reviews}")
+                embed.add_field(name="\u200b", value=" ".join([f"[#{tag}]({url})" for tag, url in game.tags.items()]), inline=False)
+                embed.add_field(name="Misc: ", value=f"{game.rating}/10 \n{game.profile.release.strftime('%d-%b-%Y')}\n[{game.profile.engine.name}]({game.profile.engine.url})\n**[Comment]({game.url}#commentform)**  -  **[Follow]({game.profile.follow})**", inline=False)
+                embed.add_field(name="Stats", value=f"Rank: {game.stats.rank}/{game.stats.total}\nVisits: {game.stats.today}\nFiles:  {game.stats.files}\nArticles: {game.stats.articles}\nReviews: {game.stats.reviews}", inline=False)
             elif page == 2:
                 suggestion_list = [f"[{suggestion.name}]({suggestion.url})" for suggestion in game.suggestions]
-                embed.add_field(name="You may also like", value=" \n- ".join(suggestion_list))
+                embed.add_field(name="You may also like", value=" \n- ".join(suggestion_list), inline=False)
 
             return embed
 
@@ -101,18 +101,18 @@ class Modding():
 
             sections = ["Articles", "Reviews", "Downloads", "Videos", "Images"]
             nav_bar = [f"[{x}]({url}/{x.lower()})" for x in sections]
-            embed.add_field(name="Navigation", value=" - ".join(nav_bar))
+            embed.add_field(name="Navigation", value=" - ".join(nav_bar), inline=False)
 
             if page == 0:
                 for article in mod.articles[:4]:
-                    embed.add_field(name=article.name, value=f"{article.summary}... [Link]({article.url})")
+                    embed.add_field(name=article.name, value=f"{article.summary}... [Link]({article.url})", inline=False)
             elif page == 1:
-                embed.add_field(name="\u200b", value=" ".join([f"[#{tag}]({url})" for tag, url in mod.tags.items()]))
-                embed.add_field(name="Misc: ", value=f"{mod.rating}/10 \n{mod.profile.release.strftime('%d-%b-%Y')}\n[{mod.profile.game.name}]({mod.profile.game.url})\n**[Comment]({mod.url}#commentform)**  -  **[Follow]({mod.profile.follow})**")
-                embed.add_field(name="Stats", value=f"Rank: {mod.stats.rank}/{mod.stats.total}\nVisits: {mod.stats.today}\nFiles:  {mod.stats.files}\nArticles: {mod.stats.articles}\nReviews: {mod.stats.reviews}")
+                embed.add_field(name="\u200b", value=" ".join([f"[#{tag}]({url})" for tag, url in mod.tags.items()]), inline=False)
+                embed.add_field(name="Misc: ", value=f"{mod.rating}/10 \n{mod.profile.release.strftime('%d-%b-%Y')}\n[{mod.profile.game.name}]({mod.profile.game.url})\n**[Comment]({mod.url}#commentform)**  -  **[Follow]({mod.profile.follow})**", inline=False)
+                embed.add_field(name="Stats", value=f"Rank: {mod.stats.rank}/{mod.stats.total}\nVisits: {mod.stats.today}\nFiles:  {mod.stats.files}\nArticles: {mod.stats.articles}\nReviews: {mod.stats.reviews}", inline=False)
             elif page == 2:
                 suggestion_list = [f"[{suggestion.name}]({suggestion.url})" for suggestion in mod.suggestions]
-                embed.add_field(name="You may also like", value=" \n- ".join(suggestion_list))
+                embed.add_field(name="You may also like", value=" \n- ".join(suggestion_list), inline=False)
 
             return embed
 
@@ -205,16 +205,16 @@ class Modding():
             - Published: {game.date.strftime("%d %B %Y %H:%M:%S")}
             - Last Updated: {game.updated.strftime("%d %B %Y %H:%M:%S")}
             - Live: {game.live.strftime("%d %B %Y %H:%M:%S")}
-        ''')
+        ''', inline=False)
         nl = '\n'
         mods = await game.get_mods(filter=async_modio.Filter().sort("sort_popular").limit(5))
         embed.add_field(name="Info", value=f'''
             - ID: {game.id}
             - URL: {game.profile} {f"{nl}- Homepage: {game.homepage}" if game.homepage else ""}
             - Mods: {mods.pagination.total}
-        ''')
+        ''', inline=False)
 
-        embed.add_field(name="Popular Mods", value="- "+"\n- ".join([f'[{x.name}]({x.profile}) ({x.stats.rank}/{x.stats.rank_total})' for x in mods.results]))
+        embed.add_field(name="Popular Mods", value="- "+"\n- ".join([f'[{x.name}]({x.profile}) ({x.stats.rank}/{x.stats.rank_total})' for x in mods.results]), inline=False)
 
         embed.set_image(url=game.logo.original)
 
@@ -358,7 +358,7 @@ class Modding():
                     - Subscribers: {mod.stats.subscribers}
                     - :thumbsup: **{mod.stats.positive} / {mod.stats.negative}** :thumbdown:: {mod.stats.weighted}%
                     - {mod.stats.text} 
-                ''')
+                ''', inline=False)
 
                 nl = "\n"
                 embed.add_field(name="Info", value=f'''
@@ -366,13 +366,13 @@ class Modding():
                     - Files: {files.pagination.total}{f"{nl}- Homepage: {mod.homepage}" if mod.homepage else ""}
                     - Download: [{mod.file.filename} v{mod.file.version}]({mod.file.url})
 
-                ''')
+                ''', inline=False)
 
                 embed.add_field(name="Dates", value=f'''
                     - Published: {mod.date.strftime("%d %B %Y %H:%M:%S")}
                     - Last Updated: {mod.updated.strftime("%d %B %Y %H:%M:%S")}
                     - Live: {mod.live.strftime("%d %B %Y %H:%M:%S")}
-                ''')
+                ''', inline=False)
 
                 embed.add_field(name="\u200b", value=" ".join([f'#{tag}' for tag in mod.tags.keys()]), inline=False)
             elif index > 0:
@@ -381,7 +381,7 @@ class Modding():
                     embed.add_field(name=event.type.name.title().replace("_", " "), value=f'''
                         - Date: {event.date.strftime("%d %B %Y %H:%M:%S")}
                         - Change maker: [{user.username}]({user.profile})
-                    ''')
+                    ''', inline=False)
 
             return embed
 

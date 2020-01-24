@@ -27,7 +27,7 @@ class Wiki():
 
         await self.personalised_wiki_check(ctx, "edain", article)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def aotr(self, ctx, *, article : str = None):
         """Performs a search on the Age of the Ring Wiki for the give article name. If an article is found then it will 
         return a rich embed of it, else it will return a list of a related articles and an embed of the first related article. 
@@ -39,6 +39,17 @@ class Wiki():
         `{pre}edain Battering Ram` - prints a rich embed of the Battering Ram disambiguation page"""
 
         await self.personalised_wiki_check(ctx, "aotr", article)
+
+    # @aotr.command(name="faq")
+    async def aotr_faq(self, ctx, *, question : str = None):
+        """Replies with up to 5 links from the Age of the Ring FAQ that have matched close to the initial question.
+
+        {usage}
+
+        __Example__
+        `{pre}faq angmar faction` - will reply with links on why angmar isn't a faction
+        """
+        await self.faq_handler("aotr", ctx, question)
 
     async def personalised_wiki_check(self, ctx, wiki, article):
         if article is None:
@@ -52,7 +63,7 @@ class Wiki():
                 search_list = wikia.search(wiki, article)
                 msg = f"Article: **{article}** not found, returning first search result and the following search list: {search_list[1:]}"
                 article = wikia.page(wiki.title(), search_list[0], preload=True)
-            except ValueError:
+            except (ValueError, IndexError):
                 await ctx.send(":negative_squared_cross_mark: | Article not found, and search didn't return any results. Please try again with different terms.")
                 return
 
@@ -208,12 +219,15 @@ class Wiki():
         __Example__
         `{pre}faq mirkwood faction` - will reply with links on why Mirkwood isn't its own faction
         """
+        await self.faq_handler("edain", ctx, question)
+
+    async def faq_handler(self, mod, ctx, question):
         ignored = set(("General Questions", "Faction Implementation Questions", "Hardcoded Bugs"))
         if not question:
-            await ctx.send("https://edain.wikia.com/wiki/Frequently_Asked_Questions")
+            await ctx.send(f"https://{mod}.wikia.com/wiki/Frequently_Asked_Questions")
             return
             
-        article = wikia.page("edain", "Frequently Asked Questions")
+        article = wikia.page(mod, "Frequently Asked Questions")
         matches = process.extract(question, set(article.sections) - ignored, limit=5)
         message = []
 
@@ -230,8 +244,6 @@ class Wiki():
             return
 
         await ctx.send("\n".join(message))
-
-
 
 def setup(bot):
     bot.add_cog(Wiki(bot))

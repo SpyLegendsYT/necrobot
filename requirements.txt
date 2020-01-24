@@ -50,7 +50,7 @@ discord.py == 1.0.0a1577+g77239e4
 googletrans == 2.3.0
 
 # rings\modding.py: 10
-moddb_reader == 0.6
+#moddb_reader == 0.6
 
 # rings\wiki.py: 9
 mwclient == 0.8.6

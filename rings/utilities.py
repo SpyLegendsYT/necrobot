@@ -74,8 +74,8 @@ class Utilities():
         channels = ", ".join(channel_list) if len(", ".join(channel_list)) < 1024 else ""
         role_list = [role.name for role in guild.roles]
         roles = ", ".join(role_list) if len(", ".join(role_list)) < 1024 else ""
-        embed.add_field(name="**Channels**", value=f"{len(channel_list)}: {channels}")
-        embed.add_field(name="**Roles**", value=f"{len(role_list)}: {roles}")
+        embed.add_field(name="**Channels**", value=f"{len(channel_list)}: {channels}", inline=False)
+        embed.add_field(name="**Roles**", value=f"{len(role_list)}: {roles}", inline=False)
 
         await ctx.send(embed=embed)
 
@@ -223,7 +223,7 @@ class Utilities():
             
             reminders = self.bot.user_data[user.id]["reminders"]
             for reminder in reminders[index*10: (index+1)*10]:
-                embed.add_field(name=f'{reminders.index(reminder) + 1}: {reminder["timer"]}', value=reminder["text"][:500])
+                embed.add_field(name=f'{reminders.index(reminder) + 1}: {reminder["timer"]}', value=reminder["text"][:500], inline=False)
 
             return embed
 

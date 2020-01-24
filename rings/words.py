@@ -37,7 +37,7 @@ class Literature():
             return
 
         embed = discord.Embed(title=word.title(), url="http://www.urbandictionary.com/", colour=discord.Colour(0x277b0), description=definition["definition"][:2048].replace("[", "").replace("]", ""))
-        embed.add_field(name="__Examples__", value=definition["example"][:2048].replace("[", "").replace("]", ""))
+        embed.add_field(name="__Examples__", value=definition["example"][:2048].replace("[", "").replace("]", ""), inline=False)
 
         await ctx.send(embed=embed)
 
@@ -100,7 +100,7 @@ class Literature():
                 try:
                     for entry_b in entry["entries"][index]["senses"]:
                         message += f'{entry["entries"][index]["senses"].index(entry_b) + 1}. {entry_b["definitions"][0]}\n - *{entry_b["examples"][0]["text"]}*\n'
-                    embed.add_field(name=form, value=message)
+                    embed.add_field(name=form, value=message, inline=False)
                 except (IndexError, KeyError):
                     pass
 
