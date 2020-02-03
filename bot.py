@@ -87,6 +87,9 @@ class NecroBot(commands.Bot):
         self.ignored_messages = []
 
         self.pool = None
+        self.add_command(self.load)
+        self.add_command(self.unload)
+        self.add_command(self.reload)
 
         @self.check
         def disabled_check(ctx):
@@ -142,7 +145,7 @@ class NecroBot(commands.Bot):
         
         {usage}"""
         try:
-            self.load_extension(f"rings.{extension_name}")
+            ctx.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
@@ -154,7 +157,7 @@ class NecroBot(commands.Bot):
         """Unloads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        self.unload_extension(f"rings.{extension_name}")
+        ctx.bot.unload_extension(f"rings.{extension_name}")
         await ctx.send(f"{extension_name} unloaded.")
 
     @commands.command(hidden=True)
@@ -163,9 +166,9 @@ class NecroBot(commands.Bot):
         """Unload and loads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        self.unload_extension(f"rings.{extension_name}")
+        ctx.bot.unload_extension(f"rings.{extension_name}")
         try:
-            self.load_extension(f"rings.{extension_name}")
+            ctx.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
@@ -213,9 +216,9 @@ class NecroBot(commands.Bot):
         await self.default_stats(message.author, message.guild)
 
         #search for mu links
-        url = re.search(regex_match, message.content)
-        if url:
-            await self._mu_auto_embed(url.group(0), message)
+        # url = re.search(regex_match, message.content)
+        # if url:
+        #     await self._mu_auto_embed(url.group(0), message)
 
         #search for any .bmp files to convert
         if message.attachments:

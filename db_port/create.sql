@@ -178,3 +178,17 @@ CREATE TABLE necrobot.Invites(
     uses int,
     inviter bigint
 );
+
+CREATE TABLE necrobot.MU(
+    id bigint PRIMARY KEY,
+    user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    thread varchar(500),
+    message varchar(20000),
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE
+);
+
+CREATE TABLE necrobot.MU_Users(
+    id bigint PRIMARY KEY REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    username varchar(200),
+    username_lower varchar(200) UNIQUE
+);

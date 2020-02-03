@@ -142,7 +142,7 @@ class Moderation():
 
         await ctx.send(f":white_check_mark: | Warning: **\"{message}\"** added to warning list of user {user.display_name}")
         self.bot.user_data[user.id]["warnings"][ctx.guild.id].append(message)
-        await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.created_at))
+        await self.bot.query_executer("INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content, date_issued) VALUES ($1, $2, $3, $4, $5);", user.id, ctx.author.id, ctx.guild.id, message, str(ctx.message.created_at))
         try:
             await user.send(f"You have been warned on {ctx.guild.name}, the warning is: \n {message}")
         except discord.Forbidden:
