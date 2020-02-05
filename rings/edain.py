@@ -18,7 +18,7 @@ class Edain:
         self.bot = bot
         self.browser = RoboBrowser(history=True, parser="html.parser")
         self.browser.session.cookies.update(cookies)
-        
+        self.in_process = []
         self.edain_mu = 0000000000
 
     def __local__check(self, ctx):
@@ -62,8 +62,9 @@ class Edain:
         del form.fields["attachment[]"]
         del form.fields["preview"]
         
-        # self.browser.submit_form(form)
-        await self.bot.get_channel(671747329350565912).send(f"Payload sent. {form.serialize().data}")
+        # self.browser.submit_form(form) #actual sbumit 
+        await self.bot.get_channel(671747329350565912).send(f"Payload sent. {form.serialize().data}") #dud debug test
+
         await self.bot.query_executer("DELETE FROM necrobot.MU WHERE id=$1", message_id)
         
     async def mu_parser(self, message):
@@ -74,7 +75,7 @@ class Edain:
             match = re.findall(regex, thread)[0]
         except IndexError:
             await message.delete()
-            await message.channel.send(f"{message.author.mention} | Could not find a valid thread url")
+            await message.channel.send(f"{message.author.mention} | Could not find a valid thread url", delete_after=10)
             return
             
         url_template = "https://modding-union.com/index.php?action=post;topic={}"   
@@ -155,11 +156,38 @@ class Edain:
         __Examples__
         `{pre}register Necro` - register yourself as user Necro
         """
+        if username.lower() in self.in_process:
+            return await ctx.send(":negative_squared_cross_mark: | A registration for that nickname is currently in progress. Please wait for it to complete, if the registration successfully completed please pick another nickname.")
+            
+        self.in_process.append(username.lower())
+        msg = await ctx.send(f"By registering to use the bot's MU-Discord communication service you agree to the following forum rules: <https://modding-union.com/index.php/topic,30385.0.html>. If you break these rules, access to the channel may be restricted or taken away. React with :white_check_mark: if you agree or with :negative_squared_cross_mark: if you do not agree.")
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+
         try:
-            await self.bot.query_executer("INSERT INTO necrobot.MU_Users VALUES($1, $2, $3)", ctx.author.id, username, username.lower())
-            await ctx.send(":white_check_mark: | You have now succesfully registered to the bot's modding union channel. You may now post in it.")
-        except:
-            await ctx.send(":negative_squared_cross_mark: | You are already registered or that username is taken.")
+            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            await msg.edit(content=":negative_squared_cross_mark: | User was too slow, please react within 5 minutes next time.")
+            await msg.clear_reactions()
+            self.in_process.remove(username.lower())
+            return
+
+        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await msg.edit(content=":negative_squared_cross_mark: | User did not agree to forum rules.")
+            await msg.clear_reactions()
+            self.in_process.remove(username.lower())
+            return
+        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            try:
+                await msg.delete()
+                self.in_process.remove(username.lower())
+                await self.bot.query_executer("INSERT INTO necrobot.MU_Users VALUES($1, $2, $3)", ctx.author.id, username, username.lower(), silent=True)
+                await ctx.send(":white_check_mark: | You have now succesfully registered to the bot's modding union channel. You may now post in it.")
+            except:
+                await ctx.send(":negative_squared_cross_mark: | You are already registered or that username is taken.")
             
     @has_perms(6)
     @register.command(name="rename")
@@ -171,8 +199,11 @@ class Edain:
         __Examples__
         `{pre}register rename @Necro NotNecro` - rename user Necro to NotNecro on their MU profile
         """
-        await self.bot.query_executer("UPDATE FROM necrobot.MU_Users SET username=$1, username_lower=$2 WHERE id=$3", username, username.lower(), user.id, silent=True)
-        await ctx.send(":white_check_mark: | Nickname successfully changed.")
+        try:
+            await self.bot.query_executer("UPDATE FROM necrobot.MU_Users SET username=$1, username_lower=$2 WHERE id=$3", new_username, new_username.lower(), user.id, silent=True)
+            await ctx.send(":white_check_mark: | MU username successfully changed.")
+        except:
+            await ctx.send(":negative_squared_cross_mark: | That username is already taken.")
 
 
     async def on_message(self, message):
@@ -185,12 +216,12 @@ class Edain:
         if message.channel.id in (671747329350565912,self.edain_mu):
             registered = await self.bot.query_executer("SELECT * FROM necrobot.MU_Users WHERE id=$1", message.author.id)
             if not registered:
-                await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.')
+                await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.', delete_after=10)
                 await message.delete()
                 return
                 
             if len(message.content) > 20000:
-                await message.channel.send(f'{message.author.mention} | Message too long, please keep messages under 20k characters.')
+                await message.channel.send(f'{message.author.mention} | Message too long, please keep messages under 20k characters.', delete_after=10)
                 await message.delete()
                 return
                 
@@ -242,8 +273,7 @@ class Edain:
                     payload.message_id, payload.user_id, payload.emoji.name) 
                     
     async def on_member_leave(self, member):
-        if not member.guild.id in (327175434754326539, 311630847969198082):
-            channel = 671747329350565912 if member.guild.id == 311630847969198082 else self.edain_mu
+        if member.guild.id in (327175434754326539, 311630847969198082):
             results = await self.bot.query_executer("DELETE FROM necrobot.MU WHERE user_id=$1 AND guild_id=$2 RETURNING id", member.id, member.guild.id, fetchval=True) 
             for result in results:
                  await self.bot._connection.http.delete_message(channel, result[0])                     
