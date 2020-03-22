@@ -22,7 +22,7 @@ CREATE TABLE necrobot.Guilds (
     starboard_channel bigint,
     starboard_limit int,
     auto_role bigint,
-    auto_role_timer int
+    auto_role_timer int,
 );
 
 CREATE TABLE necrobot.Disabled (
@@ -191,4 +191,17 @@ CREATE TABLE necrobot.MU_Users(
     id bigint PRIMARY KEY REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
     username varchar(200),
     username_lower varchar(200) UNIQUE
+);
+
+CREATE TABLE necrobot.Leaderboards(
+    id bigint PRIMARY KEY REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    message varchar(200),
+    symbol varchar(10)
+);
+
+CREATE TABLE necrobot.LeaderboardPoints(
+    id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
+    board bigint REFERENCES necrobot.Guilds(guild_id),
+    points bigint,
+    PRIMARY KEY(id, board) 
 );

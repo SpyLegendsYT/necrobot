@@ -248,8 +248,14 @@ class Edain:
             if to_remove:
                 emoji = payload.emoji._as_reaction()
                 await self.bot._connection.http.remove_reaction(payload.message_id, payload.channel_id, emoji, payload.user_id)
-        
+            
         if payload.channel_id in (671747329350565912, self.edain_mu):
+            ids = [241942232867799040]
+            for role in ["Edain Team", "Edain Community Moderator"]:
+                obj = discord.utils.get(ctx.guild.roles, name=role)
+                if not obj is None:
+                    ids.extend([x.id for x in role.members])
+            
             if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
                 if payload.user_id == 241942232867799040:
                     await self.mu_poster(payload.message_id)
@@ -257,7 +263,7 @@ class Edain:
             
             if str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
                 message = await self.bot.query_executer("SELECT * FROM necrobot.MU WHERE id=$1", payload.message_id)
-                ids = [241942232867799040, message[0][1]]
+                ids.append(message[0][1])
                     
                 if payload.user_id in ids:
                     await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)              

@@ -70,6 +70,7 @@ class NecroEvents():
         if guild.id not in self.bot.server_data:
             self.bot.server_data[guild.id] = self.bot._new_server()
             await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0, 0);", guild.id)
+            await self.bot.query_executer("INSERT INTO necrobot.Leaderboards VALUES($1, '', '')", guild.id)
 
         invites = await guild.invites()
         for invite in invites:
@@ -176,7 +177,7 @@ class NecroEvents():
                         INSERT INTO necrobot.Invites as inv VALUES($1, $2, $3, $4, $5)
                         ON CONFLICT (id)
                         DO UPDATE SET uses = $4 WHERE inv.id = $1 and inv.uses < $4 RETURNING url""",
-                    invite.id, member.guild.id, invite.url, invite.uses, invite.inviter.id, fetchval=True
+                    invite.id, member.guild.id, invite.url, invite.uses, invite.inviter.id if invite.inviter else 000, fetchval=True
                 )
 
                 if changed:

@@ -253,14 +253,14 @@ class Server():
             await ctx.send(":white_check_mark: | Welcome message reset and disabled")
         else:
             try:
-                message = message.format(
+                test = message.format(
                     member=ctx.author, 
                     server=ctx.guild.name,
                     mention=ctx.author.mention,
                     name=ctx.author.name,
                     id=ctx.author.id
                 )
-                await ctx.send(f":white_check_mark: | Your server's welcome message will be: \n{message}")
+                await ctx.send(f":white_check_mark: | Your server's welcome message will be: \n{test}")
             except KeyError as e:
                 await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument. Check the help guide to see what you can use the command with.")
                 return
@@ -293,14 +293,14 @@ class Server():
             await ctx.send(":white_check_mark: | Goodbye message reset and disabled")
         else:
             try:
-                message = message.format(
+                test = message.format(
                     member=ctx.author, 
                     server=ctx.guild.name,
                     mention=ctx.author.mention,
                     name=ctx.author.name,
                     id=ctx.author.id
                 )
-                await ctx.send(f":white_check_mark: | Your server's goodbye message will be: \n{message}")
+                await ctx.send(f":white_check_mark: | Your server's goodbye message will be: \n{test}")
             except KeyError as e:
                 await ctx.send(f":negative_squared_cross_mark: | {e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
                 return

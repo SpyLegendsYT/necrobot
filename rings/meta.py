@@ -178,7 +178,7 @@ class Meta():
                 await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0);", guild.id)
             else:
                 await self.bot.guild_checker(guild)
-
+                
         await msg.edit(content="All servers checked")
         
         #checking if there are any new members and setting default stats for any newcomers, in addition we group
@@ -278,6 +278,8 @@ class Meta():
         if guild.id not in self.bot.user_data[member.id]["waifu"]:
             self.bot.user_data[member.id]["waifu"][guild.id] = {"waifu-value":50, "waifu-claimer":"", "affinity":"", "heart-changes":0, "divorces":0, "waifus":[], "flowers":0, "gifts":{}}
             await self.bot.query_executer("INSERT INTO necrobot.Waifu VALUES ($1,$2,50,0,0,0,0,0);", member.id, guild.id)
+            
+        await self.bot.query_executer("INSERT INTO necrobot.LeaderboardPoints VALUES($1, $2, 0) ON CONFLICT (id, board) DO NOTHING", member.id, guild.id)
 
     async def guild_checker(self, guild):
         channels = [channel.id for channel in guild.channels]
