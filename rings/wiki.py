@@ -186,7 +186,7 @@ class Wiki():
                 search_list = wikia.search(wiki, article_name)
                 msg = f"Article: **{article_name}** not found, returning first search result and the following search list: {search_list[1:]}"
                 article = wikia.page(wiki, search_list[0])
-            except ValueError:
+            except (ValueError, wikia.wikia.WikiaError):
                 await ctx.send(":negative_squared_cross_mark: | Article not found or wiki not recognized, and search didn't return any result. Please try again with different terms.")
                 return
 

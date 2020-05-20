@@ -6,3 +6,4 @@ settings.json
 botto.sublime-project
 botto.sublime-workspace
 unwiki
+*.log

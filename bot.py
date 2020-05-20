@@ -63,7 +63,7 @@ class NecroBot(commands.Bot):
             case_insensitive=True, 
             owner_id=241942232867799040, 
             activity=discord.Game(name="n!help for help"),
-            max_messages=50000
+            max_messages=75000
         )
 
         self.uptime_start = time.time()
@@ -140,7 +140,7 @@ class NecroBot(commands.Bot):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def load(ctx, extension_name : str):
+    async def load(self, ctx, extension_name : str):
         """Loads the extension name if in NecroBot's list of rings.
         
         {usage}"""
@@ -153,7 +153,7 @@ class NecroBot(commands.Bot):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def unload(ctx, extension_name : str):
+    async def unload(self, ctx, extension_name : str):
         """Unloads the extension name if in NecroBot's list of rings.
          
         {usage}"""
@@ -162,7 +162,7 @@ class NecroBot(commands.Bot):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def reload(ctx, extension_name : str):
+    async def reload(self, ctx, extension_name : str):
         """Unload and loads the extension name if in NecroBot's list of rings.
          
         {usage}"""
@@ -184,6 +184,9 @@ class NecroBot(commands.Bot):
             print(self.server_data)
             print('------')
             print(f"Logged in as {self.user}")
+        else:
+            channel = self.get_channel(318465643420712962)
+            await channel.send("**Bot Resumed**")
 
     async def on_error(self, event, *args, **kwargs): 
         """Something has gone wrong so we just try to send a helpful traceback to the channel. If

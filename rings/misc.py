@@ -30,7 +30,7 @@ class Misc():
             return
 
         if len(tributes_list) > 32:
-            await ctx.send(":negative_squared_cross_mark: | Please provide no more than 32 characters separated by `,`.")
+            await ctx.send(":negative_squared_cross_mark: | Please provide no more than 32 names separated by `,`.")
 
         dead_list = []
 

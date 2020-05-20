@@ -4,6 +4,7 @@ from discord.ext import commands
 from rings.utils.utils import react_menu
 
 import datetime as d
+from re import match
 
 class Tag(commands.Converter):
     async def convert(self, ctx, argument):
@@ -243,10 +244,12 @@ class Tags():
         if message.author.bot or message.author.id in self.bot.settings["blacklist"] or message.guild is None:
             return
 
-        if message.content.startswith(message.guild.me.mention):
-            content = message.content[len(message.guild.me.mention)+1:].lower().strip()
+        content = message.content.split(" ", 1)
+        if match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 0:
+            content = content[1]
+            
             try:
-                reply = self.bot.server_data[message.guild.id]["tags"][content]["content"]
+                self.bot.server_data[message.guild.id]["tags"][content]["content"]
             except KeyError:
                 return
 

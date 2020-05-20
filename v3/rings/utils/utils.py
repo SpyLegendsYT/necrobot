@@ -2,43 +2,52 @@ import discord
 from discord.ext import commands
 
 import re
-import enums
 import asyncio
-import datetime as d
+import datetime
 
 def has_welcome(bot, member):
-    return bot.server_data[member.guild.id]["welcome-channel"] != "" and bot.server_data[member.guild.id]["welcome"] != ""
+    return bot.guild_data[member.guild.id]["welcome-channel"] != "" and bot.guild_data[member.guild.id]["welcome"] != ""
 
 def has_goodbye(bot, member):
-    return bot.server_data[member.guild.id]["welcome-channel"] != "" and bot.server_data[member.guild.id]["goodbye"] != ""
+    return bot.guild_data[member.guild.id]["welcome-channel"] != "" and bot.guild_data[member.guild.id]["goodbye"] != ""
 
 def has_automod(bot, message):
-    role_id = [role.id for role in message.author.roles]
-    return message.author.id not in bot.server_data[message.guild.id]["ignore-automod"] and message.channel.id not in bot.server_data[message.guild.id]["ignore-automod"] and not any(x in role_id for x in bot.server_data[message.guild.id]["ignore-automod"]) and bot.server_data[message.guild.id]["automod"] != ""
-
-UPDATE_NECROINS = "UPDATE necrobot.Users SET necroins = $1 WHERE user_id = $2"
-UPDATE_FLOWERS  = "UPDATE necrobot.Waifu SET flowers = $1 WHERE user_id = $2 AND guild_id = $3"
-UPDATE_PERMS    = "UPDATE necrobot.Permissions SET level = $1 WHERE guild_id = $2 AND user_id = $3"
-UPDATE_VALUE    = "UPDATE necrobot.Waifu SET value = $1 WHERE user_id = $2 AND guild_id = $3"
-
-def has_perms(perms_level):
-    def predicate(ctx):
-        if any(x >= 6 for x in ctx.bot.user_data[ctx.message.author.id]["perms"].values()):
+    if bot.guild_data[message.guild.id]["automod"] != "":
+        return False
+        
+    if message.author.id not in bot.guild_data[message.guild.id]["ignore-automod"]:
+        return False
+        
+    if message.channel.id not in bot.guild_data[message.guild.id]["ignore-automod"]:
+        return False
+    
+    role_ids = [role.id for role in message.author.roles]
+    if any(x in role_ids for x in bot.guild_data[message.guild.id]["ignore-automod"]):
+        return False
+        
+    return True 
+    
+def has_perms(level):
+    async def predicate(ctx):
+        if await ctx.bot.db.is_admin(ctx.message.author.id):
             return True 
             
-        if isinstance(ctx.message.channel, discord.DMChannel):
+        if ctx.guild is None:
             return False
-
-        if not ctx.bot.user_data[ctx.message.author.id]["perms"][ctx.message.guild.id] >= perms_level:
+        
+        perms = await ctx.bot.db.get_permissions(ctx.message.author.id, ctx.guild.id)
+        if perms < level:
             raise commands.CheckFailure(f"You do not have the required NecroBot permissions. Your permission level must be {perms_level}")
-        else:
-            return True
+        
+        return True
 
     return commands.check(predicate)
-
-
-async def react_menu(ctx, max_pages, page_generator, page=0):
-    msg = await ctx.send(embed=page_generator(page))
+    
+async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
+    max_pages = max(0, (len(entries)//per_page) - 1)
+    
+    subset = entries[page*per_page:(page+1)*per_page]
+    msg = await ctx.send(embed=generator((page + 1, max_pages + 1), subset[0] if per_page == 1 else subset))
     while True:
         react_list = []
         if page > 0:
@@ -56,7 +65,7 @@ async def react_menu(ctx, max_pages, page_generator, page=0):
             return user == ctx.message.author and reaction.emoji in react_list and msg.id == reaction.message.id
 
         try:
-            reaction, _ = await ctx.bot.wait_for("reaction_add", check=check, timeout=300)
+            reaction, _ = await ctx.bot.wait_for("reaction_add", check=check, timeout=timeout)
         except asyncio.TimeoutError:
             await msg.clear_reactions()
             return
@@ -70,34 +79,27 @@ async def react_menu(ctx, max_pages, page_generator, page=0):
             page += 1
 
         await msg.clear_reactions()
-        await msg.edit(embed=page_generator(page))
         
-class TimeEnum(enums.Enum):
-    d = 86400
-    h = 3600
-    m = 60
-    s = 1
-    
-    day = d
-    days = d
-    
-    hour = h
-    hours = h
-    
-    minute = m
-    minutes = m
-    
-    second = s
-    seconds = s
-    
+        subset = entries[page*per_page:(page+1)*per_page]
+        await msg.edit(embed=generator((page + 1, max_pages + 1), subset[0] if per_page == 1 else subset))
 
+
+async def get_pre(bot, message):
+    """If the guild has set a custom prefix we return that and the ability to mention alongside regular 
+    admin prefixes if not we return the default list of prefixes and the ability to mention."""
+    if not isinstance(message.channel, discord.DMChannel):
+        guild_pre = bot.guild_data[message.guild.id]["prefix"]
+        if guild_pre != "":
+            prefixes = [guild_pre, *bot.admin_prefixes]
+            return commands.when_mentioned_or(*prefixes)(bot, message)
+
+    return commands.when_mentioned_or(*bot.prefixes)(bot, message)
+    
 def time_converter(argument):
     time = 0
 
     pattern = re.compile(r"([0-9]+)\s?([dhms])")
     matches = re.findall(pattern, argument)
-    
-
 
     convert = {
         "d" : 86400,
@@ -110,7 +112,7 @@ def time_converter(argument):
         time += convert[match[1]] * int(match[0])
 
     return time
-
+    
 class GuildConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
         result = None
@@ -138,10 +140,14 @@ class MoneyConverter(commands.Converter):
     async def convert(self, ctx, argument):
         if not argument.isdigit():
             raise commands.BadArgument("Not a valid intenger")
-        else:
-            argument = abs(int(argument))
+        
+        argument = abs(int(argument))
 
-        if argument <= ctx.bot.user_data[ctx.author.id]["money"]:
+        if argument < 0:
+            raise commands.BadArgument("Amount must be a positive intenger")
+        
+        money = await ctx.bot.db.get_money(ctx.message.author.id)
+        if argument <= money:
             return argument
         else:
             raise commands.BadArgument("You do not have enough money")
@@ -152,3 +158,6 @@ def midnight():
     midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
                           day=tomorrow.day, hour=0, minute=0, second=0)
     return (midnight - d.datetime.now()).seconds
+    
+class BotError(Exception):
+    pass

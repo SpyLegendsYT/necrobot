@@ -1,4 +1,3 @@
-#!/usr/bin/python3.6
 import discord
 from discord.ext import commands
 
@@ -10,12 +9,12 @@ import time
 from datetime import timedelta
 
 
-class Support():
+class Support(commands.Cog):
     """All the NecroBot support commands are here to help you enjoy your time with NecroBot """
     def __init__(self, bot):
         self.bot = bot
-        self.bot.tutorial_e = discord.Embed.from_data(tutorial_e)
-        self.bot.gdpr_embed = discord.Embed.from_data(gdpr_e)
+        self.bot.tutorial_e = discord.Embed.from_dict(tutorial_e)
+        self.bot.gdpr_embed = discord.Embed.from_dict(gdpr_e)
         
     @commands.command(aliases=["support"])
     async def about(self, ctx):
@@ -69,14 +68,14 @@ class Support():
             await ctx.send(":negative_squared_cross_mark: | No news available")
             return
 
-        if 1 >= index > len(news):
+        if 0 >= index > len(news):
             await ctx.send(f":negative_squared_cross_mark: | Not a valid index, pick a number from 1 to {len(news)}")
             return
         
-        def embed_generator(index, entry):
-            return discord.Embed.from_data(entry)
+        def _embed_generator(page):
+            return discord.Embed.from_data(news[page])
 
-        await react_menu(ctx, news, 1, embed_generator, page=index-1)
+        await react_menu(ctx, len(news) - 1, _embed_generator, index-1)
 
     @news.command("add")
     @has_perms(6)
@@ -170,5 +169,6 @@ class Support():
         except discord.Forbidden:
             await ctx.send(":negative_squared_cross_mark: | Looks like you have private messages disabled")
 
+        
 def setup(bot):
     bot.add_cog(Support(bot))

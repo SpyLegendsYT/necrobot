@@ -312,7 +312,7 @@ class Moderation():
         if message_id:
             try:
                 message = await ctx.channel.get_message(message_id)
-            except commands.CommandInvokeError:
+            except:
                 await ctx.send(":negative_squared_cross_mark: | Message not found, make sure you are in the channel with the message.")
                 return
 

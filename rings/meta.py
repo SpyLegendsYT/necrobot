@@ -116,8 +116,11 @@ class Meta():
         
         if message.id not in self.bot.starred:
             self.bot.starred.append(message.id)
-            await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3, $4);", message.id, msg.id, msg.guild.id, message.author.id)        
-        
+            try:
+                await self.bot.query_executer("INSERT INTO necrobot.Starred VALUES ($1, $2, $3, $4);", message.id, msg.id, msg.guild.id, message.author.id, silent=True)        
+            except:
+                pass
+
     async def broadcast(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
@@ -152,7 +155,23 @@ class Meta():
                     await channel.send(self.bot.server_data[guild]["broadcast"])
                 except Exception as e:
                     await self.bot.get_channel(415169176693506048).send(f"Broadcast error with guild {guild}\n{e}")
-
+            
+            if self.bot.counter == 24:
+                self.clear_potential_stars()
+            
+    def clear_potential_stars(self):
+        ids = list(self.bot.potential_stars.keys())
+        ids.sort()
+        
+        for message_id in ids:
+            limit = datetime.datetime.utcnow() - datetime.timedelta(days=3)
+            timestamp = discord.utils.snowflake_time(message_id)
+            
+            if timestamp < limit:
+                del self.bot.potential_stars[message_id]
+            else:
+                break        
+            
     async def rotation_status(self):
         await self.bot.wait_until_ready()
         try:

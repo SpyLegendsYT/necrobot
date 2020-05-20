@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import UPDATE_NECROINS, midnight, MoneyConverter, react_menu
 
@@ -106,6 +107,7 @@ class Profile():
         await react_menu(ctx, (len(moneys)//10), _embed_generator, index)
 
     @commands.command(name="daily")
+    @commands.cooldown(1, 60, BucketType.user)
     async def claim(self, ctx, *, member : discord.Member = None):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day. Can
         also be gifted to a user for some extra cash. 
