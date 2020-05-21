@@ -160,7 +160,7 @@ class Support(commands.Cog):
             await ctx.send(":negative_squared_cross_mark: | Looks like you have private messages disabled")
 
     @commands.command()
-    async def gdpr(self, ctx):
+    async def privacy(self, ctx):
         """Get information on the data necrobot keeps about you and what steps you can do about it.
 
         {usage}"""

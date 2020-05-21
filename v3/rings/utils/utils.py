@@ -41,6 +41,7 @@ def has_perms(level):
         
         return True
 
+    predicate.level = level
     return commands.check(predicate)
     
 async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):

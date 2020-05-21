@@ -186,7 +186,26 @@ dad_joke = [
     "There's no way I'm in denial.",
     "I got a reversible jacket for Christmas, I can't wait to see how it turns out.",
     "Did you hear about the kidnapping at school? Its ok, he woke up.",
-    "Where are average things built? In the satisfactory."
+    "Where are average things built? In the satisfactory.",
+    "My wife is really mad at the fact that I have no sense of direction. So I packed up my stuff and right.",
+    "How do you make holy water? You boil the hell out of it.",
+    "I'm reading a book about anti-gravity. It's impossible to put down!",
+    "What do you call someone with no body and no nose? Nobody knows.",
+    "I ordered a chicken and an egg from Amazon. I’ll let you know",
+    "A slice of apple pie is $2.50 in Jamaica and $3.00 in the Bahamas. These are the pie rates of the Caribbean.",
+    "Justice is a dish best served cold, if it were served warm it would be justwater.",
+    "\"How do I look?\"\n\"With your eyes.\"",
+    "Don't trust atoms. They make up everything!",
+    "What has two butts and kills people? An assassin",
+    "What's the best part about living in Switzerland? I don't know, but the flag is a big plus.",
+    "5/4 of people admit that they’re bad with fractions.",
+    "When you ask a dad if he's alright: \"No, I’m half left.\"",
+    "Two guys walk into a bar, the third one ducks.",
+    "What did the buffalo say to his son when he dropped him off at school? Bison.",
+    "\"Paper or plastic?\"\n\"Either, I’m bisacktual.\"",
+    "You know what the loudest pet you can get is? A trumpet.",
+    "I’m only familiar with 25 letters in the English language. I don’t know why.",
+    "If you rearrange the letters of “Postmen”. They get really pissed off."
 ]
 
 riddle_list = [

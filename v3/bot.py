@@ -158,7 +158,11 @@ class NecroBot(commands.Bot):
         """Unload and loads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        ctx.bot.unload_extension(f"rings.{extension_name}")
+        try:
+            ctx.bot.unload_extension(f"rings.{extension_name}")
+        except:
+            pass
+        
         try:
             ctx.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
@@ -265,7 +269,10 @@ extensions = [
     'decisions',
     'misc',
     'words',
-    'utilities'
+    'utilities',
+    'social',
+    'modding',
+    'rss'
 ]
 
 if __name__ == '__main__':

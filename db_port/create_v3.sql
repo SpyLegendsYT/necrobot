@@ -142,7 +142,7 @@ CREATE TABLE necrobot.Youtube(
     youtuber_id varchar(50),
     last_update TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     filter varchar(200),
-    PRIMARY KEY(guild_id, youtuber_id)
+    PRIMARY KEY(channel_id, youtuber_id)
 );
 
 CREATE TABLE necrobot.Invites(
@@ -178,4 +178,9 @@ CREATE TABLE necrobot.LeaderboardPoints(
     board bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
     points bigint,
     PRIMARY KEY(id, board) 
+);
+
+CREATE TYPE channel_filter_hybrid as (
+    channel_id bigint,
+    filter varchar(50)
 );

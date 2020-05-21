@@ -36,9 +36,10 @@ class Admin(commands.Cog):
             self.insert_returns(body[-1].body)
             
     @commands.command()
-    @commands.is_owner()
+    @has_perms(7)
     async def leave(self, ctx, guild : GuildConverter, *, reason : str = None):
-        """Leaves the specified server. (Permission level required: 7+ (The Bot Smith))
+        """Leaves the specified server.
+        
         {usage}"""
         if reason is not None:
             await guild.owner.send(f"I'm sorry, Necro#6714 has decided I should leave this server, because: {reason}")
@@ -49,7 +50,7 @@ class Admin(commands.Cog):
     @commands.command()
     @has_perms(6)
     async def add(self, ctx, user : discord.User, *, equation : str):
-        """Does the given pythonic equations on the given user's NecroBot balance. (Permission level required: 6+ (NecroBot Admin))
+        """Does the given pythonic equations on the given user's NecroBot balance.
         `*` - for multiplication
         `+` - for additions
         `-` - for substractions
@@ -114,8 +115,7 @@ class Admin(commands.Cog):
     @admin.command(name="disable")
     @has_perms(6)
     async def admin_disable(self, ctx, *, command : str):
-        """For when regular disable isn't enough. Disables command discord-wide. Permission level 
-        required: 6+ (NecroBot Admin)
+        """For when regular disable isn't enough. Disables command discord-wide.
 
         {usage}
         """
@@ -129,8 +129,7 @@ class Admin(commands.Cog):
     @admin.command(name="enable")
     @has_perms(6)
     async def admin_enable(self, ctx, *, command : str):
-        """For when regular enable isn't enough. Re-enables the command discord-wide. Permission level 
-        required: 6+ (NecroBot Admin)
+        """For when regular enable isn't enough. Re-enables the command discord-wide.
 
         {usage}
         """
@@ -145,7 +144,7 @@ class Admin(commands.Cog):
     @has_perms(6)
     async def pm(self, ctx, user : discord.User, *, message : str):
         """Sends the given message to the user of the given id. It will then wait for an answer and 
-        print it to the channel it was called it. Permission level required: 6+ (NecroBot Admin)
+        print it to the channel it was called it. 
         
         {usage}
         
@@ -164,7 +163,7 @@ class Admin(commands.Cog):
     @commands.is_owner()
     async def get(self, ctx, obj_id : int):
         """Returns the name of the user or server based on the given id. Used to debug errors. 
-        (Permission level required: 7+ (The Bot Smith))
+        (
         
         {usage}
         
@@ -203,7 +202,7 @@ class Admin(commands.Cog):
     @commands.is_owner()
     async def invites(self, ctx, *, guild : GuildConverter = None):
         """Returns invites (if the bot has valid permissions) for each server the bot is on if no guild id is specified. 
-        (Permission level required: 7+ (The Bot Smith))
+        (
         
         {usage}"""
         async def get_invite(guild):
@@ -221,7 +220,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def debug(self, ctx, *, cmd : str):
-        """Evaluates code. (Permission level required: 7+ (The Bot Smith)) 
+        """Evaluates code. (
         
         {usage}
         
@@ -269,8 +268,7 @@ class Admin(commands.Cog):
     @commands.command()
     @has_perms(6)
     async def logs(self, ctx, start : Optional[int] = 0, *arguments):
-        """Get a list of commands. SQL arguments can be passed to filter the output. Permission 
-        level required: 6+ (NecroBot Admin)
+        """Get a list of commands. SQL arguments can be passed to filter the output.
 
         {usage}"""
         if arguments:

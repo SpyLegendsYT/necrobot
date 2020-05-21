@@ -3,7 +3,7 @@
 
 # rings\events.py: 14
 # rings\profile.py: 12,13,14,15
-Pillow == 6.2.0
+Pillow >= 6.2.0
 
 # bot.py: 13
 # rings\_bfme.py: 4
@@ -68,3 +68,5 @@ urbandictionary == 1.1
 
 # rings\wiki.py: 6
 wikia == 1.4.3
+
+Werkzeug == 0.16.0

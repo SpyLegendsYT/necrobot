@@ -400,7 +400,36 @@ class Database(commands.Cog):
             point, member_id, guild_id
         )
         
-    async def delete_rss_channel(self, guild_id, channel_id = None):
+    async def get_yt_rss(self, guild_id = None):
+        if guild_id is not None:
+            return await self.query_executer(
+                "SELECT * FROM necrobot.Youtube WHERE guild_id = $1", 
+                guild_id
+            )
+        else:
+            return await self.query_executer("SELECT * FROM necrobot.Youtube")
+            
+    async def upsert_yt_rss(self, guild_id, channel_id, youtuber_id):
+        await self.query_executer(
+            """INSERT INTO necrobot.Youtube AS yt VALUES ($1, $2, $3, NOW(), '') 
+            ON CONFLICT (guild_id,youtuber_id) 
+            DO UPDATE SET channel_id = $2 WHERE yt.guild_id = $1 AND yt.youtuber_id = $3""",
+            guild_id, channel_id, youtuber_id
+        )
+        
+    async def update_yt_filter(self, guild_id, youtuber_id, text):
+        await self.bot.query_executer(
+            "UPDATE necrobot.Youtube SET filter = $3 WHERE guild_id = $1 and youtuber_id = $2", 
+            guild_id, youtuber_id, text
+        )
+            
+    async def update_yt_rss(self, guild_id = None):
+        return await self.query_executer(
+            "UPDATE FROM necrobot.Youtube SET last_update = NOW() RETURNING last_update",
+            fetchval=True
+        )
+        
+    async def delete_rss_channel(self, guild_id, *, channel_id = None, youtuber_id = None):
         if channel_id is None:
             await self.query_executer(
                 "DELETE FROM necrobot.Youtube WHERE guild_id = $1", 

@@ -100,7 +100,7 @@ class Events(commands.Cog):
         if channel.id == guild["automod"]:
             await self.bot.db.update_automod_channel(guild_id)
             
-        await self.bot.db.delete_rss_channel(guild_id, channel.id)
+        await self.bot.db.delete_rss_channel(guild_id, channe_id=channel.id)
     
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):

@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands as cmd
 
 class NecrobotHelp(cmd.HelpCommand):       
@@ -43,7 +44,7 @@ class NecrobotHelp(cmd.HelpCommand):
      
     async def send_bot_help(self, mapping):
         help_msg = f":information_source: **NecroBot Help Menu** :information_source:\n{self.context.bot.description}\n\n"
-
+        
         for cog, commands in mapping.items():
             if not commands or cog is None:
                 continue
@@ -71,17 +72,24 @@ class NecrobotHelp(cmd.HelpCommand):
         help_msg += self.get_ending_note()
         await self.get_destination().send(help_msg)
         
-    async def send_command_help(self, command):
+    async def base_command_help(self, command):
         help_msg = f":information_source: **`{command}` command** :information_source:\n{command.help}"
         signature = f"__Usage__\n{self.get_command_signature(command)}"
-        help_msg = help_msg.format(usage=signature, pre=self.clean_prefix)
         
-        await self.get_destination().send(help_msg)
+        perms_check = discord.utils.find(lambda x: x.__qualname__.startswith("has_perms"), command.checks)
+        if perms_check is not None:
+            name = self.context.bot.perms_name[perms_check.level]
+            signature = f"**Permission level required: {name} ({perms_check.level}+)**\n\n{signature}"
+            
+        help_msg = help_msg.format(usage=signature, pre=self.clean_prefix)
+            
+        return help_msg
+        
+    async def send_command_help(self, command):       
+        await self.get_destination().send(await self.base_command_help(command))
         
     async def send_group_help(self, group):
-        help_msg = f":information_source: **`{group}` command** :information_source:\n{group.help}"
-        signature = f"__Usage__\n{self.get_command_signature(group)}\n\n"
-        help_msg = help_msg.format(usage=signature, pre=self.clean_prefix)
+        help_msg = await self.base_command_help(group)
         
         for command in group.commands:
             name = await self.format_command_name(command)

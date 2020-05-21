@@ -268,6 +268,11 @@ class Meta(commands.Cog):
         await self.bot.db.delete_self_roles(guild.id, [role for role in g["self-roles"] if role not in roles])
         await self.bot.db.update_invites(guild)
         
+        await self.bot.db.query_executer(
+            "DELETE FROM necrobot.Youtube WHERE guild_id = $1 AND NOT(channel_id = any($2))",
+            guild.id, channels            
+        )
+        
     async def reminder_task(self, reminder_id, time, message, channel_id, user_id):
         try:
             await asyncio.sleep(time)
