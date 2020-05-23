@@ -276,7 +276,8 @@ extensions = [
     'utilities',
     'social',
     'modding',
-    'rss'
+    'rss',
+    'tags',
 ]
 
 if __name__ == '__main__':

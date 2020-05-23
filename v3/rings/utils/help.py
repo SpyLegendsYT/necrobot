@@ -91,6 +91,7 @@ class NecrobotHelp(cmd.HelpCommand):
     async def send_group_help(self, group):
         help_msg = await self.base_command_help(group)
         
+        help_msg += "\n\n__Subcommands__\n"
         for command in group.commands:
             name = await self.format_command_name(command)
             help_msg += f"`{name}`- {await self.get_brief_signature(command)}\n"

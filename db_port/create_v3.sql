@@ -84,7 +84,7 @@ CREATE TABLE necrobot.Aliases(
     alias varchar(2000),
     original varchar(2000),
     guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
-    PRIMARY KEY(alias, original, guild_id),
+    PRIMARY KEY(alias, guild_id),
     FOREIGN KEY (original, guild_id) REFERENCES necrobot.Tags(name, guild_id) ON DELETE CASCADE
 );
 
