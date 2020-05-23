@@ -137,6 +137,9 @@ class NecroBot(commands.Bot):
 
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
+            
+        for command in self.settings["disabled"]:
+            self.bot.get_commnad(command).enabled = False
 
     @commands.command(hidden=True)
     @commands.is_owner()

@@ -6,13 +6,13 @@ import asyncio
 import datetime
 
 def has_welcome(bot, member):
-    return bot.guild_data[member.guild.id]["welcome-channel"] != "" and bot.guild_data[member.guild.id]["welcome"] != ""
+    return bot.guild_data[member.guild.id]["welcome-channel"] and bot.guild_data[member.guild.id]["welcome"]
 
 def has_goodbye(bot, member):
-    return bot.guild_data[member.guild.id]["welcome-channel"] != "" and bot.guild_data[member.guild.id]["goodbye"] != ""
+    return bot.guild_data[member.guild.id]["welcome-channel"] and bot.guild_data[member.guild.id]["goodbye"]
 
 def has_automod(bot, message):
-    if bot.guild_data[message.guild.id]["automod"] != "":
+    if not bot.guild_data[message.guild.id]["automod"]:
         return False
         
     if message.author.id not in bot.guild_data[message.guild.id]["ignore-automod"]:
@@ -35,7 +35,7 @@ def has_perms(level):
         if ctx.guild is None:
             return False
         
-        perms = await ctx.bot.db.get_permissions(ctx.message.author.id, ctx.guild.id)
+        perms = await ctx.bot.db.get_permission(ctx.message.author.id, ctx.guild.id)
         if perms < level:
             raise commands.CheckFailure(f"You do not have the required NecroBot permissions. Your permission level must be {perms_level}")
         

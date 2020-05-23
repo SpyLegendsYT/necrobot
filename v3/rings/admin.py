@@ -86,7 +86,7 @@ class Admin(commands.Cog):
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await ctx.send(f":white_check_mark: | Cancelled.")
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
-            await self.bot.db.update_money(operation)
+            await self.bot.db.update_money(user.id, update=operation)
             await ctx.send(":atm: | **{}'s** balance is now **{:,}** :euro:".format(user.display_name, operation))
         
         await msg.delete()
@@ -105,7 +105,7 @@ class Admin(commands.Cog):
 
         {usage}"""
         current_level = await self.bot.db.get_permission(user.id, guild.id)
-        if current_level > 5 and level <= 5:
+        if current_level > 5 >= level or level > 5:
             await self.bot.db.update_permission(user.id, update=level)
         else:
             await self.bot.db.update_permission(user.id, guild.id, update=level)
@@ -122,6 +122,7 @@ class Admin(commands.Cog):
         command = self.bot.get_command(command)
         if command.enabled:
             command.enabled = False
+            self.bot.settings["disabled"].append(command.name)
             await ctx.send(f":white_check_mark: | Disabled **{command.name}**")
         else:
             raise BotError(f"Command **{command.name}** already disabled")
@@ -136,9 +137,10 @@ class Admin(commands.Cog):
         command = self.bot.get_command(command)
         if command.enabled:
             raise BotError(f"Command **{command.name}** already enabled")
-        else:
-            command.enabled = True
-            await ctx.send(f":white_check_mark: | Enabled **{command.name}**")
+
+        command.enabled = True
+        self.bot.settings["disabled"].remove(command.name)
+        await ctx.send(f":white_check_mark: | Enabled **{command.name}**")
             
     @commands.command()
     @has_perms(6)

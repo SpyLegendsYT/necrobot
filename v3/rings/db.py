@@ -75,11 +75,10 @@ class Database(commands.Cog):
         
     async def compare_user_permission(self, user_id, guild_id, compared_user):
         return await self.query_executer(
-            """SELECT * FROM necrobot.Permissions u1, necrobot.Permissions u2
+            """SELECT u1.level - u2.level FROM necrobot.Permissions u1, necrobot.Permissions u2
             WHERE u1.user_id = $1 AND u2.user_id = $2 
-            AND u1.guild_id = $3 AND u3.guild_id = $3
-            AND u1.level > u2.level""",
-            user_id, compared_user, guild_id    
+            AND u1.guild_id = $3 AND u3.guild_id = $3""",
+            user_id, compared_user, guild_id, fetchval=True    
         )
         
     async def is_admin(self, user_id):
@@ -110,20 +109,6 @@ class Database(commands.Cog):
             user_id, guild_id    
         )
         
-    async def get_exp(self, user_id):
-        return await self.query_executer(
-            "SELECT exp FROM necrobot.Users WHERE user_id = $1", 
-            user_id, fetchval=True
-        )
-        
-    async def update_exp(self, user_id, *, update=None, add=None):
-        query = "UPDATE necrobot.Users SET {} WHERE user_id = $1 RETURNING exp".format(
-            self.math_builder("exp", 2, update, add),
-            fetchval=True
-        )
-        
-        return await self.query_executer(query, user_id, update if update is not None else add)
-        
     async def get_daily_date(self, user_id):
         return await self.query_executer(
             "SELECT daily FROM necrobot.Users WHERE user_id = $1",
@@ -139,7 +124,7 @@ class Database(commands.Cog):
             FROM necrobot.Users u2 
             WHERE user_id = $2 
             AND u1.user_id = u2.user_id 
-            AND u1.exp IS DISTINCT FROM u2.exp
+            AND u1.daily IS DISTINCT FROM u2.daily
             RETURNING user_id""",
             date, user_id, fetchval = True    
         )
@@ -245,38 +230,52 @@ class Database(commands.Cog):
             starred.id, message.id, starred.guild.id, starred.author.id
         )
         
-    async def update_broadcast_channel(self, guild_id, channel_id = ""):        
+    async def update_broadcast_channel(self, guild_id, channel_id = 0):        
         self.bot.guild_data[guild_id]["broadcast-channel"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET broadcast_channel = $2 WHERE guild_id = $1;",
             guild_id, channel_id if channel_id else 0
         )
 
-    async def update_starboard_channel(self, guild_id, channel_id = ""):
+    async def update_starboard_channel(self, guild_id, channel_id = 0):
         self.bot.guild_data[guild_id]["starboard"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET starboard_channel = $2 WHERE guild_id = $1;", 
             guild_id, channel_id if channel_id else 0
         )
         
-    async def update_greeting_channel(self, guild_id, channel_id = ""):
+    async def update_greeting_channel(self, guild_id, channel_id = 0):
         self.bot.guild_data[guild_id]["welcome-channel"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET welcome_channel = $2 WHERE guild_id = $1;", 
             guild_id, channel_id if channel_id else 0
         )
         
-    async def update_automod_channel(self, guild_id, channel_id = ""):
+    async def update_automod_channel(self, guild_id, channel_id = 0):
         self.bot.guild_data[guild_id]["automod"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET automod_channel = $2 WHERE guild_id = $1;",
             guild_id, channel_id if channel_id else 0
         )
         
-    async def update_mute_role(self, guild_id, role_id = ""):
+    async def update_mute_role(self, guild_id, role_id = 0):
         self.bot.guild_data[guild_id]["mute"] = role_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET mute = $2 WHERE guild_id = $1;", 
+            guild_id, role_id if role_id else 0
+        )
+        
+    async def update_auto_role(self, guild_id, role_id = 0):
+        self.bot.guild_data[guild_id]["auto-role"] = roles_id
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET auto_role = $2 WHERE guild_id = $1;", 
+            guild_id, role_id if role_id else 0
+        )
+        
+    async def update_auto_role_timer(self, guild_id, timer = 0):
+        self.bot.guild_data[guild_id]["auto-role-timer"] = roles_id
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET auto_role_timer = $2 WHERE guild_id = $1;", 
             guild_id, role_id if role_id else 0
         )
         
@@ -290,7 +289,7 @@ class Database(commands.Cog):
             *[(guild_id, role_id) for role_id in roles_id], many=True  
         )
         
-    async def delete_self_roles(self, guild_id, roles_id):
+    async def delete_self_roles(self, guild_id, *roles_id):
         if not roles_id:
             return
             
@@ -364,25 +363,25 @@ class Database(commands.Cog):
         
     async def get_leaderboard(self, guild_id):
         return (await self.query_executer(
-                "SELECT message, symbol FROM necrobot.Leaderboards WHERE id = $1",
+                "SELECT message, symbol FROM necrobot.Leaderboards WHERE guild_id = $1",
                 guild_id
         ))[0]
         
     async def insert_leaderboard(self, guild_id):
         await self.query_executer(
-            "INSERT INTO necrobot.Leaderboards VALUES ($1, '', points)",
+            "INSERT INTO necrobot.Leaderboards VALUES ($1, '', 'points')",
             guild_id,     
         )
         
     async def update_leaderboard(self, guild_id, *, symbol = None, message = None):
         if not symbol is None:
             await self.query_executer(
-                "UPDATE necrobot.Leaderboards SET symbol=$1 WHERE id=$2", 
+                "UPDATE necrobot.Leaderboards SET symbol=$1 WHERE guild_id=$2", 
                 symbol, guild_id
             )
         elif not message is None:
             await self.query_executer(
-                "UPDATE necrobot.Leaderboards SET message=$1 WHERE id=$2",
+                "UPDATE necrobot.Leaderboards SET message=$1 WHERE guild_id=$2",
                 message, guild_id    
             )    
         else:
@@ -390,13 +389,13 @@ class Database(commands.Cog):
                
     async def insert_leaderboard_member(self, guild_id, member_id):
         await self.query_executer(
-            "INSERT INTO necrobot.LeaderboardPoints VALUES($1, $2, 0) ON CONFLICT (id, board) DO NOTHING", 
+            "INSERT INTO necrobot.LeaderboardPoints VALUES($1, $2, 0) ON CONFLICT (user_id, guild_id) DO NOTHING", 
             member_id, guild_id
         )
         
     async def update_leaderboard_member(self, guild_id, member_id, point):
         await self.query_executer(
-            "UPDATE necrobot.LeaderboardPoints SET points = points + $1 WHERE id=$2 AND board=$3", 
+            "UPDATE necrobot.LeaderboardPoints SET points = points + $1 WHERE user_id=$2 AND guild_id=$3", 
             point, member_id, guild_id
         )
         
@@ -425,7 +424,7 @@ class Database(commands.Cog):
             
     async def update_yt_rss(self, guild_id = None):
         return await self.query_executer(
-            "UPDATE FROM necrobot.Youtube SET last_update = NOW() RETURNING last_update",
+            "UPDATE necrobot.Youtube SET last_update = NOW() RETURNING last_update",
             fetchval=True
         )
         
@@ -471,55 +470,53 @@ class SyncDatabase:
         self.cur.execute("SELECT * FROM necrobot.Guilds;")
         for g in self.cur.fetchall():
             guilds[g[0]] = {
-                "mute": g[1] if g[1] != 0 else "", 
-                "automod":g[2] if g[2] != 0 else "", 
-                "welcome-channel":g[3] if g[3] != 0 else "", 
+                "mute": g[1], 
+                "automod":g[2], 
+                "welcome-channel":g[3], 
                 "welcome":g[4], 
                 "goodbye":g[5], 
                 "prefix":g[6],
-                "broadcast-channel":g[7] if g[7] != 0 else "",
+                "broadcast-channel":g[7],
                 "broadcast":g[8],
                 "broadcast-time":g[9],
-                "starboard-channel":g[10] if g[10] != 0 else "",
+                "starboard-channel":g[10],
                 "starboard-limit":g[11],
-                "auto-role":g[12] if g[12] != 0 else "",
-                "auto-role-timer":g[13] if g[13] is not None else 0,
+                "auto-role":g[12],
+                "auto-role-timer":g[13],
                 "ignore-command":[],
                 "ignore-automod":[],
                 "disabled":[],
                 "self-roles": [],
             }
             
-        self.cur.execute("SELECT * FROM necrobot.Disabled;")
+        self.cur.execute("SELECT guild_id, array_agg(command) FROM necrobot.Disabled GROUP BY guild_id;")
         for g in self.cur.fetchall():
-            guilds[g[0]]["disabled"].append(g[1])
+            guilds[g[0]]["disabled"] = g[1]
 
-        self.cur.execute("SELECT * FROM necrobot.IgnoreAutomod;")
+        self.cur.execute("SELECT guild_id, array_agg(id) FROM necrobot.IgnoreAutomod GROUP BY guild_id;")
         for g in self.cur.fetchall():
-            guilds[g[0]]["ignore-automod"].append(g[1])
+            guilds[g[0]]["ignore-automod"] = g[1]
 
-        self.cur.execute("SELECT * FROM necrobot.IgnoreCommand;")
+        self.cur.execute("SELECT guild_id, array_agg(id) FROM necrobot.IgnoreCommand GROUP BY guild_id;")
         for g in self.cur.fetchall():
-            guilds[g[0]]["ignore-command"].append(g[1])
+            guilds[g[0]]["ignore-command"] = g[1]
             
-        self.cur.execute("SELECT * FROM necrobot.SelfRoles;")
+        self.cur.execute("SELECT guild_id, array_agg(id) FROM necrobot.SelfRoles GROUP BY guild_id;")
         for g in self.cur.fetchall():
             guilds[g[0]]["self-roles"].append(g[1])
             
         return guilds
         
-    def load_polls(self):
-        def factory():
-            return {'votes': 1, 'voters':[]}  
+    def load_polls(self): 
           
-        polls = defaultdict(factory)
+        polls = {}
         self.cur.execute("SELECT * FROM necrobot.Polls")
         for u in self.cur.fetchall():
-            polls[u[0]]["votes"] = u[1]
-
-        self.cur.execute("SELECT * FROM necrobot.Votes;")
+            polls[u[0]] = {'votes': u[1], 'voters':[]}
+            
+        self.cur.execute("SELECT message_id, array_agg(user_id) FROM necrobot.Votes GROUP BY message_id;")
         for u in self.cur.fetchall():
-            polls[u[0]]["voters"].append(u[1])
+            polls[u[0]]["voters"] = u[1]
             
         return polls
 

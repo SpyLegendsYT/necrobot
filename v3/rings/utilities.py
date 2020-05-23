@@ -12,9 +12,9 @@ from collections import defaultdict
 def leaderboard_enabled():
     async def predicate(ctx):
         settings = (await ctx.bot.db.query_executer(
-            "SELECT message FROM necrobot.Leaderboards WHERE id=$1", 
+            "SELECT message FROM necrobot.Leaderboards WHERE guild_id=$1", 
             ctx.guild.id, fetchval=True)
-        )[0]
+        )
         if settings != "":
             return True
             
@@ -55,7 +55,7 @@ class Utilities(commands.Cog):
         except NameError:
             raise BotError("Mathematical equation not recognized")
         except Exception as e:
-            await ctx.send(f":negative_squared_cross_mark: | {e}")
+            raise BotError(str(e))
 
     @commands.command()
     @commands.guild_only()

@@ -65,7 +65,7 @@ class Meta(commands.Cog):
         }
         
         await self.bot.db.query_executer(
-            "INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, $2, $3, '', 0, '', 1, 0, 5, 0, 0);",
+            "INSERT INTO necrobot.Guilds(guild_id, welcome_message, goodbye_message) VALUES($1, $2, $3);",
             guild_id, welcome_message, goodbye_message
         )
         
@@ -83,8 +83,8 @@ class Meta(commands.Cog):
         
     async def new_member(self, user, guild = None):
         await self.bot.db.query_executer(
-                "INSERT INTO necrobot.Users VALUES ($1, 200, 0, $2, '', '', 'False') ON CONFLICT (user_id) DO NOTHING", 
-                user.id, datetime.datetime.now()
+                "INSERT INTO necrobot.Users(user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING", 
+                user.id
             )
             
         if guild is None:
@@ -222,6 +222,9 @@ class Meta(commands.Cog):
             for member in guild.members:
                 await self.new_member(member, guild)
                 
+        for guild in [x for x in self.bot.guild_data if self.bot.get_guild(x) is None]:
+            await self.delete_guild(guild)
+                
         await msg.edit(content="All servers checked")
         
         reminders = await self.bot.db.get_reminders()
@@ -265,7 +268,7 @@ class Meta(commands.Cog):
         if g["mute"] not in roles:
             await self.bot.db.update_mute_role(guild.id)
             
-        await self.bot.db.delete_self_roles(guild.id, [role for role in g["self-roles"] if role not in roles])
+        await self.bot.db.delete_self_roles(guild.id, *[role for role in g["self-roles"] if role not in roles])
         await self.bot.db.update_invites(guild)
         
         await self.bot.db.query_executer(

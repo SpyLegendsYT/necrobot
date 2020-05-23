@@ -111,7 +111,10 @@ class Events(commands.Cog):
             self.bot.db.update_mute_role(guild_id)
             
         if role.id in guild["self-roles"]:
-            self.bot.db.delete_self_roles([role.id])
+            self.bot.db.delete_self_roles(role.id)
+            
+        if role.id == guild["auto-role"]:
+            self.bot.db.update_auto_role(role.id)
             
     @commands.Cog.listener()
     async def on_guild_update(self, before, after):
@@ -122,9 +125,9 @@ class Events(commands.Cog):
     @commands.Cog.listener()     
     async def on_command(self, ctx):
         try:
-            can_run = str(await ctx.command.can_run(ctx) and ctx.command.enabled)
+            can_run = int(await ctx.command.can_run(ctx) and ctx.command.enabled)
         except commands.CheckFailure:
-            can_run = "False"
+            can_run = 0
 
         guildname = "DM"
         guildid = None
@@ -315,7 +318,6 @@ class Events(commands.Cog):
     async def on_raw_message_delete(self, payload):
         if payload.message_id in self.bot.potential_stars:
             del self.bot.potential_stars[payload.message_id]
-
 
 def setup(bot):
     bot.add_cog(Events(bot))
