@@ -7,10 +7,9 @@ import asyncpg
 import psycopg2
 import traceback
 from datetime import datetime
-from collections import defaultdict
 
 class DatabaseError(Exception):
-    def __init__(self, message, query = None, args = []):
+    def __init__(self, message, query = None, args = tuple()):
         super().__init__(message)
         self.message = message
         self.query = query
@@ -38,10 +37,11 @@ class Database(commands.Cog):
     def math_builder(self, arg, pos, update, add):
         if update is not None:
             return f"${pos}"
-        elif add is not None:
+        
+        if add is not None:
             return f"{arg} + ${pos}"
-        else:
-            raise DatabaseError("No operation mode specified for update")
+        
+        raise DatabaseError("No operation mode specified for update")
         
     def guild_builder(self, guild, pos):
         if guild is None:
@@ -69,15 +69,15 @@ class Database(commands.Cog):
         if guild_id is None:
             query = "SELECT guild_id, level FROM necrobot.Permissions WHERE user_id = $1"
             return await self.query_executer(query, user_id)
-        else:
-            query = "SELECT level FROM necrobot.Permissions WHERE user_id = $1 AND guild_id = $2"
-            return await self.query_executer(query, user_id, guild_id, fetchval=True)
+        
+        query = "SELECT level FROM necrobot.Permissions WHERE user_id = $1 AND guild_id = $2"
+        return await self.query_executer(query, user_id, guild_id, fetchval=True)
         
     async def compare_user_permission(self, user_id, guild_id, compared_user):
         return await self.query_executer(
             """SELECT u1.level - u2.level FROM necrobot.Permissions u1, necrobot.Permissions u2
             WHERE u1.user_id = $1 AND u2.user_id = $2 
-            AND u1.guild_id = $3 AND u3.guild_id = $3""",
+            AND u1.guild_id = $3 AND u2.guild_id = $3""",
             user_id, compared_user, guild_id, fetchval=True    
         )
         
@@ -87,15 +87,15 @@ class Database(commands.Cog):
         
     async def update_permission(self, user_id, guild_id=None, *, update=None, add=None):        
         if guild_id is None:
-            query = "UPDATE necrobot.Users SET level = {} WHERE user_id = $1 RETURNING level".format(
+            query = "UPDATE necrobot.Permissions SET level = {} WHERE user_id = $1 RETURNING level".format(
                 self.math_builder('level', 2, update, add), 
             )
             return await self.query_executer(query, user_id, update if update is not None else add)
-        else:
-            query = "UPDATE necrobot.Users SET level = {} WHERE user_id = $1 AND guild_id = $2 RETURNING level".format(
-                self.math_builder('level', 3, update, add), 
-            )
-            return await self.query_executer(query, user_id, guild_id, update if update is not None else add)
+        
+        query = "UPDATE necrobot.Permissions SET level = {} WHERE user_id = $1 AND guild_id = $2 RETURNING level".format(
+            self.math_builder('level', 3, update, add), 
+        )
+        return await self.query_executer(query, user_id, guild_id, update if update is not None else add)
         
     async def insert_permission(self, user_id, guild_id, level):
         await self.query_executer(
@@ -148,26 +148,29 @@ class Database(commands.Cog):
                 WHERE b.user_id = $1 AND s.name = b.name""",
                 user_id    
             )
-        elif badge is not None and spot is not None:
+        
+        if badge is not None and spot is not None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
                 WHERE B.user_id = $1 AND b.spot = $3 AND s.name = $2 AND s.name = b.name""",
                 user_id, badge, spot
             )
-        elif badge is None:
+        
+        if badge is None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
                 WHERE s.name = b.name AND s.name = $1 AND b.user_id = $2""",
                 badge, user_id    
             )
-        elif spot is None:
+        
+        if spot is None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
                 WHERE s.name = b.name AND b.spot = $1 AND b.user_id = $2""",
                 spot, user_id
             )
-        else:
-            raise DatabaseError("Something went wrong with badge selection")
+        
+        raise DatabaseError("Something went wrong with badge selection")
     
     async def insert_badge(self, user_id, badge, spot = 0):
         await self.query_executer(
@@ -204,11 +207,11 @@ class Database(commands.Cog):
             return await self.query_executer(
                 "SELECT * FROM necrobot.BadgeShop"    
             )            
-        else:
-            return await self.query_executer(
-                "SELECT * FROM necrobot.BadgeShop WHERE special = $1",
-                badge    
-            )
+        
+        return await self.query_executer(
+            "SELECT * FROM necrobot.BadgeShop WHERE special = $1",
+            special    
+        )
         
     async def get_tutorial(self, user_id):
         tutorial = await self.query_executer(
@@ -230,26 +233,69 @@ class Database(commands.Cog):
             starred.id, message.id, starred.guild.id, starred.author.id
         )
         
+    async def update_prefix(self, guild_id, prefix):
+        await self.bot.db.query_executer(
+            "UPDATE necrobot.Guilds SET prefix = $1 WHERE guild_id = $2",
+            prefix, guild_id    
+        )
+        self.bot.guild_data[guild_id]["prefix"] = prefix
+        
     async def update_broadcast_channel(self, guild_id, channel_id = 0):        
-        self.bot.guild_data[guild_id]["broadcast-channel"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET broadcast_channel = $2 WHERE guild_id = $1;",
             guild_id, channel_id if channel_id else 0
         )
-
+        self.bot.guild_data[guild_id]["broadcast-channel"] = channel_id
+        
+    async def update_broadcast_message(self, guild_id, message = ""):
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET broadcast_message = $1 WHERE guild_id = $2",
+            message, guild_id    
+        )
+        self.bot.guild_data[guild_id]["broadcast"] = message
+        
+    async def update_broadcast_interval(self, guild_id, interval = 0):
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET broadcast_time = $1 WHERE guild_id = $2",
+            interval, guild_id    
+        )
+        self.bot.guild_data[guild_id]["broadcast-time"] = interval
+        
     async def update_starboard_channel(self, guild_id, channel_id = 0):
-        self.bot.guild_data[guild_id]["starboard"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET starboard_channel = $2 WHERE guild_id = $1;", 
             guild_id, channel_id if channel_id else 0
         )
+        self.bot.guild_data[guild_id]["starboard-channel"] = channel_id
+        
+    async def update_starboard_limit(self, guild_id, limit = 1):
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET starboard_limit = $2 WHERE guild_id = $1",
+            guild_id, limit    
+        )
+        self.bot.guild_data[guild_id]["starboard-limit"] = limit
         
     async def update_greeting_channel(self, guild_id, channel_id = 0):
-        self.bot.guild_data[guild_id]["welcome-channel"] = channel_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET welcome_channel = $2 WHERE guild_id = $1;", 
             guild_id, channel_id if channel_id else 0
         )
+        self.bot.guild_data[guild_id]["welcome-channel"] = channel_id
+        
+    async def update_welcome_message(self, guild_id, message):
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET welcome_message = $1 WHERE guild_id = $2",
+            message, guild_id    
+        )
+        self.bot.guild_data[guild_id]["welcome"] = message
+        
+    async def update_goodbye_message(self, guild_id, message):
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2",
+            message, guild_id    
+        )
+        
+        self.bot.guild_data[guild_id]["goodbye"] = message
         
     async def update_automod_channel(self, guild_id, channel_id = 0):
         self.bot.guild_data[guild_id]["automod"] = channel_id
@@ -258,54 +304,97 @@ class Database(commands.Cog):
             guild_id, channel_id if channel_id else 0
         )
         
+    async def insert_automod_ignore(self, guild_id, *objects_id):
+        if not objects_id:
+            return
+            
+        await self.query_executer(
+            "INSERT INTO necrobot.IgnoreAutomod VALUES($1, $2)",
+            [(guild_id, x) for x in objects_id], many=True    
+        )
+
+        self.bot.guild_data[guild_id]["ignore-automod"].extend(objects_id)
+        
+    async def delete_automod_ignore(self, guild_id, *objects_id):
+        if not objects_id:
+            return
+        
+        await self.query_executer(
+            "DELETE FROM necrobot.IgnoreAutomod WHERE guild_id = $1 AND id = any($2)",
+            guild_id, objects_id    
+        )
+        
+        self.bot.guild_data[guild_id]["ignore-automod"] = [x for x in self.bot.guild_data[guild_id]["ignore-automod"] if x not in objects_id]
+        
+    async def insert_command_ignore(self, guild_id, *objects_id):
+        if not objects_id:
+            return
+        
+        await self.query_executer(
+            "INSERT INTO necrobot.IgnoreCommand VALUES($1, $2)",
+            [(guild_id, x) for x in objects_id], many=True    
+        )
+        
+        self.bot.guild_data[guild_id]["ignore-command"].extend(objects_id)
+        
+    async def delete_command_ignore(self, guild_id, *objects_id):
+        if not objects_id:
+            return
+
+        await self.query_executer(
+            "DELETE FROM necrobot.IgnoreCommand WHERE guild_id = $1 AND id = any($2)",
+            guild_id, objects_id    
+        )
+        
+        self.bot.guild_data[guild_id]["ignore-command"] = [x for x in self.bot.guild_data[guild_id]["ignore-command"] if x not in objects_id]
+        
     async def update_mute_role(self, guild_id, role_id = 0):
-        self.bot.guild_data[guild_id]["mute"] = role_id
         await self.query_executer(
             "UPDATE necrobot.Guilds SET mute = $2 WHERE guild_id = $1;", 
-            guild_id, role_id if role_id else 0
+            guild_id, role_id
         )
         
-    async def update_auto_role(self, guild_id, role_id = 0):
-        self.bot.guild_data[guild_id]["auto-role"] = roles_id
+        self.bot.guild_data[guild_id]["mute"] = role_id
+        
+    async def update_auto_role(self, guild_id, role_id = 0, timer = 0):
         await self.query_executer(
-            "UPDATE necrobot.Guilds SET auto_role = $2 WHERE guild_id = $1;", 
-            guild_id, role_id if role_id else 0
+            "UPDATE necrobot.Guilds SET auto_role = $2, auto_role_timer = $3 WHERE guild_id = $1;", 
+            guild_id, role_id, timer
         )
         
-    async def update_auto_role_timer(self, guild_id, timer = 0):
-        self.bot.guild_data[guild_id]["auto-role-timer"] = roles_id
-        await self.query_executer(
-            "UPDATE necrobot.Guilds SET auto_role_timer = $2 WHERE guild_id = $1;", 
-            guild_id, role_id if role_id else 0
-        )
+        self.bot.guild_data[guild_id]["auto-role"] = role_id
+        self.bot.guild_data[guild_id]["auto-role-timer"] = timer
         
     async def insert_self_roles(self, guild_id, *roles_id):
-        self.bot.guild_data[guild_id]["self-roles"].extend(
-            [x for x in roles_id if x not in self.bot.guild_data[guild_id]["self-roles"]]
-        )
-        
-        await self.bot.query_executer(
+        if not roles_id:
+            return
+            
+        await self.bot.db.query_executer(
             "INSERT INTO necrobot.SelfRoles VALUES($1, $2)",
             *[(guild_id, role_id) for role_id in roles_id], many=True  
+        )
+        
+        self.bot.guild_data[guild_id]["self-roles"].extend(
+            [x for x in roles_id if x not in self.bot.guild_data[guild_id]["self-roles"]]
         )
         
     async def delete_self_roles(self, guild_id, *roles_id):
         if not roles_id:
             return
             
-        self.bot.guild_data[guild_id]["self-roles"] = [
-            x for x in self.bot.guild_data[guild_id]["self-roles"] if x not in roles_id
-        ]
-        
         await self.query_executer(
             "DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = ANY($2);",
             guild_id, roles_id
         )
+            
+        self.bot.guild_data[guild_id]["self-roles"] = [
+            x for x in self.bot.guild_data[guild_id]["self-roles"] if x not in roles_id
+        ]
         
     async def insert_invite(self, guild_id, invite):
         await self.query_executer(
             "INSERT INTO necrobot.Invites VALUES($1, $2, $3, $4, $5)",
-            invite.id, guild.id, invite.url, invite.uses, invite.inviter.id if invite.inviter else 000
+            invite.id, guild_id, invite.url, invite.uses, invite.inviter.id if invite.inviter else 000
         )
     
     async def delete_invite(self, guild_id, invite_id):
@@ -342,11 +431,11 @@ class Database(commands.Cog):
             return await self.query_executer(
                 "SELECT * FROM necrobot.Reminders"    
             )
-        else:
-            return await self.query_executer(
-                "SELECT * FROM necrobot.Reminders WHERE user_id = $1",
-                user_id
-            )
+        
+        return await self.query_executer(
+            "SELECT * FROM necrobot.Reminders WHERE user_id = $1",
+            user_id
+        )
             
     async def insert_reminder(self, user_id, channel_id, reminder, timer, start_date):
         return await self.query_executer(
@@ -363,8 +452,8 @@ class Database(commands.Cog):
         
     async def get_leaderboard(self, guild_id):
         return (await self.query_executer(
-                "SELECT message, symbol FROM necrobot.Leaderboards WHERE guild_id = $1",
-                guild_id
+            "SELECT message, symbol FROM necrobot.Leaderboards WHERE guild_id = $1",
+            guild_id
         ))[0]
         
     async def insert_leaderboard(self, guild_id):
@@ -405,8 +494,8 @@ class Database(commands.Cog):
                 "SELECT * FROM necrobot.Youtube WHERE guild_id = $1", 
                 guild_id
             )
-        else:
-            return await self.query_executer("SELECT * FROM necrobot.Youtube")
+        
+        return await self.query_executer("SELECT * FROM necrobot.Youtube")
             
     async def upsert_yt_rss(self, guild_id, channel_id, youtuber_id):
         await self.query_executer(
@@ -417,7 +506,7 @@ class Database(commands.Cog):
         )
         
     async def update_yt_filter(self, guild_id, youtuber_id, text):
-        await self.bot.query_executer(
+        await self.bot.db.query_executer(
             "UPDATE necrobot.Youtube SET filter = $3 WHERE guild_id = $1 and youtuber_id = $2", 
             guild_id, youtuber_id, text
         )
@@ -428,17 +517,23 @@ class Database(commands.Cog):
             fetchval=True
         )
         
-    async def delete_rss_channel(self, guild_id, *, channel_id = None, youtuber_id = None):
-        if channel_id is None:
-            await self.query_executer(
-                "DELETE FROM necrobot.Youtube WHERE guild_id = $1", 
-                channel.guild.id
-            )
-        else:
-            await self.query_executer(
+    async def delete_rss_channel(self, guild_id, *, channel_id = None, youtuber_id = None):            
+        if channel_id is not None:
+            return await self.query_executer(
                 "DELETE FROM necrobot.Youtube WHERE guild_id = $1 AND channel_id = $2", 
-                channel.guild.id, channel.id
+                guild_id, channel_id
             )
+            
+        if youtuber_id is not None:
+            return await self.query_executer(
+                "DELETE from necrobot.Youtube WHERE guild_id = $1 AND youtuber_id = $2",
+                guild_id, youtuber_id    
+            )
+            
+        return await self.query_executer(
+            "DELETE FROM necrobot.Youtube WHERE guild_id = $1", 
+            guild_id
+        )
 
     async def query_executer(self, query, *args, fetchval = False, many = False, **kwargs):
         if self.bot.pool is None:

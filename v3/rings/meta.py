@@ -83,9 +83,9 @@ class Meta(commands.Cog):
         
     async def new_member(self, user, guild = None):
         await self.bot.db.query_executer(
-                "INSERT INTO necrobot.Users(user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING", 
-                user.id
-            )
+            "INSERT INTO necrobot.Users(user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING", 
+            user.id
+        )
             
         if guild is None:
             return
@@ -111,7 +111,7 @@ class Meta(commands.Cog):
             
         await self.bot.db.insert_leaderboard_member(guild.id, user.id)
         
-    async def _star_message(self, message):
+    async def star_message(self, message):
         if self.bot.blacklist_check(message.author.id):
             return
 
@@ -251,6 +251,8 @@ class Meta(commands.Cog):
     async def guild_checker(self, guild):
         channels = [channel.id for channel in guild.channels]
         roles = [role.id for role in guild.roles] 
+        members = [member.id for member in guild.members]
+        
         g = self.bot.guild_data[guild.id]
 
         if g["broadcast-channel"] not in channels:
@@ -274,6 +276,15 @@ class Meta(commands.Cog):
         await self.bot.db.query_executer(
             "DELETE FROM necrobot.Youtube WHERE guild_id = $1 AND NOT(channel_id = any($2))",
             guild.id, channels            
+        )
+        
+        combined = [*channels, *roles, *members]
+        await self.bot.db.delete_automod_ignore(guild.id, [x for x in g["ignore-automod"] if x not in combined])
+        await self.bot.db.delete_command_ignore(guild.id, [x for x in g["ignore-command"] if x not in combined])
+        
+        await self.bot.db.query_executer(
+            "DELETE FROM necrobot.Permissions WHERE guild_id = $1 AND not(user_id = any($2))",
+            guild.id, members    
         )
         
     async def reminder_task(self, reminder_id, time, message, channel_id, user_id):

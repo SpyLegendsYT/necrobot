@@ -4,6 +4,14 @@ from discord.ext import commands
 import re
 import asyncio
 import datetime
+import itertools
+
+class BotError(Exception):
+    pass
+
+def check_channel(channel):
+    if not channel.permissions_for(channel.guild.me).send_messages:
+        raise BotError("I need permissions to send messages in this channel")
 
 def has_welcome(bot, member):
     return bot.guild_data[member.guild.id]["welcome-channel"] and bot.guild_data[member.guild.id]["welcome"]
@@ -15,10 +23,10 @@ def has_automod(bot, message):
     if not bot.guild_data[message.guild.id]["automod"]:
         return False
         
-    if message.author.id not in bot.guild_data[message.guild.id]["ignore-automod"]:
+    if message.author.id in bot.guild_data[message.guild.id]["ignore-automod"]:
         return False
         
-    if message.channel.id not in bot.guild_data[message.guild.id]["ignore-automod"]:
+    if message.channel.id in bot.guild_data[message.guild.id]["ignore-automod"]:
         return False
     
     role_ids = [role.id for role in message.author.roles]
@@ -91,7 +99,8 @@ async def get_pre(bot, message):
     if not isinstance(message.channel, discord.DMChannel):
         guild_pre = bot.guild_data[message.guild.id]["prefix"]
         if guild_pre != "":
-            prefixes = [guild_pre, *bot.admin_prefixes]
+            guild_pre = map(''.join, itertools.product(*((c.upper(), c.lower()) for c in guild_pre)))
+            prefixes = [*guild_pre, *bot.admin_prefixes]
             return commands.when_mentioned_or(*prefixes)(bot, message)
 
     return commands.when_mentioned_or(*bot.prefixes)(bot, message)
@@ -159,6 +168,3 @@ def midnight():
     midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
                           day=tomorrow.day, hour=0, minute=0, second=0)
     return (midnight - d.datetime.now()).seconds
-    
-class BotError(Exception):
-    pass

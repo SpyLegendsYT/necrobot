@@ -19,7 +19,7 @@ CREATE TABLE necrobot.Guilds (
     broadcast_message varchar(2000) DEFAULT '',
     broadcast_time int DEFAULT 1,
     starboard_channel bigint DEFAULT 0,
-    starboard_limit int DEFAULT 5,
+    starboard_limit int DEFAULT 5 CHECK(starboard_limit > 0),
     auto_role bigint DEFAULT 0,
     auto_role_timer int DEFAULT 0
 );
