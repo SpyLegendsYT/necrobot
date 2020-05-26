@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, GuildConverter, react_menu, BotError
+from rings.utils.utils import has_perms, GuildConverter, react_menu, BotError, BadgeConverter
 from rings.utils.config import github_key
 
 try:
@@ -141,7 +141,27 @@ class Admin(commands.Cog):
         command.enabled = True
         self.bot.settings["disabled"].remove(command.name)
         await ctx.send(f":white_check_mark: | Enabled **{command.name}**")
-            
+        
+    @admin.command(name="badges")
+    @has_perms(6)
+    async def admin_badges(self, ctx, subcommand : str, user : discord.User, badge : BadgeConverter):
+        """Used to grant special badges to users. Uses add/delete subcommand
+
+        {usage}
+        """
+        if subcommand not in ("add", "delete"):
+            raise BotError("Not a valid subcommand")
+
+        has_badge = await self.bot.db.get_badges(user.id, badge=badge["name"])
+        if subcommand == "add" and not has_badge:
+            await self.bot.db.insert_badge(user.id, badge) 
+            await ctx.send(f":white_check_mark: | Granted the **{badge}** badge to user **{user}**")
+        elif subcommand == "delete" and has_badge:
+            await self.bot.db.delete_badge(user.id, badge) 
+            await ctx.send(f":white_check_mark: | Reclaimed the **{badge}** badge from user **{user}**")
+        else:
+            raise BotError("Users has/doesn't have the badge")
+                    
     @commands.command()
     @has_perms(6)
     async def pm(self, ctx, user : discord.User, *, message : str):
@@ -420,30 +440,6 @@ class Admin(commands.Cog):
             os.system("nohup sudo python3.6 /home/pi/feeds/rss.py&")
         elif reaction.emoji == "\N{HEAR-NO-EVIL MONKEY}":
             os.system("nohup sudo python3.6 /home/pi/cardiff_confessions/main.py&")
-            
-    @admin.command(name="badges")
-    @has_perms(6)
-    async def admin_badges(self, ctx, subcommand : str, user : discord.User, badge : str):
-        """Used to grant special badges to users. Uses add/delete subcommand
-
-        {usage}
-        """
-        badges = [x["name"] for x in await self.bot.db.get_badge_shop()]
-        if badge not in badges:
-            raise BotError("Not a valid badge")
-
-        if subcommand not in ("add", "delete"):
-            raise BotError("Not a valid subcommand")
-
-        has_badge = await self.bot.db.get_badges(user.id, badge)
-        if subcommand == "add" and not badge:
-            await self.bot.db.insert_badge(user.id, badge) 
-            await ctx.send(f":white_check_mark: | Granted the **{badge}** badge to user **{user}**")
-        elif subcommand == "delete" and badge:
-            await self.bot.db.delete_badge(user.id, badge) 
-            await ctx.send(f":white_check_mark: | Reclaimed the **{badge}** badge from user **{user}**")
-        else:
-            raise BotError("Users has/doesn't have the badge")
 
     @commands.Cog.listener()
     async def on_message(self, message):

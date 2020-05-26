@@ -2,7 +2,7 @@ CREATE TABLE necrobot.Users (
     user_id bigint PRIMARY KEY,
     necroins int CHECK (necroins >= 0) DEFAULT 200,
     exp int DEFAULT 0,
-    daily date DEFAULT NOW() - INTERVAL '1 DAY',
+    daily date DEFAULT current_date,
     title varchar(40) DEFAULT '',
     tutorial int DEFAULT 0
 );
@@ -41,7 +41,7 @@ CREATE TABLE necrobot.BadgeShop (
 CREATE TABLE necrobot.Badges (
     user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
     badge varchar(50) REFERENCES necrobot.BadgeShop(name) ON DELETE CASCADE,
-    spot int DEFAULT 0,
+    spot int DEFAULT 0 CHECK(spot BETWEEN 0 AND 8),
     PRIMARY KEY(user_id, badge),
     UNIQUE(user_id, spot)
 );
@@ -97,7 +97,7 @@ CREATE TABLE necrobot.Logs(
     guildname varchar(40),
     message varchar(2000),
     time_used TIMESTAMPTZ DEFAULT NOW(),
-    can_run int DEFAULT 1
+    can_run BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE necrobot.Warnings(

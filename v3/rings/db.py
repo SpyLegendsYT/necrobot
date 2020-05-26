@@ -52,6 +52,12 @@ class Database(commands.Cog):
     async def create_pool(self):
         self.bot.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
         
+    async def get_conn(self):
+        if self.bot.pool is None:
+            await self.create_pool()
+            
+        return await self.bot.pool.acquire()
+        
     async def get_money(self, user_id):
         return await self.query_executer(
             "SELECT necroins FROM necrobot.Users WHERE user_id = $1", 
@@ -64,6 +70,22 @@ class Database(commands.Cog):
         )
         
         return await self.query_executer(query, user_id, update if update is not None else add)
+        
+    async def transfer_money(self, payer_id, amount, payee_id):
+        conn = await self.get_conn()
+        
+        async with conn.transaction():
+            await self.query_executer(
+                "UPDATE necrobot.Users SET necroins = necroins - $2 WHERE user_id = $1",
+                payer_id, amount, cn=conn    
+            )
+            
+            await self.query_executer(
+                "UPDATE necrobot.Users SET necroins = necroins + $2 WHERE user_id = $1",
+                payee_id, amount, cn=conn    
+            )
+            
+        await self.bot.pool.release(conn)
             
     async def get_permission(self, user_id, guild_id = None):
         if guild_id is None:
@@ -109,26 +131,6 @@ class Database(commands.Cog):
             user_id, guild_id    
         )
         
-    async def get_daily_date(self, user_id):
-        return await self.query_executer(
-            "SELECT daily FROM necrobot.Users WHERE user_id = $1",
-            user_id,
-            fetchval = True
-        )
-        
-    async def update_daily_date(self, user_id, date):
-        date = datetime.today().date()
-        
-        return await self.query_executer(
-            """UPDATE necrobot.Users as u1 SET u1.daily = $1 
-            FROM necrobot.Users u2 
-            WHERE user_id = $2 
-            AND u1.user_id = u2.user_id 
-            AND u1.daily IS DISTINCT FROM u2.daily
-            RETURNING user_id""",
-            date, user_id, fetchval = True    
-        )
-        
     async def get_title(self, user_id):
         return await self.query_executer(
             "SELECT title FROM necrobot.Users WHERE user_id = $1", 
@@ -142,6 +144,7 @@ class Database(commands.Cog):
         )
         
     async def insert_warning(self, user_id, issuer_id, guild_id, message):
+        async with self.conn
         return await self.query_executer(
             """
             INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content) 
@@ -232,15 +235,15 @@ class Database(commands.Cog):
             spot, user_id, badge    
         )
         
-    async def get_badge_from_shop(self, *, special = None):
-        if special is None:
+    async def get_badge_from_shop(self, *, name = None):
+        if name is None:
             return await self.query_executer(
                 "SELECT * FROM necrobot.BadgeShop"    
             )            
         
         return await self.query_executer(
             "SELECT * FROM necrobot.BadgeShop WHERE special = $1",
-            special    
+            name    
         )
         
     async def get_tutorial(self, user_id):
@@ -565,11 +568,12 @@ class Database(commands.Cog):
             guild_id
         )
 
-    async def query_executer(self, query, *args, fetchval = False, many = False, **kwargs):
-        if self.bot.pool is None:
-            await self.create_pool()
-            
-        conn = await self.bot.pool.acquire()
+    async def query_executer(self, query, *args, fetchval = False, many = False, cn = None, **kwargs):
+        if cn is None:
+            conn = await self.get_conn()
+        else:
+            conn = cn
+        
         try:
             if fetchval:
                 result = await conn.fetchval(query, *args)
@@ -580,8 +584,10 @@ class Database(commands.Cog):
         except Exception as e:
             await self.bot.pool.release(conn)
             raise DatabaseError(str(e), query, args)
+        
+        if cn is None:
+            await self.bot.pool.release(conn)
             
-        await self.bot.pool.release(conn)
         return result
 
 class SyncDatabase:

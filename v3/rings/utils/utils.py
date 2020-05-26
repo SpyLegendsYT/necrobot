@@ -141,6 +141,15 @@ class GuildConverter(commands.IDConverter):
                 return result
 
         raise commands.BadArgument("Not a known guild")
+        
+class BadgeConverter(commands.Converter):
+    async def convert(sefl, ctx, argument):
+        badge = await self.bot.db.get_badge_from_shop(argument)
+        
+        if not badge:
+            raise commands.CheckFailure("Could not find a badge with this name")
+            
+        return badge[0]
 
 class TimeConverter(commands.Converter):
     async def convert(self, ctx, argument):
@@ -157,7 +166,7 @@ class MoneyConverter(commands.Converter):
             raise commands.BadArgument("Amount must be a positive intenger")
         
         money = await ctx.bot.db.get_money(ctx.message.author.id)
-        if argument <= money:
+        if money >= argument:
             return argument
         
         raise commands.BadArgument("You do not have enough money")
@@ -169,4 +178,4 @@ def midnight():
         year=tomorrow.year, month=tomorrow.month, 
         day=tomorrow.day, hour=0, minute=0, second=0
     )
-    return (time - datetime.datetime.now()).seconds
+    return time - datetime.datetime.now()
