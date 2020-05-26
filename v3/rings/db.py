@@ -141,6 +141,36 @@ class Database(commands.Cog):
             title, user_id, fetchval=True    
         )
         
+    async def insert_warning(self, user_id, issuer_id, guild_id, message):
+        return await self.query_executer(
+            """
+            INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content) 
+            VALUES ($1, $2, $3, $4)
+            RETURNING warn_id;
+            """, 
+            user_id, issuer_id, guild_id, message, fetchval=True
+        )
+        
+    async def delete_warning(self, warning_id, guild_id):
+        return await self.query_executer(
+            "DELETE FROM necrobot.Warnings WHERE warn_id = $1 AND guild_id = $2 RETURNING warn_id",
+            warning_id, guild_id, fetchval=True
+        )
+        
+    async def insert_disabled(self, guild_id, *commands):
+        await self.query_executer(
+            "INSERT INTO necrobot.Disabled VALUES ($1, $2)",
+            [(guild_id, x) for x in commands], many=True    
+        )
+        self.bot.guild_data[guild_id]["disabled"].extend(commands)
+        
+    async def delete_disabled(self, guild_id, *commands):
+        await self.query_executer(
+            "DELETE FROM necrobot.Disabled WHERE guild_id = $1 AND command = any($2)",
+            guild_id, commands    
+        )        
+        self.bot.guild_data[guild_id]["disabled"] = [x for x in self.bot.guild_data[guild_id]["disabled"] if x not in commands]
+
     async def get_badges(self, user_id, *, badge = None, spot = None):
         if badge is None and spot is None:
             return await self.query_executer(

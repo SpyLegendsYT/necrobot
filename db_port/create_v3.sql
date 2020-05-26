@@ -127,7 +127,9 @@ CREATE TABLE necrobot.Reminders(
 
 CREATE TABLE necrobot.Polls(
     message_id bigint PRIMARY KEY,
-    votes int 
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    link varchar(500),
+    votes int CHECK(votes BETWEEN 1 AND 20)
 );
 
 CREATE TABLE necrobot.Votes(
@@ -184,4 +186,9 @@ CREATE TABLE necrobot.LeaderboardPoints(
 CREATE TYPE channel_filter_hybrid as (
     channel_id bigint,
     filter varchar(50)
+);
+
+CREATE TYPE emote_count_hybrid as (
+    reaction varchar(200),
+    count int
 );

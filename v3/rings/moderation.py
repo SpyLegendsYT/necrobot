@@ -1,0 +1,308 @@
+import discord
+from discord.ext import commands
+
+from rings.utils.utils import has_perms, TimeConverter, BotError
+
+import asyncio
+
+def requires_mute_role():
+    def predicate(ctx):
+        if not ctx.bot.guild_data[ctx.guild.id]["mute"]:
+            raise commands.CheckFailure("Please set up the mute role with `n!mute role [rolename]` first.")
+        
+        return True
+        
+    return commands.check(predicate)
+
+class Moderation(commands.Cog):
+    """All of the tools moderators can use from the most basic such as `nick` to the most complex like `purge`. 
+    All you need to keep your server clean and tidy"""
+    def __init__(self, bot):
+        self.bot = bot
+
+    def cog_check(self, ctx):
+        if ctx.guild:
+            return True
+
+        raise commands.CheckFailure("This command cannot be used in private messages.")
+
+    @commands.command()
+    @has_perms(1)
+    @commands.bot_has_permissions(manage_nicknames=True)
+    async def rename(self, ctx, user : discord.Member, *, nickname=None):
+        """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return 
+        an error message if the user cannot be renamed due to permission issues.
+        
+        {usage}
+        
+        __Example__
+        `{pre}nick @NecroBot Lord of All Bots` - renames NecroBot to 'Lord of All Bots'
+        `{pre}nick @NecroBot` - will reset NecroBot's nickname"""
+        if await self.bot.db.compare_user_permission(ctx.author.id, ctx.guild.id, user.id) < 1:
+            raise BotError("You do not have the required NecroBot permissions to rename this user.")
+
+        if not nickname:
+            msg = f":white_check_mark: | User **{user.display_name}**'s nickname reset"
+        else:
+            msg = f":white_check_mark: | User **{user.display_name}** renamed to **{nickname}**"
+
+        await user.edit(nick=nickname)
+        await ctx.send(msg)
+            
+
+    @commands.group(invoke_without_command = True)
+    @has_perms(2)
+    @requires_mute_role()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def mute(self, ctx, user : discord.Member, time : TimeConverter = None):
+        """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
+        mute role using `{pre}mute role`. The user can either be muted for the given amount of seconds or indefinitely 
+        if no amount is given. The following times can be used: days (d), hours (h), minutes (m), seconds (s).
+        
+        {usage}
+
+        __Example__
+        `{pre}mute @NecroBot` - mute NecroBot until a user with the proper permission level does `{pre}unmute @NecroBot`
+        `{pre}mute @NecroBot 30s` - mutes NecroBot for 30 seconds or until a user with the proper permission level does
+        `{pre}mute @NecroBot 2m` - mutes NecroBot for 2 minutes
+        `{pre}mute @NecroBot 4d2h45m` - mutes NecroBot for 4 days, 2 hours and 45 minutes"""
+        if await self.bot.db.compare_user_permission(ctx.author.id, ctx.guild.id, user.id) < 1:
+            raise BotError("You do not have the required NecroBot permissions to mute this user.")
+
+        role = discord.utils.get(ctx.guild.roles, id=self.bot.guild_data[ctx.guild.id]["mute"])
+        if role not in user.roles:
+            await user.add_roles(role)
+            await ctx.send(f":white_check_mark: | User **{user.display_name}** has been muted")
+        else:
+            raise BotError(f"User **{user.display_name}** is already muted")
+
+        if time:
+            await asyncio.sleep(time)
+            if role in user.roles:
+                await user.remove_roles(role)
+                await ctx.send(f":white_check_mark: | User **{user.display_name}** has been automatically unmuted")
+            
+
+    @mute.command(name="role")
+    @has_perms(4)
+    async def mute_role(self, ctx, *, role : discord.Role = 0):
+        """Sets the mute role for this server to [role], this is used for the `mute` command, it is the role assigned by 
+        the command to the user. Make sure to spell the role correctly, the role name is case sensitive. It is up to the server 
+        authorities to set up the proper permissions for the chosen mute role. Once the role is set up it can be renamed and 
+        edited as seen needed, NecroBot keeps the id saved. Unexpect behavior can happen if multiple roles have the same name when
+        setting the role.
+         
+        {usage}
+        
+        __Example__
+        `{pre}mute role Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
+        `{pre}mute role` - resets the mute role and disables the `mute` command."""
+        if not role:
+            await self.bot.db.update_mute_role(ctx.guild.id)
+            await ctx.send(":white_check_mark: | Reset mute role")
+        else:
+            await self.bot.db.update_mute_role(ctx.guild.id, role.id)
+            await ctx.send(f":white_check_mark: | Okay, the mute role for your server will be {role.mention}")
+        
+    @commands.command()
+    @has_perms(2)
+    @requires_mute_role()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def unmute(self, ctx, user : discord.Member):
+        """Unmutes a user by removing the mute role, allowing them once again to write in text channels. 
+        
+        {usage}
+
+        __Example__
+        `{pre}unmute @NecroBot` - unmutes NecroBot if he is muted"""
+        if not self.bot.guild_data[ctx.guild.id]["mute"]:
+            await ctx.send(":negative_squared_cross_mark: | Please set up the mute role with `n!mute role [rolename]` first.")
+            return
+            
+        role = discord.utils.get(ctx.guild.roles, id=self.bot.guild_data[ctx.guild.id]["mute"])
+        if role in user.roles:
+            await user.remove_roles(role)
+            await ctx.send(f":white_check_mark: | User **{user.display_name}** has been unmuted")
+        else:
+            await ctx.send(f":negative_squared_cross_mark: | User **{user.display_name}** is not muted", delete_after=5)
+    
+    @commands.group(invoke_without_command = True)
+    @has_perms(1)
+    async def warn(self, ctx, user : discord.Member, *, message : str):
+        """Adds the given message as a warning to the user's NecroBot profile
+        
+        {usage}
+        
+        __Example__
+        `{pre}warn @NecroBot For being the best bot` - will add the warning 'For being the best bot' to 
+        Necrobot's warning list and pm the warning message to him"""
+        if await self.bot.db.compare_user_permission(ctx.author.id, ctx.guild.id, user.id) < 1:
+            raise BotError("You do not have the required NecroBot permissions to warn this user.")
+
+        warning_id = await self.bot.db.insert_warning(user.id, ctx.author.id, ctx.guild.id, message)
+        await ctx.send(f":white_check_mark: | Warning added to warning list of user **{user.display_name}** with ID `{warning_id}`")
+        try:
+            await user.send(f"You have been warned on {ctx.guild.name}, the warning is: \n {message}")
+        except discord.Forbidden:
+            pass
+
+    @warn.command(name="delete")
+    @has_perms(3)
+    async def warn_delete(self, ctx, user : discord.Member, warning_id : int):
+        """Removes the warning from the user's NecroBot system based on the given warning id. 
+        
+        {usage}
+        
+        __Example__
+        `{pre}warn delete @NecroBot 1` - delete the warning with id 1 of NecroBot's warning list"""
+        
+        deleted = await self.bot.db.delete_warning(warning_id, ctx.guild.id)
+        if not deleted:
+            raise BotError("Warning with that ID not found")
+            
+        await ctx.send(f":white_check_mark: | Warning `{warning_id}` removed from warning list of user **{user.display_name}**")
+
+    @commands.command()
+    @has_perms(4)
+    @commands.bot_has_permissions(manage_messages=True)
+    async def purge(self, ctx, number : int = 1, check = "", extra : discord.Member = ""):
+        """Removes number of messages from the channel it is called in. That's all it does at the moment 
+        but later checks will also be added to allow for more flexible/specific purging
+        
+        {usage}
+        
+        __Example__
+        `{pre}purge 50` - purges the last 50 messages
+        `{pre}purge 15 link` - purges all messages containing links from the previous 15 messages
+        `{pre}purge 20 mention @Necro` - purges all messages sent by @Necro from the previous 20 messages
+        `{pre}purge 35 bot` - purges all messages sent by the bot from the previous 35 messages"""
+        if number > 400:
+            raise BotError("Cannot purge more than 400 messages")
+
+        number += 1
+        check = check.lower()
+        
+        if check == "link":
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: "http" in m.content)
+        elif check == "mention":
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author == extra)
+        elif check == "image":
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.attachments)
+        elif check == "bot":
+            deleted = await ctx.channel.purge(limit=number, check=lambda m: m.author == self.bot.user)
+        else:
+            deleted = await ctx.channel.purge(limit=number)
+
+        await ctx.send(f":wastebasket: | **{len(deleted)-1}** messages purged.", delete_after=5)
+
+    @commands.command()
+    @has_perms(3)
+    async def speak(self, ctx, channel : discord.TextChannel, *, message : str):
+        """Send the given message to the channel mentioned by mention or name. Cannot send to other servers. 
+        
+        {usage}
+        
+        __Example__
+        `{pre}speak #general Hello` - sends hello to the mentionned #general channel"""
+        await channel.send(f":loudspeaker: | {message}")
+        
+    @commands.command()
+    @has_perms(4)
+    async def disable(self, ctx, name : str = None):
+        """Disables a command or cog. Once a command or cog is disabled only admins can use it with the special n@ or N@
+        prefix. To re-enable a command or cog call the `enable` command on it. Disabling cogs works as a sort of "select all" 
+        button which means that all commands will be disabled and individual commands can then be enabled separatly for
+        fine tuning.
+
+
+        {usage}
+
+        __Examples__
+        `{pre}disable` - print the list of disabled cogs and commands
+        `{pre}disable cat` - disables the cat command, after that the cat command only be used by admins using `n@cat`
+        `{pre}disable Animals` - disables every command in the the Animals cog"""
+        if name is None:
+            string = ", ".join([f"**{x}**" for x in self.bot.guild_data[ctx.guild.id]['disabled']])
+            return await ctx.send(f"Cogs and Commands disabled on the server: {string}")
+
+        disabled = self.bot.guild_data[ctx.guild.id]["disabled"]
+        command = self.bot.get_command(name)
+        cog = self.bot.get_cog(name)
+        
+        if command:
+            if command in disabled:
+                raise BotError("This command is already disabled.")
+                
+            await self.bot.db.insert_disabled(ctx.guild.id, name)
+            return await ctx.send(f":white_check_mark: | Command **{name}** is now disabled")
+            
+        if cog:
+            disabled_commands = [x.name for x in cog.get_commands() if x.name not in self.bot.guild_data[ctx.guild.id]["disabled"]]
+            await self.bot.db.insert_disabled(ctx.guild.id, *disabled_commands)
+            return await ctx.send(f":white_check_mark: | All commands in cog **{name}** are now disabled")  
+            
+        raise BotError("No such command/cog")
+
+    @commands.command()
+    @has_perms(4)
+    async def enable(self, ctx, name : str = None):
+        """Enable a command or cog. Once a command or cog is enabled everybody can use it given no other restrictions such 
+        as blacklisted or ignored. To disable a command or cog call the `disable` comannd on it. Enabling cogs works as a 
+        sort of "select all" button which means that all commands will be enabled and individual commands can then be disabled
+        separatly for fine tuning.
+
+
+        {usage}
+
+        __Examples__
+        `{pre}enable` - print the list of disabled cogs and commands
+        `{pre}enabled cat` - enable the cat command, after that everybody can use it again freely.
+        `{pre}enable Animals` - enables every command in the the Animals cog"""
+        if not name:
+            string = ", ".join([f"**{x}**" for x in self.bot.guild_data[ctx.guild.id]['disabled']])
+            return await ctx.send(f"Cogs and Commands disabled on the server: {string}")
+
+        disabled = self.bot.guild_data[ctx.guild.id]["disabled"]
+        command = self.bot.get_command(name)
+        cog = self.bot.get_cog(name)
+        
+        if command:
+            if command not in disabled:
+                raise BotError("This command is not disabled.")
+                
+            await self.bot.db.delete_disabled(ctx.guild.id, name)
+            return await ctx.send(f":white_check_mark: | Command **{name}** is now enabled")
+                
+            
+        if cog:
+            enabled_commands = [x.name for x in cog.get_commands() if x.name in self.bot.guild_data[ctx.guild.id]["disabled"]]
+            await self.bot.db.delete_disabled(ctx.guild.id, *enabled_commands)
+            return await ctx.send(f":white_check_mark: | All commands in cog **{name}** are now enabled")  
+            
+        raise BotError("No such command/cog")
+
+
+    @commands.command()
+    @has_perms(3)
+    async def star(self, ctx, message_id : int):
+        """Allows to manually star a message that either has failed to be sent to starboard or doesn't 
+        have the amount of stars
+        required.
+
+        {usage}
+
+        __EXamples__
+        `{pre}star 427227137511129098` - gets the message by id and stars it.
+        """
+        if not self.bot.guild_data[ctx.guild.id]["starboard-channel"]:
+            raise BotError("Please set a starboard first")
+
+        try:
+            message = await ctx.channel.fetch_message(message_id)
+        except:
+            raise BotError("Message not found, make sure you are in the channel with the message.")
+
+        await self.bot.meta.star_message(message)
+
+def setup(bot):
+    bot.add_cog(Moderation(bot))

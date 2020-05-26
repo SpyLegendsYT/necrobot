@@ -45,7 +45,7 @@ def has_perms(level):
         
         perms = await ctx.bot.db.get_permission(ctx.message.author.id, ctx.guild.id)
         if perms < level:
-            raise commands.CheckFailure(f"You do not have the required NecroBot permissions. Your permission level must be {perms_level}")
+            raise commands.CheckFailure(f"You do not have the required NecroBot permissions. Your permission level must be {level}")
         
         return True
 
@@ -80,9 +80,9 @@ async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
             return
 
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-            await msg.clear_reactions()
-            return
-        elif reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
+            return await msg.clear_reactions()
+            
+        if reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
             page -= 1
         elif reaction.emoji == "\N{BLACK RIGHT-POINTING TRIANGLE}":
             page += 1
@@ -159,12 +159,14 @@ class MoneyConverter(commands.Converter):
         money = await ctx.bot.db.get_money(ctx.message.author.id)
         if argument <= money:
             return argument
-        else:
-            raise commands.BadArgument("You do not have enough money")
+        
+        raise commands.BadArgument("You do not have enough money")
 
 def midnight():
     """Get the number of seconds until midnight."""
-    tomorrow = d.datetime.now() + d.timedelta(1)
-    midnight = d.datetime(year=tomorrow.year, month=tomorrow.month, 
-                          day=tomorrow.day, hour=0, minute=0, second=0)
-    return (midnight - d.datetime.now()).seconds
+    tomorrow = datetime.datetime.now() + datetime.timedelta(1)
+    time = datetime.datetime(
+        year=tomorrow.year, month=tomorrow.month, 
+        day=tomorrow.day, hour=0, minute=0, second=0
+    )
+    return (time - datetime.datetime.now()).seconds

@@ -45,7 +45,7 @@ class NecrobotHelp(cmd.HelpCommand):
     async def send_bot_help(self, mapping):
         help_msg = f":information_source: **NecroBot Help Menu** :information_source:\n{self.context.bot.description}\n\n"
         
-        for cog, commands in mapping.items():
+        for cog, commands in sorted(mapping.items(), key=lambda item: item[0]):
             if not commands or cog is None:
                 continue
             

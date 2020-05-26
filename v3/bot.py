@@ -279,6 +279,7 @@ extensions = [
     'rss',
     'tags',
     'server',
+    'moderation'
 ]
 
 if __name__ == '__main__':

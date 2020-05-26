@@ -25,7 +25,7 @@ class Events(commands.Cog):
             msg = f"Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`"
         elif isinstance(error, (commands.CheckFailure, commands.BadUnionArgument, commands.BadArgument, BotError)):
             msg = error
-        elif isinstance(error, commands.CommandOnCooldown):
+        elif isinstance(error, commands.MaxConcurrencyReached):
             retry_after = str(timedelta(seconds=error.retry_after)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
             msg = f"This command is on cooldown, retry after **{retry_after}seconds**"
         elif isinstance(error, commands.NoPrivateMessage):
@@ -42,6 +42,8 @@ class Events(commands.Cog):
             await self.bot.get_error_channel().send(embed=error.embed(self.bot))
         elif isinstance(error, commands.CommandNotFound):
             return
+        elif isinstance(error, discord.Forbidden):
+            msg = f"Looks like I don't have permission to do this."
         else:
             error_traceback = " ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=True))
             guild = f"{ctx.guild.name} ({ctx.guild.id})" if ctx.guild else "DM"
@@ -63,8 +65,11 @@ class Events(commands.Cog):
             if thing.id != 311630847969198082:
                 msg = f"There was an unexepected error. A report has been sent and a fix will be patched through. The error is `{error}`"
         
-        if msg is not None:      
-            await ctx.send(f":negative_squared_cross_mark: | {msg}", delete_after=60)
+        if msg is not None: 
+            try:     
+                await ctx.send(f":negative_squared_cross_mark: | {msg}", delete_after=60)
+            except discord.Forbidden:
+                pass
     
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -127,7 +132,8 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_update(self, before, after):
         if before.owner != after.owner:
-            await self.bot.db.update_permission(before.owner.id, before.guild.id, update=4 if user.guild_permissions.administrator else 0)
+            after_perms = 4 if after.get_member(before.owner.id).guild_permissions.administrator else 0
+            await self.bot.db.update_permission(before.owner.id, before.guild.id, update=after_perms)
             await self.bot.db.update_permission(after.owner.id, after.guild.id, update=5)
     
     @commands.Cog.listener()     
@@ -300,6 +306,34 @@ class Events(commands.Cog):
                 except (discord.Forbidden, discord.HTTPException):
                     pass
         else:
+            if payload.message_id in self.bot.polls:
+                if payload.user_id == self.bot.user.id:
+                    return 
+                    
+                counter = self.bot.polls[payload.message_id]["voters"].count(payload.user_id) + 1
+                if counter > self.bot.polls[payload.message_id]["votes"]:
+                    if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
+                        emoji = payload.emoji._as_reaction()
+                        await self.bot._connection.http.remove_reaction(
+                            payload.channel_id,
+                            payload.message_id,  
+                            emoji, 
+                            payload.user_id
+                        )
+                        
+                        if self.bot.guild_data[payload.guild_id]["automod"]:
+                            channel = self.bot.get_channel(self.bot.guild_data[payload.guild_id]["automod"])
+                            user = self.bot.get_user(payload.user_id)
+                            
+                            await channel.send(f":warning:| User {user.mention} tried adding more reactions than allowed to a poll")
+                else:
+                    await self.bot.db.query_executer(
+                        "INSERT INTO necrobot.Votes VALUES($1, $2, $3)", 
+                        payload.message_id, payload.user_id, payload.emoji.name
+                    )
+                    self.bot.polls[payload.message_id]["voters"].append(payload.user_id)
+                    
+            
             if self.bot.guild_data[payload.guild_id]["starboard-channel"] in [0, payload.channel_id]:
                 return
                 
@@ -324,6 +358,18 @@ class Events(commands.Cog):
     async def on_raw_reaction_remove(self, payload):
         if payload.user_id in self.bot.settings["blacklist"] or payload.guild_id is None:
             return
+            
+        if payload.message_id in self.bot.polls:
+            if payload.user_id == self.bot.user.id:
+                return
+                
+            result = await self.bot.db.query_executer(
+                "DELETE FROM necrobot.Votes WHERE message_id = $1 AND user_id = $2 AND reaction = $3 RETURNING user_id", 
+                payload.message_id, payload.user_id, payload.emoji.name
+                ) 
+            
+            if result:
+                self.bot.polls[payload.message_id]["voters"].remove(payload.user_id)
             
         if payload.emoji.name == "\N{WHITE MEDIUM STAR}" and payload.message_id in self.bot.potential_stars:
             message = self.bot.potential_stars[payload.message_id]
