@@ -86,6 +86,12 @@ class Database(commands.Cog):
             )
             
         await self.bot.pool.release(conn)
+        
+    async def get_user(self, user_id):
+        return await self.query_executer(
+            "SELECT * FROM necrobot.Users WHERE user_id = $1",
+            user_id    
+        )
             
     async def get_permission(self, user_id, guild_id = None):
         if guild_id is None:
@@ -143,8 +149,15 @@ class Database(commands.Cog):
             title, user_id, fetchval=True    
         )
         
+    async def update_warning_setting(self, guild_id, setting):
+        await self.query_executer(
+            "UPDATE necrobot.Guilds SET pm_warning = $1 WHERE guild_id = $2",
+            setting, guild_id    
+        )
+        
+        self.bot.guild_data[guild_id]["pm-warning"] = setting
+        
     async def insert_warning(self, user_id, issuer_id, guild_id, message):
-        async with self.conn
         return await self.query_executer(
             """
             INSERT INTO necrobot.Warnings (user_id, issuer_id, guild_id, warning_content) 
@@ -156,7 +169,7 @@ class Database(commands.Cog):
         
     async def delete_warning(self, warning_id, guild_id):
         return await self.query_executer(
-            "DELETE FROM necrobot.Warnings WHERE warn_id = $1 AND guild_id = $2 RETURNING warn_id",
+            "DELETE FROM necrobot.Warnings WHERE warn_id = $1 AND guild_id = $2 RETURNING user_id",
             warning_id, guild_id, fetchval=True
         )
         
@@ -178,28 +191,28 @@ class Database(commands.Cog):
         if badge is None and spot is None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
-                WHERE b.user_id = $1 AND s.name = b.name""",
+                WHERE b.user_id = $1 AND s.name = b.badge""",
                 user_id    
             )
         
         if badge is not None and spot is not None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
-                WHERE B.user_id = $1 AND b.spot = $3 AND s.name = $2 AND s.name = b.name""",
+                WHERE B.user_id = $1 AND b.spot = $3 AND s.name = $2 AND s.name = b.badge""",
                 user_id, badge, spot
             )
         
         if badge is None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
-                WHERE s.name = b.name AND s.name = $1 AND b.user_id = $2""",
+                WHERE s.name = b.badge AND s.name = $1 AND b.user_id = $2""",
                 badge, user_id    
             )
         
         if spot is None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
-                WHERE s.name = b.name AND b.spot = $1 AND b.user_id = $2""",
+                WHERE s.name = b.badge AND b.spot = $1 AND b.user_id = $2""",
                 spot, user_id
             )
         
@@ -223,17 +236,17 @@ class Database(commands.Cog):
                 user_id, badge
             )
         
-    async def update_badge_spot(self, user_id, badge, spot = 0):
-        if spot != 0:
-            await self.query_executer(
-                "UPDATE necrobot.Badges SET spot = 0 WHERE user_id = $1 AND spot = $2",
-                user_id, spot    
-            )
-        
+    async def update_spot_badge(self, user_id, spot, badge = None):
         await self.query_executer(
-            "UPDATE necrobot.Badges SET spot = $1 WHERE user_id = $2 AND name = $3",
-            spot, user_id, badge    
+            "UPDATE necrobot.Badges SET spot = 0 WHERE spot = $1 AND user_id = $2",
+            spot, user_id
         )
+        
+        if badge is not None:
+            await self.query_executer(
+                "UPDATE necrobot.Badges SET spot = $1 WHERE badge = $2 AND user_id = $3",
+                spot, badge, user_id    
+            )      
         
     async def get_badge_from_shop(self, *, name = None):
         if name is None:
@@ -614,6 +627,7 @@ class SyncDatabase:
                 "starboard-limit":g[11],
                 "auto-role":g[12],
                 "auto-role-timer":g[13],
+                "pm-warning": g[14],
                 "ignore-command":[],
                 "ignore-automod":[],
                 "disabled":[],

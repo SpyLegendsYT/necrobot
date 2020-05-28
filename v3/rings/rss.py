@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import react_menu, has_perms
+from rings.utils.utils import react_menu, has_perms, BotError
 
 import feedparser
 import asyncio
@@ -58,15 +58,15 @@ class RSS(commands.Cog):
 
             return await react_menu(ctx, feeds, 15, embed_generator)
 
-        if channel is None:
-            await self.bot.delete_rss_channel(ctx.guild.id, youtuber_id=youtuber_id)
-            return await ctx.send(":white_check_mark: | You are no longer subscribed to this youtube channel")
-
         async with self.bot.session.get(self.base_youtube.format(youtuber_id)) as resp:
             if resp.status != 200:
-                raise("This channel does not exist, double check the youtuber id.")
+                raise BotError("This channel does not exist, double check the youtuber id.")
             
             feed = feedparser.parse(await resp.text())
+
+        if channel is None:
+            await self.bot.db.delete_rss_channel(ctx.guild.id, youtuber_id=youtuber_id)
+            return await ctx.send(":white_check_mark: | You are no longer subscribed to this youtube channel")
 
         embed = discord.Embed(
             title=feed["feed"]["title"], 

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, react_menu, TimeConverter, BotError, check_channel
+from rings.utils.utils import has_perms, react_menu, TimeConverter, BotError, check_channel, range_check
 
 from typing import Union
 import re
@@ -523,18 +523,15 @@ class Server(commands.Cog):
 
     @broadcast.command(name="time")
     @has_perms(4)
-    async def broadcast_time(self, ctx, hours : int):
+    async def broadcast_time(self, ctx, hours : range_check(1, 24)):
         """Used to set the interval at which the message is broadcasted (in hours)
 
         {usage}
 
         __Example__
         `{pre}broadcast time 4` - sets the broadcast message to be sent every 4 hour"""
-        if 0 < hours <= 24:
-            await self.bot.db.update_broadcast_interval(ctx.guild.id, hours)
-            await ctx.send(f":white_check_mark: | The broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{hours}` hour(s)")        
-        else:
-            raise BotError("Please input a number between 1 and 24")
+        await self.bot.db.update_broadcast_interval(ctx.guild.id, hours)
+        await ctx.send(f":white_check_mark: | The broadcast message you set through `n!broadcast message` will be broadcasted in the channel you set using `n!broadcast channel` every `{hours}` hour(s)")        
 
     @commands.group(invoke_without_command = True)
     @commands.guild_only()

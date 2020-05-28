@@ -62,6 +62,7 @@ class Meta(commands.Cog):
             "starboard-channel":"",
             "starboard-limit":5,
             "self-roles": [],
+            "pm-warning": False,
         }
         
         await self.bot.db.query_executer(

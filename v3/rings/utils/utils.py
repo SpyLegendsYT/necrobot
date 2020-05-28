@@ -144,7 +144,7 @@ class GuildConverter(commands.IDConverter):
         
 class BadgeConverter(commands.Converter):
     async def convert(sefl, ctx, argument):
-        badge = await self.bot.db.get_badge_from_shop(argument)
+        badge = await self.bot.db.get_badge_from_shop(name=argument)
         
         if not badge:
             raise commands.CheckFailure("Could not find a badge with this name")
@@ -170,6 +170,15 @@ class MoneyConverter(commands.Converter):
             return argument
         
         raise commands.BadArgument("You do not have enough money")
+        
+def range_check(min_v, max_v):
+    def check(ctx, argument):
+        if not argument.isdigit():
+            raise commands.BadArgument("Not a valid intenger")
+            
+        value = int(argument)
+        if max_v < value < min_v:
+            raise commands.CheckFailure(f"Please select a number between **{min_v}** and **{max_v}**")
 
 def midnight():
     """Get the number of seconds until midnight."""

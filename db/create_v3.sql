@@ -22,6 +22,7 @@ CREATE TABLE necrobot.Guilds (
     starboard_limit int DEFAULT 5 CHECK(starboard_limit > 0),
     auto_role bigint DEFAULT 0,
     auto_role_timer int DEFAULT 0
+    pm_warning BOOLEAN DEFAULT False
 );
 
 CREATE TABLE necrobot.Permissions (
