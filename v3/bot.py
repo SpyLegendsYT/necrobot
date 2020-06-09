@@ -15,10 +15,10 @@ import traceback
 from collections import defaultdict
 
 # logging.basicConfig(filename='discord.log',level=logging.ERROR)
-logging.basicConfig(level=logging.ERROR)
+# logging.basicConfig(level=logging.CRITICAL)
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
@@ -118,6 +118,12 @@ class NecroBot(commands.Bot):
 
         self.add_check(allowed_summon)
         
+    def clear(self):
+        self._closed = False
+        self._ready.clear()
+        # self._connection.clear()
+        self.http.recreate()
+
     def get_bot_channel(self):
         return self.get_channel(self.bot_channel)
         
@@ -225,7 +231,7 @@ class NecroBot(commands.Bot):
             
     async def on_resumed(self):
         """Bot is resuming, log it and move on"""
-        await self.get_bot_channel().send("**Bot Resumed**")
+        await self.get_bot_channel().send(f"**Bot Resumed**\nMessage Cache: {len(self._connection._messages)}")
         
     async def on_error(self, event, *args, **kwargs): 
         """Something has gone wrong so we just try to send a helpful traceback to the channel. If
@@ -285,7 +291,8 @@ extensions = [
     'tags',
     'server',
     'moderation',
-    'profile'
+    'profile',
+    'economy'
 ]
 
 if __name__ == '__main__':
