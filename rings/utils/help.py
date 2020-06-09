@@ -1,188 +1,99 @@
-from discord.ext.commands import Paginator, CommandError, Command, HelpFormatter
+import discord
+from discord.ext import commands as cmd
 
-import inspect
-import itertools
-
-class MissingAttrHandler(str):
-    def __init__(self, format):
-        self.format = format
-
-    def __getattr__(self, attr):
-        return type(self)('{}.{}'.format(self.format, attr))
-
-    def __repr__(self):
-        return MissingAttrHandler(self.format + '!r}')
-
-    def __str__(self):
-        return MissingAttrHandler(self.format + '!s}')
-
-    def __format__(self, format):
-        if self.format.endswith('}'):
-            self.format = self.format[:-1]
-        return '{}{}}}'.format(self.format, format)
-
-
-class SafeDict(dict):
-    def __missing__(self, key):
-        return MissingAttrHandler('{{{}'.format(key))
-
-class NecroBotHelpFormatter(HelpFormatter):
-    """The default base implementation that handles formatting of the help
-    command.
-
-    To override the behaviour of the formatter, :meth:`~.HelpFormatter.format`
-    should be overridden. A number of utility functions are provided for use
-    inside that method.
-
-    Attributes
-    -----------
-    show_hidden: bool
-        Dictates if hidden commands should be shown in the output.
-        Defaults to ``False``.
-    show_check_failure: bool
-        Dictates if commands that have their :attr:`.Command.checks` failed
-        shown. Defaults to ``False``.
-    width: int
-        The maximum number of characters that fit in a line.
-        Defaults to 80.
-    """
-    def __init__(self, show_hidden=False, show_check_failure=True, width=80):
-        self.width = width
-        self.show_hidden = show_hidden
-        self.show_check_failure = show_check_failure
-
-    def get_command_signature(self):
+class NecrobotHelp(cmd.HelpCommand):       
+    def command_not_found(self, string):
+        return f":negative_squared_cross_mark: | Command **{string}** not found."
+        
+    def subcommand_not_found(self, command, string):
+        return f":negative_squared_cross_mark: | Command **{command.qualified_name}** has no sucommand **{string}**"
+        
+    def get_command_signature(self, command):
         """Retrieves the signature portion of the help page."""
         prefix = self.clean_prefix
-        cmd = self.command
-        return prefix + cmd.signature.replace("<", "[").replace(">", "]")
-
+        signature = command.signature.replace("<", "[").replace(">", "]")
+        return f"{prefix}{command.qualified_name} {signature}"
+        
     def get_ending_note(self):
         command_name = self.context.invoked_with
-        return "Commands in `codeblocks` are commands you can use, commands with ~~strikethrough~~ you cannot use but you can still check the help. Commands in *italics* are recent additions.\n" \
+        return "\nCommands in `codeblocks` are commands you can use, commands with ~~strikethrough~~ you cannot use but you can still check the help. Commands in *italics* are recent additions.\n" \
                "Type {0}{1} [command] for more info on a command.(Example: `{0}help edain`)\n" \
                "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. (Example: `{0}help Animals`) \n".format(self.clean_prefix, command_name)
+       
+    async def format_command_name(self, command):
+        async def predicate():
+            try:
+                return await command.can_run(self.context)
+            except cmd.CommandError:
+                return False
 
-    def get_ending_note_command(self):
-        command_name = self.context.invoked_with
-        return "Type {0}{1} [command] [subcommand] for more info on a command's subcommand.\n" \
-               "Example: `{0}help settings welcome channel` - display help on the channel subcommand of the welcome command \n".format(self.clean_prefix, command_name)
-
-    async def _add_commands_to_page(self, max_width, commands):
-        command_list = list()
-        for name, command in commands:
-            if name in command.aliases:
-                # skip aliases
+        valid = await predicate()
+        if valid and command.enabled:
+            if command.qualified_name in self.context.bot.new_commands:
+                return f"***{command.qualified_name}***"
+            
+            return f"`{command.qualified_name}`"
+        
+        return f"~~{command.qualified_name}~~"
+        
+    async def get_brief_signature(self, command):
+        first_line = command.help.split("\n")[0]
+        formatted = first_line.format(usage=self.get_command_signature(command))[:100]
+        
+        return formatted
+     
+    async def send_bot_help(self, mapping):
+        help_msg = f":information_source: **NecroBot Help Menu** :information_source:\n{self.context.bot.description}\n\n"
+        
+        for cog, commands in sorted(mapping.items(), key=lambda item: item[0].qualified_name if item[0] else 'None'):
+            if not commands or cog is None:
                 continue
-
-            async def predicate():
-                try:
-                    return await command.can_run(self.context)
-                except CommandError:
-                    return False
-
-            valid = await predicate()
-            if valid and command.enabled:
-                if name in self.context.bot.new_commands:
-                    command_list.append("***{0}***".format(name))
-                else:
-                    command_list.append("`{0}`".format(name))
-            else:
-                command_list.append("~~{0}~~".format(name))
-
-        return command_list
-
-    async def _add_subcommands_to_page(self, max_width, commands):
-        for name, command in commands:
-            if name in command.aliases:
-                # skip aliases
-                continue
-
-            async def predicate():
-                try:
-                    return await command.can_run(self.context)
-                except CommandError:
-                    return False
-
-            valid = await predicate()
-            if valid:
-                entry = '  `{0:<{width}}` - {1}'.format(name, command.short_doc, width=max_width)
-            else:
-                entry = '  ~~{0:<{width}}~~ - {1}'.format(name, command.short_doc, width=max_width)
-
-            shortened = self.shorten(entry)
-            self._paginator.add_line(shortened)
-
-    async def format(self):
-        """Handles the actual behaviour involved with formatting.
-
-        To change the behaviour, this method should be overridden.
-
-        Returns
-        --------
-        list
-            A paginated output of the help command.
-        """
-        self._paginator = Paginator(prefix="", suffix="")
-        if isinstance(self.command, Command):
-            title =f":information_source: **The `{self.command}` command** :information_source:"
-        else:
-            title = ":information_source: **NecroBot Help Menu** :information_source:"
-        self._paginator.add_line(title)
-
-        # we need a padding of ~80 or so
-
-        description = self.command.description if not self.is_cog() else inspect.getdoc(self.command)
-
-        if description:
-            # <description> portion
-            self._paginator.add_line(description.format(pre=self.clean_prefix), empty=True)
-
-        if isinstance(self.command, Command):
-            # <signature portion>
-            signature = f"__Usage__\n{self.get_command_signature()}"
-
-            # <long doc> section
-            if self.command.help:
-                line = self.command.help.format_map(SafeDict(usage=signature, pre=self.clean_prefix))
-                self._paginator.add_line(line, empty=True)
-                # self._paginator.add_line(self.get_ending_note_command())   
-
-            # end it here if it's just a regular command
-            if not self.has_subcommands():
-                self._paginator.close_page()
-                return self._paginator.pages
-
-        max_width = self.max_name_size
-
-        def category(tup):
-            cog = tup[1].cog_name
-            # we insert the zero width space there to give it approximate
-            # last place sorting position.
-            return f'**{cog}** - ' if cog is not None else '**Support** - '
-
-        filtered = await self.filter_command_list()
-        if self.is_bot():
-            data = sorted(filtered, key=category)
-            counter = 0
-            for category, commands in itertools.groupby(data, key=category):
-                # there simply is no prettier way of doing this.
-                commands = sorted(commands)
-                counter += 1
-                if commands:
-                    command_list = await self._add_commands_to_page(max_width, commands)
-                    self._paginator.add_line(f'{counter}. {category}{" | ".join(command_list)}')
-
-            ending_note = self.get_ending_note()
-
-        else:
-            filtered = sorted(filtered)
-            if filtered:
-                self._paginator.add_line('__Commands__')
-                await self._add_subcommands_to_page(max_width, filtered)
-            ending_note = self.get_ending_note_command()
-
-        # add the ending note
-        self._paginator.add_line(empty=True)
-        self._paginator.add_line(ending_note)
-        return self._paginator.pages
+            
+            if cog.qualified_name == 'Support':
+                commands.extend(mapping[None])
+            
+            cog_msg = f"**{cog.qualified_name}** - "
+            command_list = []
+            for command in commands:
+                command_list.append(await self.format_command_name(command))
+                    
+            help_msg += f"{cog_msg}{' | '.join(command_list)}\n"
+            
+        help_msg += self.get_ending_note()
+        await self.get_destination().send(help_msg)
+        
+    async def send_cog_help(self, cog):
+        help_msg = f":information_source: **{cog.qualified_name} Help Menu** :information_source:\n{cog.description}\n\n__Commands__\n"
+        
+        for command in cog.get_commands():
+            name = await self.format_command_name(command)
+            help_msg += f"`{name}`- {await self.get_brief_signature(command)}\n"
+            
+        help_msg += self.get_ending_note()
+        await self.get_destination().send(help_msg)
+        
+    async def base_command_help(self, command):
+        help_msg = f":information_source: **`{command}` command** :information_source:\n{command.help}"
+        signature = f"__Usage__\n{self.get_command_signature(command)}"
+        
+        perms_check = discord.utils.find(lambda x: x.__qualname__.startswith("has_perms"), command.checks)
+        if perms_check is not None:
+            name = self.context.bot.perms_name[perms_check.level]
+            signature = f"**Permission level required: {name} ({perms_check.level}+)**\n\n{signature}"
+            
+        help_msg = help_msg.format(usage=signature, pre=self.clean_prefix)
+            
+        return help_msg
+        
+    async def send_command_help(self, command):       
+        await self.get_destination().send(await self.base_command_help(command))
+        
+    async def send_group_help(self, group):
+        help_msg = await self.base_command_help(group)
+        
+        help_msg += "\n\n__Subcommands__\n"
+        for command in group.commands:
+            name = await self.format_command_name(command)
+            help_msg += f"`{name}`- {await self.get_brief_signature(command)}\n"
+        
+        await self.get_destination().send(help_msg)

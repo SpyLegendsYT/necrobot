@@ -1,20 +1,21 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.db import db_gen
-from rings.utils.config import token, modio_api
-from rings.utils.help import NecroBotHelpFormatter
+from rings.db import SyncDatabase, DatabaseError
+from rings.utils.config import token
+from rings.utils.utils import get_pre
+from rings.utils.help import NecrobotHelp
 
-import re
-import sys
 import json
 import time
-import random
-import aiohttp
+import asyncio
 import logging
 import datetime
 import traceback
-import async_modio
+from collections import defaultdict
+
+# logging.basicConfig(filename='discord.log',level=logging.ERROR)
+# logging.basicConfig(level=logging.CRITICAL)
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -22,75 +23,56 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-async def get_pre(bot, message):
-    """If the guild has set a custom prefix we return that and the ability to mention alongside regular 
-    admin prefixes if not we return the default list of prefixes and the ability to mention."""
-    if not isinstance(message.channel, discord.DMChannel):
-        guild_pre = bot.server_data[message.guild.id]["prefix"]
-        if guild_pre != "":
-            prefixes = [guild_pre, *bot.admin_prefixes]
-            return commands.when_mentioned_or(*prefixes)(bot, message)
-
-    return commands.when_mentioned_or(*bot.prefixes)(bot, message)
-
-extensions = [
-    "social",
-    "wiki",
-    "modding",
-    "support",
-    "utilities",
-    "moderation",
-    "profile",
-    "server",
-    "admin",
-    "decisions",
-    "economy",
-    "events",
-    "words",
-    "misc",
-    "tags",
-    "meta",
-    "edain",
-    "rss"
-]
-
 class NecroBot(commands.Bot):
     def __init__(self):
         super().__init__(
-            command_prefix=get_pre, 
-            description="A bot for moderation and LOTR", 
-            formatter=NecroBotHelpFormatter(), 
-            case_insensitive=True, 
+            max_messages=50000,
+            fetch_offline_members=True,
+            activity=discord.Game("n!help for help"),
+            case_insensitive=True,
             owner_id=241942232867799040, 
-            activity=discord.Game(name="n!help for help"),
-            max_messages=75000
+            description="A bot for managing and enhancing servers",
+            command_prefix=get_pre,
+            help_command=NecrobotHelp()
+            # allowed_mentions=discord.AllowedMentions(everyone=False)     
         )
-
+        
         self.uptime_start = time.time()
         self.counter = datetime.datetime.now().hour
-
-        self.user_data, self.server_data, self.starred, self.polls, self.games = db_gen()
-
-        self.version = 2.9
+        
+        self.version = 3.0
         self.ready = False
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = ["youtube"]
+        self.new_commands = []
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
         self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "Bot Smiths"]
         
-        self.session = aiohttp.ClientSession(loop=self.loop)
-        self.modio = async_modio.Client(api_key=modio_api)
+        
+        self.bot_channel = 318465643420712962
+        self.error_channel = 415169176693506048
+        self.session = None
+        self.pool = None
+        
+        sync_db = SyncDatabase()
+        self.guild_data = sync_db.load_guilds()
+        self.polls = sync_db.load_polls()
 
         self.cat_cache = []
         self.events = {}
         self.ignored_messages = []
+        self.starred = []
+        self.potential_stars = {}
+        self.reminders = {}
+        
+        with open("rings/utils/data/settings.json", "rb") as infile:
+            self.settings = json.load(infile)
 
-        self.pool = None
         self.add_command(self.load)
         self.add_command(self.unload)
         self.add_command(self.reload)
-
+        self.add_command(self.off)
+        
         @self.check
         def disabled_check(ctx):
             """This is the backbone of the disable command. If the command name is in disabled then
@@ -98,7 +80,7 @@ class NecroBot(commands.Bot):
             if isinstance(ctx.message.channel, discord.DMChannel):
                 return True
 
-            disabled = self.server_data[ctx.message.guild.id]["disabled"]
+            disabled = self.guild_data[ctx.message.guild.id]["disabled"]
 
             if ctx.command.name in disabled and ctx.prefix not in self.admin_prefixes:
                 raise commands.CheckFailure("This command has been disabled")
@@ -106,9 +88,9 @@ class NecroBot(commands.Bot):
             return True
                 
         self.add_check(disabled_check)
-
+        
         @self.check
-        def allowed_summon(ctx):
+        async def allowed_summon(ctx):
             if isinstance(ctx.message.channel, discord.DMChannel):
                 return True
                 
@@ -117,33 +99,51 @@ class NecroBot(commands.Bot):
             guild_id = ctx.guild.id
 
             if ctx.prefix in self.admin_prefixes:
-                if self.user_data[user_id]["perms"][guild_id] > 0:
+                permission_level = await self.db.get_permission(user_id, guild_id)
+                if permission_level > 0:
                     return True
                 raise commands.CheckFailure("You are not allowed to use admin prefixes")
 
-            if user_id in self.server_data[guild_id]["ignore-command"]:
+            if user_id in self.guild_data[guild_id]["ignore-command"]:
                 raise commands.CheckFailure("You are being ignored by the bot")
 
-            if ctx.channel.id in self.server_data[guild_id]["ignore-command"]:
+            if ctx.channel.id in self.guild_data[guild_id]["ignore-command"]:
                 raise commands.CheckFailure("Commands not allowed in this channel.")
 
-            if any(x in roles for x in self.server_data[guild_id]["ignore-command"]):
-                roles = [f"**{x.name}**" for x in ctx.author.roles if x.id in self.server_data[guild_id]["ignore-command"]]
+            if any(x in roles for x in self.guild_data[guild_id]["ignore-command"]):
+                roles = [f"**{x.name}**" for x in ctx.author.roles if x.id in self.guild_data[guild_id]["ignore-command"]]
                 raise commands.CheckFailure(f"Roles {', '.join(roles)} aren't allowed to use commands.")
 
             return True
 
         self.add_check(allowed_summon)
+        
+    def clear(self):
+        self._closed = False
+        self._ready.clear()
+        # self._connection.clear()
+        self.http.recreate()
 
-        with open("rings/utils/data/settings.json", "rb") as infile:
-            self.settings = json.load(infile)
-            
-        for command in self.settings["disabled"]:
-            self.bot.get_commnad(command).enabled = False
+    def get_bot_channel(self):
+        return self.get_channel(self.bot_channel)
+        
+    def get_error_channel(self):
+        return self.get_channel(self.error_channel)
+        
+    def blacklist_check(self, object_id):
+        return object_id in self.settings["blacklist"]
+        
+    @property
+    def meta(self):
+        return self.get_cog("Meta")
+        
+    @property
+    def db(self):
+        return self.get_cog("Database")
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def load(self, ctx, extension_name : str):
+    async def load(ctx, extension_name : str):
         """Loads the extension name if in NecroBot's list of rings.
         
         {usage}"""
@@ -156,7 +156,7 @@ class NecroBot(commands.Bot):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def unload(self, ctx, extension_name : str):
+    async def unload(ctx, extension_name : str):
         """Unloads the extension name if in NecroBot's list of rings.
          
         {usage}"""
@@ -165,86 +165,135 @@ class NecroBot(commands.Bot):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def reload(self, ctx, extension_name : str):
+    async def reload(ctx, extension_name : str):
         """Unload and loads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        ctx.bot.unload_extension(f"rings.{extension_name}")
+        try:
+            ctx.bot.unload_extension(f"rings.{extension_name}")
+        except:
+            pass
+        
         try:
             ctx.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
             return
         await ctx.send(f"{extension_name} reloaded.")
+        
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def off(ctx):
+        """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
+         
+        {usage}"""
+        msg = await ctx.send("Shut down?")
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+
+        def check(reaction, user):
+            return user.id == 241942232867799040 and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+        
+        try:
+            reaction, _ = await ctx.bot.wait_for("reaction_add", check=check, timeout=300)
+        except asyncio.TimeoutError:
+            msg.clear_reactions()
+            return
+
+        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await msg.delete()
+        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            await msg.delete()
+            await ctx.bot.change_presence(activity=discord.Game(name="Bot shutting down...", type=0))
+            
+            with open("rings/utils/data/settings.json", "w") as file:
+                json.dump(ctx.bot.settings, file)
+            
+            await ctx.bot.session.close()
+            await ctx.bot.pool.close()
+            ctx.bot.meta.hourly_task.cancel()
+            for reminder in ctx.bot.reminders.values():
+                reminder.cancel()
+            
+            await ctx.bot.get_bot_channel().send("**Bot Offline**")
+            await ctx.bot.logout()
 
     async def on_ready(self):
         """If this is the first time the boot is booting then we load the cache and set the
         ready variable to True to signify the bot is ready. Else we assume that it means the
         bot had a hiccup and is resuming."""
         if not self.ready:
-            await self.load_cache()
+            await self.meta.load_cache()
             self.ready = True
-            print(self.server_data)
+            print(self.guild_data)
             print('------')
             print(f"Logged in as {self.user}")
-        else:
-            channel = self.get_channel(318465643420712962)
-            await channel.send("**Bot Resumed**")
-
+            
+    # async def on_resumed(self):
+    #     """Bot is resuming, log it and move on"""
+    #     await self.get_bot_channel().send(f"**Bot Resumed**\nMessage Cache: {len(self._connection._messages)}")
+        
     async def on_error(self, event, *args, **kwargs): 
         """Something has gone wrong so we just try to send a helpful traceback to the channel. If
         the traceback is too big we just send the method/event that errored out and hope that
         the error is obvious."""
-        channel = self.get_channel(415169176693506048)
+        channel = self.get_error_channel()
+        
+        if isinstance(event, Exception):
+            error_traceback = " ".join(traceback.format_exception(type(event), event, event.__traceback__, chain=True))
+        else:
+            error_traceback = traceback.format_exc()
 
-        the_traceback = f"```py\n{traceback.format_exc()}\n```"
-        embed = discord.Embed(title="Error", description=the_traceback, colour=discord.Colour(0x277b0))
+        embed = discord.Embed(title="Error", description=f"```py\n{error_traceback}\n```", colour=discord.Colour(0x277b0))
         embed.add_field(name='Event', value=event, inline=False)
         embed.set_footer(text="Generated by NecroBot", icon_url=self.user.avatar_url_as(format="png", size=128))
         try:
             await channel.send(embed=embed)
         except discord.HTTPException:
-            await channel.send(f"Bot: Ignoring exception in {event}")
-
+            logging.error(error_traceback)
+            
     async def on_message(self, message):
-        """Main processing unit for commands. This takes charge of embeding any MU posts, converting .bmp files,
-        awarding xp if in a server or showing the tutorial tip if that user hasn't already seen it. Also very important
-        we clean up the content of @everyone and @here if the user is less than a Server Semi-Admin because you don't
-        need to mention everyone with the bot if you're less."""
-        user_id = message.author.id
-        regex_match = r"(https://modding-union\.com/index\.php/topic).\d*"
-        
-        #reject blacklisted users and system messages
-        if message.author.bot or user_id in self.settings["blacklist"] or message.type != discord.MessageType.default:
+        if self.blacklist_check(message.author.id):
             return
-
-        #set the default stats for users just in case they're not already set
-        await self.default_stats(message.author, message.guild)
-
-        #search for mu links
-        # url = re.search(regex_match, message.content)
-        # if url:
-        #     await self._mu_auto_embed(url.group(0), message)
-
-        #search for any .bmp files to convert
+            
+        if message.type != discord.MessageType.default or message.author.bot:
+            return
+            
+        await self.meta.new_member(message.author, message.guild)
+            
         if message.attachments:
             if message.attachments[0].filename.endswith(".bmp"):
-                await self._bmp_converter(message)
-
-        #if this is on a guild clean the content and award xp
-        if not isinstance(message.channel, discord.DMChannel):
-            self.user_data[user_id]["exp"] += random.randint(2, 5)
-
-            if self.user_data[user_id]["perms"][message.guild.id] < 3:
-                message.content = message.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere")
-        else:
-            #else make sure that they know they can clean up bot messages by reacting to them
-            if not self.user_data[user_id]["tutorial"]:
-                self.user_data[user_id]["tutorial"] = True
-                await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:? Give it a shot, react to this message with :wastebasket: .")
-                await self.query_executer("UPDATE necrobot.Users SET tutorial = 'True' WHERE user_id = $1", user_id)
-
+                await self.meta.bmp_converter(message)
+                
+        if message.guild is None:
+            tutorial = await self.db.get_tutorial(message.author.id)
+            if not tutorial:
+                msg = await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:?")
+                await msg.pin()
+                await self.db.update_tutorial(message.author.id)
+                
         await self.process_commands(message)
+                
+extensions = [
+    'db',
+    'meta',
+    'wiki',
+    'events',
+    'admin',
+    'support',
+    'decisions',
+    'misc',
+    'words',
+    'utilities',
+    'social',
+    'modding',
+    'rss',
+    'tags',
+    'server',
+    'moderation',
+    'profile',
+    'economy'
+]
 
 if __name__ == '__main__':
     bot = NecroBot()
@@ -256,7 +305,8 @@ if __name__ == '__main__':
         bot.run(token)
     except Exception as error:
         e = traceback.format_exception(type(error), error, error.__traceback__)
-        logging.debug(e)
+        with open("error.log", "w") as f:
+            f.write(e)
         
     finally:
         with open("rings/utils/data/settings.json", "w") as outfile:

@@ -2,96 +2,174 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_goodbye, has_welcome, has_automod, UPDATE_PERMS
+from rings.utils.utils import has_goodbye, has_welcome, has_automod, BotError
+from rings.db import DatabaseError
+from rings.misc import FightError
 
-import sys
 import asyncio
 import traceback
+import logging
 from datetime import timedelta
 
-class NecroEvents():
+class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-        if not hasattr(self.bot, "potential_stars"):
-            self.bot.potential_stars = {}
-
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
-        channel = ctx.channel
+        msg = None     
+        error = getattr(error, "original", error)
+
         if isinstance(error, commands.MissingRequiredArgument):
-            await channel.send(f":negative_squared_cross_mark: | Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`", delete_after=10)
-            #this can be used to print *all* the missing arguments (bit hacky tho)
-            # index = list(ctx.command.clean_params.keys()).index(error.param.name)
-            # missing = list(ctx.command.clean_params.values())[index:]
-            # print(f"missing following: {', '.join([x.name for x in missing])}")
-        elif isinstance(error, commands.CheckFailure):
-            await channel.send(f":negative_squared_cross_mark: | {error}", delete_after=10)
-        elif isinstance(error, commands.CommandOnCooldown):
+            msg = f"Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`"
+        elif isinstance(error, (commands.CheckFailure, commands.BadUnionArgument, commands.BadArgument, BotError)):
+            msg = error
+        elif isinstance(error, commands.MaxConcurrencyReached):
             retry_after = str(timedelta(seconds=error.retry_after)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
-            await channel.send(f":negative_squared_cross_mark: | This command is on cooldown, retry after **{retry_after}seconds**", delete_after=10)
+            msg = f"This command is on cooldown, retry after **{retry_after}seconds**"
         elif isinstance(error, commands.NoPrivateMessage):
-            await channel.send(":negative_squared_cross_mark: | This command cannot be used in private messages.", delete_after=10)
+            msg = "This command cannot be used in private messages."
         elif isinstance(error, commands.DisabledCommand):
-            await channel.send(":negative_squared_cross_mark: | This command is disabled and cannot be used for now.", delete_after=10)
-        elif isinstance(error, (commands.BadUnionArgument, commands.BadArgument)):
-            await channel.send(f":negative_squared_cross_mark: | {error}", delete_after=10)
+            msg = f"This command is disabled and cannot be used for now."
         elif isinstance(error, asyncio.TimeoutError) and hasattr(error, "timer"):
             retry_after = str(timedelta(seconds=error.timer)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
-            await channel.send(f":negative_squared_cross_mark: | You took too long to reply, please reply within {retry_after}seconds next time", delete_after=10)
-        elif isinstance(error, commands.CommandInvokeError):
-            if "Forbidden" in error.args[0]:
-                await channel.send(":negative_squared_cross_mark: | Something went wrong, check my permission level, it seems I'm not allowed to do that on your server.", delete_after=10)
-                return
+            msg = f"You took too long to reply, please reply within {retry_after}seconds next time"
+        elif isinstance(error, commands.BotMissingPermissions):
+            msg = f"I need {', '.join(error.missing_perms)} to be able to run this command"
+        elif isinstance(error, (DatabaseError, FightError)):
+            msg = str(error)
+            await self.bot.get_error_channel().send(embed=error.embed(self.bot))
+        elif isinstance(error, commands.CommandNotFound):
+            return
+        elif isinstance(error, discord.Forbidden):
+            msg = f"Looks like I don't have permission to do this."
+        else:
+            error_traceback = " ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=True))
+            guild = f"{ctx.guild.name} ({ctx.guild.id})" if ctx.guild else "DM"
+            channel = f"{ctx.channel.name} ({ctx.channel.id})"
 
-            channel = self.bot.get_channel(415169176693506048)
-            the_traceback = "```py\n" + (" ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=True))[:1985]) + "\n```"
-            embed = discord.Embed(title="Command Error", description=the_traceback, colour=discord.Colour(0x277b0))
+            embed = discord.Embed(title="Command Error", description=f"```py\n{error_traceback[:2048]}\n```", colour=discord.Colour(0x277b0))
             embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
             embed.add_field(name="Command", value=ctx.command.name)
             embed.add_field(name="Author", value=ctx.author.mention)
-            embed.add_field(name="Location", value=f"**Guild:** {ctx.guild.name if ctx.guild else 'DM'} ({ctx.guild.id if ctx.guild else 'DM'}) \n**Channel:** {ctx.channel.name if ctx.guild else 'DM'} ({ctx.channel.id})")
-            embed.add_field(name="Message", value=ctx.message.content, inline=False)
+            embed.add_field(name="Location", value=f"**Guild:** {guild}\n**Channel:** {channel}")
+            embed.add_field(name="Message", value=ctx.message.content[:1024], inline=False)
+            
             try:
-                await channel.send(embed=embed)
+                await self.bot.get_error_channel().send(embed=embed)
             except discord.HTTPException:
-                print(f'Bot: Ignoring exception in command {ctx.command}:', file=sys.stderr)
-                traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+                logging.error(error_traceback)
 
             thing = ctx.guild or ctx.author
             if thing.id != 311630847969198082:
-                await ctx.send(":negative_squared_cross_mark: | Something unexpected went wrong, Necro's gonna get right to it. If you wish to know more on what went wrong you can join the support server, the invite is in the `about` command.", delete_after=10)
-                
+                msg = f"There was an unexepected error. A report has been sent and a fix will be patched through. The error is `{error}`"
+        
+        if msg is not None: 
+            try:     
+                await ctx.send(f":negative_squared_cross_mark: | {msg}", delete_after=60)
+            except discord.Forbidden:
+                pass
+    
+    @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        if guild.id in self.bot.settings["blacklist"]:
-            await guild.leave()
-            return
-            
-        await self.bot.query_executer("INSERT INTO necrobot.Leaderboards VALUES($1, '', '') ON CONFLICT id DO NOTHING", guild.id)
+        if self.bot.blacklist_check(guild.id):
+            return await guild.leave()
 
-        if guild.id not in self.bot.server_data:
-            self.bot.server_data[guild.id] = self.bot._new_server()
-            await self.bot.query_executer("INSERT INTO necrobot.Guilds VALUES($1, 0, 0, 0, 'Welcome {member} to {server}!', 'Leaving so soon? We''ll miss you, {member}!)', '', 0, '', 1, 0, 5, 0, 0);", guild.id)
-
-        invites = await guild.invites()
-        for invite in invites:
-            await self.bot.query_executer("INSERT INTO necrobot.Invites VALUES($1, $2, $3, $4, $5)", invite.id, guild.id, invite.url, invite.uses, invite.inviter.id)
+        await self.bot.meta.new_guild(guild.id)
+        await self.bot.db.update_invites(guild)
 
         for member in guild.members:
-            await self.bot.default_stats(member, guild)
+            await self.bot.meta.new_member(member, guild)
             
         await guild.owner.send(embed=self.bot.tutorial_e)
-
+        
+    @commands.Cog.listener()
     async def on_guild_leave(self, guild):
-        await self.bot.query_executer("DELETE FROM necrobot.Invites WHERE guild_id=$1", guild.id)
-        await self.bot.query_executer("DELETE FROM necrobot.Youtube WHERE guild_id=$1", guild.id)
+        await self.bot.meta.delete_guild(guild.id)
+        
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel):
+        guild_id = channel.guild_id.id
+        guild = self.bot.guild_data[guild_id]
 
-    async def on_message_delete(self, message):
-        if message.id in self.bot.ignored_messages:
-            self.bot.ignored_messages.remove(message.id)
-            return
+        if channel.id == guild["broadcast-channel"]:
+            await self.bot.db.update_broadcast_channel(guild_id)
             
-        if isinstance(message.channel, discord.DMChannel) or message.author.bot:
+        if channel.id == guild["starboard-channel"]:
+            await self.bot.db.update_starboard_channel(guild_id)
+            
+        if channel.id == guild["welcome-channel"]:
+            await self.bot.db.update_greeting_channel(guild_id)
+            
+        if channel.id == guild["automod"]:
+            await self.bot.db.update_automod_channel(guild_id)
+        
+        await self.bot.db.delete_automod_ignore(channel.guild.id, channel.id)
+        await self.bot.db.delete_command_ignore(channel.guild.id, channel.id)
+        await self.bot.db.delete_rss_channel(guild_id, channe_id=channel.id)
+    
+    @commands.Cog.listener()
+    async def on_guild_role_delete(self, role):
+        guild_id = role.guild.id
+        guild = self.bot.guild_data[guild_id]
+
+        if role.id == guild["mute"]:
+            self.bot.db.update_mute_role(guild_id)
+            
+        if role.id in guild["self-roles"]:
+            self.bot.db.delete_self_roles(role.id)
+            
+        if role.id == guild["auto-role"]:
+            self.bot.db.update_auto_role(role.id)
+            
+        if role.id in guild["ignore-automod"]:
+            await self.bot.db.delete_automod_ignore(guild_id, role.id)
+            
+        if role.id in guild["ignore-command"]:
+            await self.bot.db.delete_command_ignore(guild_id, role.id)
+            
+    @commands.Cog.listener()
+    async def on_guild_update(self, before, after):
+        if before.owner != after.owner:
+            after_perms = 4 if after.get_member(before.owner.id).guild_permissions.administrator else 0
+            await self.bot.db.update_permission(before.owner.id, before.guild.id, update=after_perms)
+            await self.bot.db.update_permission(after.owner.id, after.guild.id, update=5)
+    
+    @commands.Cog.listener()     
+    async def on_command(self, ctx):
+        try:
+            can_run = int(await ctx.command.can_run(ctx) and ctx.command.enabled)
+        except commands.CheckFailure:
+            can_run = 0
+
+        guildname = "DM"
+        guildid = None
+        if ctx.guild:
+            guildname = ctx.guild.name
+            guildid = ctx.guild.id
+
+        await self.bot.db.query_executer(
+            """INSERT INTO necrobot.Logs (user_id, username, command, guild_id, guildname, message, can_run) 
+            VALUES($1,$2,$3,$4,$5,$6,$7);""", 
+            ctx.author.id, ctx.author.name, ctx.command.name, guildid, guildname, ctx.message.content, can_run
+        )
+        
+    @commands.Cog.listener()
+    async def on_invite_create(self, invite):
+        await self.bot.db.insert_invite(invite.guild, invite)
+        
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite):
+        await self.bot.db.delete_invite(invite.id)
+        
+    @commands.Cog.listener()
+    async def on_bulk_message_delete(self, messages):
+        pass
+        
+    @commands.Cog.listener()
+    async def on_message_delete(self, message):            
+        if message.guild is None or message.author.bot:
             return
 
         if has_automod(self.bot, message):
@@ -99,15 +177,19 @@ class NecroEvents():
                 message.content = "\U0000200b"
 
             embed = discord.Embed(title="Message Deleted", description=message.content, colour=discord.Colour(0x277b0))
-            embed.set_author(name=message.author, icon_url= message.author.avatar_url)
+            embed.set_author(name=message.author, icon_url=message.author.avatar_url)
             embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
-            embed.add_field(name="Info", value="In " + message.channel.mention + " by " + message.author.mention)
+            embed.add_field(name="Info", value=f"In {message.channel.mention} by {message.author.mention}")
             embed.add_field(name="Attachment?", value="Yes" if message.attachments else "No", inline=False)
-            channel = self.bot.get_channel(self.bot.server_data[message.guild.id]["automod"])
-            await channel.send(embed=embed)
-
+            channel = self.bot.get_channel(self.bot.guild_data[message.guild.id]["automod"])
+            try:
+                await channel.send(embed=embed)
+            except discord.Forbidden:
+                pass
+            
+    @commands.Cog.listener()
     async def on_message_edit(self, before, after):        
-        if isinstance(before.channel, discord.DMChannel) or before.author.bot or before.content == after.content:
+        if before.guild is None or before.author.bot or before.content == after.content:
             return
 
         if has_automod(self.bot, after):
@@ -122,42 +204,23 @@ class NecroEvents():
             embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
             embed.add_field(name="Before", value=before.content if len(before.content) < 1024 else before.content[1020:] + "...", inline=False)
             embed.add_field(name="After", value=after.content if len(after.content) < 1024 else after.content[1020:] + "...", inline=False)
-            channel = self.bot.get_channel(self.bot.server_data[before.guild.id]["automod"])
-            await channel.send(embed=embed)
-
-    async def on_command(self, ctx):
-        try:
-            can_run = str(await ctx.command.can_run(ctx) and ctx.command.enabled)
-        except commands.CheckFailure:
-            can_run = "False"
-
-        guildname = "DM"
-        guildid = None
-        if ctx.guild:
-            guildname = ctx.guild.name
-            guildid = ctx.guild.id
-
-        await self.bot.query_executer("INSERT INTO necrobot.Logs (user_id, username, command, guild_id, guildname, message, can_run) VALUES($1,$2,$3,$4,$5,$6,$7);", ctx.author.id, ctx.author.name, ctx.command.name, guildid, guildname, ctx.message.content, can_run)
-
+            channel = self.bot.get_channel(self.bot.guild_data[before.guild.id]["automod"])
+            try:
+                await channel.send(embed=embed)
+            except discord.Forbidden:
+                pass
+            
+    @commands.Cog.listener()
     async def on_member_join(self, member):
-        await self.bot.default_stats(member, member.guild)
-
-        if any(self.bot.user_data[member.id]["perms"][x] == 7 for x in self.bot.user_data[member.id]["perms"]):
-            self.bot.user_data[member.id]["perms"][member.guild.id] = 7
-        elif any(self.bot.user_data[member.id]["perms"][x] == 6 for x in self.bot.user_data[member.id]["perms"]):
-            self.bot.user_data[member.id]["perms"][member.guild.id] = 6
-        else:
-            self.bot.user_data[member.id]["perms"][member.guild.id] = 0
-
-        await self.bot.query_executer(UPDATE_PERMS, self.bot.user_data[member.id]["perms"][member.guild.id], member.guild.id, member.id)
-
+        await self.bot.meta.new_member(member, member.guild)
+        
         if member.bot:
             return
-
+            
         if has_welcome(self.bot, member):
-            channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
-            message = self.bot.server_data[member.guild.id]["welcome"]
-            if member.id in self.bot.settings["blacklist"]:
+            channel = self.bot.get_channel(self.bot.guild_data[member.guild.id]["welcome-channel"])
+            message = self.bot.guild_data[member.guild.id]["welcome"]
+            if self.bot.blacklist_check(member.id):
                 await channel.send(f":eight_pointed_black_star: | {member.mention}. **You are not welcome here, disturber of the peace**")
             else:
                 message = message.format(
@@ -167,62 +230,54 @@ class NecroEvents():
                     name=member.name,
                     id=member.id
                 )
-                await channel.send(message)
-
-        changed = None
-        try:
-            invites = sorted(await member.guild.invites(), key=lambda x: x.created_at)
-        except discord.Forbidden:
-            pass
-        else:
-            used_invite = None
-            for invite in invites:
-                changed = await self.bot.query_executer(
-                    """
-                        INSERT INTO necrobot.Invites as inv VALUES($1, $2, $3, $4, $5)
-                        ON CONFLICT (id)
-                        DO UPDATE SET uses = $4 WHERE inv.id = $1 and inv.uses < $4 RETURNING url""",
-                    invite.id, member.guild.id, invite.url, invite.uses, invite.inviter.id if invite.inviter else 000, fetchval=True
-                )
-
-                if changed:
-                    used_invite = invite
-                    break
-
-        if self.bot.server_data[member.guild.id]["automod"] != "":
-            channel = member.guild.get_channel(self.bot.server_data[member.guild.id]["automod"])
-            if changed:
-                embed = discord.Embed(title="Member Joined", description=f"{member.mention} has joined the server using {used_invite.url}")
-                embed.add_field(name="Invite", value=used_invite.inviter)
+                try:
+                    await channel.send(message)
+                except discord.Forbidden:
+                    pass
+                
+        invite = await self.bot.db.update_invites(member.guild)
+        
+        if self.bot.guild_data[member.guild.id]["automod"]:
+            channel = member.guild.get_channel(self.bot.guild_data[member.guild.id]["automod"])
+            if invite:
+                embed = discord.Embed(title="Member Joined", description=f"{member.mention} has joined the server using {invite.url}")
+                embed.add_field(name="Invite", value=invite.inviter)
                 embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
-
-                await channel.send(embed=embed)
+                
+                try:
+                    await channel.send(embed=embed)
+                except discord.Forbidden:
+                    pass
                     
             else:
                 embed = discord.Embed(title="Member Joined", description=f"{member.mention} has joined the server but didn't use an invite... somehow...")
                 embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
 
-                await channel.send(embed=embed)
-
-        if not self.bot.server_data[member.guild.id]["auto-role"] == "":
-            role = discord.utils.get(member.guild.roles, id=self.bot.server_data[member.guild.id]["auto-role"])
+                try:
+                    await channel.send(embed=embed)
+                except discord.Forbidden:
+                    pass
+                
+        if self.bot.guild_data[member.guild.id]["auto-role"]:
+            role = discord.utils.get(member.guild.roles, id=self.bot.guild_data[member.guild.id]["auto-role"])
             await member.add_roles(role)
 
-            if self.bot.server_data[member.guild.id]["auto-role-timer"] > 0:
-                await asyncio.sleep(self.bot.server_data[member.guild.id]["auto-role-timer"])
+            if self.bot.guild_data[member.guild.id]["auto-role-timer"] > 0:
+                await asyncio.sleep(self.bot.guild_data[member.guild.id]["auto-role-timer"])
                 try:
                     await member.remove_roles(role)
                 except discord.HTTPException:
                     pass
-
+                    
+    @commands.Cog.listener()
     async def on_member_remove(self, member):
-        if self.bot.user_data[member.id]["perms"][member.guild.id] < 6:
-            self.bot.user_data[member.id]["perms"][member.guild.id] = 0
-            await self.bot.query_executer(UPDATE_PERMS, 0, member.guild.id, member.id)
+        await self.bot.db.delete_permission(member.id, member.guild.id)
+        await self.bot.db.delete_automod_ignore(member.guild.id, member.id)
+        await self.bot.db.delete_command_ignore(member.guild.id, member.id)
 
         if has_goodbye(self.bot, member):
-            channel = self.bot.get_channel(self.bot.server_data[member.guild.id]["welcome-channel"])
-            message = self.bot.server_data[member.guild.id]["goodbye"]
+            channel = self.bot.get_channel(self.bot.guild_data[member.guild.id]["welcome-channel"])
+            message = self.bot.guild_data[member.guild.id]["goodbye"]
 
             if member.id in self.bot.settings["blacklist"]:
                 await channel.send(":eight_pointed_black_star: | **...**")
@@ -234,10 +289,14 @@ class NecroEvents():
                     name=member.name,
                     id=member.id
                 )
-                await channel.send(message)
-
+                try:
+                    await channel.send(message)
+                except discord.Forbidden:
+                    pass
+                
+    @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.user_id in self.bot.settings["blacklist"]:
+        if self.bot.blacklist_check(payload.user_id):
             return
 
         if payload.guild_id is None:
@@ -247,7 +306,35 @@ class NecroEvents():
                 except (discord.Forbidden, discord.HTTPException):
                     pass
         else:
-            if self.bot.server_data[payload.guild_id]["starboard-channel"] in ["", payload.channel_id]:
+            if payload.message_id in self.bot.polls:
+                if payload.user_id == self.bot.user.id:
+                    return 
+                    
+                counter = self.bot.polls[payload.message_id]["voters"].count(payload.user_id) + 1
+                if counter > self.bot.polls[payload.message_id]["votes"]:
+                    if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
+                        emoji = payload.emoji._as_reaction()
+                        await self.bot._connection.http.remove_reaction(
+                            payload.channel_id,
+                            payload.message_id,  
+                            emoji, 
+                            payload.user_id
+                        )
+                        
+                        if self.bot.guild_data[payload.guild_id]["automod"]:
+                            channel = self.bot.get_channel(self.bot.guild_data[payload.guild_id]["automod"])
+                            user = self.bot.get_user(payload.user_id)
+                            
+                            await channel.send(f":warning:| User {user.mention} tried adding more reactions than allowed to a poll")
+                else:
+                    await self.bot.db.query_executer(
+                        "INSERT INTO necrobot.Votes VALUES($1, $2, $3)", 
+                        payload.message_id, payload.user_id, payload.emoji.name
+                    )
+                    self.bot.polls[payload.message_id]["voters"].append(payload.user_id)
+                    
+            
+            if self.bot.guild_data[payload.guild_id]["starboard-channel"] in [0, payload.channel_id]:
                 return
                 
             if payload.message_id in self.bot.starred:
@@ -259,58 +346,52 @@ class NecroEvents():
                     if message is not None:
                         self.bot.potential_stars[payload.message_id] = {"message": message, "count": 0}
                 
-                await self.check_for_star(payload.message_id, payload.user_id, payload.guild_id)
-                
+                message = self.bot.potential_stars[payload.message_id]
+                if not message["message"].author.id == payload.user_id:
+                    message["count"] += 1
+                    
+                if message["count"] >= self.bot.guild_data[payload.guild_id]["starboard-limit"]:
+                    del self.bot.potential_stars[payload.message_id]
+                    await self.bot.meta.star_message(message["message"])
+                    
+    @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
         if payload.user_id in self.bot.settings["blacklist"] or payload.guild_id is None:
             return
+            
+        if payload.message_id in self.bot.polls:
+            if payload.user_id == self.bot.user.id:
+                return
+                
+            result = await self.bot.db.query_executer(
+                "DELETE FROM necrobot.Votes WHERE message_id = $1 AND user_id = $2 AND reaction = $3 RETURNING user_id", 
+                payload.message_id, payload.user_id, payload.emoji.name
+                ) 
+            
+            if result:
+                self.bot.polls[payload.message_id]["voters"].remove(payload.user_id)
             
         if payload.emoji.name == "\N{WHITE MEDIUM STAR}" and payload.message_id in self.bot.potential_stars:
             message = self.bot.potential_stars[payload.message_id]
             
             if not message["message"].author.id == payload.user_id:
                 message["count"] -= 1
-            
+    
+    @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         if payload.message_id in self.bot.potential_stars:
             message = self.bot.potential_stars[payload.message_id]["message"]
             message._update(message.channel, payload.data)
             
+    @commands.Cog.listener()
     async def on_raw_reaction_clear(self, payload):
         if payload.message_id in self.bot.potential_stars:
-            self.bot.potential_stars[payload.message_id]["count"] = 0                    
-            
-    async def on_guild_channel_delete(self, channel):
-        guild = self.bot.server_data[channel.guild.id]
-
-        if channel.id == guild["broadcast-channel"]:
-            guild["broadcast-channel"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET broadcast_channel = 0 WHERE guild_id = $1;", channel.guild.id)
-
-        if channel.id == guild["starboard-channel"]:
-            guild["starboard"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET starboard_channel = 0 WHERE guild_id = $1;", channel.guild.id)
-
-        if channel.id == guild["welcome-channel"]:
-            guild["welcome-channel"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET welcome_channel = 0 WHERE guild_id = $1;", channel.guild.id)
-
-        if channel.id == guild["automod"]:
-            guild["automod"] = ""
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET automod_channel = 0 WHERE guild_id = $1;", channel.guild.id) 
-
-        await self.bot.query_executer("DELETE FROM necrobot.Youtube WHERE guild_id = $1 AND channel_id = $2", channel.guild.id, channel.id)
-
-    async def on_guild_role_delete(self, role):
-        guild = self.bot.server_data[role.guild.id]
-
-        if role.id == guild["mute"]:
-            guild["mute"] = "" 
-            await self.bot.query_executer("UPDATE necrobot.Guilds SET mute = 0 WHERE guild_id = $1;", role.guild.id)
-
-        if role.id in guild["self-roles"]:
-            guild["self-roles"].remove(role.id)
-            await self.bot.query_executer("DELETE FROM necrobot.SelfRoles WHERE guild_id = $1 AND id = $2;", role.guild.id, role.id)
+            self.bot.potential_stars[payload.message_id]["count"] = 0  
+        
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload):
+        if payload.message_id in self.bot.potential_stars:
+            del self.bot.potential_stars[payload.message_id]
 
 def setup(bot):
-    bot.add_cog(NecroEvents(bot))
+    bot.add_cog(Events(bot))

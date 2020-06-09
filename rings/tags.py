@@ -1,33 +1,37 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import react_menu
+from rings.utils.utils import react_menu, BotError
+from rings.db import DatabaseError
 
-import datetime as d
 from re import match
 
 class Tag(commands.Converter):
     async def convert(self, ctx, argument):
         argument = argument.lower()
-        if argument in ctx.bot.server_data[ctx.guild.id]["tags"]:
-            return argument
-        elif argument in ctx.bot.server_data[ctx.guild.id]["aliases"]:
-            return ctx.bot.server_data[ctx.guild.id]["aliases"][argument]
-        else:
-            raise commands.BadArgument(f"Tag {argument} doesn't exist in server.")
+        tag = await ctx.bot.db.query_executer("""
+            SELECT t.name, t.content, t.owner_id, t.uses, t.created_at FROM necrobot.Tags t, necrobot.Aliases a 
+            WHERE t.name = a.original AND a.alias = $1 AND a.guild_id = $2 AND t.guild_id = $2
+            """, argument, ctx.guild.id)
+        
+        if not tag:
+            raise commands.CheckFailure(f"Tag {argument} not found.")
+            
+        return tag[0]
 
-class Tags():
+class Tags(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.restricted = ("list", "raw", "add", "edit", "info", "delete", "alias")
+        self.restricted = [x.name for x in  self.tag.commands]
 
-    def is_tag_owner(self, ctx, tag):
-        if ctx.author.id == self.bot.server_data[ctx.guild.id]["tags"][tag]["owner"]:
+    async def is_tag_owner(self, ctx, tag):
+        if ctx.author.id == tag["owner_id"]:
             return True
-        elif self.bot.user_data[ctx.author.id]["perms"][ctx.guild.id] >= 4:
+        
+        if await self.bot.db.get_permission(ctx.author.id, ctx.guild.id) >= 4:
             return True
-        else:
-            raise commands.CheckFailure("You don't have permissions to modify this tag")
+        
+        raise commands.CheckFailure("You don't have permissions to modify this tag")
 
     @commands.group(invoke_without_command = True, aliases=["t","tags"])
     @commands.guild_only()
@@ -46,15 +50,25 @@ class Tags():
             arg_dict[f"arg{index}"] = arg
             index += 1
 
-        tag_content = self.bot.server_data[ctx.guild.id]["tags"][tag]["content"]
+        tag_content = tag["content"]
         try:
-            await ctx.send(tag_content.format(server=ctx.guild, member=ctx.author, channel=ctx.channel, content=ctx.message.content,**arg_dict))
-            self.bot.server_data[ctx.guild.id]["tags"][tag]["counter"] += 1
-            await self.bot.query_executer("UPDATE necrobot.Tags SET uses = uses + 1 WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
+            await ctx.send(
+                tag_content.format(
+                    server=ctx.guild, 
+                    member=ctx.author, 
+                    channel=ctx.channel, 
+                    content=ctx.message.content,
+                    **arg_dict
+                )
+            )
+
+            await self.bot.db.query_executer(
+                "UPDATE necrobot.Tags SET uses = uses + 1 WHERE guild_id = $1 AND name = $2", 
+                ctx.guild.id, tag["name"]
+            )
+            
         except KeyError as e:
-            await ctx.send(f"Expecting the following argument: {e.args[0]}")
-        except Exception as e:
-            await ctx.send(str(f":warning: | {e}"))
+            raise BotError(f"Expecting the following argument: {e.args[0]}")
 
     @tag.command(name="add")
     @commands.guild_only()
@@ -104,42 +118,45 @@ class Tags():
         """
         tag = tag.lower()
         if tag in self.restricted:
-            await ctx.send(":negative_squared_cross_mark: | Tag not created, tag name is a reserved keyword")
-        elif tag not in self.bot.server_data[ctx.guild.id]["tags"]:
-            self.bot.server_data[ctx.guild.id]["tags"][tag] = {'content':content,'owner':ctx.author.id, 'created':d.datetime.today().strftime("%d - %B - %Y %H:%M"), 'counter':0}
-            await self.bot.query_executer("INSERT INTO necrobot.Tags VALUES ($1, $2, $3, $4, 0, $5)", ctx.guild.id, tag, content, ctx.author.id, d.datetime.today().strftime("%d - %B - %Y %H:%M"))
+            raise BotError("Tag not created, tag name is a reserved keyword")
+         
+        try:   
+            await self.bot.db.query_executer(
+                "INSERT INTO necrobot.Tags(guild_id, name, content, owner_id) VALUES ($1, $2, $3, $4)", 
+                ctx.guild.id, tag, content, ctx.author.id
+            )
+            
+            await self.bot.db.query_executer(
+                "INSERT INTO necrobot.Aliases VALUES ($1, $1, $2)",
+                tag, ctx.guild.id
+            )
+            
             await ctx.send(f":white_check_mark: | Tag {tag} added")
-        else:
-            await ctx.send(":negative_squared_cross_mark: | A tag with this name already exists")
+        except DatabaseError:
+            raise BotError("A tag with this name already exists")
 
-    @tag.group(name="delete")
+    @tag.group(name="delete", invoke_without_command=True)
     @commands.guild_only()
-    async def tag_del(self, ctx, *, tag : Tag):
+    async def tag_delete(self, ctx, *, tag : Tag):
         """Deletes the tag [tag] if the users calling the command is its owner or a Server Admin (4+)
         
         {usage}
         
         __Example__
         `{pre}tag delete necro` - removes the tag 'necro' if you are the owner of if you have a permission level of 4+"""
-        self.is_tag_owner(ctx, tag)
+        await self.is_tag_owner(ctx, tag)
 
-        del self.bot.server_data[ctx.guild.id]["tags"][tag]
-        to_del = []
-        await self.bot.query_executer("DELETE FROM necrobot.Tags WHERE guild_id = $1 AND name = $2", ctx.guild.id, tag)
-        for alias, tag_name in self.bot.server_data[ctx.guild.id]["aliases"].items():
-            if tag_name == tag:
-                to_del.append((alias, tag_name))
+        await self.bot.db.query_executer(
+            "DELETE FROM necrobot.Tags WHERE guild_id = $1 AND name = $2",
+            ctx.guild.id, tag["name"]    
+        )
+        await ctx.send(f":white_check_mark: | Tag {tag['name']} and its aliases removed")
 
-        for e in to_del:
-            del self.bot.server_data[ctx.guild.id]["aliases"][e[0]]
-            await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, e[1])
-
-        await ctx.send(f":white_check_mark: | Tag {tag} and its aliases removed")
-
-    @tag_del.command(name="alias")
+    @tag_delete.command(name="alias")
     @commands.guild_only()
-    async def tag_del_alias(self, ctx, *, alias : str):
-        """Remove the alias to a tag. Only Server Admins and the tag owner can remove aliases and they can remove any aliases.
+    async def tag_delete_alias(self, ctx, *, alias : str):
+        """Remove the alias to a tag. Only Server Admins and the tag owner can remove aliases and they can 
+        remove any aliases.
 
         {usage}
 
@@ -152,26 +169,33 @@ class Tags():
         except commands.BadArgument:
             raise commands.BadArgument(f"Alias {alias} does not exist.")
 
-        self.is_tag_owner(ctx, tag)
+        await self.is_tag_owner(ctx, tag)
 
-        del self.bot.server_data[ctx.guild.id]["aliases"][alias]
-        await self.bot.query_executer("DELETE FROM necrobot.Aliases WHERE guild_id = $1 and original = $2", ctx.guild.id, tag)
+        await self.bot.db.query_executer(
+            "DELETE FROM necrobot.Aliases WHERE guild_id = $1 and alias = $2", 
+            ctx.guild.id, alias
+        )
+        
         await ctx.send(f":white_check_mark: | Alias `{alias}` removed")
 
     @tag.command(name="edit")
     @commands.guild_only()
     async def tag_edit(self, ctx, tag : Tag, *, content):
-        """Replaces the content of [tag] with the [text] given. Basically works as a delete + create function but without the risk of losing the tag name ownership.
+        """Replaces the content of [tag] with the [text] given. Basically works as a delete + create function 
+        but without the risk of losing the tag name ownership.
         
         {usage}
         
         __Example__
         `{pre}tag edit necro cool server` - replaces the content of the 'necro' tag with 'cool server'"""
-        self.is_tag_owner(ctx, tag)
+        await self.is_tag_owner(ctx, tag)
 
-        self.bot.server_data[ctx.guild.id]["tags"][tag]["content"] = content
-        await self.bot.query_executer("UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", content, ctx.guild.id, tag)
-        await ctx.send(f":white_check_mark: | Tag `{tag}` modified")
+        await self.bot.db.query_executer(
+            "UPDATE necrobot.Tags SET content = $1 WHERE guild_id = $2 AND name = $3", 
+            content, ctx.guild.id, tag["name"]
+        )
+        
+        await ctx.send(f":white_check_mark: | Tag `{tag['name']}` modified")
 
     @tag.command(name="raw")
     @commands.guild_only()
@@ -182,7 +206,7 @@ class Tags():
         
         __Example__
         `{pre}raw necro` - prints the raw data of the 'necro' tag"""
-        await ctx.send(f":notebook: | Source code for {tag}: ```{self.bot.server_data[ctx.guild.id]['tags'][tag]['content']}```")
+        await ctx.send(f":notebook: | Source code for {tag['name']}: ```{tag['content']}```")
 
     @tag.command(name="list")
     @commands.guild_only()
@@ -190,15 +214,24 @@ class Tags():
         """Returns the list of tags present on the guild.
         
         {usage}"""
-        tag_list = list(self.bot.server_data[ctx.guild.id]["tags"].keys()) + list(self.bot.server_data[ctx.guild.id]["aliases"].keys())
-        def _embed_generator(index):
-            tag_str = "- " + "\n- ".join(tag_list[index*10:(index+1)*10]) if tag_list else "None"
-            embed = discord.Embed(title="Tags on this server", description=tag_str, colour=discord.Colour(0x277b0))
+        tag_list = await self.bot.db.query_executer(
+            "SELECT alias from necrobot.Aliases WHERE guild_id = $1",
+            ctx.guild.id    
+        )
+        
+        def _embed_generator(index, entries):
+            tag_str = "- " + "\n- ".join(entries)
+            embed = discord.Embed(
+                title=f"Tags on this server ({index[0]}/{index[1]})", 
+                description=tag_str, 
+                colour=discord.Colour(0x277b0)
+            )
+            
             embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
 
             return embed
 
-        await react_menu(ctx, len(tag_list)//10, _embed_generator)
+        await react_menu(ctx, [t["alias"] for t in tag_list], 10, _embed_generator)
 
     @tag.command(name="info")
     @commands.guild_only()
@@ -209,10 +242,14 @@ class Tags():
         
         __Example__
         `{pre}tag info necro` - prints info for the tag 'necro'"""
-        tag_dict = self.bot.server_data[ctx.guild.id]["tags"][tag]
-        embed = discord.Embed(title=f"__**{tag}**__", colour=discord.Colour(0x277b0), description=f'Created on {tag_dict["created"]}')
-        embed.add_field(name="Owner", value=ctx.guild.get_member(tag_dict["owner"]).mention)
-        embed.add_field(name="Uses", value=tag_dict["counter"])
+        embed = discord.Embed(
+            title=tag["name"],
+            colour=discord.Colour(0x277b0), 
+            description=f'Created on {tag["created_at"]}'
+        )
+        
+        embed.add_field(name="Owner", value=ctx.guild.get_member(tag["owner_id"]).mention)
+        embed.add_field(name="Uses", value=tag["uses"])
         embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
 
         await ctx.send(embed=embed)
@@ -232,29 +269,32 @@ class Tags():
         `{pre}tag alias necro super_necro` - You can now call the tag necro using the name "super_necro"
         """
         if new_name in self.restricted:
-            await ctx.send(":white_check_mark: | Alias name is a reserved keyword")
-        elif new_name not in self.bot.server_data[ctx.guild.id]["tags"] and new_name not in self.bot.server_data[ctx.guild.id]["aliases"]:
-            self.bot.server_data[ctx.guild.id]["aliases"][new_name] = tag
-            await self.bot.query_executer("INSERT INTO necrobot.Aliases VALUES ($1, $2, $3)", new_name, tag, ctx.guild.id)
+            raise BotError("Alias name is a reserved keyword")
+          
+        try:  
+            await self.bot.db.query_executer(
+                "INSERT INTO necrobot.Aliases VALUES ($1, $2, $3)", 
+                new_name, tag['name'], ctx.guild.id
+            )
+            
             await ctx.send(":white_check_mark: | Alias successfully created")
-        else:
-            await ctx.send(":white_check_mark: | Alias already exists.")
+        except DatabaseError:
+            raise BotError("Alias already exists")
 
     async def on_message(self, message):
-        if message.author.bot or message.author.id in self.bot.settings["blacklist"] or message.guild is None:
+        if message.author.bot or self.blacklist_check(message.author.id) or message.guild is None:
             return
 
-        content = message.content.split(" ", 1)
+        content = message.content.split(maxsplit=1)
         if match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 0:
             content = content[1]
-            
-            try:
-                self.bot.server_data[message.guild.id]["tags"][content]["content"]
-            except KeyError:
-                return
-
             ctx = await self.bot.get_context(message)
             command = self.bot.get_command("tag")
+            
+            try:
+                await Tag().convert(ctx, content)
+            except KeyError:
+                return
 
             await ctx.invoke(command, tag=content)
 

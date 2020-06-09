@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
-from rings.utils.utils import UPDATE_NECROINS, MoneyConverter
+from rings.utils.utils import MoneyConverter
 from rings.utils.var import ball8_list
 
 import dice
@@ -16,7 +16,7 @@ class CoinConverter(commands.Converter):
 
         raise commands.BadArgument("Choices must be one of: `t`, `tail`, `h` or `head`")
 
-class Decisions():
+class Decisions(commands.Cog):
     """Helpful commands to help you make decisions"""
 
     def __init__(self, bot):
@@ -44,23 +44,20 @@ class Decisions():
         __Example__
         `{pre}coin` - flips a coin
         `{pre}coin h 50` - bet 50 coins on the result being head"""
-        outcome = random.choice(["<:head:351456287453872135> | **Head**","<:tail:351456234257514496> | **Tail**"])
+        options = {"h": "<:head:351456287453872135> | **Head**", "t": "<:tail:351456234257514496> | **Tail**"}
         
+        outcome = random.choice(list(options.keys()))
+        msg = options[outcome]
         if bet > 0:
-            bet = abs(bet)
-            if "head" in outcome and choice == "h":
-                outcome += "\nWell done!"
-                self.bot.user_data[ctx.author.id]["money"] += bet
-            elif "tail" in outcome and choice == "t":
-                outcome += "\nWell done!"
-                self.bot.user_data[ctx.author.id]["money"] += bet
+            if choice == outcome:
+                msg += "\nWell done!"
             else:
-                outcome += "\nBetter luck next time."
-                self.bot.user_data[ctx.author.id]["money"] -= bet
+                msg += "\nBetter luck next time."
+                bet = -bet
+                
+            await self.bot.db.update_money(ctx.author.id, add=bet)
 
-            await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-
-        await ctx.send(outcome)
+        await ctx.send(msg)
 
     @commands.command()
     async def roll(self, ctx, dices="1d6"):

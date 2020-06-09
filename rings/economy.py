@@ -1,11 +1,10 @@
 #!/usr/bin/python3.6
-import discord
 from discord.ext import commands
 
-from rings.utils.utils import UPDATE_NECROINS, MoneyConverter
+from rings.utils.utils import BotError, MoneyConverter
 
-import random
 import asyncio
+from collections import deque
 
 from cards import common
 from cards.decks import standard52
@@ -17,6 +16,9 @@ JACK_VALUE = 10
 
 WIN_MIN = 17
 WIN_MAX = 21
+
+class GameEnd(Exception):
+    pass
 
 class Card(standard52.Card):
     def value(self):
@@ -57,11 +59,14 @@ class Hand(common.Hand):
     def is_bust(self):
         return self.value() > WIN_MAX
 
-    def is_passing(self, other):
-        if self.value() >= other.hand.value():
+    def is_passing(self, other):           
+        if self.value() >= other.value():
             return True
 
-        return not self.busted and self.value() >= WIN_MIN and self.value() >= other.hand.value()
+        return not self.busted and self.value() >= WIN_MIN and self.value() >= other.value()
+        
+    def blackjack(self):
+        return self.value() == 21
 
     def beats(self, other):
         if not self.busted and other.busted:
@@ -71,60 +76,136 @@ class Hand(common.Hand):
         if self.value() == WIN_MAX:
             return True
         return self.value() >= WIN_MIN and self.value() > other.value()
+        
+class BlackJack:
+    def __init__(self, ctx, bet):
+        self.deck = Deck()
+        self.deck.shuffle()
+        
+        self.bet = bet
+        
+        self.player = Hand()
+        self.dealer = Hand()
+        
+        self.player.add_card(self.deck.draw())
+        self.dealer.add_card(self.deck.draw())
+        
+        self.player.add_card(self.deck.draw())
+        self.dealer.add_card(self.deck.draw())
+        
+        self.ctx = ctx
+        self.is_over = True
+        self.msg = None
+        self.reaction_list = ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"]
+        
+        self.initial = ":white_check_mark: | Starting a game of Blackjack with **{ctx.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: "
+        self.status = "**You** have {player_hand}. Total: {player_total}\n**The Dealer** has {dealer_hand}. Total: {dealer_total}"
+        self.info = "**Current bet** - {bet} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card"
+        self.actions = deque([], maxlen=5)
+    
+    @property
+    def complete(self):
+        actions = "__Status__\n" + "\n".join(self.actions)
+        return f"{self.initial}\n{self.status}\n\n{actions}\n\n{self.info}"
+        
+    def format_message(self):
+        return self.complete.format(
+            ctx=self.ctx,
+            bet=self.bet,
+            player_hand=self.player,
+            dealer_hand=self.dealer,
+            player_total=self.player.value(),
+            dealer_total=self.dealer.value()
+        )
+        
+    async def lose(self):
+        await self.ctx.bot.db.update_money(self.ctx.author.id, add=-self.bet)
+        
+    async def win(self):
+        await self.ctx.bot.db.update_money(self.ctx.author.id, add=self.bet)
 
-class Game(common.Game):
-    def create_deck(self):
-        return Deck()
+    async def loop(self):
+        self.msg = await self.ctx.send(self.format_message())
+        for reaction in self.reaction_list:
+            await self.msg.add_reaction(reaction)
+        while True:
+            await self.player_turn()   
+            
+            if self.player.blackjack():
+                break
+            
+            if self.player.is_bust():
+                break
+            
+            if self.player.passing and self.dealer.is_passing(self.player):
+                break
+                         
+            await self.dealer_turn()
+            
+            if self.dealer.is_bust():
+                break
+                
+            await self.msg.edit(content=self.format_message())
+           
+        if self.player.blackjack() and not self.dealer.blackjack():
+            self.actions.append("**BLACKJACK!**")
+            await self.win()     
+        elif self.player.beats(self.dealer):
+            self.actions.append(f"**Your** hand beats **the Dealer's** hand. Won {self.bet}")   
+            await self.win()
+        elif self.dealer.beats(self.player):
+            self.actions.append(f"**The Dealer's** hand beats **your** hand. Lost {self.bet}")
+            await self.lose()
+        else:
+            self.actions.append("Tie, everything is reset")
+            
+        self.info = "**GAME FINISHED**"
+        await self.msg.edit(content=self.format_message())
+        await self.msg.clear_reactions()        
+            
+    async def dealer_turn(self):
+        if self.dealer.is_passing(self.player):
+            self.actions.append("**The Dealer** passes his turn")
+        else:
+            card = self.deck.draw()
+            self.dealer.add_card(card)
+            self.actions.append(f"**The Dealer** draws {card}")
+        
+    async def player_turn(self):       
+        def check(reaction, user):
+            return user == self.ctx.author and str(reaction.emoji) in self.reaction_list and self.msg.id == reaction.message.id
+        
+        try:
+            reaction, _ = await self.ctx.bot.wait_for("reaction_add", check=check, timeout=120)
+        except asyncio.TimeoutError as e:
+            await self.lose()
+            await self.msg.clear_reactions()
+            e.timer = 120
+            raise e
 
-    def create_hand(self):
-        return Hand()
-
-    def play(self, player):
-        if not self.is_over():
-            hand = self.hands[player]
-            if not hand.busted:
-                card = self.deck.draw()
-                hand.add_card(card)
-                player.add_card(card)
-                return f"draws a **{card}**"
-
-class Player(common.Player):
-    def __init__(self, name, risk):
-        self.name = name
-        self.risk = risk
-        self.stop = False
-
-    def __str__(self):
-        return self.name
-
-    def add_card(self, card):
-        super(Player, self).add_card(card)
-        self.stop = self.should_stop()
-
-    def should_stop(self):
-        if self.hand.value() < WIN_MIN:
-            return False
-        if self.hand.value() == WIN_MAX:
-            return True
-        if self.risk == 0:
-            return True
-        if self.risk == 1:
-            return False
-        return not random.random() < self.risk
-
-    def to_hit(self):
-        return not self.stop
-
-
-class Economy():
-    """All the economy commands that NecroBot includes, careful, they all require you to pay with with your Necroins"""
+        if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
+            card = self.deck.draw()
+            self.player.add_card(card)
+            self.actions.append(f"**You** draw {card}")
+        elif reaction.emoji == "\N{MONEY BAG}":
+            self.bet = await MoneyConverter().convert(self.ctx, str(self.bet*2))
+            card = self.deck.draw()
+            self.player.add_card(card)
+            self.actions.append(f"**You** double your bet and draw {card}")
+            self.player.passing = True
+        elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
+            self.actions.append("**You** pass your turn")
+            self.player.passing = True
+            
+        await self.msg.remove_reaction(reaction.emoji, self.ctx.author)
+        
+class Economy(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.IS_GAME = list()
-
-
+        self.IS_GAME = []
+        
     @commands.command(aliases=["bj"])
-    async def blackjack(self, ctx, bet : MoneyConverter = 10):
+    async def blackjack(self, ctx, bet : MoneyConverter):
         """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: 
         or you can pass your turn by clicking on :stop_button: . If you win you get double the amount of money you 
         placed, if you lose you lose it all and if you tie everything is reset. Minimum bet 10 :euro:
@@ -135,397 +216,20 @@ class Economy():
         `{pre}blackjack 200` - bet 200 :euro: in the game of blackjack
         `{pre}blackjack` - bet the default 10 :euro:"""
         if ctx.channel.id in self.IS_GAME:
-            await ctx.send(":negative_squared_cross_mark: | There is already a game ongoing", delete_after = 5)
-            return 
+            raise BotError("There is already a game ongoing")
 
         if bet < 10:
-            await ctx.send(":negative_squared_cross_mark: | Please bet at least 10 necroins.", delete_after=5)
-            return
+            raise BotError("Please bet at least 10 necroins.")
 
-        self.IS_GAME.append(ctx.channel.id)
         try:
-            await self.blackjack_game(ctx, bet)
+            self.IS_GAME.append(ctx.channel.id)
+            bj = BlackJack(ctx, bet)
+            await bj.loop()
         except Exception as e:
-            await ctx.send(f":negative_squared_cross_mark: | {e}")
+            raise e
         finally:
             self.IS_GAME.remove(ctx.channel.id)
-
-
-    async def blackjack_game(self, ctx, bet):
-        async def win(msg):
-            self.bot.user_data[ctx.author.id]["money"] += bet
-            await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()} \nYou win {bet} :euro:")    
-
-        async def lose(msg):
-            self.bot.user_data[ctx.author.id]["money"] -= bet
-            await self.bot.query_executer(UPDATE_NECROINS, self.bot.user_data[ctx.author.id]["money"], ctx.author.id)
-            await ctx.send(f"{msg} \nEnd of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}. \nYou lose {bet} :euro:")
-
-        async def game_end():
-            if player.hand.value() == 21:
-                await win("**BLACKJACK**")
-            elif bank.hand.value() == 21:
-                await lose("**BlackJack for the Dealer**")
-            elif player.hand.value() > 21:
-                await lose("**You** go bust.")
-            elif bank.hand.value() > 21:
-                await win("**The Dealer** goes bust.")
-            elif bank.hand.value() > player.hand.value():
-                await lose("**The Dealer's** hand beats **your** hand.")
-            elif player.hand.value() > bank.hand.value():
-                await win("**Your** hand beats **the Dealer's** hand.")
-            else: #tie
-                await ctx.send(f"End of the game \n**{ctx.author.display_name}'s** hand: {player.hand} : {player.hand.value()} \n**Dealer's** hand: {bank.hand} : {bank.hand.value()}.\nTie, everything is reset. ")
         
-        await ctx.send(f":white_check_mark: | Starting a game of Blackjack with **{ctx.author.display_name}** for {bet} :euro: \n :warning: **Wait till all three reactions have been added before choosing** :warning: ")
-        reaction_list = ["\N{PLAYING CARD BLACK JOKER}","\N{BLACK SQUARE FOR STOP}", "\N{MONEY BAG}"]
-        player = Player(ctx.author.display_name, 0)
-        bank = Player("Bank", 0)
-        game = Game((bank, player))
-        game.start()
-        for _player in game.players:
-            game.play(_player)
-            game.play(_player)
-
-        def check(reaction, user):
-            return user == ctx.author and str(reaction.emoji) in reaction_list and msg.id == reaction.message.id
-
-        to_send = "**You** have {} Total: {} \n**The Dealer** has {} Total: {}"
-        status = await ctx.send(to_send.format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
-        while not game.is_over():
-            await status.edit(content=to_send.format(player.hand, player.hand.value(), bank.hand, bank.hand.value()))
-            if player.hand.value() == 21:
-                break
-            elif bank.hand.value() == 21:
-                break
-            
-            msg = await ctx.send(f"**Current bet** - {bet} \nWhat would you like to do? \n :black_joker: - Draw a card \n :stop_button: - Pass your turn \n :moneybag: - Double your bet and draw a card")
-            for reaction in reaction_list:
-                await msg.add_reaction(reaction)
-
-            try :
-                reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=120)
-            except asyncio.TimeoutError:
-                await lose("You took too long to reply, please reply within **two minutes** next time. You lose the game and the bet money placed.")
-                await status.delete()
-                await msg.delete()
-                return     
-
-            await msg.delete()
-            if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
-                await ctx.send(f"**You** {game.play(player)}", delete_after=5)
-                if player.hand.busted:
-                    break
-                else:
-                    if bank.hand.is_passing(player):
-                        await ctx.send("**The Dealer** passes his turn", delete_after=5)
-                    else:
-                        await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-                        if bank.hand.busted:
-                            break
-                        elif player.hand.value() == 21:
-                            break
-
-            elif reaction.emoji == "\N{MONEY BAG}":
-                if self.bot.user_data[ctx.author.id]["money"] >= bet * 2:
-                    await ctx.send(f"**You** double your bet and {game.play(player)}", delete_after=5)
-                    bet *= 2
-                    if player.hand.busted:
-                        break
-                    elif player.hand.value() == 21 and bank.hand.value() < 21:
-                        break
-                    else:
-                        while not bank.hand.is_passing(player) and not bank.hand.busted:
-                            await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-
-                        break
-                else:
-                    await ctx.send(":negative_squared_cross_mark: | Not enough money to double bet", delete_after=5)
-
-            elif reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
-                await ctx.send("**You** pass your turn", delete_after=5)
-                if not bank.hand.is_passing(player):
-                    await ctx.send(f"**The Dealer** {game.play(bank)}", delete_after=5)
-                    if bank.hand.busted:
-                        break
-                else:
-                    break   
-
-            await asyncio.sleep(1)
-
-        await game_end()
-        await status.delete()
-
-    @commands.command(aliases=["slots"], enable=False)
-    @commands.guild_only()
-    async def slot(self, ctx):
-        """Enter 50 Necroins and roll to see if you win more
-
-        {usage}"""
-        symbol_list = [
-            ":black_joker:", 
-            ":white_flower:", 
-            ":diamond_shape_with_a_dot_inside:", 
-            ":fleur_de_lis:", 
-            ":trident:", 
-            ":cherry_blossom:", 
-            "<:onering:351442796420399119>"
-        ]
-        
-        l1 = random.sample(symbol_list, len(symbol_list))
-        l2 = random.sample(symbol_list, len(symbol_list))
-        l3 = random.sample(symbol_list, len(symbol_list))
-
-        msg = await ctx.send(f"{l1[0]}|{l2[0]}|{l3[0]}\n{l1[1]}|{l2[1]}|{l3[1]}\n{l1[2]}|{l2[2]}|{l3[2]}")
-
-        for sym in range(1, 5):
-            await msg.edit(content=f"{l1[sym-1]}|{l2[sym-1]}|{l3[sym-1]}\n{l1[sym]}|{l2[sym]}|{l3[sym]}\n{l1[sym+1]}|{l2[sym+1]}|{l3[sym+1]}")
-            await asyncio.sleep(1)
-            if sym == 4:
-                final = [l1[sym], l2[sym], l3[sym]]
-
-        if len(set(final)) == 1:
-            final = final[0]
-        else:
-            await ctx.send(":negative_squared_cross_mark: | Better luck next time")
-            return
-
-        if final == ":onering:":
-            await ctx.send(":white_check_mark: | **Jackpot!** You won **2500** Necroins!")
-        elif final == ":cherry_blossom:":
-            await ctx.send(":white_check_mark: | Congrats! You win **1000** :cherry_blossom:")
-        elif final == ":fleur_de_lis:":
-            await ctx.send(":white_check_mark: | You win **500** Necroins!")
-        else:
-            await ctx.send(":negative_squared_cross_mark: | Better luck next time")
-
-    @commands.command()
-    async def ttt(self, ctx, enemy : discord.Member):
-        """Play a game of tic tac toe either against either a chosen enemy or against necrobot. 
-
-        {usage}
-
-        __Examples__
-        `{pre}ttt @NecroBot` - play a game against NecroBot (AI)
-        `{pre}ttt @ThatUser` - play a game against ThatUser, given that they agree"""
-        def check_win(b):
-            #horizontal check 2.0
-            if any(len(set(row)) == 1 for row in b):
-                return True
-
-            #vertical check 2.0
-            c = list(map(list, zip(*b))) #transpose
-            if any(len(set(row)) == 1 for row in c):
-                return True
-
-            #diagonal check 2.0
-            if len(set([b[x][x] for x in range(3)])) == 1 or len(set([b[2 - x][x] for x in range(3)])) == 1:
-                return True
-
-            return False
-
-        def board_full(b):
-            board_list = []
-            for row in b:
-                board_list += row
-
-            return len(set(board_list)) == 2
-
-        def print_board(b):
-            msg = []
-            for x in b:
-                msg.append(f" {x[0]} | {x[1]} | {x[2]} \n")
-
-            return "```\n"+ "------------\n".join(msg) + "\n```\nReply with the desired grid position. Won't work if not an intenger between 1 and 9 or from a place already taken."
-
-        def comp_move(b):
-            #check if any of our moves can win
-            for row in b:
-                for e in row:
-                    if e not in ["O", "X"]:
-                        num = int(e)
-                        copy_b = [x.copy() for x in b]
-                        copy_b[b.index(row)][row.index(e)] = "X"
-                        if check_win(copy_b):
-                            return num
-
-            #check if any of the enemy moves can win
-            for row in b:
-                for e in row:
-                    if e not in ["O", "X"]:
-                        num = int(e)
-                        copy_b = [x.copy() for x in b]
-                        copy_b[b.index(row)][row.index(e)] = "O"
-                        if check_win(copy_b):
-                            return num
-
-            #take the center
-            if not b[1][1] in ["X", "O"]:
-                return 5
-
-            #take a random corner
-            choices = []
-            for corner in [1, 3, 7, 9]:
-                if not b[int(corner//3.5)][(corner-1)%3] in ["X", "O"]:
-                    choices.append(corner)
-
-            if choices:
-                return random.choice(choices)
-
-            choices = []
-            #take a random side
-            for side in [2, 4, 6, 8]:
-                if not b[int(side//3.5)][(side-1)%3] in ["X", "O"]:
-                    choices.append(side)
-
-            if choices:
-                return random.choice(choices)
-
-
-        async def two_players():
-            while True:
-                await msg.edit(content=print_board(board))
-
-                def check(message):
-                    if not message.content.isdigit():
-                        return False
-
-                    return message.author == ctx.author and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
-                
-                try:
-                    await current_msg.edit(content=f"Awaiting response from player: **{ctx.author.display_name}**")
-                    user1 = await self.bot.wait_for("message", check=check, timeout=300)
-                except asyncio.TimeoutError as e:
-                    e.timer = 120
-                    self.IS_GAME.remove(ctx.channel.id)
-                    await msg.delete()
-                    return self.bot.dispatch("command_error", ctx, e)
-
-                self.bot.ignored_messages.append(user1.id)
-                await user1.delete()
-                user1 = int(user1.content)
-
-                board[int(user1//3.5)][(user1-1)%3] = "O"
-
-                if check_win(board):
-                    await ctx.send(f"{ctx.author.display_name} wins")
-                    break
-
-                if board_full(board):
-                    await ctx.send("**Nobody wins**")
-                    break
-
-                await msg.edit(content=print_board(board))
-
-                def check(message):
-                    if not message.content.isdigit():
-                        return False
-
-                    return message.author == enemy and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
-                
-                try:
-                    await current_msg.edit(content=f"Awaiting response from player: **{enemy.display_name}**")
-                    user2 = await self.bot.wait_for("message", check=check, timeout=300)
-                except asyncio.TimeoutError as e:
-                    e.timer = 120
-                    self.IS_GAME.remove(ctx.channel.id)
-                    await msg.delete()
-                    return self.bot.dispatch("command_error", ctx, e)
-                
-                self.bot.ignored_messages.append(user2.id)
-                await user2.delete()
-                user2 = int(user2.content)
-
-                board[int(user2//3.5)][(user2-1)%3] = "X"
-
-                if check_win(board):
-                    await ctx.send(f"{enemy.display_name} wins")
-                    break
-
-            await msg.edit(content=print_board(board))
-
-        async def against_ai():
-            while True:
-                await msg.edit(content=print_board(board))
-                
-                def check(message):
-                    if not message.content.isdigit():
-                        return False
-
-                    return message.author == ctx.author and int(message.content) > 0 and int(message.content) < 10 and message.channel == ctx.channel  and board[int(int(message.content)//3.5)][(int(message.content)-1)%3] not in ["X", "O"]
-                
-                try:
-                    user1 = await self.bot.wait_for("message", check=check, timeout=300)
-                except asyncio.TimeoutError as e:
-                    e.timer = 120
-                    self.IS_GAME.remove(ctx.channel.id)
-                    await msg.delete()
-                    return self.bot.dispatch("command_error", ctx, e)
-
-                self.bot.ignored_messages.append(user1.id)
-                await user1.delete()
-                user1 = int(user1.content)
-
-                board[int(user1//3.5)][(user1-1)%3] = "O"
-
-                if check_win(board):
-                    await ctx.send("**You win**")
-                    break
-
-                if board_full(board):
-                    await ctx.send("**Nobody wins**")
-                    break
-
-                user2 = comp_move(board)
-                await msg.edit(content=f"{print_board(board)}\nAI picks: {user2}")
-                board[int(user2//3.5)][(user2-1)%3] = "X"
-
-                if check_win(board):
-                    await ctx.send("**Necrobot wins**")
-                    break
-
-            await msg.edit(content=print_board(board))
-
-        #command code
-        board = [
-            ["1", "2", "3"],
-            ["4", "5", "6"],
-            ["7", "8", "9"]
-        ]
-                
-        if enemy == ctx.author:
-            await ctx.send(":negative_squared_cross_mark: | You cannot play against yourself, pick a player or fight Necrobot.")
-            return
-
-        if enemy == self.bot.user:
-            msg = await ctx.send(":white_check_mark: | NecroBot has accepted your challenge, be prepared to face him")
-            await asyncio.sleep(2)
-            await ctx.send("AI picks: ")
-            await against_ai()
-        else:
-            msg = await ctx.send(f":white_check_mark: | You have challenged **{enemy.display_name}**. {enemy.mention}, would you like to play? React with :white_check_mark: to play or with :negative_squared_cross_mark: to reject their challenge.")
-            await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-            await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
-
-            def check(reaction, user):
-                return user == enemy and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
-            
-            try:
-                reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            except asyncio.TimeoutError as e:
-                e.timer = 300
-                self.IS_GAME.remove(ctx.channel.id)
-                await msg.delete()
-                return self.bot.dispatch("command_error", ctx, e)
-
-            if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-                await ctx.send(":negative_squared_cross_mark: | Looks like they don't wanna play.")
-                await msg.delete()
-            elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
-                await msg.clear_reactions()
-                current_msg = await ctx.send("Awaiting response from player: ")
-                await two_players()
-
+    
 def setup(bot):
     bot.add_cog(Economy(bot))
