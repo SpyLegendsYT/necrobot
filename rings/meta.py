@@ -178,7 +178,9 @@ class Meta(commands.Cog):
                 channel = self.bot.get_channel(self.bot.guild_data[guild]["broadcast-channel"])
                 await channel.send(self.bot.guild_data[guild]["broadcast"])
             except Exception as e:
-                await self.bot.get_error_channel().send(f"Broadcast error with guild {guild}\n{e}")
+                await self.bot.get_error_channel().send(
+                    f"Broadcast error with guild {guild}\n{e}", 
+                    allowed_mentions=discord.AllowedMentions())
         
     async def clear_potential_star(self):
         if self.bot.counter != 24:

@@ -202,14 +202,14 @@ class Database(commands.Cog):
                 user_id, badge, spot
             )
         
-        if badge is None:
+        if badge is not None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
                 WHERE s.name = b.badge AND s.name = $1 AND b.user_id = $2""",
                 badge, user_id    
             )
         
-        if spot is None:
+        if spot is not None:
             return await self.query_executer(
                 """SELECT s.name, s.file_name, b.spot FROM necrobot.Badges b, necrobot.BadgeShop s
                 WHERE s.name = b.badge AND b.spot = $1 AND b.user_id = $2""",
@@ -232,7 +232,7 @@ class Database(commands.Cog):
             )
         else:
             await self.query_executer(
-                "DELETE FROM necrobot.Badges WHERE user_id = $1 AND name = $2",
+                "DELETE FROM necrobot.Badges WHERE user_id = $1 AND badge = $2",
                 user_id, badge
             )
         
@@ -255,7 +255,7 @@ class Database(commands.Cog):
             )            
         
         return await self.query_executer(
-            "SELECT * FROM necrobot.BadgeShop WHERE special = $1",
+            "SELECT * FROM necrobot.BadgeShop WHERE name = $1",
             name    
         )
         

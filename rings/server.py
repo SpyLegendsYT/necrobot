@@ -252,10 +252,6 @@ class Server(commands.Cog):
         role_obj2 = discord.utils.get(ctx.guild.roles, id=server["auto-role"])
         embed = discord.Embed(title="Server Settings", colour=discord.Colour(0x277b0), description="Info on the NecroBot settings for this server")
         embed.add_field(
-            name="Automod Channel", 
-            value=self.bot.get_channel(server["automod"]).mention if server["automod"] else "Disabled"
-        )
-        embed.add_field(
             name="Welcome Channel", 
             value=self.bot.get_channel(server["welcome-channel"]).mention if server["welcome-channel"] else "Disabled"
         )
@@ -278,6 +274,11 @@ class Server(commands.Cog):
             value=f'`{server["prefix"]}`' if server["prefix"] else "`n!`"
         )
         embed.add_field(
+            name="Broadcast Message", 
+            value=server["broadcast"] if server["broadcast"] else "None", 
+            inline=False
+        )
+        embed.add_field(
             name="Broadcast Channel", 
             value=self.bot.get_channel(server["broadcast-channel"]).mention if server["broadcast-channel"] else "Disabled"
         )
@@ -286,9 +287,9 @@ class Server(commands.Cog):
             value=f'Every {server["broadcast-time"]} hour(s)' if server["broadcast-time"] else "None"
         )
         embed.add_field(
-            name="Broadcast Message", 
-            value=server["broadcast"] if server["broadcast"] else "None", 
-            inline=False
+            name="PM Warnings",
+            value=server["pm-warning"],
+            inline=False   
         )
         embed.add_field(
             name="Auto Role", 
@@ -297,7 +298,12 @@ class Server(commands.Cog):
         embed.add_field(
             name="Auto Role Time Limit", 
             value= server["auto-role-timer"] if server["auto-role-timer"] else "Permanent"
-        )       
+        )   
+        embed.add_field(
+            name="Automod Channel", 
+            value=self.bot.get_channel(server["automod"]).mention if server["automod"] else "Disabled",
+            inline=False
+        )    
         embed.add_field(
             name="Starboard", 
             value = self.bot.get_channel(server["starboard-channel"]).mention if server["starboard-channel"] else "Disabled"
@@ -711,6 +717,15 @@ class Server(commands.Cog):
     @commands.command()
     @has_perms(3)
     async def poll(self, ctx, channel : discord.TextChannel, *, message):
+        """Create a reaction poll for your server in the specified channel. This will also ask you to specific of a 
+        maximum number of reactions. This number will limit how many options users can vote for.
+        
+        {usage}
+        
+        __Examples__
+        `{pre}poll #general Which character do you prefer: **Aragorn** :crossed_swords: or **Gimli** :axe:` - post a reaction poll
+        two possible answers: :axe: and :crossed_swords:
+        """
         check_channel(channel)
         await self.add_reactions(ctx.message)
         

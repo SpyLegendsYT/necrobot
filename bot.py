@@ -21,7 +21,7 @@ logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
+# logger.addHandler(handler)
 
 class NecroBot(commands.Bot):
     def __init__(self):
@@ -33,8 +33,8 @@ class NecroBot(commands.Bot):
             owner_id=241942232867799040, 
             description="A bot for managing and enhancing servers",
             command_prefix=get_pre,
-            help_command=NecrobotHelp()
-            # allowed_mentions=discord.AllowedMentions(everyone=False)     
+            help_command=NecrobotHelp(),
+            allowed_mentions=discord.AllowedMentions(everyone=False)     
         )
         
         self.uptime_start = time.time()

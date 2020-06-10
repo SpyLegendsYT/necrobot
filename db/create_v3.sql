@@ -1,6 +1,6 @@
 CREATE TABLE necrobot.Users (
     user_id bigint PRIMARY KEY,
-    necroins int CHECK (necroins >= 0) DEFAULT 200,
+    necroins bigint CHECK (necroins >= 0) DEFAULT 200,
     exp int DEFAULT 0,
     daily date DEFAULT current_date,
     title varchar(40) DEFAULT '',
@@ -44,7 +44,6 @@ CREATE TABLE necrobot.Badges (
     badge varchar(50) REFERENCES necrobot.BadgeShop(name) ON DELETE CASCADE,
     spot int DEFAULT 0 CHECK(spot BETWEEN 0 AND 8),
     PRIMARY KEY(user_id, badge),
-    UNIQUE(user_id, spot)
 );
 
 CREATE TABLE necrobot.Disabled (

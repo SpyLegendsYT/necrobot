@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, GuildConverter, react_menu, BotError, BadgeConverter
+from rings.utils.utils import has_perms, GuildConverter, react_menu, BotError, BadgeConverter, range_check
 from rings.utils.config import github_key
 
 try:
@@ -144,7 +144,7 @@ class Admin(commands.Cog):
         
     @admin.command(name="badges")
     @has_perms(6)
-    async def admin_badges(self, ctx, subcommand : str, user : discord.User, badge : BadgeConverter):
+    async def admin_badges(self, ctx, subcommand : str, user : discord.User, badge : BadgeConverter, spot : range_check(1, 8) = None):
         """Used to grant special badges to users. Uses add/delete subcommand
 
         {usage}
@@ -154,11 +154,15 @@ class Admin(commands.Cog):
 
         has_badge = await self.bot.db.get_badges(user.id, badge=badge["name"])
         if subcommand == "add" and not has_badge:
-            await self.bot.db.insert_badge(user.id, badge) 
-            await ctx.send(f":white_check_mark: | Granted the **{badge}** badge to user **{user}**")
+            await self.bot.db.insert_badge(user.id, badge['name']) 
+            if spot is None:
+                await ctx.send(f":white_check_mark: | Granted the **{badge['name']}** badge to user **{user}**")
+            else:
+                await self.bot.db.update_spot_badge(user.id, spot, badge['name'])
+                await ctx.send(f":white_check_mark: | Granted the **{badge['name']}** badge to user **{user}** and placed it on spot **{spot}**")
         elif subcommand == "delete" and has_badge:
-            await self.bot.db.delete_badge(user.id, badge) 
-            await ctx.send(f":white_check_mark: | Reclaimed the **{badge}** badge from user **{user}**")
+            await self.bot.db.delete_badge(user.id, badge['name']) 
+            await ctx.send(f":white_check_mark: | Reclaimed the **{badge['name']}** badge from user **{user}**")
         else:
             raise BotError("Users has/doesn't have the badge")
                     
