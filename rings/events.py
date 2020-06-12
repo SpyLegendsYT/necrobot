@@ -33,9 +33,10 @@ class Events(commands.Cog):
             msg = "This command cannot be used in private messages."
         elif isinstance(error, commands.DisabledCommand):
             msg = f"This command is disabled and cannot be used for now."
-        elif isinstance(error, asyncio.TimeoutError) and hasattr(error, "timer"):
-            minutes, seconds = divmod(error.timer, 60)
-            msg = f"You took too long to reply, please reply within **{int(minutes)} minutes and {int(seconds)} seconds** next time"
+        elif isinstance(error, asyncio.TimeoutError):
+            if hasattr(error, "timer"):
+                minutes, seconds = divmod(error.timer, 60)
+                msg = f"You took too long to reply, please reply within **{int(minutes)} minutes and {int(seconds)} seconds** next time"
         elif isinstance(error, commands.BotMissingPermissions):
             msg = f"I need {', '.join(error.missing_perms)} to be able to run this command"
         elif isinstance(error, (DatabaseError, FightError)):
