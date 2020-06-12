@@ -15,13 +15,7 @@ import traceback
 from collections import defaultdict
 
 # logging.basicConfig(filename='discord.log',level=logging.ERROR)
-# logging.basicConfig(level=logging.CRITICAL)
-
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-# logger.addHandler(handler)
+logging.basicConfig(level=logging.CRITICAL)
 
 class NecroBot(commands.Bot):
     def __init__(self):
@@ -140,6 +134,28 @@ class NecroBot(commands.Bot):
     @property
     def db(self):
         return self.get_cog("Database")
+        
+    async def wait_for(self, event, *, check=None, timeout=None, handler=None, propogate=True):
+        """
+        handler : callable
+            Function that performs clean up in the case that the timeout is reached
+        propogate : bool
+            Dictate what happens if an error happens
+                True - Error is raised
+                None - Nothing
+                False - Error is raised but silenced
+        """
+        try:
+            await super().wait_for(event, check=check, timeout=timeout)
+        except asyncio.TimeoutError as e:
+            if callable(handler):
+                await handler()
+            
+            if propogate is not None:
+                if propogate:
+                    e.timer = timeout
+                
+                raise e
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -171,10 +187,6 @@ class NecroBot(commands.Bot):
         {usage}"""
         try:
             ctx.bot.unload_extension(f"rings.{extension_name}")
-        except:
-            pass
-        
-        try:
             ctx.bot.load_extension(f"rings.{extension_name}")
         except (AttributeError,ImportError) as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
@@ -194,11 +206,13 @@ class NecroBot(commands.Bot):
         def check(reaction, user):
             return user.id == 241942232867799040 and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
         
-        try:
-            reaction, _ = await ctx.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
-            msg.clear_reactions()
-            return
+        reaction, _ = await ctx.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=300, 
+            handler=msg.clear_reactions,
+            propogate=False
+        )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await msg.delete()

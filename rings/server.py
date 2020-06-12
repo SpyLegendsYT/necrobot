@@ -293,7 +293,7 @@ class Server(commands.Cog):
         )
         embed.add_field(
             name="Auto Role", 
-            value= role_obj2.mention if server["auto-role"] else "None"
+            value= role_obj2.mention if server["auto-role"] else "Disabled"
         )
         embed.add_field(
             name="Auto Role Time Limit", 
@@ -385,7 +385,7 @@ class Server(commands.Cog):
                 )
                 await ctx.send(f":white_check_mark: | Your server's goodbye message will be: \n{test}")
             except KeyError as e:
-                raise BotError(f"{e.args[0]} is not a valid argument, you can use either `member` and its reserved keyword or `server`")
+                raise BotError(f"{e.args[0]} is not a valid argument, you can use either `member` and its reserved keywords or `server`")
 
         await self.bot.db.update_goodbye_message(ctx.guild.id, message)
 
@@ -734,11 +734,12 @@ class Server(commands.Cog):
         def check(message):
             return message.author.id == ctx.author.id and message.channel.id == ctx.channel.id and message.content.isdigit()
 
-        try:
-            reply = await self.bot.wait_for("message", timeout=300, check=check)
-        except asyncio.TimeoutError as e:
-            e.timer = 300
-            raise e
+        reply = await self.bot.wait_for(
+            "message", 
+            timeout=300, 
+            check=check, 
+            propogate=True
+        )
             
         votes = int(reply.content)
         if not votes:

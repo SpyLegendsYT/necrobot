@@ -78,10 +78,13 @@ class Admin(commands.Cog):
         def check(reaction, user):
             return msg.id == reaction.message.id and user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"]
 
-        try:
-            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
-            return await msg.delete()
+        reaction, _ = await self.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=300,
+            handler=msg.clear_reactions,
+            propogate=False
+        )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await ctx.send(f":white_check_mark: | Cancelled.")
@@ -182,7 +185,13 @@ class Admin(commands.Cog):
         def check(m):
             return m.author == user and m.channel == user
 
-        msg = await self.bot.wait_for("message", check=check, timeout=6000)
+        msg = await self.bot.wait_for(
+            "message", 
+            check=check, 
+            timeout=6000,
+            propogate=False
+        )
+        
         await to_edit.edit(content=f":speech_left: | **User: {msg.author}** said :**{msg.content[1950:]}**")
         
     @commands.command()
@@ -387,7 +396,11 @@ class Admin(commands.Cog):
             return message.author == ctx.author and message.channel == ctx.channel and message.content == "n!exit"
 
 
-        await self.bot.wait_for("message", check=check)
+        await self.bot.wait_for(
+            "message", 
+            check=check,
+            propogate=None
+        )
 
         await channel.send(":stop: | The NecroBot admin has ended the conversation.")
         await ctx.send(":stop: | Conversation ended")
@@ -433,8 +446,16 @@ class Admin(commands.Cog):
             emote = feeds_dict[key]["emote"]
             allowed.append(emote)
             await msg.add_reaction(emote)
+            
+        def check(reaction, user):
+            return user == ctx.author and reaction.channel == ctx.channel and reaction.emoji in allowed
 
-        reaction, _ = await self.bot.wait_for("reaction_add", check=lambda reaction, user: user == ctx.author and reaction.channel == ctx.channel and reaction.emoji in allowed)
+        reaction, _ = await self.bot.wait_for(
+            "reaction_add", 
+            check=check,
+            handler=msg.clear_reactions,
+            propogate=False
+        )
 
         await msg.clear_reactions()
 

@@ -55,9 +55,11 @@ class NecrobotHelp(cmd.HelpCommand):
             cog_msg = f"**{cog.qualified_name}** - "
             command_list = []
             for command in commands:
-                command_list.append(await self.format_command_name(command))
-                    
-            help_msg += f"{cog_msg}{' | '.join(command_list)}\n"
+                if not command.hidden:
+                    command_list.append(await self.format_command_name(command))
+            
+            if command_list:      
+                help_msg += f"{cog_msg}{' | '.join(command_list)}\n"
             
         help_msg += self.get_ending_note()
         await self.get_destination().send(help_msg)
@@ -91,9 +93,12 @@ class NecrobotHelp(cmd.HelpCommand):
     async def send_group_help(self, group):
         help_msg = await self.base_command_help(group)
         
-        help_msg += "\n\n__Subcommands__\n"
+        if any(not command.hidden for command in group.commands):    
+            help_msg += "\n\n__Subcommands__\n"
+        
         for command in group.commands:
-            name = await self.format_command_name(command)
-            help_msg += f"`{name}`- {await self.get_brief_signature(command)}\n"
+            if not command.hidden:
+                name = await self.format_command_name(command)
+                help_msg += f"`{name}`- {await self.get_brief_signature(command)}\n"
         
         await self.get_destination().send(help_msg)

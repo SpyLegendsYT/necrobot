@@ -175,13 +175,18 @@ class BlackJack:
         def check(reaction, user):
             return user == self.ctx.author and str(reaction.emoji) in self.reaction_list and self.msg.id == reaction.message.id
         
-        try:
-            reaction, _ = await self.ctx.bot.wait_for("reaction_add", check=check, timeout=120)
-        except asyncio.TimeoutError as e:
+        async def clean_up():
             await self.lose()
             await self.msg.clear_reactions()
-            e.timer = 120
-            raise e
+            
+        
+        reaction, _ = await self.ctx.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=120, 
+            handler=clean_up, 
+            propagate=True
+        )
 
         if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':
             card = self.deck.draw()

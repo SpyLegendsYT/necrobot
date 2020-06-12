@@ -55,7 +55,7 @@ class Profile(commands.Cog):
             raise BotError("Please pick an index that is more than or equal to 0")
 
         monies = await self.bot.db.query_executer(
-            "SELECT user_id, necroins FROM necrobot.Users WHERE user_id = any($1) ORDER BY necrois DESC",
+            "SELECT user_id, necroins FROM necrobot.Users WHERE user_id = any($1) ORDER BY necroins DESC",
             [x.id for x in ctx.guild.members]    
         )
 
@@ -117,7 +117,7 @@ class Profile(commands.Cog):
 
     @commands.command(name="daily")
     @commands.cooldown(1, 60, BucketType.user)
-    async def claim(self, ctx, *, member : discord.Member = None):
+    async def daily(self, ctx, *, member : discord.Member = None):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day. Can
         also be gifted to a user for some extra cash. 
         
@@ -134,13 +134,14 @@ class Profile(commands.Cog):
         )
         
         if not day:
-            timer = midnight().strftime("%Hhours, %Mminutes and %Sseconds")
-            raise BotError(f"You have already claimed your daily today. You can claim it again in **{timer}**")   
+            hours, remainder = divmod(midnight().total_seconds(), 3600)
+            minutes, seconds = divmod(remainder, 60)
+            raise BotError(f"You have already claimed your daily today. You can claim it again in **{int(hours)} hours, {int(minutes)} minutes and {int(seconds)} seconds**")   
         
         if member is None:
             member = ctx.author
             
-        if member.id == ctx.author:
+        if member.id == ctx.author.id:
             amount = 200
             message = "You have received your daily **200** :euro:"
         else:
@@ -167,11 +168,13 @@ class Profile(commands.Cog):
         def check(reaction, user):
             return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
 
-        try:
-            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
-            await msg.clear_reactions()
-            return
+        reaction, _ = await self.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=300, 
+            handler=msg.clear_reactions, 
+            propogate=False
+        )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             return await ctx.send(f":white_check_mark: | **{payer.display_name}** cancelled the transaction.")

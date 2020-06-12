@@ -57,6 +57,9 @@ async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
     
     subset = entries[page*per_page:(page+1)*per_page]
     msg = await ctx.send(embed=generator((page + 1, max_pages + 1), subset[0] if per_page == 1 else subset))
+    if len(entries) <= per_page:
+        return
+    
     while True:
         react_list = []
         if page > 0:
@@ -73,11 +76,13 @@ async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
         def check(reaction, user):
             return user == ctx.message.author and reaction.emoji in react_list and msg.id == reaction.message.id
 
-        try:
-            reaction, _ = await ctx.bot.wait_for("reaction_add", check=check, timeout=timeout)
-        except asyncio.TimeoutError:
-            await msg.clear_reactions()
-            return
+        reaction, _ = await ctx.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=timeout, 
+            handler=msg.clear_reactions, 
+            propogate=False
+        )
 
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
             return await msg.clear_reactions()

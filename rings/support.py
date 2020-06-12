@@ -57,11 +57,13 @@ class Support(commands.Cog):
         def check(reaction, user):
             return user == ctx.author and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
 
-        try:
-            reaction, _ = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-        except asyncio.TimeoutError:
-            await msg.clear_reactions()
-            return
+        reaction, _ = await self.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=300, 
+            handler=msg.clear_reactions, 
+            propogate=False
+        )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await msg.clear_reactions()
@@ -124,7 +126,12 @@ class Support(commands.Cog):
         def check(reaction, user):
             return user == ctx.author and reaction.emoji in ["\N{NEGATIVE SQUARED CROSS MARK}", "\N{WHITE HEAVY CHECK MARK}"] and msg.id == reaction.message.id
 
-        reaction, _ = await self.bot.wait_for("reaction_add", check=check)
+        reaction, _ = await self.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            handler=msg.clear_reactions, 
+            propogate=False
+        )
 
         if reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             self.bot.settings["news"] = [news, *self.bot.settings["news"]]

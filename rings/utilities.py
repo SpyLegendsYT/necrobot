@@ -356,8 +356,8 @@ class Utilities(commands.Cog):
         """   
         message, symbol = await self.bot.db.get_leaderboard(ctx.guild.id)
                 
-        results = await self.bot.query_executer(
-            "SELECT * FROM necrobot.LeaderboardPoints WHERE board=$1 ORDER BY points DESC",
+        results = await self.bot.db.query_executer(
+            "SELECT * FROM necrobot.LeaderboardPoints WHERE guild_id=$1 ORDER BY points DESC",
             ctx.guild.id
         )
         

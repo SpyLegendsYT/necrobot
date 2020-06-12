@@ -48,12 +48,13 @@ class HungerGames:
         for reaction in reactions:
             await msg.add_reaction(reaction)
         
-        try:
-            reaction, _ = await self.ctx.bot.wait_for("reaction_add", check=check, timeout=600)
-        except asyncio.TimeoutError as e:
-            e.timer = 600
-            await msg.clear_reactions()
-            raise e
+        reaction, _ = await self.ctx.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=600, 
+            handler=msg.clear_reactions, 
+            propogate=True
+        )
         
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":
             await msg.clear_reactions()

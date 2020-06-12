@@ -33,11 +33,12 @@ class Social(commands.Cog):
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel and riddle[1] in m.content.lower()
 
-        try:
-            await self.bot.wait_for("message", check=check, timeout=30)
-            await ctx.send(":white_check_mark: | Well played, that was the correct answer.")
-        except asyncio.TimeoutError:
-            await ctx.send(":negative_squared_cross_mark: | Wrong answer! Now you go to feed the fishies!")            
+        async def bad_answer():
+            await ctx.send(":negative_squared_cross_mark: | Wrong answer! Now you go to feed the fishies!")
+        
+        await self.bot.wait_for("message", check=check, timeout=30, popogate=False)
+        await ctx.send(":white_check_mark: | Well played, that was the correct answer.")
+            
 
     @commands.command()
     async def tarot(self, ctx):
@@ -46,7 +47,7 @@ class Social(commands.Cog):
         
         {usage}"""
         card_list = random.sample(tarot_list, 3)
-        await ctx.send(f":white_flower: | Settle down now and let me see your future my dear {ctx.author.name}...\n**Card #1:** {card_list[0]}\n**Card #2:** {card_list[1]}\n**Card #3:** {card_list[2]}\n__*That is your fate, none can change it for better or worst.*__")
+        await ctx.send(f":white_flower: | Settle down now and let me see your future my dear {ctx.author.name}...\n**Card #1:** {card_list[0]}\n**Card #2:** {card_list[1]}\n**Card #3:** {card_list[2]}\n__*That is your fate, none can change it for better or worse.*__")
 
     @commands.command()
     async def rr(self, ctx, bullets : int = 1):
@@ -77,7 +78,7 @@ class Social(commands.Cog):
         await ctx.send(f"<:onering:351442796420399119> | **Fact #{lotr_list.index(choice) + 1}**: {choice}")
 
     @commands.command()
-    async def pokefusion(self, ctx, pokemon1 = random.choice(dex), pokemon2 = random.choice(dex)):
+    async def pokefusion(self, ctx, pokemon1 = None, pokemon2 = None):
         """Generates a rich embed containing a pokefusion from Gen 1, this can either be a two random pokemons, 
         one random pokemon and one chosen pokemon or two chosen pokemons.
         
@@ -91,8 +92,8 @@ class Social(commands.Cog):
         dex_2 = None
 
         try:
-            dex_1 = dex.index(pokemon1.lower()) + 1
-            dex_2 = dex.index(pokemon2.lower()) + 1
+            dex_1 = dex.index(pokemon1.lower() if pokemon1 else random.choice(dex)) + 1
+            dex_2 = dex.index(pokemon2.lower() if pokemon2 else random.choice(dex)) + 1
         except ValueError:
             if dex_1 is None:
                 raise BotError("Second pokemon does not exist.")

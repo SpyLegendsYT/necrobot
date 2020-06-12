@@ -25,16 +25,17 @@ class Events(commands.Cog):
             msg = f"Missing required argument: `{error.param.name}`! Check help guide with `n!help {ctx.command.qualified_name}`"
         elif isinstance(error, (commands.CheckFailure, commands.BadUnionArgument, commands.BadArgument, BotError)):
             msg = error
-        elif isinstance(error, commands.MaxConcurrencyReached):
-            retry_after = str(timedelta(seconds=error.retry_after)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
-            msg = f"This command is on cooldown, retry after **{retry_after}seconds**"
+        elif isinstance(error, commands.CommandOnCooldown):
+            hours, remainder = divmod(error.retry_after, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            msg = f"This command is on cooldown, retry after **{int(hours)} hours, {int(minutes)} minutes and {int(seconds)} seconds**"
         elif isinstance(error, commands.NoPrivateMessage):
             msg = "This command cannot be used in private messages."
         elif isinstance(error, commands.DisabledCommand):
             msg = f"This command is disabled and cannot be used for now."
         elif isinstance(error, asyncio.TimeoutError) and hasattr(error, "timer"):
-            retry_after = str(timedelta(seconds=error.timer)).partition(".")[0].replace(":", "{}").format("hours, ", "minutes and ")
-            msg = f"You took too long to reply, please reply within {retry_after}seconds next time"
+            minutes, seconds = divmod(error.timer, 60)
+            msg = f"You took too long to reply, please reply within **{int(minutes)} minutes and {int(seconds)} seconds** next time"
         elif isinstance(error, commands.BotMissingPermissions):
             msg = f"I need {', '.join(error.missing_perms)} to be able to run this command"
         elif isinstance(error, (DatabaseError, FightError)):
@@ -85,12 +86,12 @@ class Events(commands.Cog):
         await guild.owner.send(embed=self.bot.tutorial_e)
         
     @commands.Cog.listener()
-    async def on_guild_leave(self, guild):
+    async def on_guild_remove(self, guild):
         await self.bot.meta.delete_guild(guild.id)
         
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
-        guild_id = channel.guild_id.id
+        guild_id = channel.guild.id
         guild = self.bot.guild_data[guild_id]
 
         if channel.id == guild["broadcast-channel"]:
@@ -105,9 +106,9 @@ class Events(commands.Cog):
         if channel.id == guild["automod"]:
             await self.bot.db.update_automod_channel(guild_id)
         
-        await self.bot.db.delete_automod_ignore(channel.guild.id, channel.id)
-        await self.bot.db.delete_command_ignore(channel.guild.id, channel.id)
-        await self.bot.db.delete_rss_channel(guild_id, channe_id=channel.id)
+        await self.bot.db.delete_automod_ignore(guild_id, channel.id)
+        await self.bot.db.delete_command_ignore(guild_id, channel.id)
+        await self.bot.db.delete_rss_channel(guild_id, Channel_id=channel.id)
     
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):
@@ -115,13 +116,13 @@ class Events(commands.Cog):
         guild = self.bot.guild_data[guild_id]
 
         if role.id == guild["mute"]:
-            self.bot.db.update_mute_role(guild_id)
+            await self.bot.db.update_mute_role(guild_id)
             
         if role.id in guild["self-roles"]:
-            self.bot.db.delete_self_roles(role.id)
+            await self.bot.db.delete_self_roles(role.id)
             
         if role.id == guild["auto-role"]:
-            self.bot.db.update_auto_role(role.id)
+            await self.bot.db.update_auto_role(role.id)
             
         if role.id in guild["ignore-automod"]:
             await self.bot.db.delete_automod_ignore(guild_id, role.id)
@@ -231,7 +232,7 @@ class Events(commands.Cog):
                     id=member.id
                 )
                 try:
-                    await channel.send(message)
+                    await channel.send(message, allowed_mentions=discord.AllowedMentions())
                 except discord.Forbidden:
                     pass
                 
@@ -290,7 +291,7 @@ class Events(commands.Cog):
                     id=member.id
                 )
                 try:
-                    await channel.send(message)
+                    await channel.send(message, allowed_mentions=discord.AllowedMentions())
                 except discord.Forbidden:
                     pass
                 
