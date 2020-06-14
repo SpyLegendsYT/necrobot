@@ -157,11 +157,11 @@ CREATE TABLE necrobot.Invites(
 );
 
 CREATE TABLE necrobot.MU(
-    id bigint PRIMARY KEY,
-    user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
-    thread varchar(500),
-    message varchar(20000),
+    user_id bigint,
+    url varchar(500),
+    apporver bigint
     guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE
+    post_date date DEFAULT current_date, 
 );
 
 CREATE TABLE necrobot.MU_Users(

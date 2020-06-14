@@ -58,6 +58,7 @@ class NecroBot(commands.Bot):
         self.starred = []
         self.potential_stars = {}
         self.reminders = {}
+        self.pending_post = {}
         
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
@@ -306,7 +307,8 @@ extensions = [
     'server',
     'moderation',
     'profile',
-    'economy'
+    'economy',
+    'special'
 ]
 
 if __name__ == '__main__':
