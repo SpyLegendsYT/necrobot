@@ -58,7 +58,7 @@ class NecroBot(commands.Bot):
         self.starred = []
         self.potential_stars = {}
         self.reminders = {}
-        self.pending_post = {}
+        self.pending_posts = {}
         
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
@@ -147,7 +147,7 @@ class NecroBot(commands.Bot):
                 False - Error is raised but silenced
         """
         try:
-            await super().wait_for(event, check=check, timeout=timeout)
+            return await super().wait_for(event, check=check, timeout=timeout)
         except asyncio.TimeoutError as e:
             if callable(handler):
                 await handler()
@@ -322,7 +322,7 @@ if __name__ == '__main__':
     except Exception as error:
         e = traceback.format_exception(type(error), error, error.__traceback__)
         with open("error.log", "w") as f:
-            f.write(e)
+            f.write(str(e))
         
     finally:
         with open("rings/utils/data/settings.json", "w") as outfile:

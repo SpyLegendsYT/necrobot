@@ -23,7 +23,7 @@ class Special(commands.Cog):
     """A cog for all commands specific to certain servers."""
     def __init__(self, bot):
         self.bot = bot
-        self.mu_channels = (671747329350565912,)
+        self.mu_channels = (722040731946057789,)
         self.browser = RoboBrowser(history=True, parser="html.parser")
         self.browser.session.cookies.update(cookies)
         self.in_process = []
@@ -44,11 +44,16 @@ class Special(commands.Cog):
             return
         
         registered = await self.bot.db.query_executer(
-            "SELECT * FROM necrobot.MU_Users WHERE id=$1", 
-            message.author.id
+            "SELECT active FROM necrobot.MU_Users WHERE user_id=$1", 
+            message.author.id, fetchval=True
         )
-        if not registered:
+        if registered is None:
             await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.', delete_after=10)
+            await message.delete()
+            return
+            
+        if not registered:
+            await message.channel.send(f'{message.author.mention} | Your account is banned from using the system, you may appeal with admins to have it unbanned', delete_after=10)
             await message.delete()
             return
             
@@ -66,14 +71,14 @@ class Special(commands.Cog):
         for role in ["Edain Team", "Edain Community Moderator"]:
             obj = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, name=role)
             if not obj is None:
-                ids.extend([x.id for x in role.members])
+                ids.extend([x.id for x in obj.members])
         
         if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
             if payload.user_id in ids:
                 await self.mu_poster(payload.message_id, payload.user_id)
                 await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)  
         elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
-            ids.append(self.bot.pending_posts[payload.message_id].author.id)
+            ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
             if payload.user_id in ids:
                 await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)  
         
@@ -93,10 +98,10 @@ class Special(commands.Cog):
         del form.fields["preview"]
         
         # self.browser.submit_form(form) #actual sbumit 
-        await self.bot.get_channel(671747329350565912).send(f"Payload sent. {form.serialize().data}") #dud debug test
+        await self.bot.get_bot_channel().send(f"Payload sent. {form.serialize().data}") #dud debug test
 
         await self.bot.db.query_executer(
-            "INSERT INTO necrobot.MU(user_id, url, guild_id, approver) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO necrobot.MU(user_id, url, guild_id, approver_id) VALUES ($1, $2, $3, $4)",
             pending["message"].author.id, self.browser.url, pending["message"].guild.id, approver_id
         )
         
@@ -105,7 +110,7 @@ class Special(commands.Cog):
     async def mu_parser(self, message):
         lines = message.content.splitlines()
         thread = lines[0]
-        regex = r"https:\/\/modding-union\.com\/index\.php\/topic,([0-9]*)"
+        regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)"
         try:
             match = re.findall(regex, thread)[0]
         except IndexError:
@@ -118,14 +123,14 @@ class Special(commands.Cog):
 
         text = "\n".join(lines[1:])
         
+        await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await message.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+        
         self.bot.pending_posts[message.id] = {
             "message": message,
             "url": thread,
             "text": text
         }
-        
-        await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-        await message.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
         
     @commands.group(invoke_without_command=True)
     @guild_only(327175434754326539)
@@ -179,20 +184,17 @@ class Special(commands.Cog):
             await msg.clear_reactions()
             self.in_process.remove(username.lower())
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
-            try:
-                await msg.delete()
-                self.in_process.remove(username.lower())
-                await self.bot.query_executer(
-                    "INSERT INTO necrobot.MU_Users VALUES($1, $2, $3)", 
-                    ctx.author.id, username, username.lower(), 
-                )
-                await ctx.send(":white_check_mark: | You have now succesfully registered to the bot's modding union channel. You may now post in it.")
-            except:
-                raise BotError("You are already registered or that username is taken.")
+            await msg.clear_reactions()
+            self.in_process.remove(username.lower())
+            await self.bot.db.query_executer(
+                "INSERT INTO necrobot.MU_Users VALUES($1, $2, $3)", 
+                ctx.author.id, username, username.lower(), 
+            )
+            await msg.edit(content=":white_check_mark: | You have now succesfully registered to the bot's modding union channel. You may now post in it.")
             
     @register.command(name="rename")
     @guild_only(327175434754326539)
-    @has_perms(6)
+    @has_perms(4)
     async def register_rename(self, ctx, user : discord.Member, new_username : str):
         """Rename users, use sparingly.
         
@@ -210,6 +212,42 @@ class Special(commands.Cog):
         except:
             raise BotError("That username is already taken.")
             
+    @register.command(name="ban")
+    @guild_only(327175434754326539)
+    @has_perms(4)
+    async def register_ban(self, ctx, *users : discord.Member):
+        """Ban users from using the system, they will still be registered but unable to use the system.
+        
+        {usage}
+        
+        __Examples__
+        `{pre}register ban @Necro @Necrobot` - ban both users
+        """
+        await self.bot.db.query_executer(
+            "UPDATE necrobot.MU_Users SET active=False WHERE user_id = any($1)",
+            [user.id for user in users]    
+        )
+        
+        await ctx.send(":white_check_mark: | All users banned")
+        
+    @register.command(name="unban")
+    @guild_only(327175434754326539)
+    @has_perms(4)
+    async def register_unban(self, ctx, *users : discord.Member):
+        """Unban users from the system, they will be able to once again use their accounts and create posts
+        
+        {usage}
+        
+        __Examples__
+        `{pre}register unban @Necro @Necrobot` - unban both users
+        """
+        await self.bot.db.query_executer(
+            "UPDATE necrobot.MU_Users SET active=True WHERE user_id = any($1)",
+            [user.id for user in users]    
+        )
+        
+        await ctx.send(":white_check_mark: | All users unbanned")
+            
     @register.command(name="info")
     @guild_only(327175434754326539)
     async def register_info(self, ctx, user : discord.Member = None):
@@ -225,27 +263,33 @@ class Special(commands.Cog):
             user = ctx.author
             
         username = await self.bot.db.query_executer(
-            "SELECT username FROM necrobot.MU_Users WHERE user_id = $1",
-            user.id, fetchval=True    
+            "SELECT (username, active) FROM necrobot.MU_Users WHERE user_id = $1",
+            user.id, fetchval=True
         )
         
-        if username is None:
+        if not username:
             raise BotError("This user is not currently registered to use the MU-Discord system.")
             
         posts = await self.bot.db.query_executer(
-            "SELECT post_date, ARRAY_AGG(url, approver_id) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 ORDER BY post_date DESC GROUP BY post_date",
+            """SELECT post_date, ARRAY_AGG((url, approver_id)) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 
+            GROUP BY post_date""",
             user.id, ctx.guild.id    
         )
         
-        def embed_maker(entries, index):
-            embed = discord.Embed(title=f"{user.display_name} ({index[0]}/{index[1]})", description=f"Username:{username}\nTotal Posts: {len(posts)}")
+        total = await self.bot.db.query_executer(
+            "SELECT COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2",
+            user.id, ctx.guild.id, fetchval=True    
+        )
+        
+        def embed_maker(index, entries):
+            embed = discord.Embed(title=f"{user.display_name} ({index[0]}/{index[1]})", description=f"Username:{username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {total}")
             embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
             
             for entry in entries:
                 threads = []
                 for url, approver in entry[1]:
-                    user = ctx.guild.get_member(approver)
-                    threads.append(f"{url} - {user.mention if user is not None else 'User has left'}")
+                    approver_obj = ctx.guild.get_member(approver)
+                    threads.append(f"{url} - {approver_obj.mention if approver_obj is not None else 'User has left'}")
                 
                 embed.add_field(name=str(entry[0]), value="\n".join(threads))
                 

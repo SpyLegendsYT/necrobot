@@ -22,7 +22,7 @@ CREATE TABLE necrobot.Guilds (
     starboard_limit int DEFAULT 5 CHECK(starboard_limit > 0),
     auto_role bigint DEFAULT 0,
     auto_role_timer int DEFAULT 0
-    pm_warning BOOLEAN DEFAULT False
+    pm_warning boolean DEFAULT False
 );
 
 CREATE TABLE necrobot.Permissions (
@@ -36,7 +36,7 @@ CREATE TABLE necrobot.BadgeShop (
     name varchar(50) PRIMARY KEY,
     file_name varchar(55),
     cost int DEFAULT 0,
-    special boolean DEFAULT FALSE
+    special boolean DEFAULT False
 );
 
 CREATE TABLE necrobot.Badges (
@@ -97,7 +97,7 @@ CREATE TABLE necrobot.Logs(
     guildname varchar(40),
     message varchar(2000),
     time_used TIMESTAMPTZ DEFAULT NOW(),
-    can_run BOOLEAN DEFAULT TRUE
+    can_run boolean DEFAULT True
 );
 
 CREATE TABLE necrobot.Warnings(
@@ -159,15 +159,16 @@ CREATE TABLE necrobot.Invites(
 CREATE TABLE necrobot.MU(
     user_id bigint,
     url varchar(500),
-    apporver bigint
-    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE
-    post_date date DEFAULT current_date, 
+    approver_id bigint,
+    guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
+    post_date date DEFAULT current_date
 );
 
 CREATE TABLE necrobot.MU_Users(
     user_id bigint PRIMARY KEY REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
     username varchar(200),
-    username_lower varchar(200) UNIQUE
+    username_lower varchar(200) UNIQUE,
+    active boolean DEFAULT True
 );
 
 CREATE TABLE necrobot.Leaderboards(
