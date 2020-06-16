@@ -21,7 +21,7 @@ CREATE TABLE necrobot.Guilds (
     starboard_channel bigint DEFAULT 0,
     starboard_limit int DEFAULT 5 CHECK(starboard_limit > 0),
     auto_role bigint DEFAULT 0,
-    auto_role_timer int DEFAULT 0
+    auto_role_timer int DEFAULT 0,
     pm_warning boolean DEFAULT False
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE necrobot.Badges (
     user_id bigint REFERENCES necrobot.Users(user_id) ON DELETE CASCADE,
     badge varchar(50) REFERENCES necrobot.BadgeShop(name) ON DELETE CASCADE,
     spot int DEFAULT 0 CHECK(spot BETWEEN 0 AND 8),
-    PRIMARY KEY(user_id, badge),
+    PRIMARY KEY(user_id, badge)
 );
 
 CREATE TABLE necrobot.Disabled (

@@ -14,7 +14,7 @@ FROM (
 #guild conversion to new format
 INSERT INTO necrobot.Guilds
 SELECT 
-    guild_id, mute, automoad_channel, welcome_channel, welcome_message, goodbye_channel, 
+    guild_id, mute, automod_channel, welcome_channel, welcome_message, goodbye_message, 
     prefix, broadcast_channel, broadcast_message, broadcast_time, starboard_channel, starboard_limit, 
     auto_role, auto_role_timer, False
 FROM necrobot_v2.Guilds

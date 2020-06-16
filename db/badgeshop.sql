@@ -17,3 +17,4 @@ insert into necrobot.badgeshop VALUES
 ('necrobot', 'necrobot.png', 1000000, False),
 ('necro', 'necro.png', 1000000, False),
 ('elf', 'elf.png', 1000000, False);
+('glorfindel', 'elf.png', 1000000, False);
