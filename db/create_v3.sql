@@ -4,7 +4,7 @@ CREATE TABLE necrobot.Users (
     exp int DEFAULT 0,
     daily date DEFAULT current_date,
     title varchar(40) DEFAULT '',
-    tutorial int DEFAULT 0
+    tutorial boolean DEFAULT False
 );
 
 CREATE TABLE necrobot.Guilds (

@@ -260,17 +260,15 @@ class Database(commands.Cog):
         )
         
     async def get_tutorial(self, user_id):
-        tutorial = await self.query_executer(
+        return await self.query_executer(
             "SELECT tutorial FROM necrobot.Users WHERE user_id = $1",
             user_id, fetchval=True
         )
-        
-        return tutorial == "True"
-        
+                
     async def update_tutorial(self, user_id, value = True):
         await self.query_executer(
             "UPDATE necrobot.Users SET tutorial = $2 WHERE user_id = $1",
-            user_id, str(value)
+            user_id, value
         )
         
     async def add_star(self, starred, message):
