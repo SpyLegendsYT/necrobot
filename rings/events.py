@@ -214,6 +214,10 @@ class Events(commands.Cog):
             
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        await self.bot.db.delete_permission(member.id, member.guild.id)
+        await self.bot.db.delete_automod_ignore(member.guild.id, member.id)
+        await self.bot.db.delete_command_ignore(member.guild.id, member.id)
+        
         await self.bot.meta.new_member(member, member.guild)
         
         if member.bot:

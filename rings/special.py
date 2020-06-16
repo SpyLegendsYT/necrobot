@@ -115,8 +115,10 @@ class Special(commands.Cog):
         try:
             match = re.findall(regex, thread)[0]
         except IndexError:
-            await message.delete()
-            await message.channel.send(f"{message.author.mention} | Could not find a valid thread url", delete_after=10)
+            if await self.bot.db.get_permission(message.author.id, message.guild.id) == 0:
+                await message.delete()
+                await message.channel.send(f"{message.author.mention} | Could not find a valid thread url", delete_after=10)
+            
             return
             
         url_template = "https://modding-union.com/index.php?action=post;topic={}"   
@@ -183,16 +185,16 @@ class Special(commands.Cog):
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
             await msg.edit(content=":negative_squared_cross_mark: | User did not agree to forum rules.")
             await msg.clear_reactions()
-            self.in_process.remove(username.lower())
         elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
             await msg.clear_reactions()
-            self.in_process.remove(username.lower())
             await self.bot.db.query_executer(
                 "INSERT INTO necrobot.MU_Users VALUES($1, $2, $3, True)", 
                 ctx.author.id, username, username.lower(), 
             )
             await msg.edit(content=":white_check_mark: | You have now succesfully registered to the bot's modding union channel. You may now post in it.")
             
+        self.in_process.remove(username.lower())
+
     @register.command(name="rename")
     @guild_only(327175434754326539)
     @has_perms(4)
