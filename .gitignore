@@ -8,3 +8,4 @@ botto.sublime-workspace
 unwiki
 *.log
 db/dump.sql
+db/v2_backup.sql

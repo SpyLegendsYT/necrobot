@@ -17,10 +17,6 @@ asyncpg == 0.20.1
 # C:\Users\Admin\Desktop\necrobot\rings\social.py: 9
 beautifulsoup4 == 4.6.3
 
-# C:\Users\Admin\Desktop\necrobot\cards\decks\standard52.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\economy.py: 11
-cards == 0.2.9
-
 # C:\Users\Admin\Desktop\necrobot\rings\decisions.py: 7
 dice == 3.1.0
 
@@ -74,29 +70,6 @@ psycopg2 == 2.8.5
 
 # C:\Users\Admin\Desktop\necrobot\unwiki\unwiki.py: 7
 pytidylib == 0.3.2
-
-# C:\Users\Admin\Desktop\necrobot\bot.py: 4,5,6,7
-# C:\Users\Admin\Desktop\necrobot\maintenance_bot.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\admin.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\db.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\decisions.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\economy.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\events.py: 5,6,7
-# C:\Users\Admin\Desktop\necrobot\rings\meta.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\misc.py: 5,6
-# C:\Users\Admin\Desktop\necrobot\rings\modding.py: 3
-# C:\Users\Admin\Desktop\necrobot\rings\moderation.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\profile.py: 5,6
-# C:\Users\Admin\Desktop\necrobot\rings\rss.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\server.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\social.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\special.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\support.py: 5
-# C:\Users\Admin\Desktop\necrobot\rings\tags.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\utilities.py: 4
-# C:\Users\Admin\Desktop\necrobot\rings\wiki.py: 4,5
-# C:\Users\Admin\Desktop\necrobot\rings\words.py: 6
-rings == 0.7.3
 
 # C:\Users\Admin\Desktop\necrobot\rings\special.py: 8
 robobrowser == 0.5.3
