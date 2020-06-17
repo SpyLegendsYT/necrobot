@@ -14,8 +14,8 @@ import datetime
 import traceback
 from collections import defaultdict
 
-# logging.basicConfig(filename='discord.log',level=logging.ERROR)
-logging.basicConfig(level=logging.CRITICAL)
+logging.basicConfig(filename='discord.log',level=logging.ERROR)
+# logging.basicConfig(level=logging.CRITICAL)
 
 class NecroBot(commands.Bot):
     def __init__(self):
@@ -39,7 +39,7 @@ class NecroBot(commands.Bot):
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
         self.new_commands = []
-        self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions"]
+        self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions", "recently upgraded to v3!"]
         self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "Bot Smiths"]
         
         

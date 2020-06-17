@@ -699,13 +699,15 @@ class Server(commands.Cog):
         await self.bot.db.update_starboard_limit(ctx.guild.id, limit)
         await ctx.send(f":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{limit}** stars")
 
-    async def add_reactions(self, message):
-        CUSTOM_EMOJI = r'<:[^\s]+:([0-9]*)>'
-        UNICODE_EMOJI = r"[\U0001F1E0-\U0001F1FF\U0001F300-\U0001F5FF\U0001F600-\U0001F64F\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002702-\U000027B0\U000024C2-\U0001F251]+"
+    async def add_reactions(self, message, content=None):
+        if content is None:
+            content = message.content
         
-        custom_emojis = [self.bot.get_emoji(int(emoji)) for emoji in re.findall(CUSTOM_EMOJI, message.content)]
-        unicode_emojis = re.findall(UNICODE_EMOJI, message.content)
-
+        CUSTOM_EMOJI = r'<:[^\s]+:([0-9]*)>'
+        UNICODE_EMOJI = r"[0-9\U0001F1E0-\U0001F1FF\U0001F300-\U0001F5FF\U0001F600-\U0001F64F\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002702-\U000027B0\U000024C2-\U0001F251]+"
+        keycap_template = "\N{variation selector-16}\N{combining enclosing keycap}"        
+        custom_emojis = [self.bot.get_emoji(int(emoji)) for emoji in re.findall(CUSTOM_EMOJI, content)]
+        unicode_emojis = [str(emoji[0])+keycap_template if emoji[0].isdigit() else emoji for emoji in re.findall(UNICODE_EMOJI, content)]
         emojis = [*custom_emojis, *unicode_emojis]
 
         for emoji in emojis:
@@ -727,7 +729,7 @@ class Server(commands.Cog):
         two possible answers: :axe: and :crossed_swords:
         """
         check_channel(channel)
-        await self.add_reactions(ctx.message)
+        await self.add_reactions(ctx.message, content=message)
         
         msg = await ctx.send("How many options can the users react with? Reply with a number between 1 and 20. Reply with 0 to cancel")
         

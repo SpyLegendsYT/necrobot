@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.config import dbpass
+from rings.utils.config import dbpass, dbusername
 
 import asyncpg
 import psycopg2
@@ -50,7 +50,7 @@ class Database(commands.Cog):
         return f"AND guild_id = ${pos}"
     
     async def create_pool(self):
-        self.bot.pool = await asyncpg.create_pool(database="postgres", user="postgres", password=dbpass)
+        self.bot.pool = await asyncpg.create_pool(database="postgres", user=dbusername, password=dbpass)
         
     async def get_conn(self):
         if self.bot.pool is None:
@@ -606,7 +606,7 @@ class Database(commands.Cog):
 
 class SyncDatabase:
     def __init__(self):
-        self.conn = psycopg2.connect(dbname="postgres", user="postgres", password=dbpass)
+        self.conn = psycopg2.connect(dbname="postgres", user=dbusername, password=dbpass)
         self.cur = self.conn.cursor()
         
     def load_guilds(self):

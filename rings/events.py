@@ -141,9 +141,9 @@ class Events(commands.Cog):
     @commands.Cog.listener()     
     async def on_command(self, ctx):
         try:
-            can_run = int(await ctx.command.can_run(ctx) and ctx.command.enabled)
+            can_run = await ctx.command.can_run(ctx) and ctx.command.enabled
         except commands.CheckFailure:
-            can_run = 0
+            can_run = False
 
         guildname = "DM"
         guildid = None
@@ -351,6 +351,8 @@ class Events(commands.Cog):
                     message = self.bot._connection._get_message(payload.message_id)
                     if message is not None:
                         self.bot.potential_stars[payload.message_id] = {"message": message, "count": 0}
+                    else:
+                        return
                 
                 message = self.bot.potential_stars[payload.message_id]
                 if not message["message"].author.id == payload.user_id:
