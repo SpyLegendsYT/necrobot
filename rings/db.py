@@ -502,7 +502,10 @@ class Database(commands.Cog):
         
     async def insert_leaderboard(self, guild_id):
         await self.query_executer(
-            "INSERT INTO necrobot.Leaderboards VALUES ($1, '', 'points')",
+            """
+            INSERT INTO necrobot.Leaderboards VALUES ($1, '', 'points') 
+            ON CONFLICT (guild_id) DO NOTHING
+            """,
             guild_id,     
         )
         

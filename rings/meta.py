@@ -38,37 +38,35 @@ class Meta(commands.Cog):
         await message.channel.send(file=ifile)
         
     async def new_guild(self, guild_id):
-        if guild_id in self.bot.guild_data:
-            return
-        
-        welcome_message = "Welcome {member} to {server}!"
-        goodbye_message = "Leaving so soon? We\'ll miss you, {member}!"
-    
-        self.bot.guild_data[guild_id] = {
-            "mute":"",
-            "automod":"",
-            "welcome-channel":"",
-            "ignore-command":[],
-            "ignore-automod":[],
-            "welcome": welcome_message,
-            "goodbye": goodbye_message,
-            "prefix" :"",
-            "broadcast-channel": "",
-            "broadcast": "",
-            "broadcast-time": 1,
-            "disabled": [],
-            "auto-role": "",
-            "auto-role-timer": 0,
-            "starboard-channel":"",
-            "starboard-limit":5,
-            "self-roles": [],
-            "pm-warning": False,
-        }
-        
-        await self.bot.db.query_executer(
-            "INSERT INTO necrobot.Guilds(guild_id, welcome_message, goodbye_message) VALUES($1, $2, $3);",
-            guild_id, welcome_message, goodbye_message
-        )
+        if guild_id not in self.bot.guild_data:
+            welcome_message = "Welcome {member} to {server}!"
+            goodbye_message = "Leaving so soon? We\'ll miss you, {member}!"
+
+            self.bot.guild_data[guild_id] = {
+                "mute":"",
+                "automod":"",
+                "welcome-channel":"",
+                "ignore-command":[],
+                "ignore-automod":[],
+                "welcome": welcome_message,
+                "goodbye": goodbye_message,
+                "prefix" :"",
+                "broadcast-channel": "",
+                "broadcast": "",
+                "broadcast-time": 1,
+                "disabled": [],
+                "auto-role": "",
+                "auto-role-timer": 0,
+                "starboard-channel":"",
+                "starboard-limit":5,
+                "self-roles": [],
+                "pm-warning": False,
+            }
+            
+            await self.bot.db.query_executer(
+                "INSERT INTO necrobot.Guilds(guild_id, welcome_message, goodbye_message) VALUES($1, $2, $3);",
+                guild_id, welcome_message, goodbye_message
+            )
         
         await self.bot.db.insert_leaderboard(guild_id)
         
@@ -217,10 +215,8 @@ class Meta(commands.Cog):
         msg = await self.bot.get_bot_channel().send("**Initiating Bot**")
         
         for guild in self.bot.guilds:
-            if guild.id in self.bot.guild_data:
-                await self.guild_checker(guild)
-            else:
-                await self.new_guild(guild.id) 
+            await self.new_guild(guild.id) 
+            await self.guild_checker(guild)
                 
             for member in guild.members:
                 await self.new_member(member, guild)
