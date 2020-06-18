@@ -719,7 +719,7 @@ class Server(commands.Cog):
     @commands.command()
     @has_perms(3)
     async def poll(self, ctx, channel : discord.TextChannel, *, message):
-        """Create a reaction poll for your server in the specified channel. This will also ask you to specific of a 
+        """Create a reaction poll for your server in the specified channel. This will also ask you to specify a 
         maximum number of reactions. This number will limit how many options users can vote for.
         
         {usage}
@@ -745,7 +745,7 @@ class Server(commands.Cog):
             
         votes = int(reply.content)
         if not votes:
-            await message.delete()
+            await msg.delete()
             await ctx.message.clear_reactions()
         
         poll = await channel.send(f"{message}\n\n**Maximum votes: {votes}**")

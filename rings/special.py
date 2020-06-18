@@ -18,6 +18,22 @@ def guild_only(guild_id):
         return True
         
     return commands.check(predicate)
+    
+def mu_moderator(guild):
+    ids = []
+    for role in ["Edain Team", "Edain Community Moderator"]:
+        obj = discord.utils.get(guild.roles, name=role)
+        if not obj is None:
+            ids.extend([x.id for x in obj.members])
+    
+    return ids
+    
+def mu_moderator_check():
+    def predicate(ctx):
+        return ctx.author.id in mu_moderator(ctx.guild)
+        
+    return commands.check(predicate)
+    
 
 class Special(commands.Cog):
     """A cog for all commands specific to certain servers."""
@@ -67,12 +83,7 @@ class Special(commands.Cog):
         if not payload.message_id in self.bot.pending_posts:
             return
             
-        ids = [241942232867799040]
-        for role in ["Edain Team", "Edain Community Moderator"]:
-            obj = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, name=role)
-            if not obj is None:
-                ids.extend([x.id for x in obj.members])
-        
+        ids = mu_moderator(self.bot.get_guild(payload.guild_id))
         if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
             if payload.user_id in ids:
                 await self.mu_poster(payload.message_id, payload.user_id)
@@ -197,9 +208,9 @@ class Special(commands.Cog):
 
     @register.command(name="rename")
     @guild_only(327175434754326539)
-    @has_perms(4)
+    @mu_moderator_check()
     async def register_rename(self, ctx, user : discord.Member, new_username : str):
-        """Rename users, use sparingly.
+        """Rename users, use sparingly. This command can only be used by forum moderators.
         
         {usage}
         
@@ -217,9 +228,10 @@ class Special(commands.Cog):
             
     @register.command(name="ban")
     @guild_only(327175434754326539)
-    @has_perms(4)
+    @mu_moderator_check()
     async def register_ban(self, ctx, *users : discord.Member):
-        """Ban users from using the system, they will still be registered but unable to use the system.
+        """Ban users from using the system, they will still be registered but unable to use the system. This
+        command can only be used by forum moderators.
         
         {usage}
         
@@ -235,9 +247,10 @@ class Special(commands.Cog):
         
     @register.command(name="unban")
     @guild_only(327175434754326539)
-    @has_perms(4)
+    @mu_moderator_check()
     async def register_unban(self, ctx, *users : discord.Member):
-        """Unban users from the system, they will be able to once again use their accounts and create posts
+        """Unban users from the system, they will be able to once again use their accounts and create posts. This
+        command can only be used by forum moderators.
         
         {usage}
         
@@ -274,20 +287,20 @@ class Special(commands.Cog):
             raise BotError("This user is not currently registered to use the MU-Discord system.")
             
         posts = await self.bot.db.query_executer(
-            """SELECT post_date, ARRAY_AGG((url, approver_id)) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 
+            """SELECT post_date, ARRAY_AGG((url, approver_id)), COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 
             GROUP BY post_date""",
             user.id, ctx.guild.id    
         )
         
-        total = await self.bot.db.query_executer(
-            "SELECT COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2",
-            user.id, ctx.guild.id, fetchval=True    
-        )
+        # total = await self.bot.db.query_executer(
+        #     "SELECT COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2",
+        #     user.id, ctx.guild.id, fetchval=True    
+        # )
         
         def embed_maker(index, entries):
             embed = discord.Embed(
                 title=f"{user.display_name} ({index[0]}/{index[1]})", 
-                description=f"Username:{username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {total}",
+                description=f"Username:{username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {entries[0][2]}",
                 colour=discord.Colour(0x277b0)
             )
             
@@ -303,7 +316,7 @@ class Special(commands.Cog):
                 
             return embed
         
-        await react_menu(ctx, posts, 10, embed_maker)
+        await react_menu(ctx, posts, 5, embed_maker)
 
         
 def setup(bot):
