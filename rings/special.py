@@ -120,11 +120,9 @@ class Special(commands.Cog):
         del self.bot.pending_posts[message_id]
         
     async def mu_parser(self, message):
-        lines = message.content.splitlines()
-        thread = lines[0]
         regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)"
         try:
-            match = re.findall(regex, thread)[0]
+            match = re.findall(regex, message.content)[0]
         except IndexError:
             if await self.bot.db.get_permission(message.author.id, message.guild.id) == 0:
                 await message.delete()
@@ -135,7 +133,7 @@ class Special(commands.Cog):
         url_template = "https://modding-union.com/index.php?action=post;topic={}"   
         thread = url_template.format(match)
 
-        text = "\n".join(lines[1:])
+        text = message.content.replace(match, '', 1)
         
         await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await message.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
@@ -287,20 +285,20 @@ class Special(commands.Cog):
             raise BotError("This user is not currently registered to use the MU-Discord system.")
             
         posts = await self.bot.db.query_executer(
-            """SELECT post_date, ARRAY_AGG((url, approver_id)), COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 
+            """SELECT post_date, ARRAY_AGG((url, approver_id)) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 
             GROUP BY post_date""",
             user.id, ctx.guild.id    
         )
         
-        # total = await self.bot.db.query_executer(
-        #     "SELECT COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2",
-        #     user.id, ctx.guild.id, fetchval=True    
-        # )
+        total = await self.bot.db.query_executer(
+            "SELECT COUNT(url) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2",
+            user.id, ctx.guild.id, fetchval=True    
+        )
         
         def embed_maker(index, entries):
             embed = discord.Embed(
                 title=f"{user.display_name} ({index[0]}/{index[1]})", 
-                description=f"Username:{username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {entries[0][2]}",
+                description=f"Username:{username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {total}",
                 colour=discord.Colour(0x277b0)
             )
             
