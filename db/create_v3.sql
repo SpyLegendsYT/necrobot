@@ -184,6 +184,15 @@ CREATE TABLE necrobot.LeaderboardPoints(
     PRIMARY KEY(user_id, guild_id) 
 );
 
+CREATE TABLE necrobot.Grudges(
+    id SERIAL PRIMARY KEY,
+    user_id bigint,
+    name varchar(50),
+    grudge varchar(2000),
+    grudge_date TIMESTAMPTZ DEFAULT NOW(),
+    avenged boolean DEFAULT False
+);
+
 CREATE TYPE channel_filter_hybrid as (
     channel_id bigint,
     filter varchar(50)
