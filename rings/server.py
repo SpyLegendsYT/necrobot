@@ -5,7 +5,7 @@ from rings.utils.utils import has_perms, react_menu, TimeConverter, BotError, ch
 
 from typing import Union
 import re
-import asyncio
+import emoji
 
 class Server(commands.Cog):
     """Contains all the commands related to customising Necrobot's behavior on your server and to your server members. Contains
@@ -704,15 +704,15 @@ class Server(commands.Cog):
             content = message.content
         
         CUSTOM_EMOJI = r'<:[^\s]+:([0-9]*)>'
-        UNICODE_EMOJI = r"[0-9\U0001F1E0-\U0001F1FF\U0001F300-\U0001F5FF\U0001F600-\U0001F64F\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002702-\U000027B0\U000024C2-\U0001F251]+"
-        keycap_template = "\N{variation selector-16}\N{combining enclosing keycap}"        
+        UNICODE_EMOJI = r':.*:'
         custom_emojis = [self.bot.get_emoji(int(emoji)) for emoji in re.findall(CUSTOM_EMOJI, content)]
-        unicode_emojis = [emoji[0]+keycap_template if emoji[0].isdigit() and not emoji[1].isdigit() else emoji for emoji in re.findall(UNICODE_EMOJI, content)]
+        unicode_emojis = [emoji.emojize(raw) for raw in re.findall(UNICODE_EMOJI, emoji.demojize(content))]
+        
         emojis = [*custom_emojis, *unicode_emojis]
 
-        for emoji in emojis:
+        for reaction in emojis:
             try:
-                await message.add_reaction(emoji)
+                await message.add_reaction(reaction)
             except (discord.NotFound, discord.InvalidArgument, discord.HTTPException):
                 pass
     
