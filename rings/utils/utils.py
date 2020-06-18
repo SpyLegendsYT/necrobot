@@ -53,7 +53,7 @@ def has_perms(level):
     return commands.check(predicate)
     
 async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
-    max_pages = max(0, (len(entries)//per_page) - 1)
+    max_pages = max(0, ((len(entries)-1)//per_page))
     
     subset = entries[page*per_page:(page+1)*per_page]
     msg = await ctx.send(embed=generator((page + 1, max_pages + 1), subset[0] if per_page == 1 else subset))

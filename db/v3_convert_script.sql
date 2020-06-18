@@ -42,7 +42,8 @@ FROM necrobot_v2.IgnoreCommand;
 --self roles conversion to new format
 INSERT INTO necrobot.SelfRoles
 SELECT guild_id, id
-FROM necrobot_v2.SelfRoles;
+FROM necrobot_v2.SelfRoles b
+WHERE EXISTS (select 1 from necrobot.Guilds a WHERE a.guild_id = b.guild_id);
 
 --starred messages conversion
 INSERT INTO necrobot.Starred

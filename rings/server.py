@@ -553,7 +553,7 @@ class Server(commands.Cog):
         `{pre}giveme Good` - gives or remove the role 'Good' to the user if it is in the list of self assignable roles"""
 
         if role is None:
-            roles = [x.name for x in ctx.guild.roles if x.id in self.bot.guild_data[ctx.guild.id]["self-roles"]]
+            roles = [x.mention for x in ctx.guild.roles if x.id in self.bot.guild_data[ctx.guild.id]["self-roles"]]
             
             def _embed_maker(index, entries):
                 embed = discord.Embed(
@@ -590,7 +590,7 @@ class Server(commands.Cog):
         if role.id in self.bot.guild_data[ctx.guild.id]["self-roles"]:
             raise BotError("Role already in list of self assignable roles")
 
-        await self.bot.db.insert_self_roles(ctx.guild.id, role)
+        await self.bot.db.insert_self_roles(ctx.guild.id, role.id)
         await ctx.send(f":white_check_mark: | Added role **{role.name}** to list of self assignable roles.")
 
     @giveme.command(name="delete")
@@ -605,7 +605,7 @@ class Server(commands.Cog):
         if role.id not in self.bot.guild_data[ctx.guild.id]["self-roles"]:
             raise BotError("Role not in self assignable list")
 
-        await self.bot.db.delete_self_roles(ctx.guild.id, role)
+        await self.bot.db.delete_self_roles(ctx.guild.id, role.id)
         await ctx.send(f":white_check_mark: | Role **{role.name}** removed from self assignable roles")
             
 

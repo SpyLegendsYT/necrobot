@@ -415,7 +415,7 @@ class Database(commands.Cog):
             
         await self.bot.db.query_executer(
             "INSERT INTO necrobot.SelfRoles VALUES($1, $2)",
-            *[(guild_id, role_id) for role_id in roles_id], many=True  
+            [(guild_id, role_id) for role_id in roles_id], many=True  
         )
         
         self.bot.guild_data[guild_id]["self-roles"].extend(
@@ -587,7 +587,7 @@ class Database(commands.Cog):
             conn = await self.get_conn()
         else:
             conn = cn
-        
+                    
         try:
             if fetchval:
                 result = await conn.fetchval(query, *args)
@@ -649,7 +649,7 @@ class SyncDatabase:
             
         self.cur.execute("SELECT guild_id, array_agg(id) FROM necrobot.SelfRoles GROUP BY guild_id;")
         for g in self.cur.fetchall():
-            guilds[g[0]]["self-roles"].append(g[1])
+            guilds[g[0]]["self-roles"] = g[1]
             
         return guilds
         
