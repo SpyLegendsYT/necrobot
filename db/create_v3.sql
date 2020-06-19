@@ -189,7 +189,7 @@ CREATE TABLE necrobot.Grudges(
     user_id bigint,
     name varchar(50),
     grudge varchar(2000),
-    grudge_date TIMESTAMPTZ DEFAULT NOW(),
+    grudge_date date DEFAULT current_date,
     avenged boolean DEFAULT False
 );
 
