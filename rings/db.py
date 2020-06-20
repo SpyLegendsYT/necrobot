@@ -435,16 +435,16 @@ class Database(commands.Cog):
             x for x in self.bot.guild_data[guild_id]["self-roles"] if x not in roles_id
         ]
         
-    async def insert_invite(self, guild_id, invite):
+    async def insert_invite(self, invite):
         await self.query_executer(
             "INSERT INTO necrobot.Invites VALUES($1, $2, $3, $4, $5)",
-            invite.id, guild_id, invite.url, invite.uses, invite.inviter.id if invite.inviter else 000
+            invite.id, invite.guild.id, invite.url, invite.uses, invite.inviter.id if invite.inviter else 000
         )
     
-    async def delete_invite(self, guild_id, invite_id):
+    async def delete_invite(self, invite):
         await self.query_executer(
             "DELETE FROM necrobot.Invites WHERE id=$1",
-            invite_id    
+            invite.id    
         )
         
     async def update_invites(self, guild):

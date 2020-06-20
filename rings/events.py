@@ -159,11 +159,11 @@ class Events(commands.Cog):
         
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
-        await self.bot.db.insert_invite(invite.guild, invite)
+        await self.bot.db.insert_invite(invite)
         
     @commands.Cog.listener()
     async def on_invite_delete(self, invite):
-        await self.bot.db.delete_invite(invite.id)
+        await self.bot.db.delete_invite(invite)
         
     @commands.Cog.listener()
     async def on_bulk_message_delete(self, messages):
