@@ -190,7 +190,7 @@ CREATE TABLE necrobot.Grudges(
     name varchar(50),
     grudge varchar(2000),
     grudge_date date DEFAULT current_date,
-    avenged boolean DEFAULT False
+    avenged varchar(1000) DEFAULT 'False'
 );
 
 CREATE TYPE channel_filter_hybrid as (

@@ -17,6 +17,22 @@ from typing import Union, Optional
 from simpleeval import simple_eval
 import datetime
 
+class Grudge(commands.Converter):
+    async def convert(ctx, argument):
+        if not argument.isdigit():
+            raise commands.BadArgument("Please supply a valid id")
+        
+        
+        grudge = await ctx.bot.db.query_executer(
+            "SELECT * FROM necrobot.Grudges WHERE id = $1",
+            int(grudge_id)    
+        )
+        
+        if not grudge:
+            raise commands.BadArgument("No grudge with such id")
+            
+        return grudge[0]
+
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -57,7 +73,7 @@ class Admin(commands.Cog):
         )
         
     @grudge.command(name="list")
-    async def grudge_list(self, ctx, user : Union[discord.User, int]):
+    async def grudge_list(self, ctx, user : Union[discord.Member, discord.User, int]):
         """See all the grudges for a user
         
         {usage}
@@ -95,20 +111,10 @@ class Admin(commands.Cog):
         await react_menu(ctx, grudges, 10, embed_maker)
         
     @grudge.command(name="info")
-    async def grudge_info(self, ctx, grudge_id : int):
+    async def grudge_info(self, ctx, grudge : Grudge):
         """Get the full info about a specific grudge
         
-        {usage}"""
-        grudge = await self.bot.db.query_executer(
-            "SELECT * FROM necrobot.Grudges WHERE id = $1",
-            grudge_id    
-        )
-        
-        if not grudge:
-            raise BotError("No grudge with such id")
-            
-        grudge = grudge[0]
-            
+        {usage}"""            
         if self.bot.get_user(grudge[1]):
             name = str(self.bot.get_user(grudge[1]))
         else:
@@ -122,7 +128,18 @@ class Admin(commands.Cog):
         
         await ctx.send(embed=embed)
         
-    
+    @grudge.command(name="settle")
+    @commands.is_owner()
+    async def grudge_settle(self, ctx, grudge : Grudge, settlement : str = True):
+        """Mark a grudge as settled
+        
+        {usage}"""
+        await self.bot.db.query_executer(
+            "UPDATE necrobot.Grudges SET avenged = $1 WHERE id = $2",
+            str(settlement), grudge["id"]   
+        )
+        await ctx.send(":white_check_mark: | Grudge `{grudge['id']}` has been considered as settled")
+
     @commands.command()
     @has_perms(7)
     async def leave(self, ctx, guild : GuildConverter, *, reason : str = None):
