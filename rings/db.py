@@ -633,6 +633,7 @@ class SyncDatabase:
                 "ignore-automod":[],
                 "disabled":[],
                 "self-roles": [],
+                "mutes": []
             }
             
         self.cur.execute("SELECT guild_id, array_agg(command) FROM necrobot.Disabled GROUP BY guild_id;")

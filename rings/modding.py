@@ -83,7 +83,8 @@ class Modding(commands.Cog):
             embed = discord.Embed(
                 title=mod.name, 
                 colour=discord.Colour(0x277b0), 
-                url=url, description=mod.summary
+                url=url, 
+                description=mod.summary
             )
             
             embed.set_author(name="ModDB", url="http://www.moddb.com", icon_url="http://i.imgur.com/aExydLm.png")

@@ -109,7 +109,7 @@ class Events(commands.Cog):
         
         await self.bot.db.delete_automod_ignore(guild_id, channel.id)
         await self.bot.db.delete_command_ignore(guild_id, channel.id)
-        await self.bot.db.delete_rss_channel(guild_id, Channel_id=channel.id)
+        await self.bot.db.delete_rss_channel(guild_id, channel_id=channel.id)
     
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role):

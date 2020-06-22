@@ -61,6 +61,7 @@ class Meta(commands.Cog):
                 "starboard-limit":5,
                 "self-roles": [],
                 "pm-warning": False,
+                "mutes": [],
             }
             
             await self.bot.db.query_executer(
