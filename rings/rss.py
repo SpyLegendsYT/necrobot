@@ -75,7 +75,7 @@ class RSS(commands.Cog):
 
         soup = BeautifulSoup(await r.text(), "html.parser")
         embed = discord.Embed(
-            title=soup.find("meta" {"name":"title"})["content"], 
+            title=soup.find("meta", {"name":"title"})["content"], 
             url=youtube
         )
         

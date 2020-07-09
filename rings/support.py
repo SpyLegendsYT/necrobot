@@ -29,7 +29,7 @@ class Support(commands.Cog):
         embed.add_field(name="Version", value=self.bot.version)
         uptime = str(timedelta(seconds=time.time() - self.bot.uptime_start)).partition(".")[0].replace(":", "{}")
         embed.add_field(name="Uptime", value=uptime.format("hours, ", "minutes and ") + "seconds")
-        embed.add_field(name="Links", value=f"[Invite bot to your server]({discord.utils.oauth_url(self.bot.user.id, discord.Permissions(permissions=403172599))}) - [Get help with the bot](https://discord.gg/Ape8bZt)", inline=False)
+        embed.add_field(name="Links", value=f"[Invite bot to your server]({discord.utils.oauth_url(self.bot.user.id, discord.Permissions(permissions=403172599))}) - [Get help with the bot](https://discord.gg/fPJANsE)", inline=False)
         await ctx.send(embed=embed)
 
     @commands.command()

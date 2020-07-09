@@ -76,7 +76,7 @@ class Tags(commands.Cog):
         """Assigns the [text] passed through to the tag named [name]. A few reserved keywords can be used to render the 
         tag dynamic.
         
-        `{server.keyword}`
+        `{{server.keyword}}`
         Represents the server
         __Keywords__
         `name` - name of the server
@@ -84,7 +84,7 @@ class Tags(commands.Cog):
         `created_at` - UTC tag of the creation time of the server
         `member_count` - returns the number of member
         
-        `{member.keyword}`
+        `{{member.keyword}}`
         Represents the user that called the tag
         __Keywords__
         `display_name` - the user nick if they have one, else the user's username
@@ -95,7 +95,7 @@ class Tags(commands.Cog):
         `mention` - mentions the user
         `created_at` - returns the creation time of the account
         
-        `{channel.keyword}`
+        `{{channel.keyword}}`
         Represents the channel the tag was summoned in
         __Keywords__
         `name` - channel name
@@ -103,18 +103,18 @@ class Tags(commands.Cog):
         `topic` - the channel's topic
         `mention` - returns a mention of the channel
         
-        `{content}`
+        `{{content}}`
         Represents the content of the message
         
-        `{argx}`
+        `{{argx}}`
         Represents an argument you pass into the tag, replace x by the argument number starting from 0.
         E.g: `{pre}tag test [arg0] [arg1] [arg2]` 
         
         {usage}
         
         __Example__
-        `{pre}tag add test1 {guild.name} is cool` - creates a tag that will replace `{guild.name}` by the name of the server it is summoned in
-        `{pre}tag add test2 {arg0} {arg1}` - creates a tag that will replace arg0 and arg1 by the arguments passed
+        `{pre}tag add test1 {{server.name}} is cool` - creates a tag that will replace `{{server.name}}` by the name of the server it is summoned in
+        `{pre}tag add test2 {{arg0}} {{arg1}}` - creates a tag that will replace arg0 and arg1 by the arguments passed
         """
         tag = tag.lower()
         if tag in self.restricted:

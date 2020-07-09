@@ -2,10 +2,11 @@ import discord
 from discord.ext import commands
 
 from rings.utils.utils import BotError, has_perms, react_menu
-from rings.utils.config import cookies
+from rings.utils.config import cookies, MU_Username, MU_Password
 
 import re
-from robobrowser import RoboBrowser
+from bs4 import BeautifulSoup
+from robobrowser.forms.form import Form
 
 def guild_only(guild_id):
     def predicate(ctx):
@@ -33,21 +34,49 @@ def mu_moderator_check():
         return ctx.author.id in mu_moderator(ctx.guild)
         
     return commands.check(predicate)
-    
 
 class Special(commands.Cog):
     """A cog for all commands specific to certain servers."""
     def __init__(self, bot):
         self.bot = bot
-        self.mu_channels = (722040731946057789, 722474242762997868)
-        self.browser = RoboBrowser(history=True, parser="html.parser")
-        self.browser.session.cookies.update(cookies)
+        self.mu_channels = [722040731946057789, 722474242762997868]
+        self.cookies = False
         self.in_process = []
+        
+    async def get_form(self, url, form_name):
+        async with self.bot.session.get(url) as resp:
+            soup = BeautifulSoup(await resp.read(), "html.parser")
+            
+        form = soup.find("form", {"name": form_name})
+        if form is not None:
+            return Form(form)
+            
+    async def submit_form(self, form, submit=None, **kwargs):
+        method = form.method.upper()
+        
+        url = form.action
+        payload = form.serialize(submit=submit)
+        serialized = payload.to_requests(method)
+        kwargs.update(serialized)
+        
+        async with self.bot.session.request(method, url, **kwargs) as resp:
+            return resp            
+        
+    async def new_cookies(self):        
+        url = "https://modding-union.com/index.php?action=login"
+        form = await self.get_form(url, "frmLogin")
+        
+        form["user"].value = MU_Username
+        form["passwrd"].value = MU_Password
+        form["cookielength"].diabled = True
+        
+        await self.submit_form(form)
+        self.cookies = True
     
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         if payload.message_id in self.bot.pending_posts:
-            self.bot.pending_posts[payload.message_id]._update(payload.data)
+            self.bot.pending_posts[payload.message_id]["message"]._update(payload.data)
             
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -57,6 +86,9 @@ class Special(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.channel.id not in self.mu_channels:
+            return
+            
+        if message.author.bot:
             return
         
         registered = await self.bot.db.query_executer(
@@ -90,50 +122,59 @@ class Special(commands.Cog):
         elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
             ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
             if payload.user_id in ids:
-                await self.bot.pending_posts[payload.message_id]["message"].delete()
-                del self.bot.pending_posts[payload.message_id]
+                message = self.bot.pending_posts.pop(payload.message_id)
+                await message["message"].delete()
         
     async def mu_poster(self, message_id, approver_id):
-        pending = self.bot.pending_posts[message_id]
-        self.browser.open(pending["url"])
-        form = self.browser.get_form("postmodify")
+        pending = self.bot.pending_posts.pop(message_id, None)
+        if pending is None:
+            return
+        
+        form = await self.get_form(pending["url"], "postmodify")        
+        if not self.cookies:
+            await self.new_cookies()
+        
+        if form is None:
+            await pending["message"].channel.send(":negative_squared_cross_mark: | Error while retrieving form, tokens have probably expired.")
+            self.bot.pending_posts[message_id] = pending
+            self.cookies = False
+            return
         
         username = await self.bot.db.query_executer(
             "SELECT username FROM necrobot.MU_Users WHERE user_id=$1", 
             pending["message"].author.id, fetchval=True
         )
+        
         final_message = f"{pending['text']}\n[hr]\n{username} ({pending['message'].author.id})"
         form["message"].value = final_message
 
         del form.fields["attachment[]"]
         del form.fields["preview"]
         
-        # self.browser.submit_form(form) #actual sbumit 
+        # resp = await self.submit_form(form) #actual submit 
+        url = pending["url"] # resp.real_url
         await self.bot.get_bot_channel().send(f"Payload sent. {form.serialize().data}") #dud debug test
 
         await self.bot.db.query_executer(
             "INSERT INTO necrobot.MU(user_id, url, guild_id, approver_id) VALUES ($1, $2, $3, $4)",
-            pending["message"].author.id, self.browser.url, pending["message"].guild.id, approver_id
+            pending["message"].author.id, url, pending["message"].guild.id, approver_id
         )
         
         await pending["message"].delete()
-        del self.bot.pending_posts[message_id]
         
     async def mu_parser(self, message):
-        regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)"
-        try:
-            match = re.findall(regex, message.content)[0]
-        except IndexError:
-            if await self.bot.db.get_permission(message.author.id, message.guild.id) == 0:
+        regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)\S*"
+        match = re.search(regex, message.content)
+        if match is None:
+            if (await self.bot.db.get_permission(message.author.id, message.guild.id)) == 0 and not message.author.bot:
                 await message.delete()
                 await message.channel.send(f"{message.author.mention} | Could not find a valid thread url", delete_after=10)
             
             return
             
         url_template = "https://modding-union.com/index.php?action=post;topic={}"   
-        thread = url_template.format(match)
-
-        text = message.content.replace(match, '', 1)
+        thread = url_template.format(match.group(1))
+        text = message.content.split(match.group(0))[-1].strip()
         
         await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await message.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
@@ -146,7 +187,7 @@ class Special(commands.Cog):
         
     @commands.group(invoke_without_command=True)
     @guild_only(327175434754326539)
-    async def register(self, ctx, username : str):
+    async def register(self, ctx, username : str = None):
         """Register yourself to use the bot's modding-union capabilities. This forces you to pick a name and keep it, once
         you've registered your name you won't be able to change it without admin assistance so pick it with care. Names are
         on a first come first served basis, if you want a specific username get it before someone else does
@@ -155,7 +196,32 @@ class Special(commands.Cog):
         
         __Examples__
         `{pre}register Necro` - register yourself as user Necro
+        `{pre}register` - see all registered users
         """
+        if username is None:
+            users = await self.bot.db.query_executer(
+                "SELECT user_id, username FROM necrobot.MU_Users WHERE active = True"    
+            )
+            
+            def embed_maker(index, entries):
+                string = "​"
+                for user_id, username in entries:
+                    user = self.bot.get_user(user_id)
+                    if user is not None:
+                        string += f"{user.mention} - {username}\n"
+                        
+                embed = discord.Embed(
+                    title=f"MU Users ({index[0]}/{index[1]})", 
+                    description=string,
+                    colour=discord.Colour(0x277b0)
+                )
+            
+                embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
+                
+                return embed
+            
+            return await react_menu(ctx, users, 10, embed_maker)
+        
         if len(username) > 200:
             raise BotError("Username too long, please keep the username below 200 characters")
         

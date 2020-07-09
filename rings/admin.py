@@ -391,19 +391,16 @@ class Admin(commands.Cog):
             'author': ctx.author
         }
 
-        try:
-            parsed = ast.parse(body)
-            body = parsed.body[0].body
-            self.insert_returns(body)
+        parsed = ast.parse(body)
+        body = parsed.body[0].body
+        self.insert_returns(body)
 
-            exec(compile(parsed, filename="<ast>", mode="exec"), env)
-            result = (await eval(f"{fn_name}()", env))
-            if result is not None and result != "":
-                await ctx.send(result)
-            else:
-                await ctx.send(":white_check_mark:")
-        except Exception as e:
-            await ctx.send(python.format(f'{type(e).__name__}: {e}'))
+        exec(compile(parsed, filename="<ast>", mode="exec"), env)
+        result = (await eval(f"{fn_name}()", env))
+        if result is not None and result != "":
+            await ctx.send(result)
+        else:
+            await ctx.send(":white_check_mark:")
             
     @commands.command()
     @has_perms(6)
@@ -520,7 +517,7 @@ class Admin(commands.Cog):
 
         {usage}
         """
-        ps = sh.grep(sh.ps("-ef"), 'python3.6')
+        ps = sh.grep(sh.ps("-ef"), 'python3.8')
         
         feeds_dict = {
             "main.py": {
@@ -530,12 +527,12 @@ class Admin(commands.Cog):
             },
             "rss.py": {
                 "name": "RSS Feeds", 
-                "command": "nohup sudo python3.6 /home/pi/feeds/rss.py&",
+                "command": "sudo python3.8 /home/pi/feeds/rss.py&",
                 "emote": "\N{OPEN MAILBOX WITH RAISED FLAG}"
             },
             "log.py": {
                 "name": "ModDB Logger", 
-                "command": "nohup sudo python3.6 /home/pi/edain/log.py&",
+                "command": "nohup sudo python3.8 /home/pi/edain/log.py&",
                 "emote": "\N{CHART WITH DOWNWARDS TREND}"
             }
         }
@@ -553,7 +550,7 @@ class Admin(commands.Cog):
             await msg.add_reaction(emote)
             
         def check(reaction, user):
-            return user == ctx.author and reaction.channel == ctx.channel and reaction.emoji in allowed
+            return user == ctx.author and reaction.message.channel == ctx.channel and reaction.emoji in allowed
 
         reaction, _ = await self.bot.wait_for(
             "reaction_add", 
