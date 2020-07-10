@@ -228,7 +228,7 @@ class Meta(commands.Cog):
         reminders = await self.bot.db.get_reminders()
         for reminder in reminders:
             timer = time_converter(reminder["timer"])
-            sleep = timer - ((datetime.datetime.now() - reminder["start_date"]).total_seconds())
+            sleep = timer - ((datetime.datetime.now() - reminder["start_date"].replace(tzinfo=None)).total_seconds())
             if sleep <= 0:
                 await self.bot.db.delete_reminder(reminder["id"])
             else:

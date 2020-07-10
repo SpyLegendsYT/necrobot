@@ -22,7 +22,6 @@ class Grudge(commands.Converter):
         if not argument.isdigit():
             raise commands.BadArgument("Please supply a valid id")
         
-        
         grudge = await ctx.bot.db.query_executer(
             "SELECT * FROM necrobot.Grudges WHERE id = $1",
             int(grudge_id)    
@@ -302,8 +301,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def get(self, ctx, obj_id : int):
-        """Returns the name of the user or server based on the given id. Used to debug errors. 
-        (
+        """Returns the name of the user or server based on the given id. Used to debug errors.
         
         {usage}
         

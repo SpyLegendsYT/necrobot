@@ -5,6 +5,8 @@ from rings.utils.utils import BotError, has_perms, react_menu
 from rings.utils.config import cookies, MU_Username, MU_Password
 
 import re
+import asyncio
+import datetime
 from bs4 import BeautifulSoup
 from robobrowser.forms.form import Form
 
@@ -42,6 +44,7 @@ class Special(commands.Cog):
         self.mu_channels = [722040731946057789, 722474242762997868]
         self.cookies = False
         self.in_process = []
+        self.last_post = datetime.datetime.now() - datetime.timedelta(minutes=2)
         
     async def get_form(self, url, form_name):
         async with self.bot.session.get(url) as resp:
@@ -77,6 +80,7 @@ class Special(commands.Cog):
     async def on_raw_message_edit(self, payload):
         if payload.message_id in self.bot.pending_posts:
             self.bot.pending_posts[payload.message_id]["message"]._update(payload.data)
+            await self.mu_parser(self.bot.pending_posts[payload.message_id]["message"], react=False)
             
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -95,14 +99,18 @@ class Special(commands.Cog):
             "SELECT active FROM necrobot.MU_Users WHERE user_id=$1", 
             message.author.id, fetchval=True
         )
+        
+        perms = await self.bot.db.get_permission(message.author.id, message.guild.id)
         if registered is None:
-            await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.', delete_after=10)
-            await message.delete()
+            if perms == 0:
+                await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.', delete_after=10)
+                await message.delete()
             return
             
         if not registered:
-            await message.channel.send(f'{message.author.mention} | Your account is banned from using the system, you may appeal with admins to have it unbanned', delete_after=10)
-            await message.delete()
+            if perms == 0:
+                await message.channel.send(f'{message.author.mention} | Your account is banned from using the system, you may appeal with admins to have it unbanned', delete_after=10)
+                await message.delete()
             return
             
         await self.mu_parser(message)
@@ -129,13 +137,20 @@ class Special(commands.Cog):
         pending = self.bot.pending_posts.pop(message_id, None)
         if pending is None:
             return
-        
-        form = await self.get_form(pending["url"], "postmodify")        
+            
         if not self.cookies:
             await self.new_cookies()
         
+        sleep = self.last_post - datetime.datetime.now()
+        self.last_post = max(datetime.datetime.now(), self.last_post) + datetime.timedelta(minutes=2)
+        
+        if sleep > 0:
+            await pending["message"].add_reaction("\N{SLEEPING SYMBOL}")
+            await asyncio.sleep(sleep)
+        
+        form = await self.get_form(pending["url"], "postmodify")
         if form is None:
-            await pending["message"].channel.send(":negative_squared_cross_mark: | Error while retrieving form, tokens have probably expired.")
+            await pending["message"].channel.send(":negative_squared_cross_mark: | Error while retrieving form, tokens have probably expired. Please try again.")
             self.bot.pending_posts[message_id] = pending
             self.cookies = False
             return
@@ -151,9 +166,12 @@ class Special(commands.Cog):
         del form.fields["attachment[]"]
         del form.fields["preview"]
         
-        # resp = await self.submit_form(form) #actual submit 
-        url = pending["url"] # resp.real_url
-        await self.bot.get_bot_channel().send(f"Payload sent. {form.serialize().data}") #dud debug test
+        if pending["message"].channel.id == 722040731946057789:
+            await self.bot.get_bot_channel().send(f"Payload sent. {form.serialize().data}") #dud debug test
+            url = pending["url"]  
+        else: 
+            resp = await self.submit_form(form) #actual submit
+            url = str(resp.url)
 
         await self.bot.db.query_executer(
             "INSERT INTO necrobot.MU(user_id, url, guild_id, approver_id) VALUES ($1, $2, $3, $4)",
@@ -162,7 +180,7 @@ class Special(commands.Cog):
         
         await pending["message"].delete()
         
-    async def mu_parser(self, message):
+    async def mu_parser(self, message, react=True):
         regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)\S*"
         match = re.search(regex, message.content)
         if match is None:
@@ -176,14 +194,15 @@ class Special(commands.Cog):
         thread = url_template.format(match.group(1))
         text = message.content.split(match.group(0))[-1].strip()
         
-        await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-        await message.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+        if react:
+            await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+            await message.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
         
         self.bot.pending_posts[message.id] = {
             "message": message,
             "url": thread,
             "text": text
-        }
+        }        
         
     @commands.group(invoke_without_command=True)
     @guild_only(327175434754326539)
@@ -364,7 +383,7 @@ class Special(commands.Cog):
         def embed_maker(index, entries):
             embed = discord.Embed(
                 title=f"{user.display_name} ({index[0]}/{index[1]})", 
-                description=f"Username:{username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {total}",
+                description=f"Username: {username[0]}\nStatus: {'Active' if username[1] else 'Banned'}\nTotal Posts: {total}",
                 colour=discord.Colour(0x277b0)
             )
             
