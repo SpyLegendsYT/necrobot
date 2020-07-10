@@ -44,7 +44,7 @@ class Special(commands.Cog):
         self.mu_channels = [722040731946057789, 722474242762997868]
         self.cookies = False
         self.in_process = []
-        self.last_post = datetime.datetime.now() - datetime.timedelta(minutes=2)
+        self.next_post = datetime.datetime.now() - datetime.timedelta(minutes=2)
         
     async def get_form(self, url, form_name):
         async with self.bot.session.get(url) as resp:
@@ -141,8 +141,8 @@ class Special(commands.Cog):
         if not self.cookies:
             await self.new_cookies()
         
-        sleep = self.last_post - datetime.datetime.now()
-        self.last_post = max(datetime.datetime.now(), self.last_post) + datetime.timedelta(minutes=2)
+        sleep = (self.next_post - datetime.datetime.now()).total_seconds()
+        self.next_post = max(datetime.datetime.now(), self.next_post) + datetime.timedelta(minutes=2)
         
         if sleep > 0:
             await pending["message"].add_reaction("\N{SLEEPING SYMBOL}")

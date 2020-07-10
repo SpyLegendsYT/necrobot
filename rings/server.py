@@ -435,6 +435,8 @@ class Server(commands.Cog):
     async def prefix(self, ctx, *, prefix=""):
         """Sets the bot to only respond to the given prefix. If no prefix is given it will reset it to NecroBot's deafult 
         list of prefixes: `n!`, `N!` or `@NecroBot `. The prefix can't be longer than 15 characters.
+        
+        If you want your prefix to have a whitespace between the prefix and the command then end it with \w
 
         {usage}
 
@@ -442,6 +444,8 @@ class Server(commands.Cog):
         `{pre}prefix bob! potato` - sets the prefix to be `bob! potato ` so a command like `{pre}cat` will now be 
         summoned like this `bob! potato cat`
         `{pre}prefix` - resets the prefix to NecroBot's default list"""
+        prefix = prefix.replace(r"\w", " ")
+        
         if len(prefix) > 15:
             raise BotError(f"Prefix can't be more than 15 characters. {len(prefix)}/15")
 
