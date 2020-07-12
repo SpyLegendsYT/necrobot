@@ -133,7 +133,7 @@ class Special(commands.Cog):
                 except Exception as e:
                     await post["message"].channel.send(f":negative_squared_cross_mark: | Error while sending: {e}")
                     self.bot.pending_posts[payload.message_id] = post
-                    await post["message"].remove_reaction("\N{GEAR}", pending["message"].guild.me)
+                    await post["message"].remove_reaction("\N{GEAR}", post["message"].guild.me)
                 else:
                     await post["message"].delete()
 
