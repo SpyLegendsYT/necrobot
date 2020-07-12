@@ -62,8 +62,7 @@ class Special(commands.Cog):
         serialized = payload.to_requests(method)
         kwargs.update(serialized)
         
-        async with self.bot.session.request(method, url, **kwargs) as resp:
-            return resp            
+        return await self.bot.session.request(method, url, **kwargs)
         
     async def new_cookies(self):        
         url = "https://modding-union.com/index.php?action=login"
@@ -199,6 +198,11 @@ class Special(commands.Cog):
         url_template = "https://modding-union.com/index.php?action=post;topic={}"   
         thread = url_template.format(match.group(1))
         text = message.content.split(match.group(0))[-1].strip()
+        
+        if text == "":
+            await message.delete()
+            await message.channel.send(f"{message.author.mention} | Cannot send an empty message")
+            return
         
         if react:
             await message.add_reaction("\N{WHITE HEAVY CHECK MARK}")
