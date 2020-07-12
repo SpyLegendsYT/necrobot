@@ -126,15 +126,24 @@ class Special(commands.Cog):
         ids = mu_moderator(self.bot.get_guild(payload.guild_id))
         if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
             if payload.user_id in ids:
-                await self.mu_poster(payload.message_id, payload.user_id)
+                try:
+                    await pending["message"].add_reaction("\N{GEAR}")
+                    post = self.bot.pending_posts.pop(payload.message_id, None)
+                    await self.mu_poster(post, payload.user_id)
+                except Exception as e:
+                    await post["message"].channel.send(f":negative_squared_cross_mark: | Error while sending: {e}")
+                    self.bot.pending_posts[payload.message_id] = post
+                    await pending["message"].remove_reaction("\N{GEAR}", pending["message"].guild.me)
+                else:
+                    await post["message"].delete()
+
         elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
             ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
             if payload.user_id in ids:
-                message = self.bot.pending_posts.pop(payload.message_id)
-                await message["message"].delete()
+                post = self.bot.pending_posts.pop(payload.message_id)
+                await post["message"].delete()
         
-    async def mu_poster(self, message_id, approver_id):
-        pending = self.bot.pending_posts.pop(message_id, None)
+    async def mu_poster(self, pending, approver_id):
         if pending is None:
             return
             
@@ -150,10 +159,8 @@ class Special(commands.Cog):
         
         form = await self.get_form(pending["url"], "postmodify")
         if form is None:
-            await pending["message"].channel.send(":negative_squared_cross_mark: | Error while retrieving form, tokens have probably expired. Please try again.")
-            self.bot.pending_posts[message_id] = pending
             self.cookies = False
-            return
+            raise ValueError("Tokens have probably expired. Please try again.")
         
         username = await self.bot.db.query_executer(
             "SELECT username FROM necrobot.MU_Users WHERE user_id=$1", 
@@ -171,14 +178,13 @@ class Special(commands.Cog):
             url = pending["url"]  
         else: 
             resp = await self.submit_form(form) #actual submit
-            url = str(resp.url)
+            soup = BeautifulSoup(await resp.read(), "html.parser")
+            url = soup.find_all("div", class_="keyinfo")[-1].h5.a["href"]
 
         await self.bot.db.query_executer(
             "INSERT INTO necrobot.MU(user_id, url, guild_id, approver_id) VALUES ($1, $2, $3, $4)",
             pending["message"].author.id, url, pending["message"].guild.id, approver_id
         )
-        
-        await pending["message"].delete()
         
     async def mu_parser(self, message, react=True):
         regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)\S*"
