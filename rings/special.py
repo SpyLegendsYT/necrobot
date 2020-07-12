@@ -127,13 +127,13 @@ class Special(commands.Cog):
         if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
             if payload.user_id in ids:
                 try:
-                    await pending["message"].add_reaction("\N{GEAR}")
                     post = self.bot.pending_posts.pop(payload.message_id, None)
+                    await post["message"].add_reaction("\N{GEAR}")
                     await self.mu_poster(post, payload.user_id)
                 except Exception as e:
                     await post["message"].channel.send(f":negative_squared_cross_mark: | Error while sending: {e}")
                     self.bot.pending_posts[payload.message_id] = post
-                    await pending["message"].remove_reaction("\N{GEAR}", pending["message"].guild.me)
+                    await post["message"].remove_reaction("\N{GEAR}", pending["message"].guild.me)
                 else:
                     await post["message"].delete()
 
