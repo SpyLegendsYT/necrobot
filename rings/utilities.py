@@ -119,22 +119,23 @@ class Utilities(commands.Cog):
         if date:
             r_date = date.split("/")
             date = f"/{r_date[1]}/{r_date[0]}"
+            url = f'https://history.muffinlabs.com/date{date}'
         else:
-            date = ""
+            url = 'https://history.muffinlabs.com/date'
 
         if choice:
             choice = choice.lower().title()
             if choice[-1] != "s":
-                choice += "s"
-            
+                choice += "s"  
         else:
             choice = random.choice(["Deaths", "Births", "Events"])
 
         if not choice in ["Deaths", "Births", "Events"]:
             raise BotError("Not a correct choice. Correct choices are `Deaths`, `Births` or `Events`.")
 
-        async with self.bot.session.get(f'https://history.muffinlabs.com/date{date}') as r:
+        async with self.bot.session.get(url, headers={"Connection": "keep-alive"}) as r:
             try:
+                print(r.headers)
                 res = await r.json()
             except aiohttp.ClientResponseError:
                 res = await r.json(content_type="application/javascript")

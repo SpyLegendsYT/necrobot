@@ -20,7 +20,7 @@ class MUConverter(commands.Converter):
         except commands.BadArgument:
             pass
             
-        user_id  = await self.bot.db.query_executer(
+        user_id  = await ctx.bot.db.query_executer(
             "SELECT user_id FROM necrobot.MU_Users WHERE username_lower = $1",
             argument.lower(), fetchval=True
         )
