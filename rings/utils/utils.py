@@ -60,16 +60,8 @@ async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
     if len(entries) <= per_page:
         return
     
-    while True:
-        react_list = []
-        if page > 0:
-            react_list.append("\N{BLACK LEFT-POINTING TRIANGLE}")
-
-        react_list.append("\N{BLACK SQUARE FOR STOP}")
-
-        if page < max_pages:
-            react_list.append("\N{BLACK RIGHT-POINTING TRIANGLE}")
-
+    while True: 
+        react_list = ["\N{BLACK LEFT-POINTING TRIANGLE}", "\N{BLACK SQUARE FOR STOP}", "\N{BLACK RIGHT-POINTING TRIANGLE}"]
         for reaction in react_list:
             await msg.add_reaction(reaction)
 
@@ -89,8 +81,12 @@ async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
             
         if reaction.emoji == "\N{BLACK LEFT-POINTING TRIANGLE}":
             page -= 1
+            if page < 0:
+                page = max_pages
         elif reaction.emoji == "\N{BLACK RIGHT-POINTING TRIANGLE}":
             page += 1
+            if page > max_pages:
+                page = 0
 
         await msg.clear_reactions()
         
@@ -165,7 +161,7 @@ class MoneyConverter(commands.Converter):
         if not argument.isdigit():
             raise commands.BadArgument("Not a valid intenger")
         
-        argument = abs(int(argument))
+        argument = int(argument)
 
         if argument < 0:
             raise commands.BadArgument("Amount must be a positive intenger")

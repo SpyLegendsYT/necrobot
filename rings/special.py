@@ -10,6 +10,32 @@ import datetime
 from bs4 import BeautifulSoup
 from robobrowser.forms.form import Form
 
+class FakeUser:
+    pass
+
+class MUConverter(commands.Converter):
+    async def convert(self, ctx, argument):
+        try:
+            return await commands.MemberConverter().convert(ctx, argument)
+        except commands.BadArgument:
+            pass
+            
+        user_id  = await self.bot.db.query_executer(
+            "SELECT user_id FROM necrobot.MU_Users WHERE username_lower = $1",
+            argument.lower(), fetchval=True
+        )
+        
+        if user_id is None:
+            raise commands.BadArgument(f"Member {argument} does not exist")
+            
+        user = ctx.guild.get_member(user_id)
+        if user is None:
+            user = FakeUser()
+            user.id = user_id
+            user.display_name = "User Left"
+        
+        return user
+
 def guild_only(guild_id):
     def predicate(ctx):
         if ctx.guild is None:
@@ -359,7 +385,7 @@ class Special(commands.Cog):
             
     @register.command(name="info")
     @guild_only(327175434754326539)
-    async def register_info(self, ctx, user : discord.Member = None):
+    async def register_info(self, ctx, user : MUConverter = None):
         """Get info about the number of posts a user has made and their username.
         
         {usage}
