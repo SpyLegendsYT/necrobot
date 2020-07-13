@@ -4,7 +4,7 @@ from discord.ext import commands
 from rings.utils.utils import react_menu, BotError
 from rings.db import DatabaseError
 
-from re import match
+import re
 
 class Tag(commands.Converter):
     async def convert(self, ctx, argument):
@@ -15,7 +15,7 @@ class Tag(commands.Converter):
             """, argument, ctx.guild.id)
         
         if not tag:
-            raise commands.CheckFailure(f"Tag {argument} not found.")
+            raise commands.BadArgument(f"Tag {argument} not found.")
             
         return tag[0]
 
@@ -281,22 +281,23 @@ class Tags(commands.Cog):
         except DatabaseError:
             raise BotError("Alias already exists")
 
+    @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or self.blacklist_check(message.author.id) or message.guild is None:
+        if message.author.bot or self.bot.blacklist_check(message.author.id) or message.guild is None:
             return
 
         content = message.content.split(maxsplit=1)
-        if match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 0:
+        if re.match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 0:
             content = content[1]
             ctx = await self.bot.get_context(message)
             command = self.bot.get_command("tag")
             
             try:
-                await Tag().convert(ctx, content)
-            except KeyError:
+                tag = await Tag().convert(ctx, content)
+            except commands.BadArgument:
                 return
 
-            await ctx.invoke(command, tag=content)
+            await ctx.invoke(command, tag=tag)
 
 def setup(bot):
     bot.add_cog(Tags(bot))
