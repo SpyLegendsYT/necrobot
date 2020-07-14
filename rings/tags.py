@@ -287,7 +287,7 @@ class Tags(commands.Cog):
             return
 
         content = message.content.split(maxsplit=1)
-        if re.match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 0:
+        if re.match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 1:
             content = content[1]
             ctx = await self.bot.get_context(message)
             command = self.bot.get_command("tag")

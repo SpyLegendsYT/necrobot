@@ -168,12 +168,20 @@ class Special(commands.Cog):
                 post = self.bot.pending_posts.pop(payload.message_id)
                 await post["message"].delete()
         
-    async def mu_poster(self, pending, approver_id):
+    async def mu_poster(self, pending, approver_id, retry=0):
         if pending is None:
             return
             
         if not self.cookies:
             await self.new_cookies()
+            
+        form = await self.get_form(pending["url"], "postmodify")
+        if form is None:
+            await self.new_cookies()
+            if retry < 3:
+                await self.mu_poster(pending, approver_id, retry+1)
+            else:
+                raise ValueError("Retried three times, unable to get form")
         
         sleep = (self.next_post - datetime.datetime.now()).total_seconds()
         self.next_post = max(datetime.datetime.now(), self.next_post) + datetime.timedelta(minutes=2)
@@ -181,11 +189,6 @@ class Special(commands.Cog):
         if sleep > 0:
             await pending["message"].add_reaction("\N{SLEEPING SYMBOL}")
             await asyncio.sleep(sleep)
-        
-        form = await self.get_form(pending["url"], "postmodify")
-        if form is None:
-            self.cookies = False
-            raise ValueError("Tokens have probably expired. Please try again.")
         
         username = await self.bot.db.query_executer(
             "SELECT username FROM necrobot.MU_Users WHERE user_id=$1", 
@@ -407,7 +410,7 @@ class Special(commands.Cog):
             
         posts = await self.bot.db.query_executer(
             """SELECT post_date, ARRAY_AGG((url, approver_id)) FROM necrobot.MU WHERE user_id = $1 AND guild_id = $2 
-            GROUP BY post_date""",
+            GROUP BY post_date ORDER BY post_date DESC""",
             user.id, ctx.guild.id    
         )
         
@@ -429,9 +432,9 @@ class Special(commands.Cog):
                 threads = []
                 for url, approver in entry[1]:
                     approver_obj = ctx.guild.get_member(approver)
-                    threads.append(f"{url} - {approver_obj.mention if approver_obj is not None else 'User has left'}")
+                    threads.append(f"[{url.split('#')[-1]}]({url}) - {approver_obj.mention if approver_obj is not None else 'User has left'}")
                 
-                embed.add_field(name=str(entry[0]), value="\n".join(threads))
+                embed.add_field(name=str(entry[0]), value="\n".join(threads), inline=False)
                 
             return embed
         

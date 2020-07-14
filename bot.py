@@ -166,10 +166,12 @@ class NecroBot(commands.Bot):
         {usage}"""
         try:
             ctx.bot.load_extension(f"rings.{extension_name}")
-        except (AttributeError,ImportError) as e:
+            await ctx.send(f"{extension_name} loaded.")
+        except comands.ExtensionFailed as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-            return
-        await ctx.send(f"{extension_name} loaded.")
+        except commands.ExtensionNotFound:
+            pass
+        
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -177,8 +179,13 @@ class NecroBot(commands.Bot):
         """Unloads the extension name if in NecroBot's list of rings.
          
         {usage}"""
-        ctx.bot.unload_extension(f"rings.{extension_name}")
-        await ctx.send(f"{extension_name} unloaded.")
+        try:
+            ctx.bot.unload_extension(f"rings.{extension_name}")
+            await ctx.send(f"{extension_name} unloaded.")
+        except commands.ExtensionFailed as e:
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+        except commands.ExtensionNotLoaded:
+            pass
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -188,12 +195,20 @@ class NecroBot(commands.Bot):
         {usage}"""
         try:
             ctx.bot.unload_extension(f"rings.{extension_name}")
-            ctx.bot.load_extension(f"rings.{extension_name}")
-        except (AttributeError,ImportError) as e:
+            await ctx.send(f"{extension_name} unloaded.")
+        except commands.ExtensionFailed as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-            return
-        await ctx.send(f"{extension_name} reloaded.")
-        
+        except commands.ExtensionNotLoaded:
+            pass
+            
+        try:
+            ctx.bot.load_extension(f"rings.{extension_name}")
+            await ctx.send(f"{extension_name} loaded.")
+        except comands.ExtensionFailed as e:
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+        except commands.ExtensionNotFound:
+            pass
+
     @commands.command(hidden=True)
     @commands.is_owner()
     async def off(ctx):
