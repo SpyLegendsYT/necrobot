@@ -98,7 +98,7 @@ class Special(commands.Cog):
         
         form["user"].value = MU_Username
         form["passwrd"].value = MU_Password
-        form["cookielength"].diabled = True
+        form["cookielength"].value = '-1'
         
         await self.submit_form(form)
         self.cookies = True
