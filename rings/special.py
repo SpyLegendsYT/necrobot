@@ -7,6 +7,8 @@ from rings.utils.config import cookies, MU_Username, MU_Password
 import re
 import asyncio
 import datetime
+import logging
+import traceback
 from bs4 import BeautifulSoup
 from robobrowser.forms.form import Form
 
@@ -152,15 +154,15 @@ class Special(commands.Cog):
         if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
             if payload.user_id in ids:
                 try:
-                    post = self.bot.pending_posts.pop(payload.message_id, None)
+                    post = self.bot.pending_posts.pop(payload.message_id)
                     await post["message"].add_reaction("\N{GEAR}")
                     await self.mu_poster(post, payload.user_id)
                 except Exception as e:
                     await post["message"].channel.send(f":negative_squared_cross_mark: | Error while sending: {e}")
                     self.bot.pending_posts[payload.message_id] = post
                     await post["message"].remove_reaction("\N{GEAR}", post["message"].guild.me)
-                else:
-                    await post["message"].delete()
+                    error_traceback = " ".join(traceback.format_exception(type(e), e, e.__traceback__, chain=True))
+                    logging.error(error_traceback)                    
 
         elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
             ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
@@ -189,6 +191,7 @@ class Special(commands.Cog):
         if sleep > 0:
             await pending["message"].add_reaction("\N{SLEEPING SYMBOL}")
             await asyncio.sleep(sleep)
+            await pending["message"].remove_reaction("\N{SLEEPING SYMBOL}", pending["message"].guild.me)
         
         username = await self.bot.db.query_executer(
             "SELECT username FROM necrobot.MU_Users WHERE user_id=$1", 
@@ -213,6 +216,8 @@ class Special(commands.Cog):
             "INSERT INTO necrobot.MU(user_id, url, guild_id, approver_id) VALUES ($1, $2, $3, $4)",
             pending["message"].author.id, url, pending["message"].guild.id, approver_id
         )
+        
+        await pending["message"].delete()
         
     async def mu_parser(self, message, react=True):
         regex = r"https:\/\/modding-union\.com\/index\.php(?:\/|\?)topic(?:=|,)([0-9]*)\S*"
