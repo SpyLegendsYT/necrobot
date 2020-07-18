@@ -18,6 +18,7 @@ class Meta(commands.Cog):
         self.tasks = [
             self.broadcast,
             self.clear_potential_star,
+            self.clear_old_denied,
             self.rotate_status,
         ]
         
@@ -196,6 +197,20 @@ class Meta(commands.Cog):
                 del self.bot.potential_stars[message_id]
             else:
                 break
+                
+    async def clear_old_denied(self):
+        if self.bot.counter != 24:
+            return
+        
+        posts = list(self.bot.denied_posts)
+        posts.sort()
+        
+        for post in posts:
+            limit = datetime.datetime.utcnow() - datetime.timedelta(seconds=30)
+            timestamp = discord.utils.snowflake_time(post["message"].id)
+            
+            if timestamp < limit:
+                self.bot.denied_posts.remove(post)
                 
     async def rotate_status(self):
         status = self.bot.statuses.pop(0)

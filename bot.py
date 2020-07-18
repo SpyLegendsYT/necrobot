@@ -59,6 +59,8 @@ class NecroBot(commands.Bot):
         self.potential_stars = {}
         self.reminders = {}
         self.pending_posts = {}
+        self.denied_posts = []
+        self.queued_posts = asyncio.Queue()
         
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
@@ -167,7 +169,7 @@ class NecroBot(commands.Bot):
         try:
             ctx.bot.load_extension(f"rings.{extension_name}")
             await ctx.send(f"{extension_name} loaded.")
-        except comands.ExtensionFailed as e:
+        except commands.ExtensionFailed as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
         except commands.ExtensionNotFound:
             pass
@@ -195,7 +197,6 @@ class NecroBot(commands.Bot):
         {usage}"""
         try:
             ctx.bot.unload_extension(f"rings.{extension_name}")
-            await ctx.send(f"{extension_name} unloaded.")
         except commands.ExtensionFailed as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
         except commands.ExtensionNotLoaded:
@@ -203,8 +204,8 @@ class NecroBot(commands.Bot):
             
         try:
             ctx.bot.load_extension(f"rings.{extension_name}")
-            await ctx.send(f"{extension_name} loaded.")
-        except comands.ExtensionFailed as e:
+            await ctx.send(f"{extension_name} reloaded.")
+        except commands.ExtensionFailed as e:
             await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
         except commands.ExtensionNotFound:
             pass

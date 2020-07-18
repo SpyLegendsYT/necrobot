@@ -6,7 +6,6 @@ from rings.utils.config import cookies, MU_Username, MU_Password
 
 import re
 import asyncio
-import datetime
 import logging
 import traceback
 from bs4 import BeautifulSoup
@@ -72,7 +71,24 @@ class Special(commands.Cog):
         self.mu_channels = [722040731946057789, 722474242762997868]
         self.cookies = False
         self.in_process = []
-        self.next_post = datetime.datetime.now() - datetime.timedelta(minutes=2)
+        self.task = self.bot.loop.create_task(self.post_task())
+        
+    def cog_unload(self):
+        self.task.cancel()
+        
+    async def post_task(self):
+        while True:
+            try:
+                post = await self.bot.queued_posts.get()
+                await post["message"].remove_reaction("\N{SLEEPING SYMBOL}", post["message"].guild.me)
+                await self.mu_poster(post, post["approver"])
+                await asyncio.sleep(120)
+            except Exception as e:
+                await post["message"].channel.send(f":negative_squared_cross_mark: | Error while sending: {e}")
+                self.bot.pending_posts[post["message"].id] = post
+                await post["message"].remove_reaction("\N{GEAR}", post["message"].guild.me)
+                error_traceback = " ".join(traceback.format_exception(type(e), e, e.__traceback__, chain=True))
+                logging.error(error_traceback) 
         
     async def get_form(self, url, form_name):
         async with self.bot.session.get(url) as resp:
@@ -153,21 +169,17 @@ class Special(commands.Cog):
         ids = mu_moderator(self.bot.get_guild(payload.guild_id))
         if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
             if payload.user_id in ids:
-                try:
-                    post = self.bot.pending_posts.pop(payload.message_id)
-                    await post["message"].add_reaction("\N{GEAR}")
-                    await self.mu_poster(post, payload.user_id)
-                except Exception as e:
-                    await post["message"].channel.send(f":negative_squared_cross_mark: | Error while sending: {e}")
-                    self.bot.pending_posts[payload.message_id] = post
-                    await post["message"].remove_reaction("\N{GEAR}", post["message"].guild.me)
-                    error_traceback = " ".join(traceback.format_exception(type(e), e, e.__traceback__, chain=True))
-                    logging.error(error_traceback)                    
-
+                post = self.bot.pending_posts.pop(payload.message_id)
+                await post["message"].add_reaction("\N{GEAR}")
+                await post["message"].add_reaction("\N{SLEEPING SYMBOL}")
+                post["approver"] = payload.user_id
+                await self.bot.queued_posts.put(post)
         elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
             ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
             if payload.user_id in ids:
                 post = self.bot.pending_posts.pop(payload.message_id)
+                post["denier"] = payload.user_id
+                self.bot.denied_posts.append(post)
                 await post["message"].delete()
         
     async def mu_poster(self, pending, approver_id, retry=0):
@@ -176,13 +188,7 @@ class Special(commands.Cog):
             
         if not self.cookies:
             await self.new_cookies()
-            
-        sleep = (self.next_post - datetime.datetime.now()).total_seconds()
-        if sleep > 0:
-            await pending["message"].add_reaction("\N{SLEEPING SYMBOL}")
-            await asyncio.sleep(sleep)
-            await pending["message"].remove_reaction("\N{SLEEPING SYMBOL}", pending["message"].guild.me)
-            
+
         form = await self.get_form(pending["url"], "postmodify")
         if form is None:
             await self.new_cookies()
@@ -190,8 +196,6 @@ class Special(commands.Cog):
                 await self.mu_poster(pending, approver_id, retry+1)
             else:
                 raise ValueError(f"Retried three times, unable to get form for {pending['message'].id}")
-        
-        self.next_post = max(datetime.datetime.now(), self.next_post) + datetime.timedelta(minutes=2)
         
         username = await self.bot.db.query_executer(
             "SELECT username FROM necrobot.MU_Users WHERE user_id=$1", 
@@ -462,7 +466,7 @@ class Special(commands.Cog):
         if user is not None:
             messages = [x for x in self.bot.pending_posts.values() if x["message"].author.id == user.id]
         else:
-            messages = self.bot.pending_posts.values()
+            messages = list(self.bot.pending_posts.values())
             
         def embed_maker(index, entry):
             user = entry["message"].author
@@ -474,6 +478,43 @@ class Special(commands.Cog):
             )
             
             embed.add_field(name="Thread", value=entry["thread"])
+            embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
+            
+            return embed
+            
+        await react_menu(ctx, messages, 1, embed_maker)
+        
+    @register.command(name="denied")
+    @guild_only(327175434754326539)
+    async def register_denied(self, ctx, user : MUConverter = None):
+        """List the posts recently denied with their contents and the thread they were going 
+        to be posted to. Potentially list all the recently denied threads for a single user.
+        
+        {usage}
+        
+        __Examples__
+        `{pre}register denied` - list all pending posts
+        `{pre}register denied Necro` - list all pending posts for Necro
+        
+        """
+        if user is not None:
+            messages = [x for x in self.bot.denied_posts if x["message"].author.id == user.id]
+        else:
+            messages = self.bot.denied_posts
+            
+        def embed_maker(index, entry):
+            user = entry["message"].author
+            
+            embed = discord.Embed(
+                title=f"{user.display_name} ({index[0]}/{index[1]})", 
+                description=entry["text"],
+                colour=discord.Colour(0x277b0)
+            )
+            
+            embed.add_field(name="Thread", value=entry["thread"])
+            
+            denier = self.bot.get_user(entry["denier"])
+            embed.add_field(name="Denier", value=denier.mention if denier else 'User Left')
             embed.set_footer(text="Generated by Necrobot", icon_url=self.bot.user.avatar_url_as(format="png", size=128))
             
             return embed

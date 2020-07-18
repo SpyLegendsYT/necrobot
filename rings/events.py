@@ -315,7 +315,7 @@ class Events(commands.Cog):
             if payload.user_id == self.bot.user.id:
                 return 
                 
-            if str(payload.emoji) not in self.bot.polls[payload.message_id]["list"]:
+            if str(payload.emoji) not in self.bot.polls[payload.message_id]["list"] and self.bot.polls[payload.message_id]["list"]:
                 if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
                     emoji = payload.emoji._as_reaction()
                     await self.bot._connection.http.remove_reaction(
