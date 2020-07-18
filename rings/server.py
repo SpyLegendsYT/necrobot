@@ -433,7 +433,7 @@ class Server(commands.Cog):
     @commands.command(name="prefix")
     @has_perms(4)
     async def prefix(self, ctx, *, prefix=""):
-        """Sets the bot to only respond to the given prefix. If no prefix is given it will reset it to NecroBot's deafult 
+        r"""Sets the bot to only respond to the given prefix. If no prefix is given it will reset it to NecroBot's deafult 
         list of prefixes: `n!`, `N!` or `@NecroBot `. The prefix can't be longer than 15 characters.
         
         If you want your prefix to have a whitespace between the prefix and the command then end it with \w
@@ -713,12 +713,16 @@ class Server(commands.Cog):
         unicode_emojis = [emoji.emojize(raw) for raw in re.findall(UNICODE_EMOJI, emoji.demojize(content))]
         
         emojis = [*custom_emojis, *unicode_emojis]
+        final_list = []
 
         for reaction in emojis:
             try:
                 await message.add_reaction(reaction)
+                final_list.append(str(reaction))
             except (discord.NotFound, discord.InvalidArgument, discord.HTTPException):
                 pass
+                
+        return final_list
     
     @commands.command()
     @has_perms(3)
@@ -758,12 +762,12 @@ class Server(commands.Cog):
             return
         
         poll = await channel.send(f"{message}\n\n**Maximum votes: {votes}**")
-        await self.add_reactions(poll, content=message)
+        emoji_list = await self.add_reactions(poll, content=message)
         
-        self.bot.polls[poll.id] = {'votes': votes, 'voters':[]}
+        self.bot.polls[poll.id] = {'votes': votes, 'voters':[], 'list': emoji_list}
         await self.bot.db.query_executer(
-            "INSERT INTO necrobot.Polls VALUES($1, $2, $3, $4)", 
-            poll.id, poll.guild.id, poll.jump_url, votes
+            "INSERT INTO necrobot.Polls VALUES($1, $2, $3, $4, $5)", 
+            poll.id, poll.guild.id, poll.jump_url, votes, emoji_list
         )
         
     @commands.command()
@@ -792,11 +796,8 @@ class Server(commands.Cog):
         )
 
         def _embed_maker(index, entry):
-            def emojify(emoji):
-                if re.match(emoji_unicode.RE_PATTERN_TEMPLATE, emoji):
-                    return emoji
-
-                return discord.utils.get(ctx.guild.emojis, name=emoji) or emoji
+            def emojify(em):
+                return discord.utils.get(ctx.guild.emojis, name=em) or em
 
             string = "\n".join([f'{emojify(key)} - {value}' for key, value in entry[1]])
             embed = discord.Embed(

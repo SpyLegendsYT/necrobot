@@ -655,11 +655,10 @@ class SyncDatabase:
         return guilds
         
     def load_polls(self): 
-          
         polls = {}
-        self.cur.execute("SELECT * FROM necrobot.Polls")
+        self.cur.execute("SELECT message_id, votes, emoji_list FROM necrobot.Polls")
         for u in self.cur.fetchall():
-            polls[u[0]] = {'votes': u[1], 'voters':[]}
+            polls[u[0]] = {'votes': u[1], 'voters':[], 'list': u[2]}
             
         self.cur.execute("SELECT message_id, array_agg(user_id) FROM necrobot.Votes GROUP BY message_id;")
         for u in self.cur.fetchall():

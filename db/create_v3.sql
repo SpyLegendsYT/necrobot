@@ -129,7 +129,8 @@ CREATE TABLE necrobot.Polls(
     message_id bigint PRIMARY KEY,
     guild_id bigint REFERENCES necrobot.Guilds(guild_id) ON DELETE CASCADE,
     link varchar(500),
-    votes int CHECK(votes BETWEEN 1 AND 20)
+    votes int CHECK(votes BETWEEN 1 AND 20),
+    emoji_list text[]
 );
 
 CREATE TABLE necrobot.Votes(

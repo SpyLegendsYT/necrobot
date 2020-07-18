@@ -9,7 +9,6 @@ from rings.misc import FightError
 import asyncio
 import traceback
 import logging
-from datetime import timedelta
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -313,6 +312,9 @@ class Events(commands.Cog):
             if payload.message_id in self.bot.polls:
                 if payload.user_id == self.bot.user.id:
                     return 
+                    
+                if str(payload.emoji) not in self.bot.polls[payload.message_id]["list"]:
+                    return
                     
                 counter = self.bot.polls[payload.message_id]["voters"].count(payload.user_id) + 1
                 if counter > self.bot.polls[payload.message_id]["votes"]:
