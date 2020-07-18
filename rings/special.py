@@ -478,7 +478,6 @@ class Special(commands.Cog):
             return embed
             
         await react_menu(ctx, messages, 1, embed_maker)
-
-        
+ 
 def setup(bot):
     bot.add_cog(Special(bot))
