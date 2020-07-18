@@ -447,6 +447,7 @@ class Special(commands.Cog):
         await react_menu(ctx, posts, 5, embed_maker)
         
     @register.command(name="pending")
+    @guild_only(327175434754326539)
     async def register_pending(self, ctx, user : MUConverter = None):
         """List the posts currently waiting for approval with their contents and the thread they are going 
         to be posted to. Potentially list all the pending threads for a single user.
