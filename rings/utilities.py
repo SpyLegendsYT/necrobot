@@ -136,7 +136,6 @@ class Utilities(commands.Cog):
 
         async with self.bot.session.get(url, headers={"Connection": "keep-alive"}) as r:
             try:
-                print(r.headers)
                 res = await r.json()
             except aiohttp.ClientResponseError:
                 res = await r.json(content_type="application/javascript")

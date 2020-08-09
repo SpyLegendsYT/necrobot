@@ -551,6 +551,20 @@ class Admin(commands.Cog):
             os.system("nohup sudo python3.6 /home/pi/feeds/rss.py&")
         elif reaction.emoji == "\N{HEAR-NO-EVIL MONKEY}":
             os.system("nohup sudo python3.6 /home/pi/cardiff_confessions/main.py&")
+            
+    @commands.command()
+    async def maintenance(self, ctx, message = None):
+        """Set the bot as going down for maintenance soon.
+        
+        {usage}
+        """
+        self.bot.maintenance = True
+        msg = "going down for maintenance soon"
+        if message is not None:
+            msg = message
+            
+        self.bot.meta.hourly_task.cancel()
+        await self.bot.change_presence(activity=discord.Game(name=msg))
 
     @commands.Cog.listener()
     async def on_message(self, message):

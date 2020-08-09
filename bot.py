@@ -34,11 +34,11 @@ class NecroBot(commands.Bot):
         self.uptime_start = time.time()
         self.counter = datetime.datetime.now().hour
         
-        self.version = 3.0
+        self.version = 3.1
         self.ready = False
         self.prefixes = ["n!", "N!", "n@", "N@"]
         self.admin_prefixes = ["n@", "N@"]
-        self.new_commands = []
+        self.new_commands = ["mu", "maintenance"]
         self.statuses = ["n!help for help", "currently in {guild} guilds", "with {members} members", "n!report for bug/suggestions", "recently upgraded to v3!"]
         self.perms_name = ["User", "Helper", "Moderator", "Semi-Admin", "Admin", "Server Owner", "NecroBot Admin", "Bot Smiths"]
         
@@ -47,6 +47,7 @@ class NecroBot(commands.Bot):
         self.error_channel = 415169176693506048
         self.session = None
         self.pool = None
+        self.maintenance = False
         
         sync_db = SyncDatabase()
         self.guild_data = sync_db.load_guilds()

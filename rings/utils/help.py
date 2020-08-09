@@ -38,7 +38,10 @@ class NecrobotHelp(cmd.HelpCommand):
         
     async def get_brief_signature(self, command):
         first_line = command.help.split("\n")[0]
-        formatted = first_line.format(usage=self.get_command_signature(command))[:100]
+        formatted = first_line.format(usage=self.get_command_signature(command))
+        
+        if len(formatted) > 100:
+            return formatted[:97] + "..."
         
         return formatted
      
@@ -99,6 +102,6 @@ class NecrobotHelp(cmd.HelpCommand):
         for command in group.commands:
             if not command.hidden:
                 name = await self.format_command_name(command)
-                help_msg += f"`{name}`- {await self.get_brief_signature(command)}\n"
+                help_msg += f"{name} - {await self.get_brief_signature(command)}\n"
         
         await self.get_destination().send(help_msg)
