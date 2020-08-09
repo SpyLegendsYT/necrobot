@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from rings.utils.utils import has_perms, react_menu, BotError
 from rings.utils.config import github_key
-from rings.utils.converters import GuildConverter, BadgeConverter, range_check, UserConverter, Grudge
+from rings.utils.converters import GuildConverter, BadgeConverter, range_check, UserConverter, Grudge, MemberConverter
 
 try:
     import sh

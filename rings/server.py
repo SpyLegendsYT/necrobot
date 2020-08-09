@@ -475,11 +475,11 @@ class Server(commands.Cog):
 
         if not role:
             await ctx.send(":white_check_mark: | Auto-Role disabled")
-            self.bot.db.update_auto_role(ctx.guild.id, 0, time)
+            await self.bot.db.update_auto_role(ctx.guild.id, 0, time)
         else:
             time = f"for **{time}** seconds" if time else "permanently"
             await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** {time}")
-            self.bot.db.update_auto_role(ctx.guild.id, role.id, time)
+            await self.bot.db.update_auto_role(ctx.guild.id, role.id, time)
             
     @commands.group(name="broadcast", invoke_without_command=True)
     @has_perms(4)
@@ -495,6 +495,7 @@ class Server(commands.Cog):
         `{pre}broadcast message test 1 2 3` - sets the broadcast channel to #general
         `{pre}broadcast time 4` - sets the broadcast message to be sent every 4 hour
         `{pre}broadcast disable` - disables broadcasted messages"""
+        
         if disable == "disable":
             await self.bot.db.update_broadcast_channel(ctx.guild.id)
             await ctx.send(":white_check_mark: | **Broadcast messages disabled**")

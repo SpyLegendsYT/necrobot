@@ -132,7 +132,7 @@ class Events(commands.Cog):
             
     @commands.Cog.listener()
     async def on_guild_update(self, before, after):
-        if before.owner != after.owner:
+        if before.owner.id != after.owner.id:
             after_perms = 4 if after.get_member(before.owner.id).guild_permissions.administrator else 0
             await self.bot.db.update_permission(before.owner.id, before.id, update=after_perms)
             await self.bot.db.update_permission(after.owner.id, after.id, update=5)

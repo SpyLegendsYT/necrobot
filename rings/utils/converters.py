@@ -24,7 +24,12 @@ def get_member_named(members, name):
             return result
 
     def pred(m):
-        return m.nick.lower() == name.lower() or m.name.lower() == name.lower()
+        nick = None
+        
+        if m.nick is not None:
+            nick = m.nick.lower()
+            
+        return nick == name.lower() or m.name.lower() == name.lower()
 
     return utils.find(pred, members)
     
@@ -62,7 +67,7 @@ class MemberConverter(commands.IDConverter):
         if match is None:
             # not a mention...
             if guild:
-                result = get_member_named(guild, argument)
+                result = get_member_named(guild.members, argument)
             else:
                 result = _get_from_guilds(bot, get_member_named, "members", argument)
         else:
