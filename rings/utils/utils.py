@@ -55,7 +55,7 @@ def has_perms(level):
 async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
     max_pages = max(0, ((len(entries)-1)//per_page))
     if not entries:
-        raise BotError("No entries")
+        raise BotError("No entries in this list")
     
     subset = entries[page*per_page:(page+1)*per_page]
     msg = await ctx.send(embed=generator((page + 1, max_pages + 1), subset[0] if per_page == 1 else subset))
@@ -125,67 +125,6 @@ def time_converter(argument):
         time += convert[match[1]] * int(match[0])
 
     return time
-    
-class GuildConverter(commands.IDConverter):
-    async def convert(self, ctx, argument):
-        result = None
-        bot = ctx.bot
-        guilds = bot.guilds
-
-        result = discord.utils.get(guilds, name=argument)
-
-        if result:
-            return result
-
-        if argument.isdigit():
-            result = bot.get_guild(int(argument))
-
-            if result:
-                return result
-
-        raise commands.BadArgument("Not a known guild")
-        
-class BadgeConverter(commands.Converter):
-    async def convert(self, ctx, argument):
-        badge = await ctx.bot.db.get_badge_from_shop(name=argument)
-        
-        if not badge:
-            raise commands.CheckFailure("Could not find a badge with this name")
-            
-        return badge[0]
-
-class TimeConverter(commands.Converter):
-    async def convert(self, ctx, argument):
-        return time_converter(argument)
-
-class MoneyConverter(commands.Converter):
-    async def convert(self, ctx, argument):
-        if not argument.isdigit():
-            raise commands.BadArgument("Not a valid intenger")
-        
-        argument = int(argument)
-
-        if argument < 0:
-            raise commands.BadArgument("Amount must be a positive intenger")
-        
-        money = await ctx.bot.db.get_money(ctx.message.author.id)
-        if money >= argument:
-            return argument
-        
-        raise commands.BadArgument("You do not have enough money")
-        
-def range_check(min_v, max_v):
-    def check(argument):
-        if not argument.isdigit():
-            raise commands.BadArgument("Not a valid intenger")
-            
-        value = int(argument)
-        if not max_v >= value >= min_v:
-            raise commands.CheckFailure(f"Please select a number between **{min_v}** and **{max_v}**")
-            
-        return value
-            
-    return check
 
 def midnight():
     """Get the number of seconds until midnight."""

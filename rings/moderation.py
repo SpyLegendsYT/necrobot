@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, TimeConverter, BotError, react_menu
+from rings.utils.utils import has_perms, BotError, react_menu
+from rings.utils.converters import TimeConverter, MemberConverter, RoleConverter
 
 import asyncio
 
@@ -38,7 +39,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @has_perms(1)
     @commands.bot_has_permissions(manage_nicknames=True)
-    async def rename(self, ctx, user : discord.Member, *, nickname=None):
+    async def rename(self, ctx, user : MemberConverter, *, nickname=None):
         """ Nicknames a user, use to clean up offensive or vulgar names or just to prank your friends. Will return 
         an error message if the user cannot be renamed due to permission issues.
         
@@ -62,7 +63,7 @@ class Moderation(commands.Cog):
     @has_perms(2)
     @requires_mute_role()
     @commands.bot_has_permissions(manage_roles=True)
-    async def mute(self, ctx, user : discord.Member, time : TimeConverter = None):
+    async def mute(self, ctx, user : MemberConverter, time : TimeConverter = None):
         """Blocks the user from writing in channels by giving it the server's mute role. Make sure an admin has set a 
         mute role using `{pre}mute role`. The user can either be muted for the given amount of seconds or indefinitely 
         if no amount is given. The following times can be used: days (d), hours (h), minutes (m), seconds (s).
@@ -90,7 +91,7 @@ class Moderation(commands.Cog):
 
     @mute.command(name="role")
     @has_perms(4)
-    async def mute_role(self, ctx, *, role : discord.Role = 0):
+    async def mute_role(self, ctx, *, role : RoleConverter = 0):
         """Sets the mute role for this server to [role], this is used for the `mute` command, it is the role assigned by 
         the command to the user. Make sure to spell the role correctly, the role name is case sensitive. It is up to the server 
         authorities to set up the proper permissions for the chosen mute role. Once the role is set up it can be renamed and 
@@ -153,7 +154,7 @@ class Moderation(commands.Cog):
     @has_perms(2)
     @requires_mute_role()
     @commands.bot_has_permissions(manage_roles=True)
-    async def unmute(self, ctx, user : discord.Member):
+    async def unmute(self, ctx, user : MemberConverter):
         """Unmutes a user by removing the mute role, allowing them once again to write in text channels. 
         
         {usage}
@@ -173,7 +174,7 @@ class Moderation(commands.Cog):
     
     @commands.group(invoke_without_command = True)
     @has_perms(1)
-    async def warn(self, ctx, user : discord.Member, *, message : str):
+    async def warn(self, ctx, user : MemberConverter, *, message : str):
         """Adds the given message as a warning to the user's NecroBot profile
         
         {usage}
@@ -211,7 +212,7 @@ class Moderation(commands.Cog):
         await ctx.send(f":white_check_mark: | Warning `{warning_id}` removed from warning list of user **{user.display_name if user else 'User Left'}**")
 
     @warn.command(name="list")
-    async def warn_list(self, ctx, user : discord.Member = None):
+    async def warn_list(self, ctx, user : MemberConverter = None):
         """List a user's warnings
         
         {usage}
@@ -298,7 +299,7 @@ class Moderation(commands.Cog):
     @commands.command()
     @has_perms(4)
     @commands.bot_has_permissions(manage_messages=True)
-    async def purge(self, ctx, number : int = 1, check = "", extra : discord.Member = ""):
+    async def purge(self, ctx, number : int = 1, check = "", extra : MemberConverter = ""):
         """Removes number of messages from the channel it is called in. That's all it does at the moment 
         but later checks will also be added to allow for more flexible/specific purging
         

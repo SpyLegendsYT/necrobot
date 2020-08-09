@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, react_menu, TimeConverter, BotError, check_channel, range_check
+from rings.utils.utils import has_perms, react_menu, BotError, check_channel
+from rings.utils.converters import TimeConverter, range_check, UserConverter, MemberConverter, RoleConverter
 
 from typing import Union
 import re
@@ -42,7 +43,7 @@ class Server(commands.Cog):
 
     @commands.command(aliases=["perms"])
     @has_perms(4)
-    async def permissions(self, ctx, user : discord.Member = None, level : int = None):
+    async def permissions(self, ctx, user : MemberConverter = None, level : range_check(0, 7) = None):
         """Sets the NecroBot permission level of the given user, you can only set permission levels lower than your own. 
         Permissions reset if you leave the server.
          
@@ -53,7 +54,7 @@ class Server(commands.Cog):
         `{pre}perms @NecroBot 5` - set the NecroBot permission level to 5"""
         if level is None and user is not None:
             level = await self.bot.db.get_permission(ctx.guild.id, user.id)
-            return await ctx.send(f"**{user.display_name}** is level **{level}** ({self.bot.perms_name[level]})")
+            return await ctx.send(f"**{user.display_name}** is **{level}** ({self.bot.perms_name[level]})")
 
         if level is None and user is None:
             members = await self.bot.db.query_executer(
@@ -75,9 +76,6 @@ class Server(commands.Cog):
 
             return await react_menu(ctx, members, 10, _embed_maker)
 
-        if level < 0 or level > 7:
-            raise BotError("You cannot promote the user any higher/lower")
-
         if await self.bot.db.compare_user_permission(ctx.author.id, ctx.guild.id, user.id) > 0:
             current_level = await self.bot.db.get_permission(user.id, ctx.guild.id)
             await self.bot.db.update_permission(user.id, ctx.guild.id, update=level)
@@ -92,7 +90,7 @@ class Server(commands.Cog):
 
     @commands.command()
     @has_perms(4)
-    async def promote(self, ctx, member : discord.Member):
+    async def promote(self, ctx, member : MemberConverter):
         """Promote a member by one on the Necrobot hierarchy scale. Gaining access to additional commands.
 
         {usage}
@@ -105,7 +103,7 @@ class Server(commands.Cog):
 
     @commands.command()
     @has_perms(4)
-    async def demote(self, ctx, member : discord.Member):
+    async def demote(self, ctx, member : MemberConverter):
         """Demote a member by one on the Necrobot hierarchy scale. Losing access to certain commands.
 
         {usage}
@@ -118,7 +116,7 @@ class Server(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @has_perms(4)
-    async def automod(self, ctx, *mentions : Union[discord.Member, discord.TextChannel, discord.Role]):
+    async def automod(self, ctx, *mentions : Union[MemberConverter, discord.TextChannel, RoleConverter]):
         """Used to manage the list of channels and user ignored by the bot's automoderation system. If no mentions are 
         given it will print out the list of ignored Users (**U**) and the list of ignored Channels (**C**). The automoderation 
         feature tracks the edits made by users to their own messages and the deleted messages, printing them in the server's automod 
@@ -171,7 +169,7 @@ class Server(commands.Cog):
 
     @automod.command(name="channel")
     @has_perms(4)
-    async def automod_channel(self, ctx, channel : discord.TextChannel = 0):
+    async def automod_channel(self, ctx, channel : Union[discord.TextChannel, str] = None):
         """Sets the automoderation channel to [channel], [channel] argument should be a channel mention. All the 
         auto-moderation related messages will be sent there.
          
@@ -179,19 +177,23 @@ class Server(commands.Cog):
         
         __Example__
         `{pre}automod channel #channel` - set the automoderation messages to be sent to channel 'channel'
-        `{pre}automod channel` - disables automoderation for the entire server"""
+        `{pre}automod channel disable` - disables automoderation for the entire server
+        `{pre}automod channel` - see what the automod channel is currently"""
 
         if channel:
             check_channel(channel)
             await self.bot.db.update_automod_channel(ctx.guild.id, channel.id)
             await ctx.send(f":white_check_mark: | Okay, all automoderation messages will be posted in {channel.mention} from now on.")
-        else:
+        elif channel.lower() == "disable":
             await self.bot.db.update_automod_channel(ctx.guild.id)
             await ctx.send(":white_check_mark: | Auto-moderation **disabled**")
+        else:
+            channel = ctx.guild.get_channel(self.bot.guild_data[ctx.guild.id]["automod"])
+            await ctx.send(f"Automod channel is currently set to {channel.mention if channel else 'Disabled'}. Use `{ctx.command.prefix}automod channel disable` to disable")
 
     @commands.command()
     @has_perms(4)
-    async def ignore(self, ctx, *mentions : Union[discord.Member, discord.TextChannel, discord.Role]):
+    async def ignore(self, ctx, *mentions : Union[MemberConverter, discord.TextChannel, RoleConverter]):
         """Used to manage the list of channels and user ignored by the bot's command system. If no mentions are 
         given it will print out the list of ignored Users (**U**) and the list of ignored Channels (**C**). Being ignored
         by the command system means that user cannot use any of the bot commands on the server. If mentions are given then 
@@ -248,8 +250,6 @@ class Server(commands.Cog):
 
         {usage}"""
         server = self.bot.guild_data[ctx.guild.id] 
-        role_obj = discord.utils.get(ctx.guild.roles, id=server["mute"])
-        role_obj2 = discord.utils.get(ctx.guild.roles, id=server["auto-role"])
         embed = discord.Embed(title="Server Settings", colour=discord.Colour(0x277b0), description="Info on the NecroBot settings for this server")
         embed.add_field(
             name="Welcome Channel", 
@@ -261,13 +261,13 @@ class Server(commands.Cog):
             inline=False
         )
         embed.add_field(
-            name="Goodbye Message", 
+            name="Farewell Message", 
             value=server["goodbye"][:1024] if server["goodbye"] else "None", 
             inline=False
         )
         embed.add_field(
             name="Mute Role", 
-            value=role_obj.mention if server["mute"] else "Disabled"
+            value=ctx.guild.get_role(server["mute"]).mention if server["mute"] else "Disabled"
         )
         embed.add_field(
             name="Prefix", 
@@ -293,7 +293,7 @@ class Server(commands.Cog):
         )
         embed.add_field(
             name="Auto Role", 
-            value= role_obj2.mention if server["auto-role"] else "Disabled"
+            value= ctx.guild.get_role(server["auto-role"]).mention if server["auto-role"] else "Disabled"
         )
         embed.add_field(
             name="Auto Role Time Limit", 
@@ -319,7 +319,7 @@ class Server(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @has_perms(4)
-    async def welcome(self, ctx, *, message=""):
+    async def welcome(self, ctx, *, message : str = ""):
         """Sets the message that will be sent to the designated channel everytime a member joins the server. You 
         can use special keywords to replace certain words by stuff like the name of the member or a mention.
         List of keywords:
@@ -335,6 +335,8 @@ class Server(commands.Cog):
         `{pre}welcome Hello {member} :wave:` - sets the welcome message to be 'Hello Necrobot#1231 :wave:'.
         `{pre}welcome hey there {mention}, welcome to {server}` - set the welcome message to 'hey there @NecroBot, welcome
         to NecroBot Support Server'
+        `{pre}welcome` - see your server's welcome message
+        `{pre}welcome disable` - disable server welcome messages
         """
         if message == "":
             await ctx.send(":white_check_mark: | Welcome message reset and disabled")
@@ -355,7 +357,7 @@ class Server(commands.Cog):
         
     @commands.group(invoke_without_command=True)
     @has_perms(4)
-    async def goodbye(self, ctx, *, message= ""):
+    async def farewell(self, ctx, *, message : str = ""):
         """Sets the message that will be sent to the designated channel everytime a member leaves the server. You 
         can use special keywords to replace certain words by stuff like the name of the member or a mention.
         List of keywords:
@@ -368,12 +370,12 @@ class Server(commands.Cog):
         {usage}
         
         __Example__
-        `{pre}goodbye Hello {member} :wave:` - sets the welcome message to be 'Hello Necrobot#1231 :wave:'.
-        `{pre}goddbye hey there {mention}, we'll miss you on {server}` - set the welcome message to 'hey 
+        `{pre}farewell Hello {member} :wave:` - sets the farewell message to be 'Hello Necrobot#1231 :wave:'.
+        `{pre}farewell hey there {mention}, we'll miss you on {server}` - set the farewell message to 'hey 
         there @NecroBot, we'll miss you on NecroBot Support Server'
         """
         if message == "":
-            await ctx.send(":white_check_mark: | Goodbye message reset and disabled")
+            await ctx.send(":white_check_mark: | Farewell message reset and disabled")
         else:
             try:
                 test = message.format(
@@ -383,26 +385,26 @@ class Server(commands.Cog):
                     name=ctx.author.name,
                     id=ctx.author.id
                 )
-                await ctx.send(f":white_check_mark: | Your server's goodbye message will be: \n{test}")
+                await ctx.send(f":white_check_mark: | Your server's farewell message will be: \n{test}")
             except KeyError as e:
-                raise BotError(f"{e.args[0]} is not a valid argument, you can use either `member` and its reserved keywords or `server`")
+                raise BotError(f"{e.args[0]} is not a valid argument. Check the help guide to see what you can use the command with.")
 
-        await self.bot.db.update_goodbye_message(ctx.guild.id, message)
+        await self.bot.db.update_farewell_message(ctx.guild.id, message)
 
     async def channel_set(self, ctx, channel):
         if not channel:
             await self.bot.db.update_greeting_channel(ctx.guild.id)
-            await ctx.send(":white_check_mark: | Welcome/Goodbye messages **disabled**")
+            await ctx.send(":white_check_mark: | Welcome/Farewell messages **disabled**")
         else:
             check_channel(channel)
             await self.bot.db.update_greeting_channel(ctx.guild.id, channel.id)
-            await ctx.send(f":white_check_mark: | Users will get their welcome/goodbye message in {channel.mention} from now on.")
+            await ctx.send(f":white_check_mark: | Users will get their welcome/farewell message in {channel.mention} from now on.")
 
     @welcome.command(name="channel")
     @has_perms(4)
     async def welcome_channel(self, ctx, channel : discord.TextChannel = 0):
         """Sets the welcome channel to [channel], the [channel] argument should be a channel mention/name/id. The welcome 
-        message for users will be sent there. Can be called with either goodbye or welcome, regardless both will use
+        message for users will be sent there. Can be called with either farewell or welcome, regardless both will use
         the same channel, calling the command with both parent commands but different channel will not make
         messages send to two channels.
          
@@ -414,19 +416,19 @@ class Server(commands.Cog):
 
         await self.channel_set(ctx, channel)
 
-    @goodbye.command(name="channel")
+    @farewell.command(name="channel")
     @has_perms(4)
-    async def goodbye_channel(self, ctx, channel : discord.TextChannel = 0):
+    async def farewell_channel(self, ctx, channel : discord.TextChannel = 0):
         """Sets the welcome channel to [channel], the [channel] argument should be a channel mention. The welcome 
-        message for users will be sent there. Can be called with either goodbye or welcome, regardless both will use
+        message for users will be sent there. Can be called with either farewell or welcome, regardless both will use
         the same channel, calling the command with both parent commands but different channel will not make
         messages send to two channels.
          
         {usage}
         
         __Example__
-        `{pre}goodbye channel #channel` - set the welcome messages to be sent to 'channel'
-        `{pre}goodbye channel` - disables welcome messages"""
+        `{pre}farewell channel #channel` - set the welcome messages to be sent to 'channel'
+        `{pre}farewell channel` - disables welcome messages"""
 
         await self.channel_set(ctx, channel)
 
@@ -458,7 +460,7 @@ class Server(commands.Cog):
 
     @commands.command(name="auto-role")
     @has_perms(4)
-    async def auto_role(self, ctx, role : discord.Role = 0, time : TimeConverter = 0):
+    async def auto_role(self, ctx, role : RoleConverter = 0, time : TimeConverter = 0):
         """Sets the auto-role for this server to the given role. Auto-role will assign the role to the member when they join.
         The following times can be used: days (d), hours (h), minutes (m), seconds (s).
 
@@ -470,15 +472,15 @@ class Server(commands.Cog):
         `{pre}auto-role Newcomer 4h45m56s` - same but the role stays for 4 hours, 45 minutes and 56 seconds
         `{pre}auto-role Newcomer` - gives the role "Newcomer" with no timer to users who join the server.
         `{pre}auto-role` - resets and disables the autorole system. """
-        
-        self.bot.db.update_auto_role(ctx.guild.id, role.id, time)
 
         if not role:
             await ctx.send(":white_check_mark: | Auto-Role disabled")
+            self.bot.db.update_auto_role(ctx.guild.id, 0, time)
         else:
             time = f"for **{time}** seconds" if time else "permanently"
             await ctx.send(f":white_check_mark: | Joining members will now automatically be assigned the role **{role.name}** {time}")
-
+            self.bot.db.update_auto_role(ctx.guild.id, role.id, time)
+            
     @commands.group(name="broadcast", invoke_without_command=True)
     @has_perms(4)
     async def broadcast(self, ctx, disable):
@@ -546,7 +548,7 @@ class Server(commands.Cog):
     @commands.group(invoke_without_command = True)
     @commands.guild_only()
     @commands.bot_has_permissions(manage_roles=True)
-    async def giveme(self, ctx, *, role : discord.Role = None):
+    async def giveme(self, ctx, *, role : RoleConverter = None):
         """Gives the user the role if it is part of this Server's list of self assignable roles. If the user already 
         has the role it will remove it. **Roles names are case sensitive** If no role name is given then it will list
         the self-assignable roles for the server
@@ -584,7 +586,7 @@ class Server(commands.Cog):
 
     @giveme.command(name="add")
     @has_perms(4)
-    async def giveme_add(self, ctx, *, role : discord.Role):
+    async def giveme_add(self, ctx, *, role : RoleConverter):
         """Adds [role] to the list of the server's self assignable roles.
          
         {usage}
@@ -599,7 +601,7 @@ class Server(commands.Cog):
 
     @giveme.command(name="delete")
     @has_perms(4)
-    async def giveme_delete(self, ctx, *, role : discord.Role):
+    async def giveme_delete(self, ctx, *, role : RoleConverter):
         """Removes [role] from the list of the server's self assignable roles.
         
         {usage}
@@ -615,7 +617,7 @@ class Server(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
-    async def starboard(self, ctx, member : Union[discord.User, int] = 1):
+    async def starboard(self, ctx, member : Union[UserConverter, int] = 1):
         """Base of the concept of R.Danny's starboard but simplified. This will post a message in a desired channel once it hits
         a certain number of :star: reactions. Default limit is 5, you can change the limit with `{pre}starboard limit` If no
         subcommand is passed it will return a leaderboard of the top starred users, if a user is passed it will return their 

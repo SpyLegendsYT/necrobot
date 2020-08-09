@@ -1,8 +1,9 @@
 import discord
 from discord.ext import commands
 
-from rings.utils.utils import has_perms, GuildConverter, react_menu, BotError, BadgeConverter, range_check
+from rings.utils.utils import has_perms, react_menu, BotError
 from rings.utils.config import github_key
+from rings.utils.converters import GuildConverter, BadgeConverter, range_check, UserConverter, Grudge
 
 try:
     import sh
@@ -16,21 +17,6 @@ import asyncio
 from typing import Union, Optional
 from simpleeval import simple_eval
 import datetime
-
-class Grudge(commands.Converter):
-    async def convert(ctx, argument):
-        if not argument.isdigit():
-            raise commands.BadArgument("Please supply a valid id")
-        
-        grudge = await ctx.bot.db.query_executer(
-            "SELECT * FROM necrobot.Grudges WHERE id = $1",
-            int(grudge_id)    
-        )
-        
-        if not grudge:
-            raise commands.BadArgument("No grudge with such id")
-            
-        return grudge[0]
 
 class Admin(commands.Cog):
     def __init__(self, bot):
@@ -52,7 +38,7 @@ class Admin(commands.Cog):
             
     @commands.group(invoke_without_command=True)
     @commands.is_owner()
-    async def grudge(self, ctx, user : discord.User, *, grudge : str):
+    async def grudge(self, ctx, user : UserConverter, *, grudge : str):
         """Add a grudge
         
         {usage}"""
@@ -72,7 +58,7 @@ class Admin(commands.Cog):
         )
         
     @grudge.command(name="list")
-    async def grudge_list(self, ctx, user : Union[discord.Member, discord.User, int]):
+    async def grudge_list(self, ctx, user : Union[UserConverter, int]):
         """See all the grudges for a user
         
         {usage}
@@ -153,7 +139,7 @@ class Admin(commands.Cog):
         
     @commands.command()
     @has_perms(6)
-    async def add(self, ctx, user : discord.User, *, equation : str):
+    async def add(self, ctx, user : UserConverter, *, equation : str):
         """Does the given pythonic equations on the given user's NecroBot balance.
         `*` - for multiplication
         `+` - for additions
@@ -174,7 +160,7 @@ class Admin(commands.Cog):
         except (NameError, SyntaxError):
             raise BotError("Operation not recognized.")
 
-        msg = await ctx.send(f":white_check_mark: | Operation successful. Change user balace to **{operation}**?")
+        msg = await ctx.send(f":white_check_mark: | Operation successful. Change {user} balance to **{operation}**?")
 
         await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
         await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
@@ -207,7 +193,7 @@ class Admin(commands.Cog):
     
     @admin.command(name="permissions", aliases=["perms"])
     @commands.is_owner()
-    async def admin_perms(self, ctx, guild : GuildConverter, user : discord.User, level : int):
+    async def admin_perms(self, ctx, guild : GuildConverter, user : UserConverter, level : int):
         """For when regular perms isn't enough.
 
         {usage}"""
@@ -251,7 +237,7 @@ class Admin(commands.Cog):
         
     @admin.command(name="badges")
     @has_perms(6)
-    async def admin_badges(self, ctx, subcommand : str, user : discord.User, badge : BadgeConverter, spot : range_check(1, 8) = None):
+    async def admin_badges(self, ctx, subcommand : str, user : UserConverter, badge : BadgeConverter, spot : range_check(1, 8) = None):
         """Used to grant special badges to users. Uses add/delete subcommand
 
         {usage}
@@ -275,7 +261,7 @@ class Admin(commands.Cog):
                     
     @commands.command()
     @has_perms(6)
-    async def pm(self, ctx, user : discord.User, *, message : str):
+    async def pm(self, ctx, user : UserConverter, *, message : str):
         """Sends the given message to the user of the given id. It will then wait for an answer and 
         print it to the channel it was called it. 
         
@@ -430,7 +416,7 @@ class Admin(commands.Cog):
         
     @commands.command(name="as")
     @commands.is_owner()
-    async def _as(self, ctx, user : discord.Member, *, message : str):
+    async def _as(self, ctx, user : MemberConverter, *, message : str):
         """Call a command as another user, used for debugging purposes
 
         {usage}
@@ -477,7 +463,7 @@ class Admin(commands.Cog):
         
     @commands.command()
     @has_perms(6)
-    async def gate(self, ctx, channel : Union[discord.TextChannel, discord.User]):
+    async def gate(self, ctx, channel : Union[discord.TextChannel, UserConverter]):
         """Connects two channels with a magic gate so that users on both servers can communicate. Magic:tm:
 
         {usage}

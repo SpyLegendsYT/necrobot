@@ -333,7 +333,7 @@ class Database(commands.Cog):
         )
         self.bot.guild_data[guild_id]["welcome"] = message
         
-    async def update_goodbye_message(self, guild_id, message):
+    async def update_farewell_message(self, guild_id, message):
         await self.query_executer(
             "UPDATE necrobot.Guilds SET goodbye_message = $1 WHERE guild_id = $2",
             message, guild_id    
@@ -658,7 +658,7 @@ class SyncDatabase:
         polls = {}
         self.cur.execute("SELECT message_id, votes, emoji_list FROM necrobot.Polls")
         for u in self.cur.fetchall():
-            polls[u[0]] = {'votes': u[1], 'voters':[], 'list': u[2]}
+            polls[u[0]] = {'votes': u[1], 'voters':[], 'list': u[2] if u[2] else []}
             
         self.cur.execute("SELECT message_id, array_agg(user_id) FROM necrobot.Votes GROUP BY message_id;")
         for u in self.cur.fetchall():

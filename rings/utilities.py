@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from rings.utils.utils import has_perms, react_menu, time_converter, BotError
+from rings.utils.converters import MemberConverter
 
 import random
 import aiohttp
@@ -86,7 +87,7 @@ class Utilities(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def avatar(self, ctx,* , user : discord.Member=None):
+    async def avatar(self, ctx,* , user : MemberConverter=None):
         """Returns a link to the given user's profile pic 
         
         {usage}
@@ -214,7 +215,7 @@ class Utilities(commands.Cog):
         await ctx.send(":white_check_mark: | Reminder cancelled")
 
     @remindme.command(name="list")
-    async def remindme_list(self, ctx, user : discord.Member = None):
+    async def remindme_list(self, ctx, user : MemberConverter = None):
         """List all the reminder you currently have in necrobot's typical paginator. All the reminders include their
         position on the remindme list which can be given to `remindme delete` to cancel a reminder.
 
@@ -416,15 +417,14 @@ class Utilities(commands.Cog):
         """        
         if len(symbol) > 50:
             raise BotError(" The symbol cannot be more than 50 characters")
-        else:
-            await ctx.send(":white_check_mark: | Leaderboard symbol changed")
-            
+        
+        await ctx.send(":white_check_mark: | Leaderboard symbol changed")    
         await self.bot.db.update_leaderboard(ctx.guild.id, symbol=symbol)
     
     @has_perms(2)
     @leaderboard_enabled()
     @leaderboard.command(name="award")
-    async def leaderboard_award(self, ctx, user : discord.Member, points : int):
+    async def leaderboard_award(self, ctx, user : MemberConverter, points : int):
         """Add remove some points. (Permission level of 2+)
         
         {usage}

@@ -1,7 +1,8 @@
 #!/usr/bin/python3.6
 from discord.ext import commands
 
-from rings.utils.utils import BotError, MoneyConverter
+from rings.utils.utils import BotError
+from rings.utils.converters import MoneyConverter
 
 import asyncio
 from collections import deque

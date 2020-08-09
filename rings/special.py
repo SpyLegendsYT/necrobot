@@ -3,6 +3,7 @@ from discord.ext import commands
 
 from rings.utils.utils import BotError, has_perms, react_menu
 from rings.utils.config import cookies, MU_Username, MU_Password
+from rings.utils.converters import MemberConverter
 
 import re
 import asyncio
@@ -17,7 +18,7 @@ class FakeUser:
 class MUConverter(commands.Converter):
     async def convert(self, ctx, argument):
         try:
-            return await commands.MemberConverter().convert(ctx, argument)
+            return await MemberConverter().convert(ctx, argument)
         except commands.BadArgument:
             pass
             
@@ -341,7 +342,7 @@ class Special(commands.Cog):
     @register.command(name="rename")
     @guild_only(327175434754326539)
     @mu_moderator_check()
-    async def register_rename(self, ctx, user : discord.Member, new_username : str):
+    async def register_rename(self, ctx, user : MemberConverter, new_username : str):
         """Rename users, use sparingly. This command can only be used by forum moderators.
         
         {usage}
@@ -361,7 +362,7 @@ class Special(commands.Cog):
     @register.command(name="ban")
     @guild_only(327175434754326539)
     @mu_moderator_check()
-    async def register_ban(self, ctx, *users : discord.Member):
+    async def register_ban(self, ctx, *users : MemberConverter):
         """Ban users from using the system, they will still be registered but unable to use the system. This
         command can only be used by forum moderators.
         
@@ -380,7 +381,7 @@ class Special(commands.Cog):
     @register.command(name="unban")
     @guild_only(327175434754326539)
     @mu_moderator_check()
-    async def register_unban(self, ctx, *users : discord.Member):
+    async def register_unban(self, ctx, *users : MemberConverter):
         """Unban users from the system, they will be able to once again use their accounts and create posts. This
         command can only be used by forum moderators.
         

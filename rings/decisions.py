@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
-from rings.utils.utils import MoneyConverter
+from rings.utils.converters import MoneyConverter
 from rings.utils.var import ball8_list
 
 import dice

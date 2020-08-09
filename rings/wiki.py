@@ -55,7 +55,7 @@ class Wiki(commands.Cog):
             link = related["url"].replace(')', '\)')
             related_string += f"- [{related['title']}]({base}{link})\n"
 
-        embed.add_field(name="More Pages", value=related_string, inline=False)
+        embed.add_field(name="More Pages", value=related_string if related_string else "No Pages", inline=False)
             
         await ctx.send(msg, embed=embed)
     

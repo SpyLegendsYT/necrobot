@@ -2,11 +2,11 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
-from rings.utils.utils import midnight, MoneyConverter, react_menu, BotError, BadgeConverter, range_check, has_perms
+from rings.utils.utils import midnight, react_menu, BotError, has_perms
+from rings.utils.converters import MoneyConverter, BadgeConverter, MemberConverter, range_check
 from rings.db import DatabaseError
 
 import random
-import asyncio
 import functools
 from io import BytesIO
 from PIL import Image
@@ -27,7 +27,7 @@ class Profile(commands.Cog):
         ]
 
     @commands.group(invoke_without_command=True)
-    async def balance(self, ctx, *, user : discord.Member = None):
+    async def balance(self, ctx, *, user : MemberConverter = None):
         """Prints the given user's NecroBot balance, if no user is supplied then it will print your own NecroBot balance.
         
         {usage}
@@ -117,7 +117,7 @@ class Profile(commands.Cog):
 
     @commands.command(name="daily")
     @commands.cooldown(1, 60, BucketType.user)
-    async def daily(self, ctx, *, member : discord.Member = None):
+    async def daily(self, ctx, *, member : MemberConverter = None):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day. Can
         also be gifted to a user for some extra cash. 
         
@@ -152,7 +152,7 @@ class Profile(commands.Cog):
         await ctx.send(f":m: | {message}")
 
     @commands.command()
-    async def pay(self, ctx, payee : discord.Member, amount : MoneyConverter):
+    async def pay(self, ctx, payee : MemberConverter, amount : MoneyConverter):
         """Transfers the given amount of money to the given user's NecroBot bank account.
 
         {usage}
@@ -195,7 +195,7 @@ class Profile(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def info(self, ctx, *, user : discord.Member = None):
+    async def info(self, ctx, *, user : MemberConverter = None):
         """Returns a rich embed of the given user's info. If no user is provided it will return your own info.
         
         {usage}
@@ -231,7 +231,7 @@ class Profile(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def profile(self, ctx, *, user : discord.Member = None):
+    async def profile(self, ctx, *, user : MemberConverter = None):
         """Shows your profile information in a picture
 
         {usage}
