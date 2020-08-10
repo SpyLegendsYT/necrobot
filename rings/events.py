@@ -64,7 +64,7 @@ class Events(commands.Cog):
 
             thing = ctx.guild or ctx.author
             if thing.id != 311630847969198082:
-                msg = f"There was an unexepected error. A report has been sent and a fix will be patched through. The error is `{error}`"
+                msg = f"There was an unexpected error. A report has been sent and a fix will be patched through. The error is `{error}`"
         
         if msg is not None: 
             try:     

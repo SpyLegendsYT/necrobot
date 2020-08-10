@@ -298,7 +298,7 @@ class Special(commands.Cog):
             
             for entry in entries:
                 threads = []
-                for url, approver, _ in reversed(entry[1]):
+                for url, approver in reversed(entry[1]):
                     approver_obj = ctx.guild.get_member(approver)
                     threads.append(f"[{url.split('#')[-1]}]({url}) - {approver_obj.mention if approver_obj is not None else 'User has left'}")
                 
