@@ -560,7 +560,7 @@ class Server(commands.Cog):
         `{pre}giveme Good` - gives or remove the role 'Good' to the user if it is in the list of self assignable roles"""
 
         if role is None:
-            roles = [x.mention for x in ctx.guild.roles if x.id in self.bot.guild_data[ctx.guild.id]["self-roles"]]
+            roles = [f"{x.mention} ({len(x.members)})" for x in reversed(ctx.guild.roles) if x.id in self.bot.guild_data[ctx.guild.id]["self-roles"]]
             
             def _embed_maker(index, entries):
                 embed = discord.Embed(
