@@ -78,6 +78,10 @@ class Server(commands.Cog):
 
         if await self.bot.db.compare_user_permission(ctx.author.id, ctx.guild.id, user.id) > 0:
             current_level = await self.bot.db.get_permission(user.id, ctx.guild.id)
+            
+            if current_level == level:
+                raise BotError("The user already has that permission level")
+            
             await self.bot.db.update_permission(user.id, ctx.guild.id, update=level)
             
             if current_level < level:

@@ -89,7 +89,7 @@ class Moderation(commands.Cog):
             self.bot.loop.create_task(self.mute_task(ctx, user, role, time))
             
 
-    @mute.command(name="role")
+    @mute.group(name="role", invoke_without_command=True)
     @has_perms(4)
     async def mute_role(self, ctx, *, role : RoleConverter = 0):
         """Sets the mute role for this server to [role], this is used for the `mute` command, it is the role assigned by 
@@ -102,13 +102,47 @@ class Moderation(commands.Cog):
         
         __Example__
         `{pre}mute role Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
-        `{pre}mute role` - resets the mute role and disables the `mute` command."""
+        `{pre}mute role` - resets the mute role and disables the `mute` command.
+        `{pre}mute role create` - create a mute role for the server on its own and add it to all the channels. If
+        there is already a mute role this updates all the channels without permissions for it to disallow sending
+        messages and connection"""
         if not role:
             await self.bot.db.update_mute_role(ctx.guild.id)
             await ctx.send(":white_check_mark: | Reset mute role")
         else:
             await self.bot.db.update_mute_role(ctx.guild.id, role.id)
             await ctx.send(f":white_check_mark: | Okay, the mute role for your server will be {role.mention}")
+            
+    @mute_role.command(name="create")
+    @has_perms(4)
+    @commands.bot_has_permissions(manage_roles=True, manage_channels=True)
+    async def mute_role_create(self, ctx, name : str = None):
+        """Creates the mute role for you if not already set and updates the channels where there are no overwrite
+        already set for the mute role. This means any channel with overwrites already set will be skipped over.
+        
+        {usage}
+        
+        __Examples__
+        `{pre}mute role create` - create the mute role with default name "Muted"
+        `{pre}mute role create Timeout` - create the mute role with name "Timeout"
+        """
+        if not self.bot.guild_data["mute"]:
+            role = await ctx.guild.create_role(
+                name=name if name is not None else "Muted",
+                permissions=discord.Permissions(permissions=0)
+            )
+            await self.bot.db.update_mute_role(ctx.guild.id, role.id)
+            await ctx.send(f":white_check_mark: | Created mute role called {role.mention}")
+        else:
+            role = ctx.guild.get_role(self.bot.guild_data["mute"])
+            
+        denied_perms = discord.PermissionOverwrite(add_reactions=False, send_messages=False, connect=False)
+        for channel in ctx.guild.channels:
+            overwrites = channel.overwrites_for(role)
+            if overwrites.is_empty():
+                await channel.edit({role : denied_perms})   
+                
+        await ctx.send(f":white_check_mark: | Updated permissions for all channels where {role.mention} was not already present")
             
     @commands.Cog.listener()
     async def on_member_remove(self, member):
