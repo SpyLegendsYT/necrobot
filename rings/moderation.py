@@ -103,7 +103,6 @@ class Moderation(commands.Cog):
         __Example__
         `{pre}mute role Token Mute Role` - set the mute role to be the role named 'Token Mute Role'
         `{pre}mute role` - resets the mute role and disables the `mute` command.
-        `{pre}mute role create` - create a mute role for the server on its own and add it to all the channels. If
         there is already a mute role this updates all the channels without permissions for it to disallow sending
         messages and connection"""
         if not role:
@@ -116,7 +115,7 @@ class Moderation(commands.Cog):
     @mute_role.command(name="create")
     @has_perms(4)
     @commands.bot_has_permissions(manage_roles=True, manage_channels=True)
-    async def mute_role_create(self, ctx, name : str = None):
+    async def mute_role_create(self, ctx, *, name : str = None):
         """Creates the mute role for you if not already set and updates the channels where there are no overwrite
         already set for the mute role. This means any channel with overwrites already set will be skipped over.
         

@@ -70,7 +70,7 @@ class Profile(commands.Cog):
 
             for user in entries:
                 embed.add_field(
-                    name=f"{monies.index(user)}. {ctx.guild.get_member(user[0]).display_name}", 
+                    name=f"{monies.index(user)+1}. {ctx.guild.get_member(user[0]).display_name}", 
                     value=user[1], 
                     inline=False
                 )
@@ -106,7 +106,7 @@ class Profile(commands.Cog):
 
             for user in entries:
                 embed.add_field(
-                    name=f"{monies.index(user)}. {ctx.guild.get_member(user[0]).display_name}", 
+                    name=f"{monies.index(user)+1}. {ctx.guild.get_member(user[0]).display_name}", 
                     value=user[1], 
                     inline=False
                 )

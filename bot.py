@@ -24,7 +24,6 @@ class NecroBot(commands.Bot):
             fetch_offline_members=True,
             activity=discord.Game("n!help for help"),
             case_insensitive=True,
-            owner_id=241942232867799040, 
             description="A bot for managing and enhancing servers",
             command_prefix=get_pre,
             help_command=NecrobotHelp(),
