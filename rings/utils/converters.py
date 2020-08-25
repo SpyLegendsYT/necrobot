@@ -55,27 +55,6 @@ def _get_from_guilds(bot, func, attr, argument):
         if result:
             return result
     return result
-    
-class NotSelfConverter(commands.Converter):
-    def __init__(self, converter, func=None):
-        if not hasattr(converter, "ctx_attr"):
-            raise ValueError("Cannot do NotSelf on this converter")
-
-        self.converter = converter
-        if func is not None:
-            self.is_self = func
-            
-    async def is_self(self, attr, thing):
-        return attr.id == thing.id
-        
-    async def convert(self, ctx, argument):
-        thing = await self.converter().convert(ctx, argument)
-        attr = getattr(ctx, self.converter.ctx_attr)
-        
-        if is_self(attr, thing):
-            raise commands.BadArgument("You cannot be the target of this command")
-            
-        return thing   
 
 class MemberConverter(commands.IDConverter):
     """Member converter but case insensitive"""

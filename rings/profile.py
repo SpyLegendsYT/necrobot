@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 from rings.utils.utils import midnight, react_menu, BotError, has_perms
-from rings.utils.converters import MoneyConverter, BadgeConverter, MemberConverter, range_check, NotSelfConverter
+from rings.utils.converters import MoneyConverter, BadgeConverter, MemberConverter, range_check
 from rings.db import DatabaseError
 
 import random
@@ -117,7 +117,7 @@ class Profile(commands.Cog):
 
     @commands.command(name="daily")
     @commands.cooldown(1, 60, BucketType.user)
-    async def daily(self, ctx, *, member : NotSelfConverter(MemberConverter) = None):
+    async def daily(self, ctx, *, member : MemberConverter = None):
         """Adds your daily 200 :euro: to your NecroBot balance. This can be used at anytime once every GMT day. Can
         also be gifted to a user for some extra cash. 
         
@@ -152,7 +152,7 @@ class Profile(commands.Cog):
         await ctx.send(f":m: | {message}")
 
     @commands.command()
-    async def pay(self, ctx, payee : NotSelfConverter(MemberConverter), amount : MoneyConverter):
+    async def pay(self, ctx, payee : MemberConverter, amount : MoneyConverter):
         """Transfers the given amount of money to the given user's NecroBot bank account.
 
         {usage}

@@ -138,11 +138,11 @@ class NecroBot(commands.Bot):
         
         await super().invoke(ctx)
         
-    async def wait_for(self, event, *, check=None, timeout=None, handler=None, propogate=True):
+    async def wait_for(self, event, *, check=None, timeout=None, handler=None, propagate=True):
         """
         handler : callable
             Function that performs clean up in the case that the timeout is reached
-        propogate : bool
+        propagate : bool
             Dictate what happens if an error happens
                 True - Error is raised
                 None - Nothing
@@ -154,8 +154,8 @@ class NecroBot(commands.Bot):
             if callable(handler):
                 await handler()
             
-            if propogate is not None:
-                if propogate:
+            if propagate is not None:
+                if propagate:
                     e.timer = timeout
                 
                 raise e
@@ -308,7 +308,7 @@ if __name__ == '__main__':
             check=check, 
             timeout=300, 
             handler=msg.clear_reactions,
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
