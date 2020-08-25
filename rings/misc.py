@@ -53,7 +53,7 @@ class HungerGames:
             check=check, 
             timeout=600, 
             handler=msg.clear_reactions, 
-            propogate=True
+            propagate=True
         )
         
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":

@@ -62,7 +62,7 @@ class Support(commands.Cog):
             check=check, 
             timeout=300, 
             handler=msg.clear_reactions, 
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
@@ -130,7 +130,7 @@ class Support(commands.Cog):
             "reaction_add", 
             check=check, 
             handler=msg.clear_reactions, 
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":

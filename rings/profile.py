@@ -173,7 +173,7 @@ class Profile(commands.Cog):
             check=check, 
             timeout=300, 
             handler=msg.clear_reactions, 
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
@@ -315,12 +315,7 @@ class Profile(commands.Cog):
         {usage}
 
         __Examples__
-        `{pre}badges` - lists your badges and a link to the list of all badges
-        `{pre}badges buy edain` - buy the edain badge, price will appear once you run the command
-        `{pre}badges place` - open the menu to reset the badge on a specific grid location
-        `{pre}badges place edain` - open the menu to place the edain badge on a specific grid location
-        `{pre}badges buy` - sends the link to view the rest of the badges
-        `{pre}badges shop` - open the badge shop"""
+        `{pre}badges` - lists your badges and a link to the list of all badges"""
         badges = await self.bot.db.get_badges(ctx.author.id)
         string = " - ".join([x["name"] for x in badges])
         await ctx.send(f"__Badges__\n{string if string else 'None'}")
@@ -355,7 +350,9 @@ class Profile(commands.Cog):
         {usage}
 
         __Examples__
-        `{pre}badges buy edain` - buy the edain badge, price will appear once you run the command"""
+        `{pre}badges buy edain` - buy the edain badge, price will appear once you run the command
+        `{pre}badges buy edain 3` - buy the edain badge and place it on spot 3
+        """
         has_badge = await self.bot.db.get_badges(ctx.author.id, badge=badge["name"])
         if has_badge:
             raise BotError("You already posses this badge")

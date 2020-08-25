@@ -758,7 +758,7 @@ class Server(commands.Cog):
             "message", 
             timeout=300, 
             check=check, 
-            propogate=True
+            propagate=True
         )
             
         votes = int(reply.content)

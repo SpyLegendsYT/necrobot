@@ -377,7 +377,7 @@ class Special(commands.Cog):
             check=check, 
             timeout=600, 
             handler=cleanup, 
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":

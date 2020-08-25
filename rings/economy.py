@@ -186,7 +186,7 @@ class BlackJack:
             check=check, 
             timeout=120, 
             handler=clean_up, 
-            propogate=True
+            propagate=True
         )
 
         if reaction.emoji == '\N{PLAYING CARD BLACK JOKER}':

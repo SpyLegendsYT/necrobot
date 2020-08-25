@@ -75,7 +75,7 @@ async def react_menu(ctx, entries, per_page, generator, *, page=0, timeout=300):
             check=check, 
             timeout=timeout, 
             handler=msg.clear_reactions, 
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{BLACK SQUARE FOR STOP}":

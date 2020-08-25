@@ -179,7 +179,7 @@ class GuildConverter(commands.IDConverter):
             if result:
                 return result
 
-        raise commands.commands.BadArgument("Not a known guild")
+        raise commands.BadArgument("Not a known guild")
         
 class BadgeConverter(commands.Converter):
     async def convert(self, ctx, argument):
@@ -197,23 +197,23 @@ class TimeConverter(commands.Converter):
 class MoneyConverter(commands.Converter):
     async def convert(self, ctx, argument):
         if not argument.isdigit():
-            raise commands.commands.BadArgument("Not a valid intenger")
+            raise commands.BadArgument("Not a valid intenger")
         
         argument = int(argument)
 
         if argument < 0:
-            raise commands.commands.BadArgument("Amount must be a positive intenger")
+            raise commands.BadArgument("Amount must be a positive intenger")
         
         money = await ctx.bot.db.get_money(ctx.message.author.id)
         if money >= argument:
             return argument
         
-        raise commands.commands.BadArgument("You do not have enough money")
+        raise commands.BadArgument("You do not have enough money")
         
 def range_check(min_v, max_v):
     def check(argument):
         if not argument.isdigit():
-            raise commands.commands.BadArgument("Not a valid intenger")
+            raise commands.BadArgument("Not a valid intenger")
             
         value = int(argument)
         if not max_v >= value >= min_v:

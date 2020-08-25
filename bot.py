@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from rings.db import SyncDatabase, DatabaseError
+from rings.db import SyncDatabase
 from rings.utils.config import token
 from rings.utils.utils import get_pre
 from rings.utils.help import NecrobotHelp
@@ -12,7 +12,6 @@ import asyncio
 import logging
 import datetime
 import traceback
-from collections import defaultdict
 
 logging.basicConfig(filename='discord.log',level=logging.ERROR)
 # logging.basicConfig(level=logging.CRITICAL)
@@ -64,11 +63,6 @@ class NecroBot(commands.Bot):
         
         with open("rings/utils/data/settings.json", "rb") as infile:
             self.settings = json.load(infile)
-
-        self.add_command(self.load)
-        self.add_command(self.unload)
-        self.add_command(self.reload)
-        self.add_command(self.off)
         
         @self.check
         def disabled_check(ctx):
@@ -138,6 +132,12 @@ class NecroBot(commands.Bot):
     def db(self):
         return self.get_cog("Database")
         
+    async def invoke(self, ctx):
+        if self.maintenance and ctx.command is not None:
+            return await ctx.channel.send(":negative_squared_cross_mark: | Maintenance mode engaged, the bot is not currently accepting commands")
+        
+        await super().invoke(ctx)
+        
     async def wait_for(self, event, *, check=None, timeout=None, handler=None, propogate=True):
         """
         handler : callable
@@ -159,95 +159,6 @@ class NecroBot(commands.Bot):
                     e.timer = timeout
                 
                 raise e
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def load(ctx, extension_name : str):
-        """Loads the extension name if in NecroBot's list of rings.
-        
-        {usage}"""
-        try:
-            ctx.bot.load_extension(f"rings.{extension_name}")
-            await ctx.send(f"{extension_name} loaded.")
-        except commands.ExtensionFailed as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-        except commands.ExtensionNotFound:
-            pass
-        
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def unload(ctx, extension_name : str):
-        """Unloads the extension name if in NecroBot's list of rings.
-         
-        {usage}"""
-        try:
-            ctx.bot.unload_extension(f"rings.{extension_name}")
-            await ctx.send(f"{extension_name} unloaded.")
-        except commands.ExtensionFailed as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-        except commands.ExtensionNotLoaded:
-            pass
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def reload(ctx, extension_name : str):
-        """Unload and loads the extension name if in NecroBot's list of rings.
-         
-        {usage}"""
-        try:
-            ctx.bot.unload_extension(f"rings.{extension_name}")
-        except commands.ExtensionFailed as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-        except commands.ExtensionNotLoaded:
-            pass
-            
-        try:
-            ctx.bot.load_extension(f"rings.{extension_name}")
-            await ctx.send(f"{extension_name} reloaded.")
-        except commands.ExtensionFailed as e:
-            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
-        except commands.ExtensionNotFound:
-            pass
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def off(ctx):
-        """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
-         
-        {usage}"""
-        msg = await ctx.send("Shut down?")
-        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
-        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
-
-        def check(reaction, user):
-            return user.id == 241942232867799040 and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
-        
-        reaction, _ = await ctx.bot.wait_for(
-            "reaction_add", 
-            check=check, 
-            timeout=300, 
-            handler=msg.clear_reactions,
-            propogate=False
-        )
-
-        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
-            await msg.delete()
-        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
-            await msg.delete()
-            await ctx.bot.change_presence(activity=discord.Game(name="Bot shutting down...", type=0))
-            
-            with open("rings/utils/data/settings.json", "w") as file:
-                json.dump(ctx.bot.settings, file)
-            
-            await ctx.bot.session.close()
-            await ctx.bot.pool.close()
-            ctx.bot.meta.hourly_task.cancel()
-            for reminder in ctx.bot.reminders.values():
-                reminder.cancel()
-            
-            await ctx.bot.get_bot_channel().send("**Bot Offline**")
-            await ctx.bot.logout()
 
     async def on_ready(self):
         """If this is the first time the boot is booting then we load the cache and set the
@@ -329,6 +240,94 @@ extensions = [
 
 if __name__ == '__main__':
     bot = NecroBot()
+    
+    @bot.command(hidden=True)
+    @commands.is_owner()
+    async def load(ctx, extension_name : str):
+        """Loads the extension name if in NecroBot's list of rings.
+        
+        {usage}"""
+        try:
+            ctx.bot.load_extension(f"rings.{extension_name}")
+            await ctx.send(f"{extension_name} loaded.")
+        except commands.ExtensionFailed as e:
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+        except commands.ExtensionNotFound:
+            pass
+
+    @bot.command(hidden=True)
+    @commands.is_owner()
+    async def unload(ctx, extension_name : str):
+        """Unloads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        try:
+            ctx.bot.unload_extension(f"rings.{extension_name}")
+            await ctx.send(f"{extension_name} unloaded.")
+        except commands.ExtensionFailed as e:
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+        except commands.ExtensionNotLoaded:
+            pass
+
+    @bot.command(hidden=True)
+    @commands.is_owner()
+    async def reload(ctx, extension_name : str):
+        """Unload and loads the extension name if in NecroBot's list of rings.
+         
+        {usage}"""
+        try:
+            ctx.bot.unload_extension(f"rings.{extension_name}")
+        except commands.ExtensionFailed as e:
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+        except commands.ExtensionNotLoaded:
+            pass
+            
+        try:
+            ctx.bot.load_extension(f"rings.{extension_name}")
+            await ctx.send(f"{extension_name} reloaded.")
+        except commands.ExtensionFailed as e:
+            await ctx.send(f"```py\n{type(e).__name__}: {e}\n```")
+        except commands.ExtensionNotFound:
+            pass
+
+    @bot.command(hidden=True)
+    @commands.is_owner()
+    async def off(ctx):
+        """Saves all the data and terminate the bot. (Permission level required: 7+ (The Bot Smith))
+         
+        {usage}"""
+        msg = await ctx.send("Shut down?")
+        await msg.add_reaction("\N{WHITE HEAVY CHECK MARK}")
+        await msg.add_reaction("\N{NEGATIVE SQUARED CROSS MARK}")
+
+        def check(reaction, user):
+            return user.id == 241942232867799040 and str(reaction.emoji) in ["\N{WHITE HEAVY CHECK MARK}", "\N{NEGATIVE SQUARED CROSS MARK}"] and msg.id == reaction.message.id
+        
+        reaction, _ = await ctx.bot.wait_for(
+            "reaction_add", 
+            check=check, 
+            timeout=300, 
+            handler=msg.clear_reactions,
+            propogate=False
+        )
+
+        if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
+            await msg.delete()
+        elif reaction.emoji == "\N{WHITE HEAVY CHECK MARK}":
+            await msg.delete()
+            await ctx.bot.change_presence(activity=discord.Game(name="Bot shutting down...", type=0))
+            
+            with open("rings/utils/data/settings.json", "w") as file:
+                json.dump(ctx.bot.settings, file)
+            
+            await ctx.bot.session.close()
+            await ctx.bot.pool.close()
+            ctx.bot.meta.hourly_task.cancel()
+            for reminder in ctx.bot.reminders.values():
+                reminder.cancel()
+            
+            await ctx.bot.get_bot_channel().send("**Bot Offline**")
+            await ctx.bot.logout()
 
     for extension in extensions:
         bot.load_extension(f"rings.{extension}")   

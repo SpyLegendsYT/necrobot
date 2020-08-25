@@ -173,7 +173,7 @@ class Admin(commands.Cog):
             check=check, 
             timeout=300,
             handler=msg.clear_reactions,
-            propogate=False
+            propagate=False
         )
 
         if reaction.emoji == "\N{NEGATIVE SQUARED CROSS MARK}":
@@ -279,7 +279,7 @@ class Admin(commands.Cog):
             "message", 
             check=check, 
             timeout=6000,
-            propogate=False
+            propagate=False
         )
         
         await to_edit.edit(content=f":speech_left: | **User: {msg.author}** said :**{msg.content[1950:]}**")
@@ -485,7 +485,7 @@ class Admin(commands.Cog):
         await self.bot.wait_for(
             "message", 
             check=check,
-            propogate=None
+            propagate=None
         )
 
         await channel.send(":stop: | The NecroBot admin has ended the conversation.")
@@ -540,7 +540,7 @@ class Admin(commands.Cog):
             "reaction_add", 
             check=check,
             handler=msg.clear_reactions,
-            propogate=False
+            propagate=False
         )
 
         await msg.clear_reactions()

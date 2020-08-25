@@ -36,7 +36,7 @@ class Social(commands.Cog):
         async def bad_answer():
             await ctx.send(":negative_squared_cross_mark: | Wrong answer! Now you go to feed the fishies!")
         
-        await self.bot.wait_for("message", check=check, timeout=30, propogate=False)
+        await self.bot.wait_for("message", check=check, timeout=30, propagate=False)
         await ctx.send(":white_check_mark: | Well played, that was the correct answer.")
             
 
