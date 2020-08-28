@@ -92,7 +92,8 @@ class Profile(commands.Cog):
             raise BotError("Please pick an index that us more than or equal to 0")
 
         monies = await self.bot.db.query_executer(
-            "SELECT user_id, necroins FROM necrobot.Users ORDER BY necroins DESC"    
+            "SELECT user_id, necroins FROM necrobot.Users WHERE user_id = ANY($1) ORDER BY necroins DESC",
+            [x.id for x in self.bot.users]    
         )
 
         def _embed_generator(index, entries):
@@ -106,7 +107,7 @@ class Profile(commands.Cog):
 
             for user in entries:
                 embed.add_field(
-                    name=f"{monies.index(user)+1}. {ctx.guild.get_member(user[0]).display_name}", 
+                    name=f"{monies.index(user)+1}. {self.bot.get_user(user[0])}", 
                     value=user[1], 
                     inline=False
                 )
