@@ -12,6 +12,10 @@ class Modding(commands.Cog):
     what you want to show."""
     def __init__(self, bot):
         self.bot = bot
+        
+    #######################################################################
+    ## Commands
+    #######################################################################
 
     @commands.command()
     async def game(self, ctx, *, game : str):
@@ -22,7 +26,7 @@ class Modding(commands.Cog):
         {usage}
         
         __Example__
-        `{pre}moddb game battle for middle earth` - creates a rich embed of the BFME ModDB page"""
+        `{pre}game battle for middle earth` - creates a rich embed of the BFME ModDB page"""
         def _embed_generator(index, entries):
             page = index[0]
             embed = discord.Embed(
@@ -77,7 +81,7 @@ class Modding(commands.Cog):
         {usage}
         
         __Example__
-        `{pre}moddb mod edain mod` - creates a rich embed of the Edain Mod ModDB page"""
+        `{pre}mod edain mod` - creates a rich embed of the Edain Mod ModDB page"""
         def _embed_generator(index, entries):
             page = index[0]
             embed = discord.Embed(

@@ -544,17 +544,17 @@ class Database(commands.Cog):
         
         return await self.query_executer("SELECT * FROM necrobot.Youtube")
             
-    async def upsert_yt_rss(self, guild_id, channel_id, youtuber_id):
+    async def upsert_yt_rss(self, guild_id, channel_id, youtuber_id, youtuber_name):
         await self.query_executer(
-            """INSERT INTO necrobot.Youtube AS yt VALUES ($1, $2, $3, NOW(), '') 
+            """INSERT INTO necrobot.Youtube AS yt VALUES ($1, $2, $3, NOW(), '', $4) 
             ON CONFLICT (guild_id,youtuber_id) 
-            DO UPDATE SET channel_id = $2 WHERE yt.guild_id = $1 AND yt.youtuber_id = $3""",
-            guild_id, channel_id, youtuber_id
+            DO UPDATE SET channel_id = $2, youtuber_name = $4 WHERE yt.guild_id = $1 AND yt.youtuber_id = $3""",
+            guild_id, channel_id, youtuber_id, youtuber_name
         )
         
-    async def update_yt_filter(self, guild_id, youtuber_id, text):
+    async def update_yt_filter(self, guild_id, youtuber_name, text):
         await self.bot.db.query_executer(
-            "UPDATE necrobot.Youtube SET filter = $3 WHERE guild_id = $1 and youtuber_id = $2", 
+            "UPDATE necrobot.Youtube SET filter = $3 WHERE guild_id = $1 and LOWER(youtuber_name) = LOWER($2) RETURNING youtuber_name", 
             guild_id, youtuber_id, text
         )
             
@@ -564,17 +564,17 @@ class Database(commands.Cog):
             fetchval=True
         )
         
-    async def delete_rss_channel(self, guild_id, *, channel_id = None, youtuber_id = None):            
+    async def delete_rss_channel(self, guild_id, *, channel_id = None, youtuber_name = None):            
         if channel_id is not None:
             return await self.query_executer(
                 "DELETE FROM necrobot.Youtube WHERE guild_id = $1 AND channel_id = $2", 
                 guild_id, channel_id
             )
             
-        if youtuber_id is not None:
+        if youtuber_name is not None:
             return await self.query_executer(
-                "DELETE from necrobot.Youtube WHERE guild_id = $1 AND youtuber_id = $2",
-                guild_id, youtuber_id    
+                "DELETE from necrobot.Youtube WHERE guild_id = $1 AND LOWER(youtuber_name) = LOWER($2)",
+                guild_id, youtuber_name  
             )
             
         return await self.query_executer(

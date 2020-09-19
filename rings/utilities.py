@@ -32,6 +32,10 @@ class Utilities(commands.Cog):
             return {"end": True, "list" : []}
 
         self.queue = defaultdict(factory)
+        
+    #######################################################################
+    ## Commands
+    #######################################################################
 
     @commands.command()
     async def calc(self, ctx, *, equation : str):
@@ -420,9 +424,9 @@ class Utilities(commands.Cog):
         await ctx.send(":white_check_mark: | Leaderboard symbol changed")    
         await self.bot.db.update_leaderboard(ctx.guild.id, symbol=symbol)
     
+    @leaderboard.command(name="award")
     @has_perms(2)
     @leaderboard_enabled()
-    @leaderboard.command(name="award")
     async def leaderboard_award(self, ctx, user : MemberConverter, points : int):
         """Add remove some points. (Permission level of 2+)
         

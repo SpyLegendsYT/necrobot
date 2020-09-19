@@ -25,7 +25,11 @@ class Profile(commands.Cog):
             (580, 295, 680, 395), (685, 295, 785, 395), (790, 295, 890, 395), (895, 295, 995, 395), 
             (580, 400, 680, 500), (685, 400, 785, 500), (790, 400, 890, 500), (895, 400, 995, 500)
         ]
-
+        
+    #######################################################################
+    ## Commands
+    #######################################################################    
+        
     @commands.group(invoke_without_command=True)
     async def balance(self, ctx, *, user : MemberConverter = None):
         """Prints the given user's NecroBot balance, if no user is supplied then it will print your own NecroBot balance.

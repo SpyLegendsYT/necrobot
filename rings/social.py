@@ -12,6 +12,10 @@ class Social(commands.Cog):
     """All of NecroBot's fun commands to keep a user active and entertained"""
     def __init__(self, bot):
         self.bot = bot
+        
+    #######################################################################
+    ## Commands
+    #######################################################################
 
     @commands.command(aliases=["sean","joke","dad"])
     async def dadjoke(self, ctx):

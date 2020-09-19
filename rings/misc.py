@@ -142,6 +142,10 @@ class Misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
+    #######################################################################
+    ## Commands
+    #######################################################################
+        
     @commands.command()
     @commands.cooldown(3, 5, BucketType.channel)
     async def cat(self, ctx):

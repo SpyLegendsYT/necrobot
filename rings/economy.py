@@ -210,6 +210,10 @@ class Economy(commands.Cog):
         self.bot = bot
         self.IS_GAME = []
         
+    #######################################################################
+    ## Commands
+    #######################################################################
+        
     @commands.command(aliases=["bj"])
     async def blackjack(self, ctx, bet : MoneyConverter):
         """A simpe game of black jack against NecroBot's dealer. You can either draw a card by click on :black_joker: 

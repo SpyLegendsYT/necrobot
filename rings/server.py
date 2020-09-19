@@ -14,12 +14,20 @@ class Server(commands.Cog):
     ect..."""
     def __init__(self, bot):
         self.bot = bot
+        
+    #######################################################################
+    ## Cog Functions
+    #######################################################################
 
     def cog_check(self, ctx):
         if ctx.guild:
             return True
 
         raise commands.CheckFailure("This command cannot be used in private messages.")
+
+    #######################################################################
+    ## Functions
+    #######################################################################
 
     def get_all(self, ctx, entries):
         l = []
@@ -40,6 +48,30 @@ class Server(commands.Cog):
                 continue
 
         return l
+        
+    async def add_reactions(self, message, content=None):
+        if content is None:
+            content = message.content
+        
+        CUSTOM_EMOJI = r'<:[^\s]+:([0-9]*)>'
+        UNICODE_EMOJI = r':\w*:'
+        custom_emojis = [self.bot.get_emoji(int(emoji)) for emoji in re.findall(CUSTOM_EMOJI, content)]
+        unicode_emojis = [emoji.emojize(raw) for raw in re.findall(UNICODE_EMOJI, emoji.demojize(content))]
+        
+        emojis = [*custom_emojis, *unicode_emojis]
+        final_list = []
+        for reaction in emojis:
+            try:
+                await message.add_reaction(reaction)
+                final_list.append(str(reaction))
+            except (discord.NotFound, discord.InvalidArgument, discord.HTTPException):
+                pass
+                
+        return final_list
+        
+    #######################################################################
+    ## Commands
+    #######################################################################
 
     @commands.command(aliases=["perms"])
     @has_perms(4)
@@ -709,26 +741,6 @@ class Server(commands.Cog):
 
         await self.bot.db.update_starboard_limit(ctx.guild.id, limit)
         await ctx.send(f":white_check_mark: | Starred messages will now be posted on the starboard once they hit **{limit}** stars")
-
-    async def add_reactions(self, message, content=None):
-        if content is None:
-            content = message.content
-        
-        CUSTOM_EMOJI = r'<:[^\s]+:([0-9]*)>'
-        UNICODE_EMOJI = r':\w*:'
-        custom_emojis = [self.bot.get_emoji(int(emoji)) for emoji in re.findall(CUSTOM_EMOJI, content)]
-        unicode_emojis = [emoji.emojize(raw) for raw in re.findall(UNICODE_EMOJI, emoji.demojize(content))]
-        
-        emojis = [*custom_emojis, *unicode_emojis]
-        final_list = []
-        for reaction in emojis:
-            try:
-                await message.add_reaction(reaction)
-                final_list.append(str(reaction))
-            except (discord.NotFound, discord.InvalidArgument, discord.HTTPException):
-                pass
-                
-        return final_list
     
     @commands.command()
     @has_perms(3)

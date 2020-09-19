@@ -23,6 +23,10 @@ class Tags(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.restricted = [x.name for x in  self.tag.commands]
+        
+    #######################################################################
+    ## Functions
+    #######################################################################
 
     async def is_tag_owner(self, ctx, tag):
         if ctx.author.id == tag["owner_id"]:
@@ -32,6 +36,10 @@ class Tags(commands.Cog):
             return True
         
         raise commands.CheckFailure("You don't have permissions to modify this tag")
+        
+    #######################################################################
+    ## Commands
+    #######################################################################
 
     @commands.group(invoke_without_command = True, aliases=["t","tags"])
     @commands.guild_only()
@@ -281,11 +289,12 @@ class Tags(commands.Cog):
         except DatabaseError:
             raise BotError("Alias already exists")
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot or self.bot.blacklist_check(message.author.id) or message.guild is None:
-            return
+    #######################################################################
+    ## Events
+    #######################################################################
 
+    @commands.Cog.listener()
+    async def on_message_approved(self, message):
         content = message.content.split(maxsplit=1)
         if re.match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 1:
             content = content[1]

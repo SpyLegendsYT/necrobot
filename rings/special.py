@@ -73,9 +73,17 @@ class Special(commands.Cog):
         self.cookies = False
         self.in_process = []
         self.task = self.bot.loop.create_task(self.post_task())
-        
+    
+    #######################################################################
+    ## Cog Functions
+    #######################################################################
+    
     def cog_unload(self):
         self.task.cancel()
+        
+    #######################################################################
+    ## Functions
+    #######################################################################
         
     async def post_task(self):
         while True:
@@ -189,71 +197,12 @@ class Special(commands.Cog):
             "url": thread,
             "text": text,
             "thread": match.group(0)
-        }      
+        } 
     
-    @commands.Cog.listener()
-    async def on_raw_message_edit(self, payload):
-        if payload.message_id in self.bot.pending_posts:
-            self.bot.pending_posts[payload.message_id]["message"]._update(payload.data)
-            await self.mu_parser(self.bot.pending_posts[payload.message_id]["message"], react=False)
-            
-    @commands.Cog.listener()
-    async def on_raw_message_delete(self, payload):
-        if payload.message_id in self.bot.pending_posts:
-            del self.bot.pending_posts[payload.message_id]
-            
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.channel.id not in self.mu_channels:
-            return
-            
-        if message.author.bot:
-            return
-        
-        registered = await self.bot.db.query_executer(
-            "SELECT active FROM necrobot.MU_Users WHERE user_id=$1", 
-            message.author.id, fetchval=True
-        )
-        
-        perms = await self.bot.db.get_permission(message.author.id, message.guild.id)
-        if registered is None:
-            if perms == 0:
-                await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.', delete_after=10)
-                await message.delete()
-            return
-            
-        if not registered:
-            if perms == 0:
-                await message.channel.send(f'{message.author.mention} | Your account is banned from using the system, you may appeal with admins to have it unbanned', delete_after=10)
-                await message.delete()
-            return
-            
-        await self.mu_parser(message)
-        
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        if not payload.channel_id in self.mu_channels:
-            return
-            
-        if not payload.message_id in self.bot.pending_posts:
-            return
-            
-        ids = mu_moderator(self.bot.get_guild(payload.guild_id))
-        if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
-            if payload.user_id in ids:
-                post = self.bot.pending_posts.pop(payload.message_id)
-                await post["message"].add_reaction("\N{GEAR}")
-                await post["message"].add_reaction("\N{SLEEPING SYMBOL}")
-                post["approver"] = payload.user_id
-                await self.bot.queued_posts.put(post)
-        elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
-            ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
-            if payload.user_id in ids:
-                post = self.bot.pending_posts.pop(payload.message_id)
-                post["denier"] = payload.user_id
-                self.bot.denied_posts.append(post)
-                await post["message"].delete()  
-        
+    #######################################################################
+    ## Commands
+    #######################################################################
+    
     @commands.group(invoke_without_command=True)
     @guild_only(327175434754326539)
     async def mu(self, ctx, user : MUConverter = None):
@@ -521,6 +470,73 @@ class Special(commands.Cog):
             return embed
             
         await react_menu(ctx, messages, 1, embed_maker)
+        
+    #######################################################################
+    ## Events
+    #######################################################################
+        
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, payload):
+        if payload.message_id in self.bot.pending_posts:
+            self.bot.pending_posts[payload.message_id]["message"]._update(payload.data)
+            await self.mu_parser(self.bot.pending_posts[payload.message_id]["message"], react=False)
+            
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload):
+        if payload.message_id in self.bot.pending_posts:
+            del self.bot.pending_posts[payload.message_id]
+            
+    @commands.Cog.listener()
+    async def on_message_approved(self, message):
+        if message.channel.id not in self.mu_channels:
+            return
+        
+        registered = await self.bot.db.query_executer(
+            "SELECT active FROM necrobot.MU_Users WHERE user_id=$1", 
+            message.author.id, fetchval=True
+        )
+        
+        perms = await self.bot.db.get_permission(message.author.id, message.guild.id)
+        if registered is None:
+            if perms == 0:
+                await message.channel.send(f'{message.author.mention} | You are not registered, please register with the `register` command first.', delete_after=10)
+                await message.delete()
+            return
+            
+        if not registered:
+            if perms == 0:
+                await message.channel.send(f'{message.author.mention} | Your account is banned from using the system, you may appeal with admins to have it unbanned', delete_after=10)
+                await message.delete()
+            return
+            
+        await self.mu_parser(message)
+        
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        if self.bot.blacklist_check(payload.user_id):
+            return
+        
+        if not payload.channel_id in self.mu_channels:
+            return
+            
+        if not payload.message_id in self.bot.pending_posts:
+            return
+            
+        ids = mu_moderator(self.bot.get_guild(payload.guild_id))
+        if str(payload.emoji) == "\N{WHITE HEAVY CHECK MARK}":
+            if payload.user_id in ids:
+                post = self.bot.pending_posts.pop(payload.message_id)
+                await post["message"].add_reaction("\N{GEAR}")
+                await post["message"].add_reaction("\N{SLEEPING SYMBOL}")
+                post["approver"] = payload.user_id
+                await self.bot.queued_posts.put(post)
+        elif str(payload.emoji) == "\N{NEGATIVE SQUARED CROSS MARK}":
+            ids.append(self.bot.pending_posts[payload.message_id]["message"].author.id)
+            if payload.user_id in ids:
+                post = self.bot.pending_posts.pop(payload.message_id)
+                post["denier"] = payload.user_id
+                self.bot.denied_posts.append(post)
+                await post["message"].delete() 
  
 def setup(bot):
     bot.add_cog(Special(bot))

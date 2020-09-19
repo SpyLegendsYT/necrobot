@@ -201,20 +201,9 @@ class NecroBot(commands.Bot):
         if message.type != discord.MessageType.default or message.author.bot:
             return
             
-        await self.meta.new_member(message.author, message.guild)
-            
-        if message.attachments:
-            if message.attachments[0].filename.endswith(".bmp"):
-                await self.meta.bmp_converter(message)
-                
-        if message.guild is None:
-            tutorial = await self.db.get_tutorial(message.author.id)
-            if not tutorial:
-                msg = await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:?")
-                await msg.pin()
-                await self.db.update_tutorial(message.author.id)
-                
+        self.dispatch("message_approved", message)
         await self.process_commands(message)
+
                 
 extensions = [
     'db',

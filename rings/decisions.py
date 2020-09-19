@@ -21,6 +21,10 @@ class Decisions(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        
+    #######################################################################
+    ## Commands
+    #######################################################################
 
     @commands.command()
     async def choose(self, ctx, *, choices):

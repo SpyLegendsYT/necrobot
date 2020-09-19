@@ -14,6 +14,92 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
+    #######################################################################
+    ## Functions
+    #######################################################################
+        
+    async def dm_reaction_handler(self, payload):
+        if payload.emoji.name == "\N{WASTEBASKET}":
+            try:
+                await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)
+            except (discord.Forbidden, discord.HTTPException):
+                pass
+                
+    async def poll_reaction_handler(self, payload):
+        if payload.user_id == self.bot.user.id:
+            return 
+            
+        if str(payload.emoji) not in self.bot.polls[payload.message_id]["list"] and self.bot.polls[payload.message_id]["list"]:
+            if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
+                emoji = payload.emoji._as_reaction()
+                await self.bot._connection.http.remove_reaction(
+                    payload.channel_id,
+                    payload.message_id,  
+                    emoji, 
+                    payload.user_id
+                )
+                
+            return
+            
+        counter = self.bot.polls[payload.message_id]["voters"].count(payload.user_id) + 1
+        if counter > self.bot.polls[payload.message_id]["votes"]:
+            if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
+                emoji = payload.emoji._as_reaction()
+                await self.bot._connection.http.remove_reaction(
+                    payload.channel_id,
+                    payload.message_id,  
+                    emoji, 
+                    payload.user_id
+                )
+                
+                if self.bot.guild_data[payload.guild_id]["automod"]:
+                    channel = self.bot.get_channel(self.bot.guild_data[payload.guild_id]["automod"])
+                    user = self.bot.get_user(payload.user_id)
+                    
+                    await channel.send(f":warning:| User {user.mention} tried adding more reactions than allowed to a poll")
+            return
+            
+        await self.bot.db.query_executer(
+            "INSERT INTO necrobot.Votes VALUES($1, $2, $3)", 
+            payload.message_id, payload.user_id, payload.emoji.name
+        )
+        self.bot.polls[payload.message_id]["voters"].append(payload.user_id)
+        
+    async def starred_reaction_handler(self, payload):
+        if not self.is_starrable(payload.guild_id, payload.channel_id, payload.message_id):
+            return
+        
+        if not payload.message_id in self.bot.potential_stars:
+            message = self.bot._connection._get_message(payload.message_id)
+            if message is not None:
+                self.bot.potential_stars[payload.message_id] = {"message": message, "count": 0}
+            else:
+                return
+        
+        message = self.bot.potential_stars[payload.message_id]
+        if not message["message"].author.id == payload.user_id:
+            message["count"] += 1
+            
+        if message["count"] >= self.bot.guild_data[payload.guild_id]["starboard-limit"]:
+            del self.bot.potential_stars[payload.message_id]
+            await self.bot.meta.star_message(message["message"])
+        
+    def is_starrable(self, guild_id, channel_id, message_id):
+        if self.bot.guild_data[guild_id]["starboard-channel"] in [0, channel_id]:
+            return False
+            
+        if channel_id in self.bot.guild_data[guild_id]["ignore-automod"]:
+            return False
+            
+        if message_id in self.bot.starred:
+            return False
+            
+        return True    
+    
+    #######################################################################
+    ## Events
+    #######################################################################
+        
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         """Catches error and sends a message to the user that caused the error with a helpful message."""
@@ -44,7 +130,9 @@ class Events(commands.Cog):
         elif isinstance(error, commands.CommandNotFound):
             return
         elif isinstance(error, discord.Forbidden):
-            msg = f"Looks like I don't have permission to do this."
+            msg = "Looks like I don't have permission to do this."
+        elif isinstance(error, discord.HTTPException) and getattr(error, "status", 0) >= 500:
+            msg = "An error occured with Discord's servers. Unable to complete action, the Discord servers might be struggling, please try again later"
         else:
             error_traceback = " ".join(traceback.format_exception(type(error), error, error.__traceback__, chain=True))
             guild = f"{ctx.guild.name} ({ctx.guild.id})" if ctx.guild else "DM"
@@ -303,79 +391,13 @@ class Events(commands.Cog):
             return
 
         if payload.guild_id is None:
-            if payload.emoji.name == "\N{WASTEBASKET}":
-                try:
-                    await self.bot._connection.http.delete_message(payload.channel_id, payload.message_id)
-                except (discord.Forbidden, discord.HTTPException):
-                    pass
-                    
-            return
+            return await self.dm_reaction_handler(payload)
             
         if payload.message_id in self.bot.polls:
-            if payload.user_id == self.bot.user.id:
-                return 
-                
-            if str(payload.emoji) not in self.bot.polls[payload.message_id]["list"] and self.bot.polls[payload.message_id]["list"]:
-                if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
-                    emoji = payload.emoji._as_reaction()
-                    await self.bot._connection.http.remove_reaction(
-                        payload.channel_id,
-                        payload.message_id,  
-                        emoji, 
-                        payload.user_id
-                    )
-                    
-                return
-                
-            counter = self.bot.polls[payload.message_id]["voters"].count(payload.user_id) + 1
-            if counter > self.bot.polls[payload.message_id]["votes"]:
-                if await self.bot.db.get_permission(payload.user_id, payload.guild_id) < 4:
-                    emoji = payload.emoji._as_reaction()
-                    await self.bot._connection.http.remove_reaction(
-                        payload.channel_id,
-                        payload.message_id,  
-                        emoji, 
-                        payload.user_id
-                    )
-                    
-                    if self.bot.guild_data[payload.guild_id]["automod"]:
-                        channel = self.bot.get_channel(self.bot.guild_data[payload.guild_id]["automod"])
-                        user = self.bot.get_user(payload.user_id)
-                        
-                        await channel.send(f":warning:| User {user.mention} tried adding more reactions than allowed to a poll")
-                return
-                
-            await self.bot.db.query_executer(
-                "INSERT INTO necrobot.Votes VALUES($1, $2, $3)", 
-                payload.message_id, payload.user_id, payload.emoji.name
-            )
-            self.bot.polls[payload.message_id]["voters"].append(payload.user_id)
-                
-        
-        if self.bot.guild_data[payload.guild_id]["starboard-channel"] in [0, payload.channel_id]:
-            return
-            
-        if payload.channel_id in self.bot.guild_data[payload.guild_id]["ignore-automod"]:
-            return
-            
-        if payload.message_id in self.bot.starred:
-            return
-                
+            return await self.poll_reaction_handler(payload)
+
         if payload.emoji.name == "\N{WHITE MEDIUM STAR}":
-            if not payload.message_id in self.bot.potential_stars:
-                message = self.bot._connection._get_message(payload.message_id)
-                if message is not None:
-                    self.bot.potential_stars[payload.message_id] = {"message": message, "count": 0}
-                else:
-                    return
-            
-            message = self.bot.potential_stars[payload.message_id]
-            if not message["message"].author.id == payload.user_id:
-                message["count"] += 1
-                
-            if message["count"] >= self.bot.guild_data[payload.guild_id]["starboard-limit"]:
-                del self.bot.potential_stars[payload.message_id]
-                await self.bot.meta.star_message(message["message"])
+            return await self.starred_reaction_handler(payload)
                     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -415,6 +437,21 @@ class Events(commands.Cog):
     async def on_raw_message_delete(self, payload):
         if payload.message_id in self.bot.potential_stars:
             del self.bot.potential_stars[payload.message_id]
+            
+    @commands.Cog.listener()
+    async def on_message_approved(self, message):
+        await self.bot.meta.new_member(message.author, message.guild)
+            
+        if message.attachments:
+            if message.attachments[0].filename.endswith(".bmp"):
+                await self.bot.meta.bmp_converter(message)
+                
+        if message.guild is None:
+            tutorial = await self.db.get_tutorial(message.author.id)
+            if not tutorial:
+                msg = await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:?")
+                await msg.pin()
+                await self.db.update_tutorial(message.author.id)
 
 def setup(bot):
     bot.add_cog(Events(bot))

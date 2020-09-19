@@ -16,7 +16,7 @@ class NecrobotHelp(cmd.HelpCommand):
         
     def get_ending_note(self):
         command_name = self.context.invoked_with
-        return "\nCommands in `codeblocks` are commands you can use, commands with ~~strikethrough~~ you cannot use but you can still check the help. Commands in *italics* are recent additions.\n" \
+        return "\nCommands in `codeblocks` are commands you can use, __underlined__ means the command has subcommands, commands with ~~strikethrough~~ you cannot use but you can still check the help. Commands in ***italics*** are recent additions.\n" \
                "Type {0}{1} [command] for more info on a command.(Example: `{0}help edain`)\n" \
                "You can also type {0}{1} [category] for more info on a category. Don't forget the first letter is always uppercase. (Example: `{0}help Animals`) \n".format(self.clean_prefix, command_name)
        
@@ -32,6 +32,8 @@ class NecrobotHelp(cmd.HelpCommand):
             if command.qualified_name in self.context.bot.new_commands:
                 return f"***{command.qualified_name}***"
             
+            if isinstance(command, cmd.Group):
+                return f"__`{command.qualified_name}`__"
             return f"`{command.qualified_name}`"
         
         return f"~~{command.qualified_name}~~"

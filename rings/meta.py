@@ -22,8 +22,16 @@ class Meta(commands.Cog):
             self.rotate_status,
         ]
         
+    #######################################################################
+    ## Cog Functions
+    #######################################################################
+        
     def cog_unload(self):
         self.hourly_task.cancel()
+        
+    #######################################################################
+    ## Functions
+    #######################################################################
 
     async def bmp_converter(self, message):
         attachment = message.attachments[0]

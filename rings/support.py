@@ -16,6 +16,10 @@ class Support(commands.Cog):
         self.bot.tutorial_e = discord.Embed.from_dict(tutorial_e)
         self.bot.gdpr_embed = discord.Embed.from_dict(gdpr_e)
         
+    #######################################################################
+    ## Commands
+    #######################################################################
+    
     @commands.command(aliases=["support"])
     async def about(self, ctx):
         """Creates a rich embed of the bot's details Also contains link for inviting and support server.

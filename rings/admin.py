@@ -24,6 +24,10 @@ class Admin(commands.Cog):
         self.gates = {}
         self.process = psutil.Process()
         
+    #######################################################################
+    ## Functions
+    #######################################################################
+        
     def insert_returns(self, body):
         if isinstance(body[-1], ast.Expr):
             body[-1] = ast.Return(body[-1].value)
@@ -35,6 +39,10 @@ class Admin(commands.Cog):
 
         if isinstance(body[-1], ast.With):
             self.insert_returns(body[-1].body)
+            
+    #######################################################################
+    ## Commands
+    #######################################################################
             
     @commands.group(invoke_without_command=True)
     @commands.is_owner()
@@ -344,7 +352,7 @@ class Admin(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def debug(self, ctx, *, cmd : str):
-        """Evaluates code. (
+        """Evaluates code.
         
         {usage}
         
@@ -493,64 +501,6 @@ class Admin(commands.Cog):
 
         del self.gates[ctx.channel.id]
         del self.gates[channel.id] 
-        
-    @commands.command()
-    @has_perms(6)
-    async def feeds(self, ctx):
-        """Get info on all the feeds managed on this server.
-
-        {usage}
-        """
-        ps = sh.grep(sh.ps("-ef"), 'python3.8')
-        
-        feeds_dict = {
-            "main.py": {
-                "name": "Confessions", 
-                "command": "nohup sudo python3.6 /home/pi/cardiff_confessions/main.py&",
-                "emote": "\N{HEAR-NO-EVIL MONKEY}"
-            },
-            "rss.py": {
-                "name": "RSS Feeds", 
-                "command": "sudo python3.8 /home/pi/feeds/rss.py&",
-                "emote": "\N{OPEN MAILBOX WITH RAISED FLAG}"
-            },
-            "log.py": {
-                "name": "ModDB Logger", 
-                "command": "nohup sudo python3.8 /home/pi/edain/log.py&",
-                "emote": "\N{CHART WITH DOWNWARDS TREND}"
-            }
-        }
-
-        up = [key for key, value in feeds_dict.items() if key in ps]
-        down = [key for key, value in feeds_dict.items() if not key in ps]
-
-        string = f"__Status on the systems__\n**Online**: {', '.join([feeds_dict[key]['name'] for key in up])}\n**Offline**: {', '.join([feeds_dict[key]['name'] for key in down])}"
-        msg = await ctx.send(string)
-
-        allowed = []
-        for key in down:
-            emote = feeds_dict[key]["emote"]
-            allowed.append(emote)
-            await msg.add_reaction(emote)
-            
-        def check(reaction, user):
-            return user == ctx.author and reaction.message.channel == ctx.channel and reaction.emoji in allowed
-
-        reaction, _ = await self.bot.wait_for(
-            "reaction_add", 
-            check=check,
-            handler=msg.clear_reactions,
-            propagate=False
-        )
-
-        await msg.clear_reactions()
-
-        if reaction.emoji == "\N{CHART WITH DOWNWARDS TREND}":
-            os.system("nohup sudo python3.6 /home/pi/edain/log.py&")
-        elif reaction.emoji == "\N{OPEN MAILBOX WITH RAISED FLAG}":
-            os.system("nohup sudo python3.6 /home/pi/feeds/rss.py&")
-        elif reaction.emoji == "\N{HEAR-NO-EVIL MONKEY}":
-            os.system("nohup sudo python3.6 /home/pi/cardiff_confessions/main.py&")
             
     @commands.command()
     async def maintenance(self, ctx, message = None):
@@ -565,12 +515,13 @@ class Admin(commands.Cog):
             
         self.bot.meta.hourly_task.cancel()
         await self.bot.change_presence(activity=discord.Game(name=msg))
+        
+    #######################################################################
+    ## Events
+    #######################################################################
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot:
-            return
-
+    async def on_message_approved(self, message):
         if message.channel.id in self.gates:
             channel = self.gates[message.channel.id]
         elif message.author.id in self.gates:
