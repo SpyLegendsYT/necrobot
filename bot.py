@@ -133,8 +133,8 @@ class NecroBot(commands.Bot):
         return self.get_cog("Database")
         
     async def invoke(self, ctx):
-        if self.maintenance and ctx.command is not None:
-            return await ctx.channel.send(":negative_squared_cross_mark: | Maintenance mode engaged, the bot is not currently accepting commands")
+        if self.maintenance and ctx.command is not None and ctx.author.id != self.owner:
+            return await ctx.channel.send(":negative_squared_cross_mark: | Maintenance mode engaged, the bot is not currently accepting commands", delete_after=30)
         
         await super().invoke(ctx)
         
@@ -200,6 +200,19 @@ class NecroBot(commands.Bot):
             
         if message.type != discord.MessageType.default or message.author.bot:
             return
+            
+        await self.meta.new_member(message.author, message.guild)
+            
+        if message.attachments:
+            if message.attachments[0].filename.endswith(".bmp"):
+                await self.meta.bmp_converter(message)
+                
+        if message.guild is None:
+            tutorial = await self.db.get_tutorial(message.author.id)
+            if not tutorial:
+                msg = await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:?")
+                await msg.pin()
+                await self.db.update_tutorial(message.author.id)
             
         self.dispatch("message_approved", message)
         await self.process_commands(message)
@@ -312,11 +325,14 @@ if __name__ == '__main__':
             await ctx.bot.session.close()
             await ctx.bot.pool.close()
             ctx.bot.meta.hourly_task.cancel()
+            ctx.bot.get_cog("RSS").task.cancel()
             for reminder in ctx.bot.reminders.values():
                 reminder.cancel()
-            
+
             await ctx.bot.get_bot_channel().send("**Bot Offline**")
-            await ctx.bot.logout()
+            for x in [x for x in asyncio.Task.all_tasks() if not x.done()]:
+                print(x)
+            # await ctx.bot.logout()
 
     for extension in extensions:
         bot.load_extension(f"rings.{extension}")   

@@ -521,7 +521,7 @@ class Admin(commands.Cog):
     #######################################################################
 
     @commands.Cog.listener()
-    async def on_message_approved(self, message):
+    async def on_message(self, message):
         if message.channel.id in self.gates:
             channel = self.gates[message.channel.id]
         elif message.author.id in self.gates:

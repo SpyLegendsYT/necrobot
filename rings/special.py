@@ -487,7 +487,7 @@ class Special(commands.Cog):
             del self.bot.pending_posts[payload.message_id]
             
     @commands.Cog.listener()
-    async def on_message_approved(self, message):
+    async def on_message(self, message):
         if message.channel.id not in self.mu_channels:
             return
         

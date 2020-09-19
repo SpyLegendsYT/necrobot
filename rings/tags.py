@@ -294,7 +294,7 @@ class Tags(commands.Cog):
     #######################################################################
 
     @commands.Cog.listener()
-    async def on_message_approved(self, message):
+    async def on_message(self, message):
         content = message.content.split(maxsplit=1)
         if re.match(f"<@!?{self.bot.user.id}>", message.content) is not None and len(content) > 1:
             content = content[1]

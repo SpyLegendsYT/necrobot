@@ -437,21 +437,6 @@ class Events(commands.Cog):
     async def on_raw_message_delete(self, payload):
         if payload.message_id in self.bot.potential_stars:
             del self.bot.potential_stars[payload.message_id]
-            
-    @commands.Cog.listener()
-    async def on_message_approved(self, message):
-        await self.bot.meta.new_member(message.author, message.guild)
-            
-        if message.attachments:
-            if message.attachments[0].filename.endswith(".bmp"):
-                await self.bot.meta.bmp_converter(message)
-                
-        if message.guild is None:
-            tutorial = await self.db.get_tutorial(message.author.id)
-            if not tutorial:
-                msg = await message.channel.send(":information_source: | Did you know you can delete my messages in DMs by reacting to them with :wastebasket:?")
-                await msg.pin()
-                await self.db.update_tutorial(message.author.id)
 
 def setup(bot):
     bot.add_cog(Events(bot))
