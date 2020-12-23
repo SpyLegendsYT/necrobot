@@ -131,7 +131,7 @@ class RSS(commands.Cog):
             raise BotError("Not a valid youtube URL")
             
         soup = BeautifulSoup(await resp.text(), "html.parser")
-        name = soup.find("meta", {"name":"title"})["content"]        
+        name = soup.find("yt-formatted-string", {"class":"style-scope ytd-channel-name"}).string      
         
         await self.bot.db.upsert_yt_rss(ctx.guild.id, channel.id, youtuber_id, name)
         await ctx.send(f":white_check_mark: | New videos from this channel will now be posted in {channel.mention}.")

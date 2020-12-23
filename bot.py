@@ -46,6 +46,7 @@ class NecroBot(commands.Bot):
         self.session = None
         self.pool = None
         self.maintenance = False
+        self.owner_id = 241942232867799040
         
         sync_db = SyncDatabase()
         self.guild_data = sync_db.load_guilds()
@@ -133,7 +134,7 @@ class NecroBot(commands.Bot):
         return self.get_cog("Database")
         
     async def invoke(self, ctx):
-        if self.maintenance and ctx.command is not None and ctx.author.id != self.owner:
+        if self.maintenance and ctx.command is not None and ctx.author.id != self.owner_id:
             return await ctx.channel.send(":negative_squared_cross_mark: | Maintenance mode engaged, the bot is not currently accepting commands", delete_after=30)
         
         await super().invoke(ctx)
