@@ -116,7 +116,7 @@ class RSS(commands.Cog):
             return await react_menu(ctx, feeds, 15, embed_generator)
         
         
-        channel_check(check_channel)
+        check_channel(channel)
         try:        
             async with self.bot.session.get(youtube) as resp:
                 if resp.status != 200:
@@ -131,14 +131,14 @@ class RSS(commands.Cog):
             raise BotError("Not a valid youtube URL")
             
         soup = BeautifulSoup(await resp.text(), "html.parser")
-        name = soup.find("yt-formatted-string", {"class":"style-scope ytd-channel-name"}).string      
+        name = soup.find("title").string.replace(" - YouTube", "")      
         
         await self.bot.db.upsert_yt_rss(ctx.guild.id, channel.id, youtuber_id, name)
         await ctx.send(f":white_check_mark: | New videos from this channel will now be posted in {channel.mention}.")
 
     @youtube.command(name="delete")
     @has_perms(3)
-    async def youtube_delete(self, ctx, youtuber_name):
+    async def youtube_delete(self, ctx, *, youtuber_name):
         """This subcommand allows you to unsubscribe from a youtube channel based on the name
         
         {usage}

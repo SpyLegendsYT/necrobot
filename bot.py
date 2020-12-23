@@ -16,8 +16,12 @@ import traceback
 logging.basicConfig(filename='discord.log',level=logging.ERROR)
 # logging.basicConfig(level=logging.CRITICAL)
 
+
 class NecroBot(commands.Bot):
     def __init__(self):
+        intents = discord.Intents.default()
+        intents.members = True
+
         super().__init__(
             max_messages=50000,
             fetch_offline_members=True,
@@ -26,7 +30,8 @@ class NecroBot(commands.Bot):
             description="A bot for managing and enhancing servers",
             command_prefix=get_pre,
             help_command=NecrobotHelp(),
-            allowed_mentions=discord.AllowedMentions(everyone=False)     
+            allowed_mentions=discord.AllowedMentions(everyone=False),
+            intents=intents
         )
         
         self.uptime_start = time.time()
